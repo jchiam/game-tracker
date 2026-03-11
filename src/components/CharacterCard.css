@@ -1,0 +1,225 @@
+.character-card {
+  background: var(--color-bg-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all var(--transition-normal);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  animation: fade-in-up 0.5s ease-out backwards;
+}
+
+.character-card:nth-child(1) { animation-delay: 0.1s; }
+.character-card:nth-child(2) { animation-delay: 0.2s; }
+.character-card:nth-child(3) { animation-delay: 0.3s; }
+.character-card:nth-child(4) { animation-delay: 0.4s; }
+
+.character-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  border-color: var(--color-primary);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5), 0 0 15px var(--color-primary-glow);
+}
+
+.card-header {
+  height: 250px;
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: var(--spacing-md);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent);
+  overflow: hidden;
+}
+
+.character-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  z-index: 0;
+  transition: transform var(--transition-normal);
+  opacity: 0.9;
+}
+
+.character-card:hover .character-image {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+.card-header-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.4) 0%, transparent 40%, rgba(20,20,30,0.9) 100%);
+  z-index: 1;
+}
+
+.card-header > *:not(.character-image):not(.card-header-overlay) {
+  position: relative;
+  z-index: 2;
+}
+
+.card-body {
+  padding: var(--spacing-lg) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.character-name {
+  font-size: 1.5rem;
+  margin-bottom: 0;
+  color: #fff;
+}
+
+/* Progression Styles */
+.progress-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  background: rgba(0,0,0,0.15);
+  padding: var(--spacing-md);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.section-header {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  display: flex;
+  justify-content: space-between;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.section-value {
+  color: #fff;
+}
+
+/* Slider */
+.level-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  outline: none;
+  margin: 8px 0;
+}
+
+.level-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--color-primary-glow);
+  transition: transform var(--transition-fast);
+}
+
+.level-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.level-bar {
+  height: 4px;
+  background: rgba(255,255,255,0.05);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: -12px;
+  pointer-events: none;
+}
+
+.level-progress {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), #fff);
+  border-radius: 2px;
+  box-shadow: 0 0 10px var(--color-primary-glow);
+}
+
+/* Relics Grid */
+.relics-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--spacing-sm);
+}
+
+.relic-slot {
+  aspect-ratio: 1;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.relic-icon {
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.2);
+  transition: all var(--transition-fast);
+}
+
+.relic-slot:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.relic-slot.active {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary-glow) inset;
+}
+
+.relic-slot.active .relic-icon {
+  color: var(--color-primary);
+  filter: drop-shadow(0 0 2px var(--color-primary-glow));
+}
+
+.remove-btn {
+  background: transparent;
+  border: none;
+  color: var(--color-text-secondary);
+  font-size: 1rem;
+  padding: 0 4px;
+  min-width: unset;
+  border-radius: 50%;
+}
+
+.remove-btn:hover {
+  color: #ff4d4f;
+  transform: none;
+  box-shadow: none;
+  border-color: transparent;
+}
+
+.remove-btn::before {
+  display: none;
+}
+
+.relic-set-icon {
+  width: 80%;
+  height: 80%;
+  object-fit: contain;
+  opacity: 0.9;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+}
+
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
