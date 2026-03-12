@@ -368,7 +368,7 @@ function App() {
               <button className="secondary-action" style={{ padding: '0.4rem 1rem' }} onClick={() => supabase.auth.signOut()}>Sign Out</button>
             </>
           ) : (
-            <button className="primary-action" style={{ padding: '0.4rem 1rem' }} onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })}>Sign In with Google</button>
+            <button className="primary-action" style={{ padding: '0.4rem 1rem' }} onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })}>Sign In with Google</button>
           )}
         </div>
       </nav>
@@ -419,7 +419,7 @@ function App() {
               <button 
                 className="primary-action" 
                 style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} 
-                onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })}
+                onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })}
               >
                 Sign In with Google
               </button>
