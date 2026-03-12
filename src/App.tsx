@@ -1,7 +1,7 @@
 import './App.css';
-import { Navbar } from './components/Navbar';
-import { HsrPage } from './pages/hsr/HsrPage';
-import { useAuth } from './hooks/useAuth';
+import { Navbar } from '@/components/Navbar';
+import { HsrPage } from '@/pages/hsr/HsrPage';
+import { useAuth } from '@/hooks/useAuth';
 
 function App() {
   const { session, isAuthLoading, signInWithGoogle, signOut } = useAuth();

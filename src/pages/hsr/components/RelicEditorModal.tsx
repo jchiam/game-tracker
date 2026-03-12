@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { type TrackedCharacter } from '../../../types';
-import { type RelicSet, type EquippedRelic } from '../../../data/relics';
+import type { TrackedCharacter } from '@/types';
+import type { RelicSet, EquippedRelic } from '@/data/relics';
 import './Modal.css';
 import './RelicEditorModal.css';
 

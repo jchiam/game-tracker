@@ -1,7 +1,7 @@
-import { type TrackedCharacter } from '../../../types';
-import { type RelicSet } from '../../../data/relics';
+import type { TrackedCharacter } from '@/types';
+import type { RelicSet } from '@/data/relics';
 import { ConfirmCheckbox } from './ConfirmCheckbox';
-import { calculateRelicScore } from '../../../utils/relicScoring';
+import { calculateRelicScore } from '@/utils/relicScoring';
 import './CharacterCard.css';
 
 interface CharacterCardProps {

@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { type Character } from '../../../data/characters';
-import { type TrackedCharacter } from '../../../types';
+import type { Character } from '@/data/characters';
+import type { TrackedCharacter } from '@/types';
 import './Modal.css';
 import './AddCharacterModal.css';
 

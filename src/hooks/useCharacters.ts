@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import Fuse from 'fuse.js';
-import { ALL_CHARACTERS, type Character } from '../data/characters';
-import { type EquippedRelic, type RelicSet } from '../data/relics';
-import { ALL_RELIC_SETS } from '../data/relic_sets';
-import type { TrackedCharacter } from '../types';
+import { ALL_CHARACTERS, type Character } from '@/data/characters';
+import { type EquippedRelic, type RelicSet } from '@/data/relics';
+import { ALL_RELIC_SETS } from '@/data/relic_sets';
+import type { TrackedCharacter } from '@/types';
 import {
   loadCharactersFromDB,
   insertCharacter,
@@ -13,7 +13,7 @@ import {
   upsertRelic,
   deleteRelic,
   saveBuildPrefs,
-} from '../services/characterService';
+} from '@/services/characterService';
 
 export const emptyRelic: EquippedRelic = { setId: null, mainStat: null, subStats: [] };
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };

@@ -1,11 +1,11 @@
 import { useState, useMemo } from 'react';
-import { useCharacters, emptyRelic } from '../../hooks/useCharacters';
-import { calculateRelicScore } from '../../utils/relicScoring';
+import { useCharacters, emptyRelic } from '@/hooks/useCharacters';
+import { calculateRelicScore } from '@/utils/relicScoring';
 import { CharacterCard } from './components/CharacterCard';
 import { RelicEditorModal } from './components/RelicEditorModal';
 import { AddCharacterModal } from './components/AddCharacterModal';
-import { AuthGate } from '../../components/AuthGate';
-import type { TrackedCharacter } from '../../types';
+import { AuthGate } from '@/components/AuthGate';
+import type { TrackedCharacter } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 import './HsrPage.css';
 

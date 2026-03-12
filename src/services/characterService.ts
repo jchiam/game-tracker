@@ -1,7 +1,7 @@
-import { supabase } from '../lib/supabase';
-import type { EquippedRelic } from '../data/relics';
-import type { TrackedCharacter } from '../types';
-import { ALL_CHARACTERS } from '../data/characters';
+import { supabase } from '@/lib/supabase';
+import type { EquippedRelic } from '@/data/relics';
+import type { TrackedCharacter } from '@/types';
+import { ALL_CHARACTERS } from '@/data/characters';
 
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
 
