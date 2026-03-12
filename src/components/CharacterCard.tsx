@@ -35,13 +35,6 @@ export function CharacterCard({
   return (
     <div className="character-card">
       <div className="card-header">
-        <button 
-          className={`favorite-btn ${char.isFavorited ? 'active' : ''}`}
-          onClick={(e) => { e.stopPropagation(); onToggleFavorite(char.id, !char.isFavorited); }}
-          title={char.isFavorited ? "Unfavorite Character" : "Favorite Character"}
-        >
-          {char.isFavorited ? '★' : '☆'}
-        </button>
         <img
           src={char.imageUrl}
           alt={char.name}
@@ -52,13 +45,26 @@ export function CharacterCard({
           }}
         />
         <div className="card-header-overlay"></div>
-        {showScore && (
-          <div className={`score-badge ${tierClass}`}>
-            <span>{score.toFixed(1)}%</span>
+        <div className="card-overlay-controls">
+          <div className="card-overlay-top">
+            <button
+              className={`favorite-btn ${char.isFavorited ? 'active' : ''}`}
+              onClick={(e) => { e.stopPropagation(); onToggleFavorite(char.id, !char.isFavorited); }}
+              title={char.isFavorited ? "Unfavorite Character" : "Favorite Character"}
+            >
+              {char.isFavorited ? '★' : '☆'}
+            </button>
+            <button className="remove-btn" onClick={(e) => onRemove(char.id, e)} title="Remove Character">✕</button>
           </div>
-        )}
-        <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
-        <button className="remove-btn" onClick={(e) => onRemove(char.id, e)} title="Remove Character">✕</button>
+          <div className="card-overlay-bottom">
+            <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
+            {showScore && (
+              <div className={`score-badge ${tierClass}`}>
+                <span>{score.toFixed(1)}%</span>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
       <div className="card-body">
         <h3 className="character-name">{char.name}</h3>
