@@ -19,7 +19,7 @@ export function AddCharacterModal({
 }: AddCharacterModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredAvailableCharacters = availableCharacters.filter(char => 
+  const filteredAvailableCharacters = availableCharacters.filter(char =>
     !trackedCharacters.some(tracked => tracked.name === char.name) &&
     char.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -31,26 +31,26 @@ export function AddCharacterModal({
           <h2>Add Character</h2>
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
-        
+
         <div className="modal-search">
-          <input 
-            type="text" 
-            placeholder="Search characters..." 
+          <input
+            type="text"
+            placeholder="Search characters..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             autoFocus
           />
         </div>
-        
+
         <div className="character-list">
           {filteredAvailableCharacters.length > 0 ? (
             filteredAvailableCharacters.map(char => (
               <div key={char.id} className="character-list-item" onClick={() => onAddCharacter(char)}>
                 <div className="char-list-info">
                   <div className="char-list-img-wrapper">
-                    <img 
-                      src={char.imageUrl} 
-                      alt={char.name} 
+                    <img
+                      src={char.imageUrl}
+                      alt={char.name}
                       className="char-list-img"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -62,7 +62,6 @@ export function AddCharacterModal({
                     <span className="char-list-name">{char.name}</span>
                     <div className="char-list-tags">
                       <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
-                      <span className="path-badge">{char.path}</span>
                     </div>
                   </div>
                 </div>

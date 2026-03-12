@@ -1,4 +1,5 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { type Session } from '@supabase/supabase-js';
 import './App.css';
 import { ALL_CHARACTERS, type Character } from './data/characters';
 import { type EquippedRelic, type RelicSet } from './data/relics';
@@ -22,6 +23,9 @@ function App() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRelic, setEditingRelic] = useState<{charId: string, slot: keyof TrackedCharacter['relics']} | null>(null);
+
+  const [session, setSession] = useState<Session | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
 
   const pendingUpdates = useRef<Record<string, any>>({});
   const updateTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -91,13 +95,39 @@ function App() {
     }, 1000);
   };
 
-  // Load state from DB once on mount
-  useState(() => {
+  // Track Auth State changes
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setIsAuthLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setIsAuthLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load state from DB keyed by User session
+  useEffect(() => {
+    if (isAuthLoading) return;
+    
+    if (!session?.user) {
+      setTrackedCharacters([]);
+      setIsInitialLoad(false);
+      return;
+    }
+
+    let isMounted = true;
     const loadData = async () => {
       try {
         if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
           console.warn("Supabase not configured. Using local empty roster.");
-          setIsInitialLoad(false);
+          if (isMounted) setIsInitialLoad(false);
           return;
         }
 
@@ -107,7 +137,9 @@ function App() {
             id, character_id, level, traces_attained,
             equipped_relics ( id, slot, set_id, main_stat, relic_substats ( stat_type, stat_value ) )
           `)
-          .eq('profile_id', 'default-user');
+          .eq('profile_id', session.user.id);
+
+        if (!isMounted) return;
 
         if (error) {
           console.error('Error fetching data:', error);
@@ -136,15 +168,19 @@ function App() {
           }).filter(Boolean) as TrackedCharacter[];
           
           setTrackedCharacters(rebuiltRoster);
+        } else {
+          setTrackedCharacters([]);
         }
       } catch(e) {
         console.error(e);
       } finally {
-        setIsInitialLoad(false);
+        if (isMounted) setIsInitialLoad(false);
       }
     };
     loadData();
-  });
+
+    return () => { isMounted = false; };
+  }, [session?.user?.id, isAuthLoading]); // Ignore availableCharacters intentional to avoid DB wipe when dynamic web fetch finishes
 
   // Removed global debounced saver; handlers now sync state directly.
 
@@ -169,7 +205,6 @@ function App() {
         newCharacters.push({
           id: id,
           name: info.name,
-          path: info.path || 'Unknown',
           element: info.element || 'Unknown',
           imageUrl: `${IMAGE_BASE_URL}${info.icon}`
         });
@@ -194,7 +229,6 @@ function App() {
               ...tc,
               id: updatedChar.id, 
               imageUrl: updatedChar.imageUrl,
-              path: updatedChar.path,
               element: updatedChar.element
             };
           }
@@ -215,6 +249,7 @@ function App() {
   };
 
   const addCharacter = async (char: Character) => {
+    if (!session) { alert('Please log in first!'); return; }
     if (trackedCharacters.some(c => c.id === char.id)) {
       setIsModalOpen(false);
       return;
@@ -231,9 +266,9 @@ function App() {
     setIsModalOpen(false);
 
     if (import.meta.env.VITE_SUPABASE_URL) {
-      await supabase.from('user_profiles').upsert({ id: 'default-user', updated_at: new Date().toISOString() });
+      await supabase.from('user_profiles').upsert({ id: session.user.id, updated_at: new Date().toISOString() });
       const { data, error } = await supabase.from('tracked_characters').insert({
-        profile_id: 'default-user',
+        profile_id: session.user.id,
         character_id: char.id,
         level: 1,
         traces_attained: false
@@ -326,6 +361,16 @@ function App() {
         <div className="nav-brand">
           <span className="brand-icon">✧</span> Astral Express Tracker Worker
         </div>
+        <div className="nav-auth" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          {session ? (
+            <>
+              <span className="user-email" style={{ color: 'var(--color-text-dim)', fontSize: '0.9rem' }}>{session.user.email}</span>
+              <button className="secondary-action" style={{ padding: '0.4rem 1rem' }} onClick={() => supabase.auth.signOut()}>Sign Out</button>
+            </>
+          ) : (
+            <button className="primary-action" style={{ padding: '0.4rem 1rem' }} onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })}>Sign In with Google</button>
+          )}
+        </div>
       </nav>
 
       <main className="main-content">
@@ -336,16 +381,48 @@ function App() {
             <button className="secondary-action" onClick={fetchLatestCharacters} disabled={isUpdating}>
               {isUpdating ? 'Fetching Data...' : 'Force Sync Characters & Relics'}
             </button>
-            <button className="primary-action" onClick={() => setIsModalOpen(true)}>
-              Add Character
-            </button>
+            {session && (
+              <button className="primary-action" onClick={() => setIsModalOpen(true)}>
+                Add Character
+              </button>
+            )}
           </div>
         </header>
 
         <section className="roster-grid">
-          {isInitialLoad && import.meta.env.VITE_SUPABASE_URL ? (
+          {isAuthLoading ? (
+            <div className="empty-state">
+              <p>Authenticating...</p>
+            </div>
+          ) : isInitialLoad && session ? (
             <div className="empty-state">
               <p>Loading database sync...</p>
+            </div>
+          ) : !session ? (
+            <div className="empty-state auth-gate" style={{ 
+              padding: '3rem 2rem', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              gap: '1.5rem', 
+              background: 'var(--color-bg-elevated)', 
+              borderRadius: 'var(--radius-lg)', 
+              border: '1px solid var(--color-border)',
+              margin: '2rem auto',
+              maxWidth: '480px',
+              textAlign: 'center'
+            }}>
+              <h2 style={{ fontSize: '1.5rem', color: 'var(--color-text)' }}>Welcome to the Astral Express</h2>
+              <p style={{ color: 'var(--color-text-dim)', lineHeight: '1.5' }}>
+                Securely sync your character builds, trace tracking, and relics across all your devices using Google Authentication.
+              </p>
+              <button 
+                className="primary-action" 
+                style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} 
+                onClick={() => supabase.auth.signInWithOAuth({ provider: 'google' })}
+              >
+                Sign In with Google
+              </button>
             </div>
           ) : trackedCharacters.length === 0 ? (
             <div className="empty-state">

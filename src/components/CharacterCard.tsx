@@ -34,7 +34,6 @@ export function CharacterCard({
         />
         <div className="card-header-overlay"></div>
         <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
-        <span className="path-badge">{char.path}</span>
         <button className="remove-btn" onClick={(e) => onRemove(char.id, e)} title="Remove Character">✕</button>
       </div>
       <div className="card-body">

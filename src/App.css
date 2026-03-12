@@ -7,6 +7,7 @@
 .navbar {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: var(--spacing-md) var(--spacing-xl);
   background: var(--color-bg-surface);
   backdrop-filter: blur(12px);
@@ -102,7 +103,7 @@
   gap: var(--spacing-xl);
 }
 
-.element-badge, .path-badge {
+.element-badge {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
