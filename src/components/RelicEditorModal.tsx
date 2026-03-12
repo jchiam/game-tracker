@@ -24,6 +24,32 @@ export function RelicEditorModal({
 }: RelicEditorModalProps) {
   const currentRelic = char.relics[slot] || emptyRelic;
 
+  const validMainStats: Record<string, string[]> = {
+    head: ['HP'],
+    hands: ['ATK'],
+    body: ['HP%', 'ATK%', 'DEF%', 'CRIT Rate', 'CRIT DMG', 'Outgoing Healing Boost', 'Effect Hit Rate'],
+    feet: ['HP%', 'ATK%', 'DEF%', 'SPD'],
+    sphere: ['HP%', 'ATK%', 'DEF%', 'Physical DMG Boost', 'Fire DMG Boost', 'Ice DMG Boost', 'Lightning DMG Boost', 'Wind DMG Boost', 'Quantum DMG Boost', 'Imaginary DMG Boost'],
+    rope: ['HP%', 'ATK%', 'DEF%', 'Break Effect', 'Energy Regeneration Rate']
+  };
+
+  const allSubStats = ['HP', 'ATK', 'DEF', 'HP%', 'ATK%', 'DEF%', 'SPD', 'CRIT Rate', 'CRIT DMG', 'Effect Hit Rate', 'Effect RES', 'Break Effect'];
+
+  const validateAndSave = (updates: Partial<EquippedRelic>) => {
+    let newRelic = { ...currentRelic, ...updates };
+
+    // Enforce fixed Main Stats
+    if (slot === 'head') newRelic.mainStat = 'HP';
+    if (slot === 'hands') newRelic.mainStat = 'ATK';
+
+    // Prune conflicting Substats
+    if (newRelic.mainStat) {
+      newRelic.subStats = newRelic.subStats.filter(sub => sub.type !== newRelic.mainStat);
+    }
+    
+    onSave(newRelic);
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content relic-editor" onClick={e => e.stopPropagation()}>
@@ -37,7 +63,7 @@ export function RelicEditorModal({
             <label>Relic Set</label>
             <select 
               value={currentRelic.setId || ''} 
-              onChange={e => onSave({...currentRelic, setId: e.target.value})}
+              onChange={e => validateAndSave({ setId: e.target.value })}
             >
               <option value="">-- No Set --</option>
               {availableRelicSets.map(set => (
@@ -48,15 +74,21 @@ export function RelicEditorModal({
 
           <div className="form-group">
             <label>Main Stat</label>
-            <select 
-              value={currentRelic.mainStat || ''} 
-              onChange={e => onSave({...currentRelic, mainStat: e.target.value})}
-            >
-              <option value="">-- No Main Stat --</option>
-              {['HP', 'ATK', 'HP%', 'ATK%', 'DEF%', 'CRIT Rate', 'CRIT DMG', 'SPD', 'Break Effect', 'Energy Regeneration Rate', 'Lightning DMG Boost'].map(stat => (
-                <option key={stat} value={stat}>{stat}</option>
-              ))}
-            </select>
+            {(slot === 'head' || slot === 'hands') ? (
+              <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', color: 'var(--color-primary)' }}>
+                {slot === 'head' ? 'HP' : 'ATK'} (Fixed)
+              </div>
+            ) : (
+              <select 
+                value={currentRelic.mainStat || ''} 
+                onChange={e => validateAndSave({ mainStat: e.target.value })}
+              >
+                <option value="">-- No Main Stat --</option>
+                {validMainStats[slot].map(stat => (
+                  <option key={stat} value={stat}>{stat}</option>
+                ))}
+              </select>
+            )}
           </div>
           
           <div className="substats-section">
@@ -68,11 +100,14 @@ export function RelicEditorModal({
                   onChange={e => {
                     const newSubs = [...currentRelic.subStats];
                     newSubs[idx] = { ...newSubs[idx], type: e.target.value };
-                    onSave({...currentRelic, subStats: newSubs});
+                    validateAndSave({ subStats: newSubs });
                   }}
                 >
                   <option value="">- Stat -</option>
-                  {['HP', 'ATK', 'DEF', 'HP%', 'ATK%', 'DEF%', 'SPD', 'CRIT Rate', 'CRIT DMG', 'Effect Hit Rate', 'Effect RES', 'Break Effect'].map(s => (
+                  {allSubStats
+                    .filter(s => s !== currentRelic.mainStat || (slot === 'head' && s === 'HP') || (slot === 'hands' && s === 'ATK')) // Allow raw versions if main stat matches but type differs, wait actually HP == HP so block it.
+                    .filter(s => s !== currentRelic.mainStat)
+                    .map(s => (
                     <option key={s} value={s}>{s}</option>
                   ))}
                 </select>
@@ -83,12 +118,12 @@ export function RelicEditorModal({
                   onChange={e => {
                     const newSubs = [...currentRelic.subStats];
                     newSubs[idx] = { ...newSubs[idx], value: e.target.value };
-                    onSave({...currentRelic, subStats: newSubs});
+                    validateAndSave({ subStats: newSubs });
                   }}
                 />
                 <button className="remove-substat" onClick={() => {
                   const newSubs = currentRelic.subStats.filter((_, i) => i !== idx);
-                  onSave({...currentRelic, subStats: newSubs});
+                  validateAndSave({ subStats: newSubs });
                 }}>✕</button>
               </div>
             ))}
@@ -96,7 +131,10 @@ export function RelicEditorModal({
             {currentRelic.subStats.length < 4 && (
               <button 
                 className="add-substat-btn"
-                onClick={() => onSave({...currentRelic, subStats: [...currentRelic.subStats, {type: 'CRIT Rate', value: '2.5%'}]})}
+                onClick={() => Object.assign(() => {
+                  const defaultSafeStat = allSubStats.find(s => s !== currentRelic.mainStat) || 'CRIT Rate';
+                  validateAndSave({ subStats: [...currentRelic.subStats, {type: defaultSafeStat, value: '2.5%'}] });
+                })()}
               >
                 + Add Substat
               </button>
