@@ -52,8 +52,10 @@ export function CharacterCard({
             value={char.level}
             onChange={(e) => onUpdateLevel(char.id, parseInt(e.target.value))}
             className="level-slider"
+            style={{
+              background: `linear-gradient(to right, var(--color-primary) ${(char.level / 80) * 100}%, rgba(255,255,255,0.1) ${(char.level / 80) * 100}%)`
+            }}
           />
-          <div className="level-progress" style={{ width: `${(char.level / 80) * 100}%` }}></div>
         </div>
 
         <div className="progress-section">

@@ -112,10 +112,10 @@
   appearance: none;
   width: 100%;
   height: 4px;
-  background: rgba(255,255,255,0.1);
   border-radius: 2px;
   outline: none;
   margin: 8px 0;
+  box-shadow: 0 0 10px rgba(0,0,0,0.5) inset;
 }
 
 .level-slider::-webkit-slider-thumb {
@@ -132,22 +132,6 @@
 
 .level-slider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
-}
-
-.level-bar {
-  height: 4px;
-  background: rgba(255,255,255,0.05);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-top: -12px;
-  pointer-events: none;
-}
-
-.level-progress {
-  height: 100%;
-  background: linear-gradient(90deg, var(--color-primary), #fff);
-  border-radius: 2px;
-  box-shadow: 0 0 10px var(--color-primary-glow);
 }
 
 /* Relics Grid */
