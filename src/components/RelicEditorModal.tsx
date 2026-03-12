@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { type TrackedCharacter } from '../types';
 import { type RelicSet, type EquippedRelic } from '../data/relics';
 import './Modal.css';
@@ -10,6 +11,7 @@ interface RelicEditorModalProps {
   emptyRelic: EquippedRelic;
   onSave: (relicData: EquippedRelic) => void;
   onRemove: () => void;
+  onUpdateBuildPreferences: (newPrefs: TrackedCharacter['buildPreferences']) => void;
   onClose: () => void;
 }
 
@@ -20,9 +22,12 @@ export function RelicEditorModal({
   emptyRelic,
   onSave,
   onRemove,
+  onUpdateBuildPreferences,
   onClose,
 }: RelicEditorModalProps) {
+  const [activeTab, setActiveTab] = useState<'equip' | 'preferences'>('equip');
   const currentRelic = char.relics[slot] || emptyRelic;
+  const currentPrefs = char.buildPreferences || { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] };
 
   const validMainStats: Record<string, string[]> = {
     head: ['HP'],
@@ -56,6 +61,53 @@ export function RelicEditorModal({
     onSave(newRelic);
   };
 
+  const addMainStatPref = () => {
+    if (slot === 'head' || slot === 'hands') return;
+    const newPrefs = { ...currentPrefs };
+    const arr = [...newPrefs.mainStats[slot]];
+    if (arr.length > 0) arr[arr.length - 1].operator = '>';
+    arr.push({ stat: validMainStats[slot][0], operator: null, orderIndex: arr.length });
+    newPrefs.mainStats[slot] = arr;
+    onUpdateBuildPreferences(newPrefs);
+  };
+
+  const updateMainStatPref = (idx: number, updates: Partial<typeof currentPrefs.mainStats['body'][0]>) => {
+    if (slot === 'head' || slot === 'hands') return;
+    const newPrefs = { ...currentPrefs };
+    newPrefs.mainStats[slot][idx] = { ...newPrefs.mainStats[slot][idx], ...updates };
+    onUpdateBuildPreferences(newPrefs);
+  };
+
+  const removeMainStatPref = (idx: number) => {
+    if (slot === 'head' || slot === 'hands') return;
+    const newPrefs = { ...currentPrefs };
+    newPrefs.mainStats[slot].splice(idx, 1);
+    if (newPrefs.mainStats[slot].length > 0) newPrefs.mainStats[slot][newPrefs.mainStats[slot].length - 1].operator = null;
+    onUpdateBuildPreferences(newPrefs);
+  };
+
+  const addSubStatPref = () => {
+    const newPrefs = { ...currentPrefs };
+    const arr = [...newPrefs.subStats];
+    if (arr.length > 0) arr[arr.length - 1].operator = '>';
+    arr.push({ stat: allSubStats[0], operator: null, orderIndex: arr.length });
+    newPrefs.subStats = arr;
+    onUpdateBuildPreferences(newPrefs);
+  };
+
+  const updateSubStatPref = (idx: number, updates: Partial<typeof currentPrefs.subStats[0]>) => {
+    const newPrefs = { ...currentPrefs };
+    newPrefs.subStats[idx] = { ...newPrefs.subStats[idx], ...updates };
+    onUpdateBuildPreferences(newPrefs);
+  };
+
+  const removeSubStatPref = (idx: number) => {
+    const newPrefs = { ...currentPrefs };
+    newPrefs.subStats.splice(idx, 1);
+    if (newPrefs.subStats.length > 0) newPrefs.subStats[newPrefs.subStats.length - 1].operator = null;
+    onUpdateBuildPreferences(newPrefs);
+  };
+
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-content relic-editor" onClick={e => e.stopPropagation()}>
@@ -63,8 +115,15 @@ export function RelicEditorModal({
           <h2>Edit {slot.charAt(0).toUpperCase() + slot.slice(1)}</h2>
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
+
+        <div className="modal-tabs">
+          <button className={`tab-btn ${activeTab === 'equip' ? 'active' : ''}`} onClick={() => setActiveTab('equip')}>Equip Relic</button>
+          <button className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`} onClick={() => setActiveTab('preferences')}>Build Preferences</button>
+        </div>
         
         <div className="relic-editor-body">
+          {activeTab === 'equip' ? (
+            <>
           <div className="form-group">
             <label>Relic Set</label>
             <select 
@@ -155,10 +214,64 @@ export function RelicEditorModal({
             )}
           </div>
 
+          </>
+          ) : (
+            <div className="preferences-tab">
+              <p className="tab-description">Define the ideal stats you want to roll for this character.</p>
+              
+              {(slot !== 'head' && slot !== 'hands') && (
+                <div className="pref-section">
+                  <h3>Preferred Main Stat ({slot.charAt(0).toUpperCase() + slot.slice(1)})</h3>
+                  <div className="pref-chain">
+                    {currentPrefs.mainStats[slot].map((pref, idx) => (
+                      <div key={idx} className="pref-item">
+                        <select value={pref.stat} onChange={e => updateMainStatPref(idx, { stat: e.target.value })}>
+                          {validMainStats[slot].map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                        {idx < currentPrefs.mainStats[slot].length - 1 ? (
+                          <select className="operator-select" value={pref.operator || '>'} onChange={e => updateMainStatPref(idx, { operator: e.target.value })}>
+                            <option value=">">&gt;</option>
+                            <option value=">=">&ge;</option>
+                            <option value="OR">OR</option>
+                          </select>
+                        ) : (
+                          <button className="remove-pref-btn" onClick={() => removeMainStatPref(idx)}>✕</button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  <button className="add-pref-btn" onClick={addMainStatPref}>+ Add Priority</button>
+                </div>
+              )}
+
+              <div className="pref-section">
+                <h3>Preferred Substats (Global)</h3>
+                <div className="pref-chain">
+                  {currentPrefs.subStats.map((pref, idx) => (
+                    <div key={idx} className="pref-item">
+                      <select value={pref.stat} onChange={e => updateSubStatPref(idx, { stat: e.target.value })}>
+                        {allSubStats.map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                      {idx < currentPrefs.subStats.length - 1 ? (
+                        <select className="operator-select" value={pref.operator || '>'} onChange={e => updateSubStatPref(idx, { operator: e.target.value })}>
+                          <option value=">">&gt;</option>
+                          <option value=">=">&ge;</option>
+                          <option value="OR">OR</option>
+                        </select>
+                      ) : (
+                        <button className="remove-pref-btn" onClick={() => removeSubStatPref(idx)}>✕</button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button className="add-pref-btn" onClick={addSubStatPref}>+ Add Priority</button>
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="modal-footer">
-          <button className="secondary-action danger" onClick={onRemove}>Un-equip Relic</button>
+          {activeTab === 'equip' && <button className="secondary-action danger" onClick={onRemove}>Un-equip Relic</button>}
           <button className="primary-action" onClick={onClose}>Done</button>
         </div>
       </div>

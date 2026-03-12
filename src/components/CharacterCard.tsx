@@ -112,6 +112,46 @@ export function CharacterCard({
             })}
           </div>
         </div>
+
+        {char.buildPreferences && (char.buildPreferences.subStats.length > 0 || ['body', 'feet', 'sphere', 'rope'].some(s => char.buildPreferences?.mainStats[s as keyof typeof char.buildPreferences.mainStats]?.length > 0)) && (
+          <div className="progress-section build-prefs-display">
+            <div className="section-header">Target Build</div>
+            
+            <div className="prefs-display-grid">
+              {(['body', 'feet', 'sphere', 'rope'] as const).map(slot => {
+                const prefs = char.buildPreferences?.mainStats[slot];
+                if (!prefs || prefs.length === 0) return null;
+                return (
+                  <div key={slot} className="pref-display-row">
+                    <span className="pref-display-label">{slot.charAt(0).toUpperCase() + slot.slice(1)}</span>
+                    <div className="pref-display-chain">
+                      {prefs.map((p, i) => (
+                        <span key={i}>
+                          <span className="pref-stat-badge">{p.stat}</span>
+                          {p.operator && <span className="pref-operator-badge">{p.operator === '>=' ? '≥' : p.operator}</span>}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+
+              {char.buildPreferences?.subStats.length > 0 && (
+                <div className="pref-display-row">
+                  <span className="pref-display-label">Subs</span>
+                  <div className="pref-display-chain">
+                    {char.buildPreferences.subStats.map((p, i) => (
+                      <span key={i}>
+                        <span className="pref-stat-badge">{p.stat}</span>
+                        {p.operator && <span className="pref-operator-badge">{p.operator === '>=' ? '≥' : p.operator}</span>}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

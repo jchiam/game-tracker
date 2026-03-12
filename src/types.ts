@@ -14,4 +14,13 @@ export interface TrackedCharacter extends Character {
     sphere: EquippedRelic | null;
     rope: EquippedRelic | null;
   };
+  buildPreferences: {
+    mainStats: {
+      body: { stat: string; operator: string | null; orderIndex: number }[];
+      feet: { stat: string; operator: string | null; orderIndex: number }[];
+      sphere: { stat: string; operator: string | null; orderIndex: number }[];
+      rope: { stat: string; operator: string | null; orderIndex: number }[];
+    };
+    subStats: { stat: string; operator: string | null; orderIndex: number }[];
+  }
 }

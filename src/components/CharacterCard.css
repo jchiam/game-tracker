@@ -280,3 +280,56 @@
   text-shadow: 0 0 8px var(--color-primary-glow);
   box-shadow: 0 0 8px var(--color-primary-glow) inset;
 }
+
+/* Build Preferences Display */
+.build-prefs-display {
+  margin-top: -4px;
+}
+
+.prefs-display-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: rgba(0,0,0,0.1);
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid rgba(255,255,255,0.02);
+}
+
+.pref-display-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.pref-display-label {
+  font-size: 0.75rem;
+  color: var(--color-text-dim);
+  text-transform: uppercase;
+  min-width: 48px;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.pref-display-chain {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+
+.pref-stat-badge {
+  font-size: 0.75rem;
+  background: rgba(255,255,255,0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--color-text);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.pref-operator-badge {
+  font-size: 0.75rem;
+  color: var(--color-primary);
+  font-weight: bold;
+  opacity: 0.8;
+}

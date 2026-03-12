@@ -137,7 +137,9 @@ function App() {
           .from('tracked_characters')
           .select(`
             id, character_id, level, traces_attained, is_favorited,
-            equipped_relics ( id, slot, set_id, main_stat, relic_substats ( stat_type, stat_value ) )
+            equipped_relics ( id, slot, set_id, main_stat, relic_substats ( stat_type, stat_value ) ),
+            build_preference_main_stats ( id, slot, stat, operator_to_next, order_index ),
+            build_preference_sub_stats ( id, stat, operator_to_next, order_index )
           `)
           .eq('profile_id', session.user.id);
 
@@ -160,13 +162,33 @@ function App() {
               };
             }
 
+            const rawMainPrefs = row.build_preference_main_stats || [];
+            const rawSubPrefs = row.build_preference_sub_stats || [];
+
+            const prefs = {
+              mainStats: { body: [], feet: [], sphere: [], rope: [] } as Record<string, any>,
+              subStats: [] as any[]
+            };
+
+            ['body', 'feet', 'sphere', 'rope'].forEach(part => {
+              prefs.mainStats[part] = rawMainPrefs
+                .filter((p: any) => p.slot === part)
+                .sort((a: any, b: any) => a.order_index - b.order_index)
+                .map((p: any) => ({ stat: p.stat, operator: p.operator_to_next, orderIndex: p.order_index }));
+            });
+
+            prefs.subStats = rawSubPrefs
+              .sort((a: any, b: any) => a.order_index - b.order_index)
+              .map((p: any) => ({ stat: p.stat, operator: p.operator_to_next, orderIndex: p.order_index }));
+
             return {
               ...baseChar,
               dbId: row.id,
               isFavorited: !!row.is_favorited,
               level: row.level,
               tracesAttained: row.traces_attained,
-              relics: structuredRelics
+              relics: structuredRelics,
+              buildPreferences: prefs as any
             };
           }).filter(Boolean) as TrackedCharacter[];
 
@@ -263,7 +285,11 @@ function App() {
       isFavorited: false,
       level: 1,
       tracesAttained: false,
-      relics: defaultRelics
+      relics: defaultRelics,
+      buildPreferences: {
+        mainStats: { body: [], feet: [], sphere: [], rope: [] },
+        subStats: []
+      }
     };
 
     setTrackedCharacters(prev => [...prev, newChar]);
@@ -367,6 +393,45 @@ function App() {
     const char = trackedCharacters.find(c => c.id === charId);
     if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
       await supabase.from('equipped_relics').delete().match({ tracked_character_id: char.dbId, slot: slot });
+    }
+  };
+
+  const saveBuildPreferences = async (charId: string, newPreferences: TrackedCharacter['buildPreferences']) => {
+    setTrackedCharacters(prev => prev.map(c => c.id === charId ? { ...c, buildPreferences: newPreferences } : c));
+    
+    const char = trackedCharacters.find(c => c.id === charId);
+    if (!char?.dbId || !import.meta.env.VITE_SUPABASE_URL) return;
+
+    await supabase.from('build_preference_main_stats').delete().eq('tracked_character_id', char.dbId);
+    await supabase.from('build_preference_sub_stats').delete().eq('tracked_character_id', char.dbId);
+
+    const mainInserts: any[] = [];
+    (['body', 'feet', 'sphere', 'rope'] as const).forEach(slot => {
+      newPreferences.mainStats[slot].forEach((pref, idx) => {
+        mainInserts.push({
+          tracked_character_id: char.dbId,
+          slot: slot,
+          stat: pref.stat,
+          operator_to_next: pref.operator,
+          order_index: idx
+        });
+      });
+    });
+
+    const subInserts = newPreferences.subStats.map((pref, idx) => ({
+      tracked_character_id: char.dbId,
+      stat: pref.stat,
+      operator_to_next: pref.operator,
+      order_index: idx
+    }));
+
+    if (mainInserts.length > 0) {
+      const { error: mErr } = await supabase.from('build_preference_main_stats').insert(mainInserts);
+      if (mErr) console.error("Error saving main stats prefs:", mErr);
+    }
+    if (subInserts.length > 0) {
+      const { error: sErr } = await supabase.from('build_preference_sub_stats').insert(subInserts);
+      if (sErr) console.error("Error saving sub stats prefs:", sErr);
     }
   };
 
@@ -505,6 +570,7 @@ function App() {
             emptyRelic={emptyRelic}
             onSave={saveRelicData}
             onRemove={removeRelicData}
+            onUpdateBuildPreferences={(newPrefs) => saveBuildPreferences(char.id, newPrefs)}
             onClose={() => setEditingRelic(null)}
           />
         );
