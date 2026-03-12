@@ -1,38 +1,152 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import './App.css';
 import { ALL_CHARACTERS, type Character } from './data/characters';
 import { type EquippedRelic, type RelicSet } from './data/relics';
 import { ALL_RELIC_SETS } from './data/relic_sets';
 import { type TrackedCharacter } from './types';
+import { supabase } from './lib/supabase';
 import { CharacterCard } from './components/CharacterCard';
 import { RelicEditorModal } from './components/RelicEditorModal';
 import { AddCharacterModal } from './components/AddCharacterModal';
 
 export const emptyRelic: EquippedRelic = { setId: null, mainStat: null, subStats: [] };
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
-const mockMaxedRelics = { 
-  head: { setId: '101', mainStat: 'HP', subStats: [{type: 'CRIT Rate', value: '3.2%'}, {type: 'SPD', value: '2'}] }, 
-  hands: { setId: '101', mainStat: 'ATK', subStats: [{type: 'CRIT DMG', value: '6.4%'}, {type: 'ATK%', value: '4.3%'}] }, 
-  body: { setId: '101', mainStat: 'CRIT Rate', subStats: [{type: 'CRIT DMG', value: '12.9%'}, {type: 'SPD', value: '4'}] }, 
-  feet: { setId: '101', mainStat: 'SPD', subStats: [{type: 'ATK%', value: '8.6%'}, {type: 'Break Effect', value: '5.8%'}] }, 
-  sphere: { setId: '301', mainStat: 'Lightning DMG Boost', subStats: [{type: 'CRIT Rate', value: '2.9%'}, {type: 'ATK', value: '19'}] }, 
-  rope: { setId: '301', mainStat: 'ATK%', subStats: [{type: 'CRIT DMG', value: '11.6%'}, {type: 'SPD', value: '2'}] } 
-};
 
 function App() {
   const [availableCharacters, setAvailableCharacters] = useState<Character[]>(ALL_CHARACTERS);
   const [availableRelicSets, setAvailableRelicSets] = useState<RelicSet[]>(ALL_RELIC_SETS);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const [trackedCharacters, setTrackedCharacters] = useState<TrackedCharacter[]>([
-    { ...ALL_CHARACTERS.find(c => c.id === 'acheron')!, level: 80, tracesAttained: true, relics: mockMaxedRelics },
-    { ...ALL_CHARACTERS.find(c => c.id === 'aventurine')!, level: 80, tracesAttained: true, relics: mockMaxedRelics },
-    { ...ALL_CHARACTERS.find(c => c.id === 'firefly')!, level: 80, tracesAttained: true, relics: mockMaxedRelics },
-    { ...ALL_CHARACTERS.find(c => c.id === 'ruan_mei')!, level: 80, tracesAttained: true, relics: mockMaxedRelics },
-  ]);
+  const [trackedCharacters, setTrackedCharacters] = useState<TrackedCharacter[]>([]);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRelic, setEditingRelic] = useState<{charId: string, slot: keyof TrackedCharacter['relics']} | null>(null);
+
+  const pendingUpdates = useRef<Record<string, any>>({});
+  const updateTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const pendingRelicUpdates = useRef<Record<string, { dbId: string, slot: string, relicData: EquippedRelic }>>({});
+  const relicUpdateTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  const queueDBUpdate = (dbId: string, updates: any) => {
+    if (!import.meta.env.VITE_SUPABASE_URL) return;
+    
+    pendingUpdates.current[dbId] = { ...pendingUpdates.current[dbId], ...updates };
+    
+    if (updateTimeouts.current[dbId]) {
+      clearTimeout(updateTimeouts.current[dbId]);
+    }
+    
+    updateTimeouts.current[dbId] = setTimeout(async () => {
+      const payload = pendingUpdates.current[dbId];
+      if (!payload) return;
+      
+      delete pendingUpdates.current[dbId];
+      delete updateTimeouts.current[dbId];
+      
+      const { error } = await supabase.from('tracked_characters').update(payload).eq('id', dbId);
+      if (error) console.error("Debounced DB Update Failed:", error);
+    }, 1000);
+  };
+
+  const queueRelicDBUpdate = (dbId: string, slot: string, relicData: EquippedRelic) => {
+    if (!import.meta.env.VITE_SUPABASE_URL) return;
+    
+    const key = `${dbId}-${slot}`;
+    pendingRelicUpdates.current[key] = { dbId, slot, relicData };
+    
+    if (relicUpdateTimeouts.current[key]) {
+      clearTimeout(relicUpdateTimeouts.current[key]);
+    }
+    
+    relicUpdateTimeouts.current[key] = setTimeout(async () => {
+      const payload = pendingRelicUpdates.current[key];
+      if (!payload) return;
+      
+      delete pendingRelicUpdates.current[key];
+      delete relicUpdateTimeouts.current[key];
+      
+      const { data: relicRow, error: relicErr } = await supabase.from('equipped_relics').upsert({
+        tracked_character_id: payload.dbId,
+        slot: payload.slot,
+        set_id: payload.relicData.setId,
+        main_stat: payload.relicData.mainStat
+      }, { onConflict: 'tracked_character_id,slot' }).select('id').single();
+      
+      if (relicRow && !relicErr) {
+        await supabase.from('relic_substats').delete().eq('relic_id', relicRow.id);
+        
+        if (payload.relicData.subStats.length > 0) {
+          const subInserts = payload.relicData.subStats.map(s => ({
+            relic_id: relicRow.id,
+            stat_type: s.type,
+            stat_value: s.value
+          }));
+          await supabase.from('relic_substats').insert(subInserts);
+        }
+      } else {
+        console.error("Relic debounced Upsert Error", relicErr);
+      }
+    }, 1000);
+  };
+
+  // Load state from DB once on mount
+  useState(() => {
+    const loadData = async () => {
+      try {
+        if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
+          console.warn("Supabase not configured. Using local empty roster.");
+          setIsInitialLoad(false);
+          return;
+        }
+
+        const { data: dbData, error } = await supabase
+          .from('tracked_characters')
+          .select(`
+            id, character_id, level, traces_attained,
+            equipped_relics ( id, slot, set_id, main_stat, relic_substats ( stat_type, stat_value ) )
+          `)
+          .eq('profile_id', 'default-user');
+
+        if (error) {
+          console.error('Error fetching data:', error);
+        } else if (dbData && dbData.length > 0) {
+          // Rebuild full roster objects merging dynamic API fetched characters + db tracking values
+          const rebuiltRoster: TrackedCharacter[] = dbData.map((row: any) => {
+            const baseChar = availableCharacters.find(c => c.id === row.character_id) || ALL_CHARACTERS.find(c => c.id === row.character_id);
+            if (!baseChar) return null;
+
+            const structuredRelics: any = { ...defaultRelics };
+            for (const r of row.equipped_relics || []) {
+              structuredRelics[r.slot] = {
+                setId: r.set_id,
+                mainStat: r.main_stat,
+                subStats: (r.relic_substats || []).map((sub: any) => ({ type: sub.stat_type, value: sub.stat_value }))
+              };
+            }
+
+            return {
+              ...baseChar,
+              dbId: row.id,
+              level: row.level,
+              tracesAttained: row.traces_attained,
+              relics: structuredRelics
+            };
+          }).filter(Boolean) as TrackedCharacter[];
+          
+          setTrackedCharacters(rebuiltRoster);
+        }
+      } catch(e) {
+        console.error(e);
+      } finally {
+        setIsInitialLoad(false);
+      }
+    };
+    loadData();
+  });
+
+  // Removed global debounced saver; handlers now sync state directly.
 
   const fetchLatestCharacters = async () => {
     setIsUpdating(true);
@@ -100,64 +214,110 @@ function App() {
     }
   };
 
-  const addCharacter = (char: Character) => {
-    if (!trackedCharacters.some(c => c.id === char.id)) {
-      setTrackedCharacters([...trackedCharacters, { 
-        ...char, 
-        level: 1, 
-        tracesAttained: false, 
-        relics: defaultRelics 
-      }]);
+  const addCharacter = async (char: Character) => {
+    if (trackedCharacters.some(c => c.id === char.id)) {
+      setIsModalOpen(false);
+      return;
     }
+
+    const newChar: TrackedCharacter = { 
+      ...char, 
+      level: 1, 
+      tracesAttained: false, 
+      relics: defaultRelics 
+    };
+
+    setTrackedCharacters(prev => [...prev, newChar]);
     setIsModalOpen(false);
+
+    if (import.meta.env.VITE_SUPABASE_URL) {
+      await supabase.from('user_profiles').upsert({ id: 'default-user', updated_at: new Date().toISOString() });
+      const { data, error } = await supabase.from('tracked_characters').insert({
+        profile_id: 'default-user',
+        character_id: char.id,
+        level: 1,
+        traces_attained: false
+      }).select('id').single();
+
+      if (data) {
+        setTrackedCharacters(prev => prev.map(c => c.id === char.id ? { ...c, dbId: data.id } : c));
+      } else {
+        console.error("DB Insert Failed:", error);
+      }
+    }
   };
 
-  const removeCharacter = (id: string, e: React.MouseEvent) => {
+  const removeCharacter = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    setTrackedCharacters(trackedCharacters.filter(c => c.id !== id));
+    const charToRemove = trackedCharacters.find(c => c.id === id);
+    setTrackedCharacters(prev => prev.filter(c => c.id !== id));
+    
+    if (charToRemove?.dbId && import.meta.env.VITE_SUPABASE_URL) {
+      await supabase.from('tracked_characters').delete().eq('id', charToRemove.dbId);
+    }
   };
 
-  const updateCharacterLevel = (id: string, level: number) => {
+  const updateCharacterLevel = async (id: string, level: number) => {
+    const validLevel = Math.min(80, Math.max(1, level));
     setTrackedCharacters(prev => prev.map(c => 
-      c.id === id ? { ...c, level: Math.min(80, Math.max(1, level)) } : c
+      c.id === id ? { ...c, level: validLevel } : c
     ));
+    
+    // Fire db update in background with debounce
+    const char = trackedCharacters.find(c => c.id === id);
+    if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
+      queueDBUpdate(char.dbId, { level: validLevel });
+    }
   };
 
-  const toggleCharacterTraces = (id: string, value: boolean) => {
+  const toggleCharacterTraces = async (id: string, value: boolean) => {
     setTrackedCharacters(prev => prev.map(c => 
       c.id === id ? { ...c, tracesAttained: value } : c
     ));
+
+    const char = trackedCharacters.find(c => c.id === id);
+    if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
+      queueDBUpdate(char.dbId, { traces_attained: value });
+    }
   };
 
   const toggleCharacterRelic = (id: string, part: keyof TrackedCharacter['relics']) => {
     setEditingRelic({ charId: id, slot: part });
   };
 
-  const saveRelicData = (relicData: EquippedRelic) => {
+  const saveRelicData = async (relicData: EquippedRelic) => {
     if (!editingRelic) return;
+    const { charId, slot } = editingRelic;
+    
     setTrackedCharacters(prev => prev.map(c => {
-      if (c.id === editingRelic.charId) {
-        return {
-          ...c,
-          relics: { ...c.relics, [editingRelic.slot]: relicData }
-        };
+      if (c.id === charId) {
+        return { ...c, relics: { ...c.relics, [slot]: relicData } };
       }
       return c;
     }));
+    
+    const char = trackedCharacters.find(c => c.id === charId);
+    if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
+      queueRelicDBUpdate(char.dbId, slot, relicData);
+    }
   };
 
-  const removeRelicData = () => {
+  const removeRelicData = async () => {
     if (!editingRelic) return;
+    const { charId, slot } = editingRelic;
+    
     setTrackedCharacters(prev => prev.map(c => {
-      if (c.id === editingRelic.charId) {
-        return {
-          ...c,
-          relics: { ...c.relics, [editingRelic.slot]: emptyRelic }
-        };
+      if (c.id === charId) {
+        return { ...c, relics: { ...c.relics, [slot]: emptyRelic } };
       }
       return c;
     }));
     setEditingRelic(null);
+    
+    const char = trackedCharacters.find(c => c.id === charId);
+    if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
+      await supabase.from('equipped_relics').delete().match({ tracked_character_id: char.dbId, slot: slot });
+    }
   };
 
   return (
@@ -183,22 +343,26 @@ function App() {
         </header>
 
         <section className="roster-grid">
-          {trackedCharacters.map(char => (
-            <CharacterCard 
-              key={char.id}
-              char={char}
-              availableRelicSets={availableRelicSets}
-              onRemove={removeCharacter}
-              onUpdateLevel={updateCharacterLevel}
-              onToggleTraces={toggleCharacterTraces}
-              onToggleRelic={toggleCharacterRelic}
-            />
-          ))}
-          
-          {trackedCharacters.length === 0 && (
+          {isInitialLoad && import.meta.env.VITE_SUPABASE_URL ? (
+            <div className="empty-state">
+              <p>Loading database sync...</p>
+            </div>
+          ) : trackedCharacters.length === 0 ? (
             <div className="empty-state">
               <p>No characters tracked yet. Click "Add Character" to begin!</p>
             </div>
+          ) : (
+            trackedCharacters.map(char => (
+              <CharacterCard 
+                key={char.id}
+                char={char}
+                availableRelicSets={availableRelicSets}
+                onRemove={removeCharacter}
+                onUpdateLevel={updateCharacterLevel}
+                onToggleTraces={toggleCharacterTraces}
+                onToggleRelic={toggleCharacterRelic}
+              />
+            ))
           )}
         </section>
       </main>
