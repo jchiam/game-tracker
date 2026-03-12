@@ -207,9 +207,15 @@
   border: none;
   color: var(--color-text-secondary);
   font-size: 1rem;
-  padding: 0 4px;
+  line-height: 1;
+  padding: 0;
+  width: 28px;
+  height: 28px;
   min-width: unset;
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .remove-btn:hover {
