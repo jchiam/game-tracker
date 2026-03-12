@@ -118,3 +118,20 @@
   border-color: #ff4d4f;
   box-shadow: 0 0 10px rgba(255, 77, 79, 0.3);
 }
+
+@media (max-width: 600px) {
+  .relic-editor-body {
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+    max-height: 60vh;
+  }
+  
+  .substat-row {
+    grid-template-columns: 1fr 1fr auto;
+  }
+  
+  .relic-editor-body select, .relic-editor-body input {
+    padding: 8px 10px;
+    font-size: 0.9rem;
+  }
+}

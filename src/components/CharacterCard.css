@@ -207,3 +207,25 @@
   from { opacity: 0; transform: translateY(20px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+@media (max-width: 480px) {
+  .card-header {
+    height: 200px;
+  }
+  
+  .character-name {
+    font-size: 1.25rem;
+  }
+  
+  .relics-grid {
+    gap: 6px;
+  }
+  
+  .relic-slot {
+    border-radius: 6px;
+  }
+  
+  .card-body {
+    padding: var(--spacing-md);
+  }
+}

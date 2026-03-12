@@ -131,3 +131,50 @@
   color: var(--color-text-secondary);
   font-size: 1.1rem;
 }
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+  }
+
+  .nav-auth {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .title {
+    font-size: 2.5rem;
+  }
+  
+  .hero {
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+    padding: 0 var(--spacing-md);
+  }
+
+  .action-group {
+    flex-direction: column;
+    padding: 0 var(--spacing-md);
+  }
+  
+  .action-group button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .main-content {
+    padding: var(--spacing-md);
+  }
+  
+  .empty-state.auth-gate {
+    margin: 1rem;
+    padding: 2rem 1.5rem;
+  }
+}
