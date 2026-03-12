@@ -15,6 +15,25 @@ Here is a breakdown of the chosen technologies:
 
 To run the project locally:
 
+1. Create a `.env.local` file at the root of the project with your Supabase credentials to enable the persistent database (you must create a Supabase project first):
+```
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+2. Link your local codebase to your remote Supabase project and push the initial database schema:
+```bash
+# Login to Supabase CLI (this will open a browser window)
+npx supabase login
+
+# Link this folder to your Supabase project (find the ID in your Supabase project URL dashboard)
+npm run db:link -- --project-ref your_project_id
+
+# Push the migration schema up to your remote database
+npm run db:push
+```
+
+3. Install and run frontend:
 ```bash
 # Install dependencies
 npm install
@@ -31,3 +50,6 @@ This project is readily deployable to Vercel. You can either import it directly 
 npm i -g vercel
 vercel
 ```
+
+**Important Deployment Step for Vercel:**
+When setting up the project on Vercel, you must configure the exact same Environment Variables (`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`) in the Vercel dashboard settings under the project's **Environment Variables** tab so that the production build can communicate with your Supabase Postgres database.
