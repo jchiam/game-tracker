@@ -20,6 +20,7 @@
 
 .brand-icon {
   color: var(--color-primary);
+  -webkit-text-fill-color: var(--color-primary);
   font-size: 1.2rem;
   margin-right: var(--spacing-sm);
   filter: drop-shadow(0 0 5px var(--color-primary-glow));
