@@ -24,7 +24,7 @@ function App() {
   const [searchTerm, setSearchTerm] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingRelic, setEditingRelic] = useState<{charId: string, slot: keyof TrackedCharacter['relics']} | null>(null);
+  const [editingRelic, setEditingRelic] = useState<{ charId: string, slot: keyof TrackedCharacter['relics'] } | null>(null);
 
   const [session, setSession] = useState<Session | null>(null);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
@@ -37,20 +37,20 @@ function App() {
 
   const queueDBUpdate = (dbId: string, updates: any) => {
     if (!import.meta.env.VITE_SUPABASE_URL) return;
-    
+
     pendingUpdates.current[dbId] = { ...pendingUpdates.current[dbId], ...updates };
-    
+
     if (updateTimeouts.current[dbId]) {
       clearTimeout(updateTimeouts.current[dbId]);
     }
-    
+
     updateTimeouts.current[dbId] = setTimeout(async () => {
       const payload = pendingUpdates.current[dbId];
       if (!payload) return;
-      
+
       delete pendingUpdates.current[dbId];
       delete updateTimeouts.current[dbId];
-      
+
       const { error } = await supabase.from('tracked_characters').update(payload).eq('id', dbId);
       if (error) console.error("Debounced DB Update Failed:", error);
     }, 1000);
@@ -58,31 +58,31 @@ function App() {
 
   const queueRelicDBUpdate = (dbId: string, slot: string, relicData: EquippedRelic) => {
     if (!import.meta.env.VITE_SUPABASE_URL) return;
-    
+
     const key = `${dbId}-${slot}`;
     pendingRelicUpdates.current[key] = { dbId, slot, relicData };
-    
+
     if (relicUpdateTimeouts.current[key]) {
       clearTimeout(relicUpdateTimeouts.current[key]);
     }
-    
+
     relicUpdateTimeouts.current[key] = setTimeout(async () => {
       const payload = pendingRelicUpdates.current[key];
       if (!payload) return;
-      
+
       delete pendingRelicUpdates.current[key];
       delete relicUpdateTimeouts.current[key];
-      
+
       const { data: relicRow, error: relicErr } = await supabase.from('equipped_relics').upsert({
         tracked_character_id: payload.dbId,
         slot: payload.slot,
         set_id: payload.relicData.setId,
         main_stat: payload.relicData.mainStat
       }, { onConflict: 'tracked_character_id,slot' }).select('id').single();
-      
+
       if (relicRow && !relicErr) {
         await supabase.from('relic_substats').delete().eq('relic_id', relicRow.id);
-        
+
         if (payload.relicData.subStats.length > 0) {
           const subInserts = payload.relicData.subStats.map(s => ({
             relic_id: relicRow.id,
@@ -117,7 +117,7 @@ function App() {
   // Load state from DB keyed by User session
   useEffect(() => {
     if (isAuthLoading) return;
-    
+
     if (!session?.user) {
       setTrackedCharacters([]);
       setIsInitialLoad(false);
@@ -136,7 +136,7 @@ function App() {
         const { data: dbData, error } = await supabase
           .from('tracked_characters')
           .select(`
-            id, character_id, level, traces_attained,
+            id, character_id, level, traces_attained, is_favorited,
             equipped_relics ( id, slot, set_id, main_stat, relic_substats ( stat_type, stat_value ) )
           `)
           .eq('profile_id', session.user.id);
@@ -163,17 +163,18 @@ function App() {
             return {
               ...baseChar,
               dbId: row.id,
+              isFavorited: !!row.is_favorited,
               level: row.level,
               tracesAttained: row.traces_attained,
               relics: structuredRelics
             };
           }).filter(Boolean) as TrackedCharacter[];
-          
+
           setTrackedCharacters(rebuiltRoster);
         } else {
           setTrackedCharacters([]);
         }
-      } catch(e) {
+      } catch (e) {
         console.error(e);
       } finally {
         if (isMounted) setIsInitialLoad(false);
@@ -191,16 +192,16 @@ function App() {
     try {
       const charResponse = await fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/characters.json');
       const relicResponse = await fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/relic_sets.json');
-      
+
       if (!charResponse.ok || !relicResponse.ok) throw new Error('Failed to fetch data');
-      
+
       const charData = await charResponse.json();
       const relicData = await relicResponse.json();
-      
+
       const newCharacters: Character[] = [];
       const newRelics: RelicSet[] = [];
       const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/';
-      
+
       for (const [id, charInfo] of Object.entries(charData)) {
         if (!charInfo || typeof charInfo !== 'object') continue;
         const info = charInfo as any;
@@ -221,7 +222,7 @@ function App() {
           icon: `${IMAGE_BASE_URL}${info.icon}`
         });
       }
-      
+
       if (newCharacters.length > 0) {
         setAvailableCharacters(newCharacters);
         setTrackedCharacters(prev => prev.map(tc => {
@@ -229,7 +230,7 @@ function App() {
           if (updatedChar) {
             return {
               ...tc,
-              id: updatedChar.id, 
+              id: updatedChar.id,
               imageUrl: updatedChar.imageUrl,
               element: updatedChar.element
             };
@@ -242,7 +243,7 @@ function App() {
         setAvailableRelicSets(newRelics);
       }
 
-    } catch (error) { 
+    } catch (error) {
       console.error('Error updating data:', error);
       alert('Failed to connect to update server.');
     } finally {
@@ -257,11 +258,12 @@ function App() {
       return;
     }
 
-    const newChar: TrackedCharacter = { 
-      ...char, 
-      level: 1, 
-      tracesAttained: false, 
-      relics: defaultRelics 
+    const newChar: TrackedCharacter = {
+      ...char,
+      isFavorited: false,
+      level: 1,
+      tracesAttained: false,
+      relics: defaultRelics
     };
 
     setTrackedCharacters(prev => [...prev, newChar]);
@@ -288,7 +290,7 @@ function App() {
     e.stopPropagation();
     const charToRemove = trackedCharacters.find(c => c.id === id);
     setTrackedCharacters(prev => prev.filter(c => c.id !== id));
-    
+
     if (charToRemove?.dbId && import.meta.env.VITE_SUPABASE_URL) {
       await supabase.from('tracked_characters').delete().eq('id', charToRemove.dbId);
     }
@@ -296,10 +298,10 @@ function App() {
 
   const updateCharacterLevel = async (id: string, level: number) => {
     const validLevel = Math.min(80, Math.max(1, level));
-    setTrackedCharacters(prev => prev.map(c => 
+    setTrackedCharacters(prev => prev.map(c =>
       c.id === id ? { ...c, level: validLevel } : c
     ));
-    
+
     // Fire db update in background with debounce
     const char = trackedCharacters.find(c => c.id === id);
     if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
@@ -308,13 +310,24 @@ function App() {
   };
 
   const toggleCharacterTraces = async (id: string, value: boolean) => {
-    setTrackedCharacters(prev => prev.map(c => 
+    setTrackedCharacters(prev => prev.map(c =>
       c.id === id ? { ...c, tracesAttained: value } : c
     ));
 
     const char = trackedCharacters.find(c => c.id === id);
     if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
       queueDBUpdate(char.dbId, { traces_attained: value });
+    }
+  };
+
+  const toggleFavoriteCharacter = async (id: string, value: boolean) => {
+    setTrackedCharacters(prev => prev.map(c =>
+      c.id === id ? { ...c, isFavorited: value } : c
+    ));
+
+    const char = trackedCharacters.find(c => c.id === id);
+    if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
+      queueDBUpdate(char.dbId, { is_favorited: value });
     }
   };
 
@@ -325,14 +338,14 @@ function App() {
   const saveRelicData = async (relicData: EquippedRelic) => {
     if (!editingRelic) return;
     const { charId, slot } = editingRelic;
-    
+
     setTrackedCharacters(prev => prev.map(c => {
       if (c.id === charId) {
         return { ...c, relics: { ...c.relics, [slot]: relicData } };
       }
       return c;
     }));
-    
+
     const char = trackedCharacters.find(c => c.id === charId);
     if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
       queueRelicDBUpdate(char.dbId, slot, relicData);
@@ -342,7 +355,7 @@ function App() {
   const removeRelicData = async () => {
     if (!editingRelic) return;
     const { charId, slot } = editingRelic;
-    
+
     setTrackedCharacters(prev => prev.map(c => {
       if (c.id === charId) {
         return { ...c, relics: { ...c.relics, [slot]: emptyRelic } };
@@ -350,7 +363,7 @@ function App() {
       return c;
     }));
     setEditingRelic(null);
-    
+
     const char = trackedCharacters.find(c => c.id === charId);
     if (char?.dbId && import.meta.env.VITE_SUPABASE_URL) {
       await supabase.from('equipped_relics').delete().match({ tracked_character_id: char.dbId, slot: slot });
@@ -358,21 +371,28 @@ function App() {
   };
 
   const filteredRoster = useMemo(() => {
-    if (!searchTerm.trim()) return trackedCharacters;
-    
-    const fuse = new Fuse(trackedCharacters, {
-      keys: ['name', 'element'],
-      threshold: 0.3,
+    let result = trackedCharacters;
+
+    if (searchTerm.trim()) {
+      const fuse = new Fuse(trackedCharacters, {
+        keys: ['name', 'element'],
+        threshold: 0.3,
+      });
+      result = fuse.search(searchTerm).map(res => res.item);
+    }
+
+    return [...result].sort((a, b) => {
+      if (a.isFavorited && !b.isFavorited) return -1;
+      if (!a.isFavorited && b.isFavorited) return 1;
+      return a.name.localeCompare(b.name);
     });
-    
-    return fuse.search(searchTerm).map(result => result.item);
   }, [trackedCharacters, searchTerm]);
 
   return (
     <div className="layout">
       <nav className="navbar">
         <div className="nav-brand">
-          <span className="brand-icon">✧</span> Astral Express Tracker Worker
+          <span className="brand-icon">✧</span> Astral Express Tracker
         </div>
         <div className="nav-auth" style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           {session ? (
@@ -423,14 +443,14 @@ function App() {
               <p>Loading database sync...</p>
             </div>
           ) : !session ? (
-            <div className="empty-state auth-gate" style={{ 
-              padding: '3rem 2rem', 
-              display: 'flex', 
-              flexDirection: 'column', 
-              alignItems: 'center', 
-              gap: '1.5rem', 
-              background: 'var(--color-bg-elevated)', 
-              borderRadius: 'var(--radius-lg)', 
+            <div className="empty-state auth-gate" style={{
+              padding: '3rem 2rem',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: '1.5rem',
+              background: 'var(--color-bg-elevated)',
+              borderRadius: 'var(--radius-lg)',
               border: '1px solid var(--color-border)',
               margin: '2rem auto',
               maxWidth: '480px',
@@ -440,9 +460,9 @@ function App() {
               <p style={{ color: 'var(--color-text-dim)', lineHeight: '1.5' }}>
                 Securely sync your character builds, trace tracking, and relics across all your devices using Google Authentication.
               </p>
-              <button 
-                className="primary-action" 
-                style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }} 
+              <button
+                className="primary-action"
+                style={{ width: '100%', padding: '1rem', fontSize: '1.1rem', marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
                 onClick={() => supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } })}
               >
                 Sign In with Google
@@ -458,13 +478,14 @@ function App() {
             </div>
           ) : (
             filteredRoster.map(char => (
-              <CharacterCard 
+              <CharacterCard
                 key={char.id}
                 char={char}
                 availableRelicSets={availableRelicSets}
                 onRemove={removeCharacter}
                 onUpdateLevel={updateCharacterLevel}
                 onToggleTraces={toggleCharacterTraces}
+                onToggleFavorite={toggleFavoriteCharacter}
                 onToggleRelic={toggleCharacterRelic}
               />
             ))

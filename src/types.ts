@@ -3,6 +3,7 @@ import { type EquippedRelic } from './data/relics';
 
 export interface TrackedCharacter extends Character {
   dbId?: string;
+  isFavorited: boolean;
   level: number;
   tracesAttained: boolean;
   relics: {

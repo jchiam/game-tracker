@@ -229,3 +229,44 @@
     padding: var(--spacing-md);
   }
 }
+
+.favorite-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 1.2rem;
+  z-index: 10;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(4px);
+  padding: 0;
+  min-width: unset;
+  line-height: 1;
+}
+
+.favorite-btn::before {
+  display: none;
+}
+
+.favorite-btn:hover {
+  transform: scale(1.1);
+  background: rgba(0,0,0,0.7);
+  box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+.favorite-btn.active {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: rgba(212, 175, 55, 0.15);
+  text-shadow: 0 0 8px var(--color-primary-glow);
+  box-shadow: 0 0 8px var(--color-primary-glow) inset;
+}

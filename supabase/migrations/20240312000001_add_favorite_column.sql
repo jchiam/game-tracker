@@ -1,0 +1,2 @@
+ALTER TABLE tracked_characters 
+ADD COLUMN is_favorited BOOLEAN DEFAULT FALSE NOT NULL;

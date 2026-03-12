@@ -9,6 +9,7 @@ interface CharacterCardProps {
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
   onToggleTraces: (id: string, value: boolean) => void;
+  onToggleFavorite: (id: string, value: boolean) => void;
   onToggleRelic: (id: string, part: keyof TrackedCharacter['relics']) => void;
 }
 
@@ -18,11 +19,19 @@ export function CharacterCard({
   onRemove,
   onUpdateLevel,
   onToggleTraces,
+  onToggleFavorite,
   onToggleRelic,
 }: CharacterCardProps) {
   return (
     <div className="character-card">
       <div className="card-header">
+        <button 
+          className={`favorite-btn ${char.isFavorited ? 'active' : ''}`}
+          onClick={(e) => { e.stopPropagation(); onToggleFavorite(char.id, !char.isFavorited); }}
+          title={char.isFavorited ? "Unfavorite Character" : "Favorite Character"}
+        >
+          {char.isFavorited ? '★' : '☆'}
+        </button>
         <img
           src={char.imageUrl}
           alt={char.name}
