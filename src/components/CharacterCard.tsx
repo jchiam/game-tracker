@@ -1,6 +1,7 @@
 import { type TrackedCharacter } from '../types';
 import { type RelicSet } from '../data/relics';
 import { ConfirmCheckbox } from './ConfirmCheckbox';
+import { calculateRelicScore } from '../utils/relicScoring';
 import './CharacterCard.css';
 
 interface CharacterCardProps {
@@ -22,6 +23,15 @@ export function CharacterCard({
   onToggleFavorite,
   onToggleRelic,
 }: CharacterCardProps) {
+
+  const hasPreferences = (char.buildPreferences?.subStats?.length > 0) || 
+                         (['body', 'feet', 'sphere', 'rope'].some(s => char.buildPreferences?.mainStats[s as keyof typeof char.buildPreferences.mainStats]?.length > 0));
+  const score = hasPreferences ? calculateRelicScore(char) : 0;
+  const showScore = hasPreferences;
+  let tierClass = 'tier-b';
+  if (score >= 80) tierClass = 'tier-s';
+  else if (score >= 50) tierClass = 'tier-a';
+
   return (
     <div className="character-card">
       <div className="card-header">
@@ -42,6 +52,11 @@ export function CharacterCard({
           }}
         />
         <div className="card-header-overlay"></div>
+        {showScore && (
+          <div className={`score-badge ${tierClass}`}>
+            <span>{score.toFixed(1)}%</span>
+          </div>
+        )}
         <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
         <button className="remove-btn" onClick={(e) => onRemove(char.id, e)} title="Remove Character">✕</button>
       </div>

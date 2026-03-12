@@ -11,6 +11,8 @@ import { CharacterCard } from './components/CharacterCard';
 import { RelicEditorModal } from './components/RelicEditorModal';
 import { AddCharacterModal } from './components/AddCharacterModal';
 
+import { calculateRelicScore } from './utils/relicScoring';
+
 export const emptyRelic: EquippedRelic = { setId: null, mainStat: null, subStats: [] };
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
 
@@ -22,6 +24,8 @@ function App() {
 
   const [trackedCharacters, setTrackedCharacters] = useState<TrackedCharacter[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
+  // Sorting selected value for filtering roster
+  const [sortBy, setSortBy] = useState<'SCORE' | 'ALPHA'>('SCORE');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRelic, setEditingRelic] = useState<{ charId: string, slot: keyof TrackedCharacter['relics'] } | null>(null);
@@ -449,9 +453,16 @@ function App() {
     return [...result].sort((a, b) => {
       if (a.isFavorited && !b.isFavorited) return -1;
       if (!a.isFavorited && b.isFavorited) return 1;
+
+      if (sortBy === 'SCORE') {
+        const scoreA = calculateRelicScore(a);
+        const scoreB = calculateRelicScore(b);
+        if (scoreA !== scoreB) return scoreB - scoreA;
+      }
+      
       return a.name.localeCompare(b.name);
     });
-  }, [trackedCharacters, searchTerm]);
+  }, [trackedCharacters, searchTerm, sortBy]);
 
   return (
     <div className="layout">
@@ -486,14 +497,24 @@ function App() {
             )}
           </div>
           {session && trackedCharacters.length > 0 && (
-            <div className="search-bar-container">
+            <div className="search-and-sort-container" style={{ display: 'flex', gap: 'var(--spacing-md)', maxWidth: '600px', margin: 'var(--spacing-lg) auto 0', width: '100%' }}>
               <input
                 type="text"
                 className="roster-search-input"
                 placeholder="Search your roster by name or element..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ flex: 1 }}
               />
+              <select 
+                className="roster-search-input" 
+                style={{ flexBasis: '200px', cursor: 'pointer' }}
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'SCORE' | 'ALPHA')}
+              >
+                <option value="SCORE">Sort by: Relic Score</option>
+                <option value="ALPHA">Sort by: Alphabetical</option>
+              </select>
             </div>
           )}
         </header>
