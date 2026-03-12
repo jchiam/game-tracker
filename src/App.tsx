@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { type Session } from '@supabase/supabase-js';
+import Fuse from 'fuse.js';
 import './App.css';
 import { ALL_CHARACTERS, type Character } from './data/characters';
 import { type EquippedRelic, type RelicSet } from './data/relics';
@@ -20,6 +21,7 @@ function App() {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   const [trackedCharacters, setTrackedCharacters] = useState<TrackedCharacter[]>([]);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRelic, setEditingRelic] = useState<{charId: string, slot: keyof TrackedCharacter['relics']} | null>(null);
@@ -355,6 +357,17 @@ function App() {
     }
   };
 
+  const filteredRoster = useMemo(() => {
+    if (!searchTerm.trim()) return trackedCharacters;
+    
+    const fuse = new Fuse(trackedCharacters, {
+      keys: ['name', 'element'],
+      threshold: 0.3,
+    });
+    
+    return fuse.search(searchTerm).map(result => result.item);
+  }, [trackedCharacters, searchTerm]);
+
   return (
     <div className="layout">
       <nav className="navbar">
@@ -387,6 +400,17 @@ function App() {
               </button>
             )}
           </div>
+          {session && trackedCharacters.length > 0 && (
+            <div className="search-bar-container">
+              <input
+                type="text"
+                className="roster-search-input"
+                placeholder="Search your roster by name or element..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+            </div>
+          )}
         </header>
 
         <section className="roster-grid">
@@ -428,8 +452,12 @@ function App() {
             <div className="empty-state">
               <p>No characters tracked yet. Click "Add Character" to begin!</p>
             </div>
+          ) : filteredRoster.length === 0 ? (
+            <div className="empty-state">
+              <p>No characters match your search.</p>
+            </div>
           ) : (
-            trackedCharacters.map(char => (
+            filteredRoster.map(char => (
               <CharacterCard 
                 key={char.id}
                 char={char}
