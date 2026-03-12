@@ -42,6 +42,15 @@ npm install
 npm run dev
 ```
 
+## Testing
+
+Unit tests run using Vitest.
+To run the tests manually, use:
+```bash
+npm run test
+```
+Tests will automatically run via a Husky `pre-push` hook before your commits are pushed to the repository.
+
 ## Deployment
 
 This project is readily deployable to Vercel. You can either import it directly via the Vercel dashboard or use the Vercel CLI:
