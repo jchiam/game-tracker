@@ -497,24 +497,21 @@ function App() {
             )}
           </div>
           {session && trackedCharacters.length > 0 && (
-            <div className="search-and-sort-container" style={{ display: 'flex', gap: 'var(--spacing-md)', maxWidth: '600px', margin: 'var(--spacing-lg) auto 0', width: '100%' }}>
+            <div className="search-and-sort-container">
               <input
                 type="text"
                 className="roster-search-input"
                 placeholder="Search your roster by name or element..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ flex: 1 }}
               />
-              <select 
-                className="roster-search-input" 
-                style={{ flexBasis: '200px', cursor: 'pointer' }}
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'SCORE' | 'ALPHA')}
+              <button
+                className={`sort-btn ${sortBy === 'SCORE' ? 'active' : ''}`}
+                onClick={() => setSortBy(prev => prev === 'SCORE' ? 'ALPHA' : 'SCORE')}
+                title={sortBy === 'SCORE' ? 'Sorted by Relic Score — click to sort alphabetically' : 'Sorted alphabetically — click to sort by Relic Score'}
               >
-                <option value="SCORE">Sort by: Relic Score</option>
-                <option value="ALPHA">Sort by: Alphabetical</option>
-              </select>
+                {sortBy === 'SCORE' ? '★' : 'A–Z'}
+              </button>
             </div>
           )}
         </header>
