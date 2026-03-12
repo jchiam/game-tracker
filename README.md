@@ -1,6 +1,6 @@
-# Honkai Star Rail Tracker - Boilerplate
+# Game Progress Tracker
 
-A modern, fast, and beautifully designed web application boilerplate to track character upgrades and trace materials in Honkai Star Rail.
+A modern, fast, and beautifully designed web application to track my progress in various games.
 
 ## Tech Stack Choices
 
