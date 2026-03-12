@@ -27,13 +27,19 @@ export function RelicEditorModal({
   const validMainStats: Record<string, string[]> = {
     head: ['HP'],
     hands: ['ATK'],
-    body: ['HP%', 'ATK%', 'DEF%', 'CRIT Rate', 'CRIT DMG', 'Outgoing Healing Boost', 'Effect Hit Rate'],
-    feet: ['HP%', 'ATK%', 'DEF%', 'SPD'],
-    sphere: ['HP%', 'ATK%', 'DEF%', 'Physical DMG Boost', 'Fire DMG Boost', 'Ice DMG Boost', 'Lightning DMG Boost', 'Wind DMG Boost', 'Quantum DMG Boost', 'Imaginary DMG Boost'],
-    rope: ['HP%', 'ATK%', 'DEF%', 'Break Effect', 'Energy Regeneration Rate']
+    body: ['HP%', 'DEF%', 'ATK%', 'CRIT Rate', 'CRIT DMG', 'Effect Hit Rate', 'Outgoing Healing Boost'],
+    feet: ['HP%', 'DEF%', 'ATK%', 'SPD'],
+    sphere: ['HP%', 'DEF%', 'ATK%', 'Physical DMG Boost', 'Fire DMG Boost', 'Ice DMG Boost', 'Lightning DMG Boost', 'Wind DMG Boost', 'Quantum DMG Boost', 'Imaginary DMG Boost'],
+    rope: ['HP%', 'DEF%', 'ATK%', 'Break Effect', 'Energy Regeneration Rate']
   };
 
-  const allSubStats = ['HP', 'ATK', 'DEF', 'HP%', 'ATK%', 'DEF%', 'SPD', 'CRIT Rate', 'CRIT DMG', 'Effect Hit Rate', 'Effect RES', 'Break Effect'];
+  const allSubStats = [
+    'HP', 'HP%', 
+    'DEF', 'DEF%', 
+    'ATK', 'ATK%', 
+    'SPD', 'CRIT Rate', 'CRIT DMG', 
+    'Break Effect', 'Effect Hit Rate', 'Effect RES'
+  ];
 
   const validateAndSave = (updates: Partial<EquippedRelic>) => {
     let newRelic = { ...currentRelic, ...updates };
