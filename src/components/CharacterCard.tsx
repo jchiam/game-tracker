@@ -90,7 +90,7 @@ export function CharacterCard({
                 >
                   {isActive && availableRelicSets.length > 0 ? (() => {
                     const set = availableRelicSets.find(s => s.id === equipped.setId);
-                    if (!set) return <span className="relic-icon">✦</span>;
+                    if (!set) return <span className={`relic-icon ${(relic === 'sphere' || relic === 'rope') ? 'planar' : 'cavern'}`}>{(relic === 'sphere' || relic === 'rope') ? '○' : '⬡'}</span>;
                     const iconUrl = set.icon.startsWith('/') || set.icon.startsWith('http')
                       ? set.icon
                       : `https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/${set.icon}`;
@@ -103,7 +103,9 @@ export function CharacterCard({
                       />
                     );
                   })() : (
-                    <span className="relic-icon">✦</span>
+                    <span className={`relic-icon ${(relic === 'sphere' || relic === 'rope') ? 'planar' : 'cavern'}`}>
+                      {(relic === 'sphere' || relic === 'rope') ? '○' : '⬡'}
+                    </span>
                   )}
                 </div>
               );

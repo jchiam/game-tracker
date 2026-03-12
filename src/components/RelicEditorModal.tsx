@@ -66,7 +66,15 @@ export function RelicEditorModal({
               onChange={e => validateAndSave({ setId: e.target.value })}
             >
               <option value="">-- No Set --</option>
-              {availableRelicSets.map(set => (
+              {availableRelicSets
+                .filter(set => {
+                  if (slot === 'sphere' || slot === 'rope') {
+                    return set.id.startsWith('3');
+                  } else {
+                    return set.id.startsWith('1');
+                  }
+                })
+                .map(set => (
                 <option key={set.id} value={set.id}>{set.name}</option>
               ))}
             </select>

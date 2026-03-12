@@ -159,6 +159,16 @@
   transition: all var(--transition-fast);
 }
 
+.relic-icon.planar {
+  font-size: 1.2rem;
+  color: rgba(212, 175, 55, 0.4);
+}
+
+.relic-icon.cavern {
+  font-size: 1.1rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
 .relic-slot:hover {
   background: rgba(255,255,255,0.1);
 }
