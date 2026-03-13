@@ -59,7 +59,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
             <input
               type="text"
               className="roster-search-input"
-              placeholder="Search your roster by name or element..."
+              placeholder="Search by name, element, or path..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

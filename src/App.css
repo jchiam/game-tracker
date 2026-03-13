@@ -57,7 +57,7 @@
   font-weight: 600;
 }
 
-.element-lightning { color: #d97afe; border: 1px solid rgba(217,122,254,0.3); }
+.element-lightning { color: #d97afe; border: 1px solid rgba(217,122,254,0.55); }
 .element-imaginary { color: #f4d258; border: 1px solid rgba(244,210,88,0.3); }
 .element-fire      { color: #f84f36; border: 1px solid rgba(248,79,54,0.3); }
 .element-ice       { color: #47c7fd; border: 1px solid rgba(71,199,253,0.3); }

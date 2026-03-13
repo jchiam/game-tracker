@@ -62,6 +62,9 @@ export function AddCharacterModal({
                     <span className="char-list-name">{char.name}</span>
                     <div className="char-list-tags">
                       <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
+                      {char.path && (
+                        <span className={`path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}>{char.path}</span>
+                      )}
                     </div>
                   </div>
                 </div>

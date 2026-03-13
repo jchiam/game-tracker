@@ -57,7 +57,12 @@ export function CharacterCard({
             <button className="remove-btn" onClick={(e) => onRemove(char.id, e)} title="Remove Character">✕</button>
           </div>
           <div className="card-overlay-bottom">
-            <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
+            <div className="card-overlay-badges">
+              <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
+              {char.path && (
+                <span className={`path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}>{char.path}</span>
+              )}
+            </div>
             {showScore && (
               <div className={`score-badge ${tierClass}`}>
                 <span>{score.toFixed(1)}%</span>

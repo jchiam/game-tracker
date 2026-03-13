@@ -81,18 +81,30 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   const fetchLatestCharacters = async () => {
     setIsUpdating(true);
     try {
-      const charResponse = await fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/characters.json');
-      const relicResponse = await fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/relic_sets.json');
+      const [charResponse, relicResponse, pathResponse] = await Promise.all([
+        fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/characters.json'),
+        fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/relic_sets.json'),
+        fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/paths.json'),
+      ]);
       if (!charResponse.ok || !relicResponse.ok) throw new Error('Failed to fetch data');
       const charData = await charResponse.json();
       const relicData = await relicResponse.json();
+      // Build path ID → display name map from the remote paths.json
+      const pathMap: Record<string, string> = {};
+      if (pathResponse.ok) {
+        const pathData = await pathResponse.json();
+        for (const [id, info] of Object.entries(pathData)) {
+          if (info && typeof info === 'object') pathMap[id] = (info as any).name || id;
+        }
+      }
       const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/';
       const newCharacters: Character[] = [];
       const newRelics: RelicSet[] = [];
       for (const [id, info] of Object.entries(charData)) {
         if (!info || typeof info !== 'object') continue;
         const i = info as any;
-        newCharacters.push({ id, name: i.name, element: i.element || 'Unknown', imageUrl: `${IMAGE_BASE_URL}${i.icon}` });
+        const pathDisplayName = pathMap[i.path] || i.path || '';
+        newCharacters.push({ id, name: i.name, element: i.element || 'Unknown', path: pathDisplayName, imageUrl: `${IMAGE_BASE_URL}${i.icon}` });
       }
       for (const [id, info] of Object.entries(relicData)) {
         if (!info || typeof info !== 'object') continue;
@@ -103,7 +115,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
         setAvailableCharacters(newCharacters);
         setTrackedCharacters(prev => prev.map(tc => {
           const updated = newCharacters.find(nc => nc.name === tc.name);
-          return updated ? { ...tc, id: updated.id, imageUrl: updated.imageUrl, element: updated.element } : tc;
+          return updated ? { ...tc, id: updated.id, imageUrl: updated.imageUrl, element: updated.element, path: updated.path } : tc;
         }));
       }
       if (newRelics.length > 0) setAvailableRelicSets(newRelics);
@@ -177,7 +189,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   const getFilteredRoster = (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', scoreFor: (c: TrackedCharacter) => number) => {
     let result = trackedCharacters;
     if (searchTerm.trim()) {
-      const fuse = new Fuse(trackedCharacters, { keys: ['name', 'element'], threshold: 0.3 });
+      const fuse = new Fuse(trackedCharacters, { keys: ['name', 'element', 'path'], threshold: 0.3 });
       result = fuse.search(searchTerm).map(r => r.item);
     }
     return [...result].sort((a, b) => {
