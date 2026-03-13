@@ -36,6 +36,7 @@ describe('calculateRelicScore', () => {
     id: 'test',
     name: 'Test Character',
     element: 'Fire',
+    path: 'Destruction',
     imageUrl: '',
     isFavorited: false,
     level: 80,
