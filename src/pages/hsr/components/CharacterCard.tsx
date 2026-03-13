@@ -170,6 +170,12 @@ export function CharacterCard({
                   </div>
                 </div>
               )}
+
+              {char.buildPreferences?.comments && (
+                <div className="pref-display-row build-comments-row">
+                  <div className="pref-comments-text">{char.buildPreferences.comments}</div>
+                </div>
+              )}
             </div>
           </div>
         )}

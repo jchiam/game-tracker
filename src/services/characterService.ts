@@ -14,7 +14,7 @@ export async function loadCharactersFromDB(userId: string): Promise<TrackedChara
   const { data: dbData, error } = await supabase
     .from('tracked_characters')
     .select(`
-      id, character_id, level, traces_attained, is_favorited,
+      id, character_id, level, traces_attained, is_favorited, build_comments,
       equipped_relics ( id, slot, set_id, main_stat, relic_substats ( stat_type, stat_value ) ),
       build_preference_main_stats ( id, slot, stat, operator_to_next, order_index ),
       build_preference_sub_stats ( id, stat, operator_to_next, order_index )
@@ -45,7 +45,8 @@ export async function loadCharactersFromDB(userId: string): Promise<TrackedChara
     const rawSubPrefs = row.build_preference_sub_stats || [];
     const prefs = {
       mainStats: { body: [], feet: [], sphere: [], rope: [] } as Record<string, any>,
-      subStats: [] as any[]
+      subStats: [] as any[],
+      comments: row.build_comments || ''
     };
 
     ['body', 'feet', 'sphere', 'rope'].forEach(part => {
@@ -125,6 +126,9 @@ export async function saveBuildPrefs(dbId: string, prefs: TrackedCharacter['buil
   if (!DB_ENABLED) return;
   await supabase.from('build_preference_main_stats').delete().eq('tracked_character_id', dbId);
   await supabase.from('build_preference_sub_stats').delete().eq('tracked_character_id', dbId);
+  
+  // Update comments on the character record
+  await supabase.from('tracked_characters').update({ build_comments: prefs.comments }).eq('id', dbId);
 
   const mainInserts: any[] = [];
   (['body', 'feet', 'sphere', 'rope'] as const).forEach(slot => {

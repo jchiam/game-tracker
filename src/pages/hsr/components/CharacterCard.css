@@ -397,3 +397,19 @@
   font-weight: bold;
   opacity: 0.8;
 }
+
+.build-comments-row {
+  margin-top: 4px;
+  border-top: 1px dashed rgba(255, 255, 255, 0.1);
+  padding-top: 8px;
+}
+
+.pref-comments-text {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  font-style: italic;
+  overflow-wrap: break-word;
+  width: 100%;
+  opacity: 0.8;
+}

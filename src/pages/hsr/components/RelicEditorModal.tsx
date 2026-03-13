@@ -266,6 +266,19 @@ export function RelicEditorModal({
                 </div>
                 <button className="add-pref-btn" onClick={addSubStatPref}>+ Add Priority</button>
               </div>
+
+              <div className="pref-section">
+                <h3>Build Comments</h3>
+                <textarea 
+                  className="build-comments-textarea"
+                  placeholder="Additional notes about this build..."
+                  value={currentPrefs.comments || ''}
+                  onChange={e => {
+                    const newPrefs = { ...currentPrefs, comments: e.target.value };
+                    onUpdateBuildPreferences(newPrefs);
+                  }}
+                />
+              </div>
             </div>
           )}
         </div>

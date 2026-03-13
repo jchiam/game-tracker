@@ -22,5 +22,6 @@ export interface TrackedCharacter extends Character {
       rope: { stat: string; operator: string | null; orderIndex: number }[];
     };
     subStats: { stat: string; operator: string | null; orderIndex: number }[];
+    comments?: string;
   }
 }
