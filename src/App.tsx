@@ -8,16 +8,8 @@ function App() {
 
   return (
     <div className="layout">
-      <Navbar
-        userEmail={session?.user?.email}
-        onSignIn={signInWithGoogle}
-        onSignOut={signOut}
-      />
-      <HsrPage
-        session={session}
-        isAuthLoading={isAuthLoading}
-        onSignIn={signInWithGoogle}
-      />
+      <Navbar userEmail={session?.user?.email} onSignIn={signInWithGoogle} onSignOut={signOut} />
+      <HsrPage session={session} isAuthLoading={isAuthLoading} onSignIn={signInWithGoogle} />
     </div>
   );
 }

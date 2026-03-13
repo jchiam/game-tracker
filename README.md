@@ -16,12 +16,14 @@ Here is a breakdown of the chosen technologies:
 To run the project locally:
 
 1. Create a `.env.local` file at the root of the project with your Supabase credentials to enable the persistent database (you must create a Supabase project first):
+
 ```
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 2. Link your local codebase to your remote Supabase project and push the initial database schema:
+
 ```bash
 # Login to Supabase CLI (this will open a browser window)
 npx supabase login
@@ -34,6 +36,7 @@ npm run db:push
 ```
 
 3. Install and run frontend:
+
 ```bash
 # Install dependencies
 npm install
@@ -46,9 +49,11 @@ npm run dev
 
 Unit tests run using Vitest.
 To run the tests manually, use:
+
 ```bash
 npm run test
 ```
+
 Tests will automatically run via a Husky `pre-push` hook before your commits are pushed to the repository.
 
 ## Deployment

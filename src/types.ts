@@ -23,5 +23,5 @@ export interface TrackedCharacter extends Character {
     };
     subStats: { stat: string; operator: string | null; orderIndex: number }[];
     comments?: string;
-  }
+  };
 }

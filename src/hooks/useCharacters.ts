@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import Fuse from 'fuse.js';
 import { ALL_CHARACTERS, type Character } from '@/data/characters';
@@ -28,7 +28,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   // Debounce refs for DB writes
   const pendingUpdates = useRef<Record<string, any>>({});
   const updateTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const pendingRelicUpdates = useRef<Record<string, { dbId: string; slot: string; relicData: EquippedRelic }>>({});
+  const pendingRelicUpdates = useRef<
+    Record<string, { dbId: string; slot: string; relicData: EquippedRelic }>
+  >({});
   const relicUpdateTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const queueDBUpdate = (dbId: string, updates: any) => {
@@ -75,16 +77,25 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
         if (isMounted) setIsInitialLoad(false);
       }
     })();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id, isAuthLoading]);
 
   const fetchLatestCharacters = async () => {
     setIsUpdating(true);
     try {
       const [charResponse, relicResponse, pathResponse] = await Promise.all([
-        fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/characters.json'),
-        fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/relic_sets.json'),
-        fetch('https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/paths.json'),
+        fetch(
+          'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/characters.json',
+        ),
+        fetch(
+          'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/relic_sets.json',
+        ),
+        fetch(
+          'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/paths.json',
+        ),
       ]);
       if (!charResponse.ok || !relicResponse.ok) throw new Error('Failed to fetch data');
       const charData = await charResponse.json();
@@ -104,7 +115,13 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
         if (!info || typeof info !== 'object') continue;
         const i = info as any;
         const pathDisplayName = pathMap[i.path] || i.path || '';
-        newCharacters.push({ id, name: i.name, element: i.element || 'Unknown', path: pathDisplayName, imageUrl: `${IMAGE_BASE_URL}${i.icon}` });
+        newCharacters.push({
+          id,
+          name: i.name,
+          element: i.element || 'Unknown',
+          path: pathDisplayName,
+          imageUrl: `${IMAGE_BASE_URL}${i.icon}`,
+        });
       }
       for (const [id, info] of Object.entries(relicData)) {
         if (!info || typeof info !== 'object') continue;
@@ -113,10 +130,20 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       }
       if (newCharacters.length > 0) {
         setAvailableCharacters(newCharacters);
-        setTrackedCharacters(prev => prev.map(tc => {
-          const updated = newCharacters.find(nc => nc.name === tc.name);
-          return updated ? { ...tc, id: updated.id, imageUrl: updated.imageUrl, element: updated.element, path: updated.path } : tc;
-        }));
+        setTrackedCharacters((prev) =>
+          prev.map((tc) => {
+            const updated = newCharacters.find((nc) => nc.name === tc.name);
+            return updated
+              ? {
+                  ...tc,
+                  id: updated.id,
+                  imageUrl: updated.imageUrl,
+                  element: updated.element,
+                  path: updated.path,
+                }
+              : tc;
+          }),
+        );
       }
       if (newRelics.length > 0) setAvailableRelicSets(newRelics);
     } catch (err) {
@@ -128,86 +155,132 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   };
 
   const addCharacter = async (char: Character) => {
-    if (!session) { alert('Please log in first!'); return; }
-    if (trackedCharacters.some(c => c.id === char.id)) return;
+    if (!session) {
+      alert('Please log in first!');
+      return;
+    }
+    if (trackedCharacters.some((c) => c.id === char.id)) return;
     const newChar: TrackedCharacter = {
-      ...char, isFavorited: false, level: 1, tracesAttained: false,
+      ...char,
+      isFavorited: false,
+      level: 1,
+      tracesAttained: false,
       relics: defaultRelics,
-      buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] }
+      buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] },
     };
-    setTrackedCharacters(prev => [...prev, newChar]);
+    setTrackedCharacters((prev) => [...prev, newChar]);
     const dbId = await insertCharacter(session.user.id, char.id);
-    if (dbId) setTrackedCharacters(prev => prev.map(c => c.id === char.id ? { ...c, dbId } : c));
+    if (dbId)
+      setTrackedCharacters((prev) => prev.map((c) => (c.id === char.id ? { ...c, dbId } : c)));
   };
 
   const removeCharacter = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const charToRemove = trackedCharacters.find(c => c.id === id);
-    setTrackedCharacters(prev => prev.filter(c => c.id !== id));
+    const charToRemove = trackedCharacters.find((c) => c.id === id);
+    setTrackedCharacters((prev) => prev.filter((c) => c.id !== id));
     if (charToRemove?.dbId) await deleteCharacter(charToRemove.dbId);
   };
 
   const updateCharacterLevel = (id: string, level: number) => {
     const validLevel = Math.min(80, Math.max(1, level));
-    setTrackedCharacters(prev => prev.map(c => c.id === id ? { ...c, level: validLevel } : c));
-    const char = trackedCharacters.find(c => c.id === id);
+    setTrackedCharacters((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, level: validLevel } : c)),
+    );
+    const char = trackedCharacters.find((c) => c.id === id);
     if (char?.dbId) queueDBUpdate(char.dbId, { level: validLevel });
   };
 
   const toggleCharacterTraces = (id: string, value: boolean) => {
-    setTrackedCharacters(prev => prev.map(c => c.id === id ? { ...c, tracesAttained: value } : c));
-    const char = trackedCharacters.find(c => c.id === id);
+    setTrackedCharacters((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, tracesAttained: value } : c)),
+    );
+    const char = trackedCharacters.find((c) => c.id === id);
     if (char?.dbId) queueDBUpdate(char.dbId, { traces_attained: value });
   };
 
   const toggleFavoriteCharacter = (id: string, value: boolean) => {
-    setTrackedCharacters(prev => prev.map(c => c.id === id ? { ...c, isFavorited: value } : c));
-    const char = trackedCharacters.find(c => c.id === id);
+    setTrackedCharacters((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, isFavorited: value } : c)),
+    );
+    const char = trackedCharacters.find((c) => c.id === id);
     if (char?.dbId) queueDBUpdate(char.dbId, { is_favorited: value });
   };
 
-  const saveRelicData = async (editingRelic: { charId: string; slot: keyof TrackedCharacter['relics'] }, relicData: EquippedRelic) => {
+  const saveRelicData = async (
+    editingRelic: { charId: string; slot: keyof TrackedCharacter['relics'] },
+    relicData: EquippedRelic,
+  ) => {
     const { charId, slot } = editingRelic;
-    setTrackedCharacters(prev => prev.map(c => c.id === charId ? { ...c, relics: { ...c.relics, [slot]: relicData } } : c));
-    const char = trackedCharacters.find(c => c.id === charId);
+    setTrackedCharacters((prev) =>
+      prev.map((c) => (c.id === charId ? { ...c, relics: { ...c.relics, [slot]: relicData } } : c)),
+    );
+    const char = trackedCharacters.find((c) => c.id === charId);
     if (char?.dbId) queueRelicDBUpdate(char.dbId, slot, relicData);
   };
 
-  const removeRelicData = async (editingRelic: { charId: string; slot: keyof TrackedCharacter['relics'] }) => {
+  const removeRelicData = async (editingRelic: {
+    charId: string;
+    slot: keyof TrackedCharacter['relics'];
+  }) => {
     const { charId, slot } = editingRelic;
-    setTrackedCharacters(prev => prev.map(c => c.id === charId ? { ...c, relics: { ...c.relics, [slot]: emptyRelic } } : c));
-    const char = trackedCharacters.find(c => c.id === charId);
+    setTrackedCharacters((prev) =>
+      prev.map((c) =>
+        c.id === charId ? { ...c, relics: { ...c.relics, [slot]: emptyRelic } } : c,
+      ),
+    );
+    const char = trackedCharacters.find((c) => c.id === charId);
     if (char?.dbId) await deleteRelic(char.dbId, slot);
   };
 
-  const saveBuildPreferences = async (charId: string, newPreferences: TrackedCharacter['buildPreferences']) => {
-    setTrackedCharacters(prev => prev.map(c => c.id === charId ? { ...c, buildPreferences: newPreferences } : c));
-    const char = trackedCharacters.find(c => c.id === charId);
+  const saveBuildPreferences = async (
+    charId: string,
+    newPreferences: TrackedCharacter['buildPreferences'],
+  ) => {
+    setTrackedCharacters((prev) =>
+      prev.map((c) => (c.id === charId ? { ...c, buildPreferences: newPreferences } : c)),
+    );
+    const char = trackedCharacters.find((c) => c.id === charId);
     if (char?.dbId) await saveBuildPrefs(char.dbId, newPreferences);
   };
 
-  const getFilteredRoster = (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', scoreFor: (c: TrackedCharacter) => number) => {
-    let result = trackedCharacters;
-    if (searchTerm.trim()) {
-      const fuse = new Fuse(trackedCharacters, { keys: ['name', 'element', 'path'], threshold: 0.3 });
-      result = fuse.search(searchTerm).map(r => r.item);
-    }
-    return [...result].sort((a, b) => {
-      if (a.isFavorited && !b.isFavorited) return -1;
-      if (!a.isFavorited && b.isFavorited) return 1;
-      if (sortBy === 'SCORE') {
-        const diff = scoreFor(b) - scoreFor(a);
-        if (diff !== 0) return diff;
+  const getFilteredRoster = useCallback(
+    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', scoreFor: (c: TrackedCharacter) => number) => {
+      let result = trackedCharacters;
+      if (searchTerm.trim()) {
+        const fuse = new Fuse(trackedCharacters, {
+          keys: ['name', 'element', 'path'],
+          threshold: 0.3,
+        });
+        result = fuse.search(searchTerm).map((r) => r.item);
       }
-      return a.name.localeCompare(b.name);
-    });
-  };
+      return [...result].sort((a, b) => {
+        if (a.isFavorited && !b.isFavorited) return -1;
+        if (!a.isFavorited && b.isFavorited) return 1;
+        if (sortBy === 'SCORE') {
+          const diff = scoreFor(b) - scoreFor(a);
+          if (diff !== 0) return diff;
+        }
+        return a.name.localeCompare(b.name);
+      });
+    },
+    [trackedCharacters],
+  );
 
   return {
-    availableCharacters, availableRelicSets, trackedCharacters,
-    isInitialLoad, isUpdating,
-    fetchLatestCharacters, addCharacter, removeCharacter,
-    updateCharacterLevel, toggleCharacterTraces, toggleFavoriteCharacter,
-    saveRelicData, removeRelicData, saveBuildPreferences, getFilteredRoster,
+    availableCharacters,
+    availableRelicSets,
+    trackedCharacters,
+    isInitialLoad,
+    isUpdating,
+    fetchLatestCharacters,
+    addCharacter,
+    removeCharacter,
+    updateCharacterLevel,
+    toggleCharacterTraces,
+    toggleFavoriteCharacter,
+    saveRelicData,
+    removeRelicData,
+    saveBuildPreferences,
+    getFilteredRoster,
   };
 }

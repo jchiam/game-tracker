@@ -28,19 +28,29 @@ export function getStatMatchScore(preferredStat: string, equippedStat: string): 
 
 export function calculateRelicScore(character: TrackedCharacter): number {
   let totalScore = 0;
-  const slots: Array<keyof TrackedCharacter['relics']> = ['head', 'hands', 'body', 'feet', 'sphere', 'rope'];
+  const slots: Array<keyof TrackedCharacter['relics']> = [
+    'head',
+    'hands',
+    'body',
+    'feet',
+    'sphere',
+    'rope',
+  ];
 
   for (const slot of slots) {
     const relic = character.relics[slot];
     if (!relic) continue;
 
     let slotMainMatch = 0;
-    
+
     if (slot === 'head' || slot === 'hands') {
       slotMainMatch = 1.0; // Fixed stats are always a 100% correct match
     } else {
       // Body, Feet, Sphere, Rope
-      const prefs = character.buildPreferences.mainStats[slot as keyof typeof character.buildPreferences.mainStats] || [];
+      const prefs =
+        character.buildPreferences.mainStats[
+          slot as keyof typeof character.buildPreferences.mainStats
+        ] || [];
       if (relic.mainStat) {
         if (prefs.length === 0) {
           slotMainMatch = 0;
@@ -58,7 +68,7 @@ export function calculateRelicScore(character: TrackedCharacter): number {
 
     let slotSubScore = 0;
     const subPrefs = character.buildPreferences.subStats || [];
-    
+
     if (subPrefs.length > 0 && relic.subStats && relic.subStats.length > 0) {
       const maxSubScoreMatchable = 4; // up to 4 sub stats per relic
       let currentSubScore = 0;
@@ -74,13 +84,13 @@ export function calculateRelicScore(character: TrackedCharacter): number {
         }
         currentSubScore += bestMatch;
       }
-      
+
       // Calculate fraction of sub stats out of 4
       slotSubScore = Math.min(maxSubScoreMatchable, currentSubScore) / maxSubScoreMatchable; // e.g. 2.5/4
     }
 
     // Combine main and sub scores to calculate the score for this slot
-    const finalSlotScore = (slotMainMatch * MAIN_STAT_WEIGHT) + (slotSubScore * SUB_STAT_WEIGHT);
+    const finalSlotScore = slotMainMatch * MAIN_STAT_WEIGHT + slotSubScore * SUB_STAT_WEIGHT;
     totalScore += finalSlotScore * SLOT_WEIGHT;
   }
 

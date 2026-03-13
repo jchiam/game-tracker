@@ -12,7 +12,9 @@ export function useAuth() {
       setIsAuthLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setIsAuthLoading(false);
     });
@@ -21,7 +23,10 @@ export function useAuth() {
   }, []);
 
   const signInWithGoogle = () =>
-    supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin } });
+    supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: { redirectTo: window.location.origin },
+    });
 
   const signOut = () => supabase.auth.signOut();
 

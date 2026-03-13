@@ -18,12 +18,42 @@ export interface EquippedRelic {
 export const MAIN_STATS = {
   HEAD: ['HP'],
   HANDS: ['ATK'],
-  BODY: ['HP%', 'ATK%', 'DEF%', 'CRIT Rate', 'CRIT DMG', 'Outgoing Healing Boost', 'Effect Hit Rate'],
+  BODY: [
+    'HP%',
+    'ATK%',
+    'DEF%',
+    'CRIT Rate',
+    'CRIT DMG',
+    'Outgoing Healing Boost',
+    'Effect Hit Rate',
+  ],
   FEET: ['HP%', 'ATK%', 'DEF%', 'SPD'],
-  SPHERE: ['HP%', 'ATK%', 'DEF%', 'Physical DMG Boost', 'Fire DMG Boost', 'Ice DMG Boost', 'Lightning DMG Boost', 'Wind DMG Boost', 'Quantum DMG Boost', 'Imaginary DMG Boost'],
-  ROPE: ['HP%', 'ATK%', 'DEF%', 'Break Effect', 'Energy Regeneration Rate']
+  SPHERE: [
+    'HP%',
+    'ATK%',
+    'DEF%',
+    'Physical DMG Boost',
+    'Fire DMG Boost',
+    'Ice DMG Boost',
+    'Lightning DMG Boost',
+    'Wind DMG Boost',
+    'Quantum DMG Boost',
+    'Imaginary DMG Boost',
+  ],
+  ROPE: ['HP%', 'ATK%', 'DEF%', 'Break Effect', 'Energy Regeneration Rate'],
 };
 
 export const SUB_STATS = [
-  'HP', 'ATK', 'DEF', 'HP%', 'ATK%', 'DEF%', 'SPD', 'CRIT Rate', 'CRIT DMG', 'Effect Hit Rate', 'Effect RES', 'Break Effect'
+  'HP',
+  'ATK',
+  'DEF',
+  'HP%',
+  'ATK%',
+  'DEF%',
+  'SPD',
+  'CRIT Rate',
+  'CRIT DMG',
+  'Effect Hit Rate',
+  'Effect RES',
+  'Break Effect',
 ];

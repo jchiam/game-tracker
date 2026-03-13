@@ -23,9 +23,13 @@ export function CharacterCard({
   onToggleFavorite,
   onToggleRelic,
 }: CharacterCardProps) {
-
-  const hasPreferences = (char.buildPreferences?.subStats?.length > 0) || 
-                         (['body', 'feet', 'sphere', 'rope'].some(s => char.buildPreferences?.mainStats[s as keyof typeof char.buildPreferences.mainStats]?.length > 0));
+  const hasPreferences =
+    char.buildPreferences?.subStats?.length > 0 ||
+    ['body', 'feet', 'sphere', 'rope'].some(
+      (s) =>
+        char.buildPreferences?.mainStats[s as keyof typeof char.buildPreferences.mainStats]
+          ?.length > 0,
+    );
   const score = hasPreferences ? calculateRelicScore(char) : 0;
   const showScore = hasPreferences;
   let tierClass = 'tier-b';
@@ -49,18 +53,31 @@ export function CharacterCard({
           <div className="card-overlay-top">
             <button
               className={`favorite-btn ${char.isFavorited ? 'active' : ''}`}
-              onClick={(e) => { e.stopPropagation(); onToggleFavorite(char.id, !char.isFavorited); }}
-              title={char.isFavorited ? "Unfavorite Character" : "Favorite Character"}
+              onClick={(e) => {
+                e.stopPropagation();
+                onToggleFavorite(char.id, !char.isFavorited);
+              }}
+              title={char.isFavorited ? 'Unfavorite Character' : 'Favorite Character'}
             >
               {char.isFavorited ? '★' : '☆'}
             </button>
-            <button className="remove-btn" onClick={(e) => onRemove(char.id, e)} title="Remove Character">✕</button>
+            <button
+              className="remove-btn"
+              onClick={(e) => onRemove(char.id, e)}
+              title="Remove Character"
+            >
+              ✕
+            </button>
           </div>
           <div className="card-overlay-bottom">
             <div className="card-overlay-badges">
-              <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
+              <span className={`element-badge element-${char.element.toLowerCase()}`}>
+                {char.element}
+              </span>
               {char.path && (
-                <span className={`path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}>{char.path}</span>
+                <span className={`path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}>
+                  {char.path}
+                </span>
               )}
             </div>
             {showScore && (
@@ -87,7 +104,7 @@ export function CharacterCard({
             onChange={(e) => onUpdateLevel(char.id, parseInt(e.target.value))}
             className="level-slider"
             style={{
-              background: `linear-gradient(to right, var(--color-primary) ${(char.level / 80) * 100}%, rgba(255,255,255,0.1) ${(char.level / 80) * 100}%)`
+              background: `linear-gradient(to right, var(--color-primary) ${(char.level / 80) * 100}%, rgba(255,255,255,0.1) ${(char.level / 80) * 100}%)`,
             }}
           />
         </div>
@@ -104,7 +121,7 @@ export function CharacterCard({
         <div className="progress-section">
           <div className="section-header">Relic Sets</div>
           <div className="relics-grid">
-            {(['head', 'hands', 'body', 'feet', 'sphere', 'rope'] as const).map(relic => {
+            {(['head', 'hands', 'body', 'feet', 'sphere', 'rope'] as const).map((relic) => {
               const equipped = char.relics[relic];
               const isActive = equipped && equipped.setId;
               return (
@@ -114,23 +131,37 @@ export function CharacterCard({
                   onClick={() => onToggleRelic(char.id, relic)}
                   title={`${relic.charAt(0).toUpperCase() + relic.slice(1)}${isActive ? ` - ${equipped.mainStat}` : ''}`}
                 >
-                  {isActive && availableRelicSets.length > 0 ? (() => {
-                    const set = availableRelicSets.find(s => s.id === equipped.setId);
-                    if (!set) return <span className={`relic-icon ${(relic === 'sphere' || relic === 'rope') ? 'planar' : 'cavern'}`}>{(relic === 'sphere' || relic === 'rope') ? '○' : '⬡'}</span>;
-                    const iconUrl = set.icon.startsWith('/') || set.icon.startsWith('http')
-                      ? set.icon
-                      : `https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/${set.icon}`;
-                    return (
-                      <img
-                        src={iconUrl}
-                        alt="Relic"
-                        className="relic-set-icon"
-                        onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                      />
-                    );
-                  })() : (
-                    <span className={`relic-icon ${(relic === 'sphere' || relic === 'rope') ? 'planar' : 'cavern'}`}>
-                      {(relic === 'sphere' || relic === 'rope') ? '○' : '⬡'}
+                  {isActive && availableRelicSets.length > 0 ? (
+                    (() => {
+                      const set = availableRelicSets.find((s) => s.id === equipped.setId);
+                      if (!set)
+                        return (
+                          <span
+                            className={`relic-icon ${relic === 'sphere' || relic === 'rope' ? 'planar' : 'cavern'}`}
+                          >
+                            {relic === 'sphere' || relic === 'rope' ? '○' : '⬡'}
+                          </span>
+                        );
+                      const iconUrl =
+                        set.icon.startsWith('/') || set.icon.startsWith('http')
+                          ? set.icon
+                          : `https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/${set.icon}`;
+                      return (
+                        <img
+                          src={iconUrl}
+                          alt="Relic"
+                          className="relic-set-icon"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      );
+                    })()
+                  ) : (
+                    <span
+                      className={`relic-icon ${relic === 'sphere' || relic === 'rope' ? 'planar' : 'cavern'}`}
+                    >
+                      {relic === 'sphere' || relic === 'rope' ? '○' : '⬡'}
                     </span>
                   )}
                 </div>
@@ -139,51 +170,67 @@ export function CharacterCard({
           </div>
         </div>
 
-        {char.buildPreferences && (char.buildPreferences.subStats.length > 0 || ['body', 'feet', 'sphere', 'rope'].some(s => char.buildPreferences?.mainStats[s as keyof typeof char.buildPreferences.mainStats]?.length > 0)) && (
-          <div className="progress-section build-prefs-display">
-            <div className="section-header">Target Build</div>
-            
-            <div className="prefs-display-grid">
-              {(['body', 'feet', 'sphere', 'rope'] as const).map(slot => {
-                const prefs = char.buildPreferences?.mainStats[slot];
-                if (!prefs || prefs.length === 0) return null;
-                return (
-                  <div key={slot} className="pref-display-row">
-                    <span className="pref-display-label">{slot.charAt(0).toUpperCase() + slot.slice(1)}</span>
+        {char.buildPreferences &&
+          (char.buildPreferences.subStats.length > 0 ||
+            ['body', 'feet', 'sphere', 'rope'].some(
+              (s) =>
+                char.buildPreferences?.mainStats[s as keyof typeof char.buildPreferences.mainStats]
+                  ?.length > 0,
+            )) && (
+            <div className="progress-section build-prefs-display">
+              <div className="section-header">Target Build</div>
+
+              <div className="prefs-display-grid">
+                {(['body', 'feet', 'sphere', 'rope'] as const).map((slot) => {
+                  const prefs = char.buildPreferences?.mainStats[slot];
+                  if (!prefs || prefs.length === 0) return null;
+                  return (
+                    <div key={slot} className="pref-display-row">
+                      <span className="pref-display-label">
+                        {slot.charAt(0).toUpperCase() + slot.slice(1)}
+                      </span>
+                      <div className="pref-display-chain">
+                        {prefs.map((p, i) => (
+                          <span key={i}>
+                            <span className="pref-stat-badge">{p.stat}</span>
+                            {p.operator && (
+                              <span className="pref-operator-badge">
+                                {p.operator === '>=' ? '≥' : p.operator}
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {char.buildPreferences?.subStats.length > 0 && (
+                  <div className="pref-display-row">
+                    <span className="pref-display-label">Subs</span>
                     <div className="pref-display-chain">
-                      {prefs.map((p, i) => (
+                      {char.buildPreferences.subStats.map((p, i) => (
                         <span key={i}>
                           <span className="pref-stat-badge">{p.stat}</span>
-                          {p.operator && <span className="pref-operator-badge">{p.operator === '>=' ? '≥' : p.operator}</span>}
+                          {p.operator && (
+                            <span className="pref-operator-badge">
+                              {p.operator === '>=' ? '≥' : p.operator}
+                            </span>
+                          )}
                         </span>
                       ))}
                     </div>
                   </div>
-                );
-              })}
+                )}
 
-              {char.buildPreferences?.subStats.length > 0 && (
-                <div className="pref-display-row">
-                  <span className="pref-display-label">Subs</span>
-                  <div className="pref-display-chain">
-                    {char.buildPreferences.subStats.map((p, i) => (
-                      <span key={i}>
-                        <span className="pref-stat-badge">{p.stat}</span>
-                        {p.operator && <span className="pref-operator-badge">{p.operator === '>=' ? '≥' : p.operator}</span>}
-                      </span>
-                    ))}
+                {char.buildPreferences?.comments && (
+                  <div className="pref-display-row build-comments-row">
+                    <div className="pref-comments-text">{char.buildPreferences.comments}</div>
                   </div>
-                </div>
-              )}
-
-              {char.buildPreferences?.comments && (
-                <div className="pref-display-row build-comments-row">
-                  <div className="pref-comments-text">{char.buildPreferences.comments}</div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </div>
   );

@@ -15,21 +15,24 @@ export function AddCharacterModal({
   availableCharacters,
   trackedCharacters,
   onAddCharacter,
-  onClose
+  onClose,
 }: AddCharacterModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredAvailableCharacters = availableCharacters.filter(char =>
-    !trackedCharacters.some(tracked => tracked.name === char.name) &&
-    char.name.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredAvailableCharacters = availableCharacters.filter(
+    (char) =>
+      !trackedCharacters.some((tracked) => tracked.name === char.name) &&
+      char.name.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={e => e.stopPropagation()}>
+      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
         <div className="modal-header">
           <h2>Add Character</h2>
-          <button className="close-btn" onClick={onClose}>✕</button>
+          <button className="close-btn" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
         <div className="modal-search">
@@ -37,15 +40,19 @@ export function AddCharacterModal({
             type="text"
             placeholder="Search characters..."
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
             autoFocus
           />
         </div>
 
         <div className="character-list">
           {filteredAvailableCharacters.length > 0 ? (
-            filteredAvailableCharacters.map(char => (
-              <div key={char.id} className="character-list-item" onClick={() => onAddCharacter(char)}>
+            filteredAvailableCharacters.map((char) => (
+              <div
+                key={char.id}
+                className="character-list-item"
+                onClick={() => onAddCharacter(char)}
+              >
                 <div className="char-list-info">
                   <div className="char-list-img-wrapper">
                     <img
@@ -61,9 +68,15 @@ export function AddCharacterModal({
                   <div className="char-list-details">
                     <span className="char-list-name">{char.name}</span>
                     <div className="char-list-tags">
-                      <span className={`element-badge element-${char.element.toLowerCase()}`}>{char.element}</span>
+                      <span className={`element-badge element-${char.element.toLowerCase()}`}>
+                        {char.element}
+                      </span>
                       {char.path && (
-                        <span className={`path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}>{char.path}</span>
+                        <span
+                          className={`path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}
+                        >
+                          {char.path}
+                        </span>
                       )}
                     </div>
                   </div>

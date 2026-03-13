@@ -47,15 +47,15 @@ describe('calculateRelicScore', () => {
         body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
         feet: [{ stat: 'SPD', operator: null, orderIndex: 0 }],
         sphere: [{ stat: 'Fire DMG Boost', operator: null, orderIndex: 0 }],
-        rope: [{ stat: 'ATK%', operator: null, orderIndex: 0 }]
+        rope: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
       },
       subStats: [
         { stat: 'CRIT Rate', operator: null, orderIndex: 0 },
         { stat: 'CRIT DMG', operator: null, orderIndex: 1 },
         { stat: 'ATK%', operator: null, orderIndex: 2 },
-        { stat: 'SPD', operator: null, orderIndex: 3 }
-      ]
-    }
+        { stat: 'SPD', operator: null, orderIndex: 3 },
+      ],
+    },
   });
 
   it('returns 0 for empty relics', () => {
@@ -66,12 +66,66 @@ describe('calculateRelicScore', () => {
   it('calculates score correctly for perfect matches', () => {
     const char = getBaseCharacter();
     char.relics = {
-      head: { setId: null, mainStat: 'HP', subStats: [{ type: 'CRIT Rate', value: '1' }, { type: 'CRIT DMG', value: '1' }, { type: 'ATK%', value: '1' }, { type: 'SPD', value: '1' }] },
-      hands: { setId: null, mainStat: 'ATK', subStats: [{ type: 'CRIT Rate', value: '1' }, { type: 'CRIT DMG', value: '1' }, { type: 'ATK%', value: '1' }, { type: 'SPD', value: '1' }] },
-      body: { setId: null, mainStat: 'CRIT Rate', subStats: [{ type: 'CRIT Rate', value: '1' }, { type: 'CRIT DMG', value: '1' }, { type: 'ATK%', value: '1' }, { type: 'SPD', value: '1' }] },
-      feet: { setId: null, mainStat: 'SPD', subStats: [{ type: 'CRIT Rate', value: '1' }, { type: 'CRIT DMG', value: '1' }, { type: 'ATK%', value: '1' }, { type: 'SPD', value: '1' }] },
-      sphere: { setId: null, mainStat: 'Fire DMG Boost', subStats: [{ type: 'CRIT Rate', value: '1' }, { type: 'CRIT DMG', value: '1' }, { type: 'ATK%', value: '1' }, { type: 'SPD', value: '1' }] },
-      rope: { setId: null, mainStat: 'ATK%', subStats: [{ type: 'CRIT Rate', value: '1' }, { type: 'CRIT DMG', value: '1' }, { type: 'ATK%', value: '1' }, { type: 'SPD', value: '1' }] }
+      head: {
+        setId: null,
+        mainStat: 'HP',
+        subStats: [
+          { type: 'CRIT Rate', value: '1' },
+          { type: 'CRIT DMG', value: '1' },
+          { type: 'ATK%', value: '1' },
+          { type: 'SPD', value: '1' },
+        ],
+      },
+      hands: {
+        setId: null,
+        mainStat: 'ATK',
+        subStats: [
+          { type: 'CRIT Rate', value: '1' },
+          { type: 'CRIT DMG', value: '1' },
+          { type: 'ATK%', value: '1' },
+          { type: 'SPD', value: '1' },
+        ],
+      },
+      body: {
+        setId: null,
+        mainStat: 'CRIT Rate',
+        subStats: [
+          { type: 'CRIT Rate', value: '1' },
+          { type: 'CRIT DMG', value: '1' },
+          { type: 'ATK%', value: '1' },
+          { type: 'SPD', value: '1' },
+        ],
+      },
+      feet: {
+        setId: null,
+        mainStat: 'SPD',
+        subStats: [
+          { type: 'CRIT Rate', value: '1' },
+          { type: 'CRIT DMG', value: '1' },
+          { type: 'ATK%', value: '1' },
+          { type: 'SPD', value: '1' },
+        ],
+      },
+      sphere: {
+        setId: null,
+        mainStat: 'Fire DMG Boost',
+        subStats: [
+          { type: 'CRIT Rate', value: '1' },
+          { type: 'CRIT DMG', value: '1' },
+          { type: 'ATK%', value: '1' },
+          { type: 'SPD', value: '1' },
+        ],
+      },
+      rope: {
+        setId: null,
+        mainStat: 'ATK%',
+        subStats: [
+          { type: 'CRIT Rate', value: '1' },
+          { type: 'CRIT DMG', value: '1' },
+          { type: 'ATK%', value: '1' },
+          { type: 'SPD', value: '1' },
+        ],
+      },
     };
     // Should be very close to 100
     expect(Math.round(calculateRelicScore(char))).toBe(100);
@@ -86,10 +140,10 @@ describe('calculateRelicScore', () => {
       mainStat: 'HP',
       subStats: [
         { type: 'CRIT Rate', value: '1' }, // Match 1.0
-        { type: 'DEF', value: '1' },       // Match 0
-        { type: 'HP', value: '1' },        // Match 0
-        { type: 'Effect Hit Rate', value: '1' } // Match 0
-      ]
+        { type: 'DEF', value: '1' }, // Match 0
+        { type: 'HP', value: '1' }, // Match 0
+        { type: 'Effect Hit Rate', value: '1' }, // Match 0
+      ],
     };
     const score = calculateRelicScore(char);
     // 16.666 * (1.0 * 0.4 + 0.25 * 0.6) = 16.666 * (0.4 + 0.15) = 16.666 * 0.55 = 9.1666...
@@ -101,14 +155,14 @@ describe('calculateRelicScore', () => {
     // Prefer: CRIT Rate, CRIT DMG, ATK%, SPD
     // Equip: CRIT DMG (is preffered, but let's test a mismatch by replacing build prefs to only one)
     char.buildPreferences.subStats = [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }];
-    
+
     char.relics.hands = {
       setId: null,
       mainStat: 'ATK',
       subStats: [
-        { type: 'CRIT DMG', value: '1' },  // Match 0.5 because Pref is CRIT Rate
-        { type: 'DEF', value: '1' }
-      ]
+        { type: 'CRIT DMG', value: '1' }, // Match 0.5 because Pref is CRIT Rate
+        { type: 'DEF', value: '1' },
+      ],
     };
 
     const score = calculateRelicScore(char);

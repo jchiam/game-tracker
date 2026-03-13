@@ -2,8 +2,8 @@
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  background: rgba(255,255,255,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   padding: 10px 16px;
   border-radius: var(--radius-md);
   color: var(--color-text-secondary);
@@ -17,7 +17,7 @@
 }
 
 .confirm-checkbox:hover {
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .confirm-checkbox.checked {
@@ -46,6 +46,10 @@
 }
 
 @keyframes pulse-warn {
-  from { box-shadow: 0 0 0 rgba(255, 107, 107, 0); }
-  to { box-shadow: 0 0 10px rgba(255, 107, 107, 0.4); }
+  from {
+    box-shadow: 0 0 0 rgba(255, 107, 107, 0);
+  }
+  to {
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
+  }
 }
