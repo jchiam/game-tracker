@@ -100,3 +100,12 @@ button:hover {
   box-shadow: 0 0 15px var(--color-primary-glow);
   transform: translateY(-2px);
 }
+
+/* Game Selection Backgrounds */
+.bg-hsr-sel {
+  background-image: url('https://upload-os-bbs.hoyolab.com/upload/2023/04/23/94776100/98bda9142f1cf4e3328e3705a1cb36cf_4167389445173163155.jpg?x-oss-process=image/resize,s_1000/quality,q_80/auto-orient,0/interlace,1/format,jpg');
+}
+
+.bg-r1999-sel {
+  background-image: url('https://www.prydwen.gg/static/fcd1174cd08e75db740f90e386055d72/31336/rv_meta.webp');
+}
