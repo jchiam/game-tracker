@@ -1,17 +1,17 @@
-import type { TrackedCharacter } from '@/types';
-import type { RelicSet } from '@/data/relics';
+import type { HsrTrackedCharacter } from '@/types';
+import type { RelicSet } from '@/data/honkai-star-rail/relics';
 import { ConfirmCheckbox } from './ConfirmCheckbox';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import './CharacterCard.css';
 
 interface CharacterCardProps {
-  char: TrackedCharacter;
+  char: HsrTrackedCharacter;
   availableRelicSets: RelicSet[];
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
   onToggleTraces: (id: string, value: boolean) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
-  onToggleRelic: (id: string, part: keyof TrackedCharacter['relics']) => void;
+  onToggleRelic: (id: string, part: keyof HsrTrackedCharacter['relics']) => void;
 }
 
 export function CharacterCard({

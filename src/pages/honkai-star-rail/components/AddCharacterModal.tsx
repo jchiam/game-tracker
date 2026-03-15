@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import type { Character } from '@/data/characters';
-import type { TrackedCharacter } from '@/types';
+import type { Character } from '@/data/honkai-star-rail/characters';
+import type { HsrTrackedCharacter } from '@/types';
 import './Modal.css';
 import './AddCharacterModal.css';
 
 interface AddCharacterModalProps {
   availableCharacters: Character[];
-  trackedCharacters: TrackedCharacter[];
+  trackedCharacters: HsrTrackedCharacter[];
   onAddCharacter: (char: Character) => void;
   onClose: () => void;
 }
@@ -19,11 +19,13 @@ export function AddCharacterModal({
 }: AddCharacterModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filteredAvailableCharacters = availableCharacters.filter(
-    (char) =>
-      !trackedCharacters.some((tracked) => tracked.name === char.name) &&
-      char.name.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+  const filteredAvailableCharacters = availableCharacters
+    .filter(
+      (char) =>
+        !trackedCharacters.some((tracked) => tracked.name === char.name) &&
+        char.name.toLowerCase().includes(searchTerm.toLowerCase()),
+    )
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="modal-overlay" onClick={onClose}>

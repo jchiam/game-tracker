@@ -1,7 +1,8 @@
-import { type Character } from './data/characters';
-import { type EquippedRelic } from './data/relics';
+import { type Character } from '@/data/honkai-star-rail/characters';
+import { type EquippedRelic } from '@/data/honkai-star-rail/relics';
+import { type Arcanist } from '@/data/reverse1999/arcanists';
 
-export interface TrackedCharacter extends Character {
+export interface HsrTrackedCharacter extends Character {
   dbId?: string;
   isFavorited: boolean;
   level: number;
@@ -38,4 +39,11 @@ export interface HsrParty {
 export interface HsrPartyMember {
   characterId: string;
   slotIndex: number;
+}
+
+export interface R1999TrackedArcanist extends Arcanist {
+  dbId?: string;
+  isFavorited: boolean;
+  level: number;
+  insightLevel: 0 | 1 | 2 | 3;
 }

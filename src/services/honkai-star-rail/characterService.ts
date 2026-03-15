@@ -1,14 +1,14 @@
 import { supabase } from '@/lib/supabase';
-import type { EquippedRelic } from '@/data/relics';
-import type { TrackedCharacter } from '@/types';
-import { ALL_CHARACTERS } from '@/data/characters';
+import type { EquippedRelic } from '@/data/honkai-star-rail/relics';
+import type { HsrTrackedCharacter } from '@/types';
+import { ALL_CHARACTERS } from '@/data/honkai-star-rail/characters';
 
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
 
-// Load all tracked characters for a user from DB and rebuild TrackedCharacter objects
-export async function loadCharactersFromDB(userId: string): Promise<TrackedCharacter[]> {
+// Load all tracked characters for a user from DB and rebuild HsrTrackedCharacter objects
+export async function loadCharactersFromDB(userId: string): Promise<HsrTrackedCharacter[]> {
   if (!DB_ENABLED || !import.meta.env.VITE_SUPABASE_ANON_KEY) return [];
 
   const { data: dbData, error } = await supabase
@@ -84,7 +84,7 @@ export async function loadCharactersFromDB(userId: string): Promise<TrackedChara
         buildPreferences: prefs as any,
       };
     })
-    .filter(Boolean) as TrackedCharacter[];
+    .filter(Boolean) as HsrTrackedCharacter[];
 }
 
 export async function insertCharacter(userId: string, charId: string): Promise<string | null> {
@@ -161,7 +161,7 @@ export async function deleteRelic(dbId: string, slot: string): Promise<void> {
 
 export async function saveBuildPrefs(
   dbId: string,
-  prefs: TrackedCharacter['buildPreferences'],
+  prefs: HsrTrackedCharacter['buildPreferences'],
 ): Promise<void> {
   if (!DB_ENABLED) return;
   await supabase.from('hsr_build_preference_main_stats').delete().eq('tracked_character_id', dbId);

@@ -1,13 +1,13 @@
 import { useState, useMemo } from 'react';
-import { useCharacters, emptyRelic } from '@/hooks/useCharacters';
-import { useParties } from '@/hooks/useParties';
+import { useCharacters, emptyRelic } from '@/hooks/honkai-star-rail/useCharacters';
+import { useParties } from '@/hooks/honkai-star-rail/useParties';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import { CharacterCard } from './components/CharacterCard';
 import { RelicEditorModal } from './components/RelicEditorModal';
 import { AddCharacterModal } from './components/AddCharacterModal';
 import { PartiesTab } from './components/PartiesTab';
 import { AuthGate } from '@/components/AuthGate';
-import type { TrackedCharacter } from '@/types';
+import type { HsrTrackedCharacter } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 import './HsrPage.css';
 
@@ -44,7 +44,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingRelic, setEditingRelic] = useState<{
     charId: string;
-    slot: keyof TrackedCharacter['relics'];
+    slot: keyof HsrTrackedCharacter['relics'];
   } | null>(null);
 
   const filteredRoster = useMemo(

@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import Fuse from 'fuse.js';
-import { ALL_CHARACTERS, type Character } from '@/data/characters';
-import { type EquippedRelic, type RelicSet } from '@/data/relics';
-import { ALL_RELIC_SETS } from '@/data/relic_sets';
-import type { TrackedCharacter } from '@/types';
+import { ALL_CHARACTERS, type Character } from '@/data/honkai-star-rail/characters';
+import { type EquippedRelic, type RelicSet } from '@/data/honkai-star-rail/relics';
+import { ALL_RELIC_SETS } from '@/data/honkai-star-rail/relic_sets';
+import type { HsrTrackedCharacter } from '@/types';
 import {
   loadCharactersFromDB,
   insertCharacter,
@@ -13,7 +13,7 @@ import {
   upsertRelic,
   deleteRelic,
   saveBuildPrefs,
-} from '@/services/characterService';
+} from '@/services/honkai-star-rail/characterService';
 
 export const emptyRelic: EquippedRelic = { setId: null, mainStat: null, subStats: [] };
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
@@ -21,7 +21,7 @@ const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere:
 export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   const [availableCharacters, setAvailableCharacters] = useState<Character[]>(ALL_CHARACTERS);
   const [availableRelicSets, setAvailableRelicSets] = useState<RelicSet[]>(ALL_RELIC_SETS);
-  const [trackedCharacters, setTrackedCharacters] = useState<TrackedCharacter[]>([]);
+  const [trackedCharacters, setTrackedCharacters] = useState<HsrTrackedCharacter[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -160,7 +160,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       return;
     }
     if (trackedCharacters.some((c) => c.id === char.id)) return;
-    const newChar: TrackedCharacter = {
+    const newChar: HsrTrackedCharacter = {
       ...char,
       isFavorited: false,
       level: 1,
@@ -207,7 +207,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   };
 
   const saveRelicData = async (
-    editingRelic: { charId: string; slot: keyof TrackedCharacter['relics'] },
+    editingRelic: { charId: string; slot: keyof HsrTrackedCharacter['relics'] },
     relicData: EquippedRelic,
   ) => {
     const { charId, slot } = editingRelic;
@@ -220,7 +220,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
 
   const removeRelicData = async (editingRelic: {
     charId: string;
-    slot: keyof TrackedCharacter['relics'];
+    slot: keyof HsrTrackedCharacter['relics'];
   }) => {
     const { charId, slot } = editingRelic;
     setTrackedCharacters((prev) =>
@@ -234,7 +234,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
 
   const saveBuildPreferences = async (
     charId: string,
-    newPreferences: TrackedCharacter['buildPreferences'],
+    newPreferences: HsrTrackedCharacter['buildPreferences'],
   ) => {
     setTrackedCharacters((prev) =>
       prev.map((c) => (c.id === charId ? { ...c, buildPreferences: newPreferences } : c)),
@@ -244,7 +244,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   };
 
   const getFilteredRoster = useCallback(
-    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', scoreFor: (c: TrackedCharacter) => number) => {
+    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', scoreFor: (c: HsrTrackedCharacter) => number) => {
       let result = trackedCharacters;
       if (searchTerm.trim()) {
         const fuse = new Fuse(trackedCharacters, {

@@ -1,17 +1,17 @@
 import { useState } from 'react';
-import type { TrackedCharacter } from '@/types';
-import type { RelicSet, EquippedRelic } from '@/data/relics';
+import type { HsrTrackedCharacter } from '@/types';
+import type { RelicSet, EquippedRelic } from '@/data/honkai-star-rail/relics';
 import './Modal.css';
 import './RelicEditorModal.css';
 
 interface RelicEditorModalProps {
-  char: TrackedCharacter;
-  slot: keyof TrackedCharacter['relics'];
+  char: HsrTrackedCharacter;
+  slot: keyof HsrTrackedCharacter['relics'];
   availableRelicSets: RelicSet[];
   emptyRelic: EquippedRelic;
   onSave: (relicData: EquippedRelic) => void;
   onRemove: () => void;
-  onUpdateBuildPreferences: (newPrefs: TrackedCharacter['buildPreferences']) => void;
+  onUpdateBuildPreferences: (newPrefs: HsrTrackedCharacter['buildPreferences']) => void;
   onClose: () => void;
 }
 
