@@ -46,18 +46,19 @@ export function SelectionPage() {
     <main className="main-content" style={{ minHeight: '100vh', padding: 'var(--spacing-xl)' }}>
       <header className="hero" style={{ marginBottom: '3rem' }}>
         <h1 className="title">Select Game</h1>
-        <p className="subtitle">
-          Choose a game to track your progress and manage your inventory.
-        </p>
+        <p className="subtitle">Choose a game to track your progress and manage your inventory.</p>
       </header>
 
-      <section className="roster-grid" style={{ maxWidth: '900px', margin: '0 auto', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
+      <section
+        className="roster-grid"
+        style={{
+          maxWidth: '900px',
+          margin: '0 auto',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+        }}
+      >
         {GAMES.map((game) => (
-          <button
-            key={game.id}
-            onClick={() => handleGameSelect(game.path)}
-            className="game-card"
-          >
+          <button key={game.id} onClick={() => handleGameSelect(game.path)} className="game-card">
             <div className={`game-card-header ${game.bgClass}`}>
               <img
                 src={game.imageUrl}

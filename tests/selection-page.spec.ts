@@ -36,12 +36,15 @@ test.describe('Selection Page UI and Behavior', () => {
   test('should show character images in cards', async ({ page }) => {
     const images = page.locator('.game-character-image');
     await expect(images).toHaveCount(2);
-    
+
     // Check if images have loaded paths
     const hsrImage = images.nth(0);
     const r1999Image = images.nth(1);
-    
-    await expect(hsrImage).toHaveAttribute('src', /\/assets\/honkai-star-rail\/selection-cover\.png/);
+
+    await expect(hsrImage).toHaveAttribute(
+      'src',
+      /\/assets\/honkai-star-rail\/selection-cover\.png/,
+    );
     await expect(r1999Image).toHaveAttribute('src', /\/assets\/reverse-1999\/selection-cover\.jpg/);
   });
 });
