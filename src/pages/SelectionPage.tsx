@@ -16,7 +16,9 @@ const GAMES = [
     name: 'Reverse: 1999',
     path: '/reverse-1999',
     bgClass: 'bg-r1999-sel',
+    imageUrl: '/assets/reverse-1999/selection-cover.jpg',
     description: 'Track arcanists, psychubes, and wilderness materials.',
+    tag: 'Bluepoch',
   },
 ];
 
@@ -34,50 +36,57 @@ export function SelectionPage() {
 
   if (isAuthLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-900 text-white">
-        <div className="text-xl">Checking authentication...</div>
+      <div className="empty-state">
+        <p>Checking authentication...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-900 p-8 text-white relative overflow-hidden selection-bg">
-      <div className="z-10 text-center mb-12">
-        <h1 className="text-5xl font-bold mb-4 tracking-tight">Select Game</h1>
-        <p className="text-gray-400 text-lg max-w-md mx-auto">
+    <main className="main-content" style={{ minHeight: '100vh', padding: 'var(--spacing-xl)' }}>
+      <header className="hero" style={{ marginBottom: '3rem' }}>
+        <h1 className="title">Select Game</h1>
+        <p className="subtitle">
           Choose a game to track your progress and manage your inventory.
         </p>
-      </div>
+      </header>
 
-      <div className="z-10 grid gap-8 md:grid-cols-2 max-w-4xl w-full">
+      <section className="roster-grid" style={{ maxWidth: '900px', margin: '0 auto', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))' }}>
         {GAMES.map((game) => (
           <button
             key={game.id}
             onClick={() => handleGameSelect(game.path)}
-            className={`group relative h-64 overflow-hidden rounded-2xl border-2 border-transparent bg-gray-800 transition-all hover:border-blue-500 hover:shadow-2xl hover:shadow-blue-500/20`}
+            className="game-card"
           >
-            <div
-              className={`absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110 ${game.bgClass}`}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent opacity-80 transition-opacity group-hover:opacity-70" />
+            <div className={`game-card-header ${game.bgClass}`}>
+              <img
+                src={game.imageUrl}
+                alt={game.name}
+                className="game-character-image"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = `https://ui-avatars.com/api/?name=${game.name.replace(' ', '+')}&background=1a1a1a&color=fff&size=250`;
+                }}
+              />
+              <div className="game-card-overlay"></div>
 
-            <div className="absolute bottom-0 left-0 p-6 text-left">
-              <h2 className="mb-2 text-3xl font-bold text-white transition-colors group-hover:text-blue-400">
-                {game.name}
-              </h2>
-              <p className="text-sm text-gray-300 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
-                {game.description}
-              </p>
+              {!session && (
+                <div className="game-card-badges">
+                  <span className="requires-login-badge">Requires Login</span>
+                </div>
+              )}
             </div>
 
-            {!session && (
-              <div className="absolute right-4 top-4 rounded-full bg-blue-600/80 px-3 py-1 text-xs font-semibold backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100">
-                Requires Login
+            <div className="game-card-body">
+              <div className="game-title-row">
+                <h2 className="game-name">{game.name}</h2>
+                <span className="game-tag-badge">{game.tag}</span>
               </div>
-            )}
+              <p className="game-description">{game.description}</p>
+            </div>
           </button>
         ))}
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

@@ -10,7 +10,7 @@ export function Navbar({ userEmail, onSignIn, onSignOut }: NavbarProps) {
   return (
     <nav className="navbar">
       <div className="nav-brand">
-        <span className="brand-icon">✧</span> Astral Express Tracker
+        <span className="brand-icon">✧</span> The JonZone Tracker
       </div>
       <div className="nav-auth">
         {userEmail ? (
