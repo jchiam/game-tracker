@@ -1,7 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import { Navbar } from '@/components/Navbar';
-import { HsrPage } from '@/pages/hsr/HsrPage';
+import { HsrPage } from '@/pages/honkai-star-rail/HsrPage';
 import { SelectionPage } from '@/pages/SelectionPage';
 import { Reverse1999Page } from '@/pages/reverse1999/Reverse1999Page';
 import { useAuth } from '@/hooks/useAuth';
@@ -15,7 +15,7 @@ function App() {
       <Routes>
         <Route path="/" element={<SelectionPage />} />
         <Route
-          path="/hsr"
+          path="/honkai-star-rail"
           element={
             <HsrPage session={session} isAuthLoading={isAuthLoading} onSignIn={signInWithGoogle} />
           }

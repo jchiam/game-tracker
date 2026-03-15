@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 
 const GAMES = [
   {
-    id: 'hsr',
+    id: 'honkai-star-rail',
     name: 'Honkai Star Rail',
-    path: '/hsr',
-    bgClass: 'bg-hsr-sel',
+    path: '/honkai-star-rail',
+    bgClass: 'bg-honkai-star-rail-sel',
+    imageUrl: '/assets/honkai-star-rail/selection-cover.png',
     description: 'Track trailblazers, relics, and warp progress.',
+    tag: 'HoYoverse',
   },
   {
     id: 'reverse-1999',
