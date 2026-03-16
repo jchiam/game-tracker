@@ -70,7 +70,9 @@ export function AddArcanistModal({
                   <div className="arcanist-list-details">
                     <span className="arcanist-list-name">{arcanist.name}</span>
                     <div className="arcanist-list-tags">
-                      <span className={`afflatus-badge afflatus-${arcanist.afflatus.toLowerCase()}`}>
+                      <span
+                        className={`afflatus-badge afflatus-${arcanist.afflatus.toLowerCase()}`}
+                      >
                         {arcanist.afflatus}
                       </span>
                       <span className={`damage-badge damage-${arcanist.damageType.toLowerCase()}`}>

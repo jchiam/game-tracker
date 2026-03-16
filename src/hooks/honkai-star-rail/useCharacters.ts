@@ -244,7 +244,11 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   };
 
   const getFilteredRoster = useCallback(
-    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', scoreFor: (c: HsrTrackedCharacter) => number) => {
+    (
+      searchTerm: string,
+      sortBy: 'SCORE' | 'ALPHA',
+      scoreFor: (c: HsrTrackedCharacter) => number,
+    ) => {
       let result = trackedCharacters;
       if (searchTerm.trim()) {
         const fuse = new Fuse(trackedCharacters, {

@@ -11,10 +11,18 @@
   animation: fade-in-up 0.5s ease-out backwards;
 }
 
-.arcanist-card:nth-child(1) { animation-delay: 0.1s; }
-.arcanist-card:nth-child(2) { animation-delay: 0.2s; }
-.arcanist-card:nth-child(3) { animation-delay: 0.3s; }
-.arcanist-card:nth-child(4) { animation-delay: 0.4s; }
+.arcanist-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+.arcanist-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.arcanist-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.arcanist-card:nth-child(4) {
+  animation-delay: 0.4s;
+}
 
 .arcanist-card:hover {
   transform: translateY(-5px) scale(1.02);
@@ -321,6 +329,12 @@
 }
 
 @keyframes fade-in-up {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

@@ -55,9 +55,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     setTrackedArcanists((prev) => [...prev, newArcanist]);
     const dbId = await insertArcanist(session.user.id, arcanist.id);
     if (dbId)
-      setTrackedArcanists((prev) =>
-        prev.map((a) => (a.id === arcanist.id ? { ...a, dbId } : a)),
-      );
+      setTrackedArcanists((prev) => prev.map((a) => (a.id === arcanist.id ? { ...a, dbId } : a)));
   };
 
   const removeArcanist = async (id: string, e: React.MouseEvent) => {
