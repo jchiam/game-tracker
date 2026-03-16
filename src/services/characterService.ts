@@ -12,13 +12,13 @@ export async function loadCharactersFromDB(userId: string): Promise<TrackedChara
   if (!DB_ENABLED || !import.meta.env.VITE_SUPABASE_ANON_KEY) return [];
 
   const { data: dbData, error } = await supabase
-    .from('tracked_characters')
+    .from('hsr_tracked_characters')
     .select(
       `
       id, character_id, level, traces_attained, is_favorited, build_comments,
-      equipped_relics ( id, slot, set_id, main_stat, relic_substats ( stat_type, stat_value ) ),
-      build_preference_main_stats ( id, slot, stat, operator_to_next, order_index ),
-      build_preference_sub_stats ( id, stat, operator_to_next, order_index )
+      hsr_equipped_relics ( id, slot, set_id, main_stat, hsr_relic_substats ( stat_type, stat_value ) ),
+      hsr_build_preference_main_stats ( id, slot, stat, operator_to_next, order_index ),
+      hsr_build_preference_sub_stats ( id, stat, operator_to_next, order_index )
     `,
     )
     .eq('profile_id', userId);
@@ -36,19 +36,19 @@ export async function loadCharactersFromDB(userId: string): Promise<TrackedChara
       if (!baseChar) return null;
 
       const structuredRelics: any = { ...defaultRelics };
-      for (const r of row.equipped_relics || []) {
+      for (const r of row.hsr_equipped_relics || []) {
         structuredRelics[r.slot] = {
           setId: r.set_id,
           mainStat: r.main_stat,
-          subStats: (r.relic_substats || []).map((sub: any) => ({
+          subStats: (r.hsr_relic_substats || []).map((sub: any) => ({
             type: sub.stat_type,
             value: sub.stat_value,
           })),
         };
       }
 
-      const rawMainPrefs = row.build_preference_main_stats || [];
-      const rawSubPrefs = row.build_preference_sub_stats || [];
+      const rawMainPrefs = row.hsr_build_preference_main_stats || [];
+      const rawSubPrefs = row.hsr_build_preference_sub_stats || [];
       const prefs = {
         mainStats: { body: [], feet: [], sphere: [], rope: [] } as Record<string, any>,
         subStats: [] as any[],
@@ -91,7 +91,7 @@ export async function insertCharacter(userId: string, charId: string): Promise<s
   if (!DB_ENABLED) return null;
   await supabase.from('user_profiles').upsert({ id: userId, updated_at: new Date().toISOString() });
   const { data, error } = await supabase
-    .from('tracked_characters')
+    .from('hsr_tracked_characters')
     .insert({
       profile_id: userId,
       character_id: charId,
@@ -109,12 +109,12 @@ export async function insertCharacter(userId: string, charId: string): Promise<s
 
 export async function deleteCharacter(dbId: string): Promise<void> {
   if (!DB_ENABLED) return;
-  await supabase.from('tracked_characters').delete().eq('id', dbId);
+  await supabase.from('hsr_tracked_characters').delete().eq('id', dbId);
 }
 
 export async function updateCharacter(dbId: string, updates: Record<string, any>): Promise<void> {
   if (!DB_ENABLED) return;
-  const { error } = await supabase.from('tracked_characters').update(updates).eq('id', dbId);
+  const { error } = await supabase.from('hsr_tracked_characters').update(updates).eq('id', dbId);
   if (error) console.error('DB Update Failed:', error);
 }
 
@@ -125,7 +125,7 @@ export async function upsertRelic(
 ): Promise<void> {
   if (!DB_ENABLED) return;
   const { data: relicRow, error: relicErr } = await supabase
-    .from('equipped_relics')
+    .from('hsr_equipped_relics')
     .upsert(
       {
         tracked_character_id: dbId,
@@ -139,9 +139,9 @@ export async function upsertRelic(
     .single();
 
   if (relicRow && !relicErr) {
-    await supabase.from('relic_substats').delete().eq('relic_id', relicRow.id);
+    await supabase.from('hsr_relic_substats').delete().eq('relic_id', relicRow.id);
     if (relicData.subStats.length > 0) {
-      await supabase.from('relic_substats').insert(
+      await supabase.from('hsr_relic_substats').insert(
         relicData.subStats.map((s) => ({
           relic_id: relicRow.id,
           stat_type: s.type,
@@ -156,7 +156,7 @@ export async function upsertRelic(
 
 export async function deleteRelic(dbId: string, slot: string): Promise<void> {
   if (!DB_ENABLED) return;
-  await supabase.from('equipped_relics').delete().match({ tracked_character_id: dbId, slot });
+  await supabase.from('hsr_equipped_relics').delete().match({ tracked_character_id: dbId, slot });
 }
 
 export async function saveBuildPrefs(
@@ -164,12 +164,12 @@ export async function saveBuildPrefs(
   prefs: TrackedCharacter['buildPreferences'],
 ): Promise<void> {
   if (!DB_ENABLED) return;
-  await supabase.from('build_preference_main_stats').delete().eq('tracked_character_id', dbId);
-  await supabase.from('build_preference_sub_stats').delete().eq('tracked_character_id', dbId);
+  await supabase.from('hsr_build_preference_main_stats').delete().eq('tracked_character_id', dbId);
+  await supabase.from('hsr_build_preference_sub_stats').delete().eq('tracked_character_id', dbId);
 
   // Update comments on the character record
   await supabase
-    .from('tracked_characters')
+    .from('hsr_tracked_characters')
     .update({ build_comments: prefs.comments })
     .eq('id', dbId);
 
@@ -194,11 +194,11 @@ export async function saveBuildPrefs(
   }));
 
   if (mainInserts.length > 0) {
-    const { error } = await supabase.from('build_preference_main_stats').insert(mainInserts);
+    const { error } = await supabase.from('hsr_build_preference_main_stats').insert(mainInserts);
     if (error) console.error('Error saving main stat prefs:', error);
   }
   if (subInserts.length > 0) {
-    const { error } = await supabase.from('build_preference_sub_stats').insert(subInserts);
+    const { error } = await supabase.from('hsr_build_preference_sub_stats').insert(subInserts);
     if (error) console.error('Error saving sub stat prefs:', error);
   }
 }
