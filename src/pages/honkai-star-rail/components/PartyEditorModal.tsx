@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import type { HsrParty, HsrPartyMember } from '@/types';
-import type { Character } from '@/data/characters';
+import type { Character } from '@/data/honkai-star-rail/characters';
 import './PartyEditorModal.css';
 
 interface PartyEditorModalProps {

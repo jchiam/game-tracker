@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { calculateRelicScore, getStatMatchScore } from './relicScoring';
-import type { TrackedCharacter } from '../types';
+import type { HsrTrackedCharacter } from '../types';
 
 describe('getStatMatchScore', () => {
   it('returns 1.0 for exact matches', () => {
@@ -32,7 +32,7 @@ describe('getStatMatchScore', () => {
 });
 
 describe('calculateRelicScore', () => {
-  const getBaseCharacter = (): TrackedCharacter => ({
+  const getBaseCharacter = (): HsrTrackedCharacter => ({
     id: 'test',
     name: 'Test Character',
     element: 'Fire',

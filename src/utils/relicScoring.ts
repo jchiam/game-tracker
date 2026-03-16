@@ -1,4 +1,4 @@
-import type { TrackedCharacter } from '../types';
+import type { HsrTrackedCharacter } from '../types';
 
 export const MAIN_STAT_WEIGHT = 0.4;
 export const SUB_STAT_WEIGHT = 0.6;
@@ -26,9 +26,9 @@ export function getStatMatchScore(preferredStat: string, equippedStat: string): 
   return 0.0;
 }
 
-export function calculateRelicScore(character: TrackedCharacter): number {
+export function calculateRelicScore(character: HsrTrackedCharacter): number {
   let totalScore = 0;
-  const slots: Array<keyof TrackedCharacter['relics']> = [
+  const slots: Array<keyof HsrTrackedCharacter['relics']> = [
     'head',
     'hands',
     'body',
