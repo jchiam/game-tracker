@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -9,9 +10,9 @@ interface NavbarProps {
 export function Navbar({ userEmail, onSignIn, onSignOut }: NavbarProps) {
   return (
     <nav className="navbar">
-      <div className="nav-brand">
+      <Link to="/" className="nav-brand">
         <span className="brand-icon">✧</span> The JonZone Tracker
-      </div>
+      </Link>
       <div className="nav-auth">
         {userEmail ? (
           <>

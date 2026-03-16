@@ -5,10 +5,11 @@ test.describe('Selection Page UI and Behavior', () => {
     await page.goto('/');
   });
 
-  test('should show the brand title in the navbar', async ({ page }) => {
-    const brand = page.locator('.nav-brand');
+  test('should show the brand title link in the navbar', async ({ page }) => {
+    const brand = page.locator('a.nav-brand');
     await expect(brand).toBeVisible();
     await expect(brand).toContainText('The JonZone Tracker');
+    await expect(brand).toHaveAttribute('href', '/');
   });
 
   test('should display both game cards', async ({ page }) => {

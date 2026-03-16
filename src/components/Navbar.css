@@ -31,6 +31,18 @@
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.nav-brand:hover {
+  filter: brightness(1.2);
+  transform: translateY(-1px);
+}
+
+.nav-brand:active {
+  transform: translateY(0);
 }
 
 .nav-auth {
