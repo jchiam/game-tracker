@@ -1,0 +1,28 @@
+.parties-tab {
+  padding-bottom: var(--spacing-xl);
+}
+
+.parties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.parties-header h2 {
+  font-size: 1.8rem;
+  color: #fff;
+  margin: 0;
+}
+
+.parties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+@media (max-width: 480px) {
+  .parties-grid {
+    grid-template-columns: 1fr;
+  }
+}

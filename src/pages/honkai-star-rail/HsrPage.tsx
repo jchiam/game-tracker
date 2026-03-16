@@ -1,9 +1,11 @@
 import { useState, useMemo } from 'react';
 import { useCharacters, emptyRelic } from '@/hooks/useCharacters';
+import { useParties } from '@/hooks/useParties';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import { CharacterCard } from './components/CharacterCard';
 import { RelicEditorModal } from './components/RelicEditorModal';
 import { AddCharacterModal } from './components/AddCharacterModal';
+import { PartiesTab } from './components/PartiesTab';
 import { AuthGate } from '@/components/AuthGate';
 import type { TrackedCharacter } from '@/types';
 import type { Session } from '@supabase/supabase-js';
@@ -34,6 +36,9 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     getFilteredRoster,
   } = useCharacters(session, isAuthLoading);
 
+  const { parties, saveParty, deleteParty } = useParties(session);
+
+  const [view, setView] = useState<'roster' | 'parties'>('roster');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'SCORE' | 'ALPHA'>('SCORE');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -55,82 +60,110 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
   return (
     <main className="main-content">
       <header className="hero">
-        <h1 className="title">Trailblazer Roster</h1>
-        <p className="subtitle">
-          Manage and track your Honkai Star Rail characters' ascension and trace materials.
-        </p>
-        <div className="action-group">
+        <h1 className="title">Honkai Star Rail Tracker</h1>
+        <p className="subtitle">Manage your character roster and party configurations.</p>
+
+        <div className="view-selector">
           <button
-            className="secondary-action"
-            onClick={fetchLatestCharacters}
-            disabled={isUpdating}
+            className={`view-btn ${view === 'roster' ? 'active' : ''}`}
+            onClick={() => setView('roster')}
           >
-            {isUpdating ? 'Fetching Data...' : 'Force Sync Characters & Relics'}
+            Roster
           </button>
-          {session && (
-            <button className="primary-action" onClick={() => setIsModalOpen(true)}>
-              Add Character
-            </button>
-          )}
+          <button
+            className={`view-btn ${view === 'parties' ? 'active' : ''}`}
+            onClick={() => setView('parties')}
+          >
+            Parties
+          </button>
         </div>
-        {session && trackedCharacters.length > 0 && (
-          <div className="search-and-sort-container">
-            <input
-              type="text"
-              className="roster-search-input"
-              placeholder="Search by name, element, or path..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <button
-              className={`sort-btn ${sortBy === 'SCORE' ? 'active' : ''}`}
-              onClick={() => setSortBy((prev) => (prev === 'SCORE' ? 'ALPHA' : 'SCORE'))}
-              title={
-                sortBy === 'SCORE'
-                  ? 'Sorted by Relic Score — click to sort alphabetically'
-                  : 'Sorted alphabetically — click to sort by Relic Score'
-              }
-            >
-              {sortBy === 'SCORE' ? '★' : 'A–Z'}
-            </button>
-          </div>
+
+        {view === 'roster' && (
+          <>
+            <div className="action-group" style={{ marginTop: 'var(--spacing-md)' }}>
+              <button
+                className="secondary-action"
+                onClick={fetchLatestCharacters}
+                disabled={isUpdating}
+              >
+                {isUpdating ? 'Fetching Data...' : 'Force Sync Data'}
+              </button>
+              {session && (
+                <button className="primary-action" onClick={() => setIsModalOpen(true)}>
+                  Add Character
+                </button>
+              )}
+            </div>
+            {session && trackedCharacters.length > 0 && (
+              <div className="search-and-sort-container">
+                <input
+                  type="text"
+                  className="roster-search-input"
+                  placeholder="Search by name, element, or path..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <button
+                  className={`sort-btn ${sortBy === 'SCORE' ? 'active' : ''}`}
+                  onClick={() => setSortBy((prev) => (prev === 'SCORE' ? 'ALPHA' : 'SCORE'))}
+                  title={
+                    sortBy === 'SCORE'
+                      ? 'Sorted by Relic Score — click to sort alphabetically'
+                      : 'Sorted alphabetically — click to sort by Relic Score'
+                  }
+                >
+                  {sortBy === 'SCORE' ? '★' : 'A–Z'}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </header>
 
-      <section className="roster-grid">
-        {isAuthLoading ? (
-          <div className="empty-state">
-            <p>Authenticating...</p>
-          </div>
-        ) : isInitialLoad && session ? (
-          <div className="empty-state">
-            <p>Loading database sync...</p>
-          </div>
-        ) : !session ? (
-          <AuthGate onSignIn={onSignIn} />
-        ) : trackedCharacters.length === 0 ? (
-          <div className="empty-state">
-            <p>No characters tracked yet. Click "Add Character" to begin!</p>
-          </div>
-        ) : filteredRoster.length === 0 ? (
-          <div className="empty-state">
-            <p>No characters match your search.</p>
-          </div>
-        ) : (
-          filteredRoster.map((char) => (
-            <CharacterCard
-              key={char.id}
-              char={char}
-              availableRelicSets={availableRelicSets}
-              onRemove={removeCharacter}
-              onUpdateLevel={updateCharacterLevel}
-              onToggleTraces={toggleCharacterTraces}
-              onToggleFavorite={toggleFavoriteCharacter}
-              onToggleRelic={(id, slot) => setEditingRelic({ charId: id, slot })}
-            />
-          ))
-        )}
-      </section>
+      {view === 'roster' ? (
+        <section className="roster-grid">
+          {isAuthLoading ? (
+            <div className="empty-state">
+              <p>Authenticating...</p>
+            </div>
+          ) : isInitialLoad && session ? (
+            <div className="empty-state">
+              <p>Loading database sync...</p>
+            </div>
+          ) : !session ? (
+            <AuthGate onSignIn={onSignIn} />
+          ) : trackedCharacters.length === 0 ? (
+            <div className="empty-state">
+              <p>No characters tracked yet. Click "Add Character" to begin!</p>
+            </div>
+          ) : filteredRoster.length === 0 ? (
+            <div className="empty-state">
+              <p>No characters match your search.</p>
+            </div>
+          ) : (
+            filteredRoster.map((char) => (
+              <CharacterCard
+                key={char.id}
+                char={char}
+                availableRelicSets={availableRelicSets}
+                onRemove={removeCharacter}
+                onUpdateLevel={updateCharacterLevel}
+                onToggleTraces={toggleCharacterTraces}
+                onToggleFavorite={toggleFavoriteCharacter}
+                onToggleRelic={(id, slot) => setEditingRelic({ charId: id, slot })}
+              />
+            ))
+          )}
+        </section>
+      ) : (
+        <PartiesTab
+          parties={parties}
+          availableCharacters={availableCharacters}
+          onSaveParty={saveParty}
+          onDeleteParty={deleteParty}
+          session={session}
+        />
+      )}
 
       {editingRelic &&
         (() => {

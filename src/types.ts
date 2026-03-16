@@ -25,3 +25,17 @@ export interface TrackedCharacter extends Character {
     comments?: string;
   };
 }
+
+export interface HsrParty {
+  id: string;
+  profileId: string;
+  name: string;
+  notes: string | null;
+  members: HsrPartyMember[];
+  createdAt: string;
+}
+
+export interface HsrPartyMember {
+  characterId: string;
+  slotIndex: number;
+}
