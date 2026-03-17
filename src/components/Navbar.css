@@ -12,6 +12,11 @@
   z-index: 100;
 }
 
+.nav-left {
+  display: flex;
+  align-items: center;
+}
+
 .brand-icon {
   color: var(--color-primary);
   -webkit-text-fill-color: var(--color-primary);

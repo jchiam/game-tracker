@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { GameSwitcher } from './GameSwitcher';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -10,9 +11,12 @@ interface NavbarProps {
 export function Navbar({ userEmail, onSignIn, onSignOut }: NavbarProps) {
   return (
     <nav className="navbar">
-      <Link to="/" className="nav-brand">
-        <span className="brand-icon">✧</span> The JonZone Tracker
-      </Link>
+      <div className="nav-left">
+        <Link to="/" className="nav-brand">
+          <span className="brand-icon">✧</span> The JonZone Tracker
+        </Link>
+        <GameSwitcher />
+      </div>
       <div className="nav-auth">
         {userEmail ? (
           <>

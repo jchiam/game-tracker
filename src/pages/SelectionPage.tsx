@@ -1,5 +1,5 @@
-import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
+import type { Session } from '@supabase/supabase-js';
 
 const GAMES = [
   {
@@ -22,8 +22,13 @@ const GAMES = [
   },
 ];
 
-export function SelectionPage() {
-  const { session, signInWithGoogle, isAuthLoading } = useAuth();
+interface SelectionPageProps {
+  session: Session | null;
+  isAuthLoading: boolean;
+  signInWithGoogle: (path: string) => void;
+}
+
+export function SelectionPage({ session, isAuthLoading, signInWithGoogle }: SelectionPageProps) {
   const navigate = useNavigate();
 
   const handleGameSelect = (path: string) => {

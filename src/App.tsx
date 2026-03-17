@@ -13,7 +13,16 @@ function App() {
     <div className="layout">
       <Navbar userEmail={session?.user?.email} onSignIn={signInWithGoogle} onSignOut={signOut} />
       <Routes>
-        <Route path="/" element={<SelectionPage />} />
+        <Route
+          path="/"
+          element={
+            <SelectionPage
+              session={session}
+              isAuthLoading={isAuthLoading}
+              signInWithGoogle={signInWithGoogle}
+            />
+          }
+        />
         <Route
           path="/honkai-star-rail"
           element={
