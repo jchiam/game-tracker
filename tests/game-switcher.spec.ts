@@ -36,7 +36,7 @@ test.describe('Game Switcher', () => {
 
     // Open switcher again
     await page.click('.switcher-trigger');
-    
+
     // Click Honkai Star Rail
     await page.click('.dropdown-item:has-text("Honkai Star Rail")');
 

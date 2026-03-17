@@ -12,10 +12,10 @@ export function Navbar({ userEmail, onSignIn, onSignOut }: NavbarProps) {
   return (
     <nav className="navbar">
       <div className="nav-left">
+        <GameSwitcher />
         <Link to="/" className="nav-brand">
           <span className="brand-icon">✧</span> The JonZone Tracker
         </Link>
-        <GameSwitcher />
       </div>
       <div className="nav-auth">
         {userEmail ? (

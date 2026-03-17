@@ -1,6 +1,6 @@
 .game-switcher {
   position: relative;
-  margin-left: var(--spacing-md);
+  margin-right: var(--spacing-md);
 }
 
 .switcher-trigger {

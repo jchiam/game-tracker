@@ -47,11 +47,7 @@ export function GameSwitcher() {
         aria-label="Switch Game"
       >
         <div className="current-game-icon-container">
-          <img
-            src={currentGame?.icon}
-            alt=""
-            className="current-game-icon-img"
-          />
+          <img src={currentGame?.icon} alt="" className="current-game-icon-img" />
         </div>
         <span className="chevron">▾</span>
       </button>
