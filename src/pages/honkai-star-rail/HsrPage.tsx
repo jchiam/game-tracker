@@ -76,17 +76,10 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           </button>
         </div>
 
-        {view === 'roster' && (
-          <>
-            {session && (
-              <div className="action-group" style={{ marginTop: 'var(--spacing-md)' }}>
-                <button className="primary-action" onClick={() => setIsModalOpen(true)}>
-                  Add Character
-                </button>
-              </div>
-            )}
-            {session && trackedCharacters.length > 0 && (
-              <div className="search-and-sort-container">
+        {view === 'roster' && session && (
+          <div className="search-and-sort-container" style={{ marginTop: 'var(--spacing-md)' }}>
+            {trackedCharacters.length > 0 && (
+              <>
                 <input
                   type="text"
                   className="roster-search-input"
@@ -103,11 +96,32 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
                       : 'Sorted alphabetically — click to sort by Relic Score'
                   }
                 >
-                  {sortBy === 'SCORE' ? '★' : 'A–Z'}
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M2 3h10M2 7h6M2 11h3" />
+                    <path d="M10 6v6M10 12l-2-2M10 12l2-2" />
+                  </svg>
+                  <span className="sort-btn-label">{sortBy === 'SCORE' ? '★' : 'AZ'}</span>
                 </button>
-              </div>
+              </>
             )}
-          </>
+            <button
+              className="add-character-btn"
+              onClick={() => setIsModalOpen(true)}
+              title="Add Character"
+            >
+              +
+            </button>
+          </div>
         )}
       </header>
 
