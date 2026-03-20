@@ -19,11 +19,10 @@ export const emptyRelic: EquippedRelic = { setId: null, mainStat: null, subStats
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
 
 export function useCharacters(session: Session | null, isAuthLoading: boolean) {
-  const [availableCharacters, setAvailableCharacters] = useState<Character[]>(ALL_CHARACTERS);
-  const [availableRelicSets, setAvailableRelicSets] = useState<RelicSet[]>(ALL_RELIC_SETS);
+  const [availableCharacters] = useState<Character[]>(ALL_CHARACTERS);
+  const [availableRelicSets] = useState<RelicSet[]>(ALL_RELIC_SETS);
   const [trackedCharacters, setTrackedCharacters] = useState<HsrTrackedCharacter[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
 
   // Debounce refs for DB writes
   const pendingUpdates = useRef<Record<string, any>>({});
@@ -82,77 +81,6 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [session?.user?.id, isAuthLoading]);
-
-  const fetchLatestCharacters = async () => {
-    setIsUpdating(true);
-    try {
-      const [charResponse, relicResponse, pathResponse] = await Promise.all([
-        fetch(
-          'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/characters.json',
-        ),
-        fetch(
-          'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/relic_sets.json',
-        ),
-        fetch(
-          'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/index_new/en/paths.json',
-        ),
-      ]);
-      if (!charResponse.ok || !relicResponse.ok) throw new Error('Failed to fetch data');
-      const charData = await charResponse.json();
-      const relicData = await relicResponse.json();
-      // Build path ID → display name map from the remote paths.json
-      const pathMap: Record<string, string> = {};
-      if (pathResponse.ok) {
-        const pathData = await pathResponse.json();
-        for (const [id, info] of Object.entries(pathData)) {
-          if (info && typeof info === 'object') pathMap[id] = (info as any).name || id;
-        }
-      }
-      const IMAGE_BASE_URL = 'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/';
-      const newCharacters: Character[] = [];
-      const newRelics: RelicSet[] = [];
-      for (const [id, info] of Object.entries(charData)) {
-        if (!info || typeof info !== 'object') continue;
-        const i = info as any;
-        const pathDisplayName = pathMap[i.path] || i.path || '';
-        newCharacters.push({
-          id,
-          name: i.name,
-          element: i.element || 'Unknown',
-          path: pathDisplayName,
-          imageUrl: `${IMAGE_BASE_URL}${i.icon}`,
-        });
-      }
-      for (const [id, info] of Object.entries(relicData)) {
-        if (!info || typeof info !== 'object') continue;
-        const i = info as any;
-        newRelics.push({ id, name: i.name, icon: `${IMAGE_BASE_URL}${i.icon}` });
-      }
-      if (newCharacters.length > 0) {
-        setAvailableCharacters(newCharacters);
-        setTrackedCharacters((prev) =>
-          prev.map((tc) => {
-            const updated = newCharacters.find((nc) => nc.name === tc.name);
-            return updated
-              ? {
-                  ...tc,
-                  id: updated.id,
-                  imageUrl: updated.imageUrl,
-                  element: updated.element,
-                  path: updated.path,
-                }
-              : tc;
-          }),
-        );
-      }
-      if (newRelics.length > 0) setAvailableRelicSets(newRelics);
-    } catch (err) {
-      console.error('Error updating data:', err);
-      alert('Failed to connect to update server.');
-    } finally {
-      setIsUpdating(false);
-    }
-  };
 
   const addCharacter = async (char: Character) => {
     if (!session) {
@@ -275,8 +203,6 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     availableRelicSets,
     trackedCharacters,
     isInitialLoad,
-    isUpdating,
-    fetchLatestCharacters,
     addCharacter,
     removeCharacter,
     updateCharacterLevel,

@@ -1,4 +1,5 @@
-// Auto-generated from StarRailRes
+// Auto-generated from StarRailRes — do not edit manually.
+// Run `node scripts/update-hsr-data.mjs` or trigger the GitHub Actions workflow to update.
 import { type RelicSet } from './relics';
 
 export const ALL_RELIC_SETS: RelicSet[] = [

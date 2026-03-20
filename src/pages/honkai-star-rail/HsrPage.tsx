@@ -23,8 +23,6 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     availableRelicSets,
     trackedCharacters,
     isInitialLoad,
-    isUpdating,
-    fetchLatestCharacters,
     addCharacter,
     removeCharacter,
     updateCharacterLevel,
@@ -80,20 +78,13 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
 
         {view === 'roster' && (
           <>
-            <div className="action-group" style={{ marginTop: 'var(--spacing-md)' }}>
-              <button
-                className="secondary-action"
-                onClick={fetchLatestCharacters}
-                disabled={isUpdating}
-              >
-                {isUpdating ? 'Fetching Data...' : 'Force Sync Data'}
-              </button>
-              {session && (
+            {session && (
+              <div className="action-group" style={{ marginTop: 'var(--spacing-md)' }}>
                 <button className="primary-action" onClick={() => setIsModalOpen(true)}>
                   Add Character
                 </button>
-              )}
-            </div>
+              </div>
+            )}
             {session && trackedCharacters.length > 0 && (
               <div className="search-and-sort-container">
                 <input

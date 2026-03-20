@@ -1,3 +1,6 @@
+// Auto-generated from StarRailRes — do not edit manually.
+// Run `node scripts/update-hsr-data.mjs` or trigger the GitHub Actions workflow to update.
+
 export interface Character {
   id: string;
   name: string;
@@ -11,9 +14,30 @@ export const ALL_CHARACTERS: Character[] = [
   {
     id: 'acheron',
     name: 'Acheron',
-    element: 'Lightning',
+    element: 'Thunder',
     path: 'Nihility',
     imageUrl: '/assets/honkai-star-rail/characters/acheron.webp',
+  },
+  {
+    id: 'aglaea',
+    name: 'Aglaea',
+    element: 'Thunder',
+    path: 'Remembrance',
+    imageUrl: '/assets/honkai-star-rail/characters/aglaea.webp',
+  },
+  {
+    id: 'anaxa',
+    name: 'Anaxa',
+    element: 'Wind',
+    path: 'Erudition',
+    imageUrl: '/assets/honkai-star-rail/characters/anaxa.webp',
+  },
+  {
+    id: 'archer',
+    name: 'Archer',
+    element: 'Quantum',
+    path: 'The Hunt',
+    imageUrl: '/assets/honkai-star-rail/characters/archer.webp',
   },
   {
     id: 'argent',
@@ -32,7 +56,7 @@ export const ALL_CHARACTERS: Character[] = [
   {
     id: 'bailu',
     name: 'Bailu',
-    element: 'Lightning',
+    element: 'Thunder',
     path: 'Abundance',
     imageUrl: '/assets/honkai-star-rail/characters/bailu.webp',
   },
@@ -51,11 +75,39 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/blade.webp',
   },
   {
+    id: 'boothill',
+    name: 'Boothill',
+    element: 'Physical',
+    path: 'The Hunt',
+    imageUrl: '/assets/honkai-star-rail/characters/boothill.webp',
+  },
+  {
     id: 'bronya',
     name: 'Bronya',
     element: 'Wind',
     path: 'Harmony',
     imageUrl: '/assets/honkai-star-rail/characters/bronya.webp',
+  },
+  {
+    id: 'castorice',
+    name: 'Castorice',
+    element: 'Quantum',
+    path: 'Remembrance',
+    imageUrl: '/assets/honkai-star-rail/characters/castorice.webp',
+  },
+  {
+    id: 'cerydra',
+    name: 'Cerydra',
+    element: 'Wind',
+    path: 'Harmony',
+    imageUrl: '/assets/honkai-star-rail/characters/cerydra.webp',
+  },
+  {
+    id: 'cipher',
+    name: 'Cipher',
+    element: 'Quantum',
+    path: 'Nihility',
+    imageUrl: '/assets/honkai-star-rail/characters/cipher.webp',
   },
   {
     id: 'clara',
@@ -65,6 +117,13 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/clara.webp',
   },
   {
+    id: 'cyrene',
+    name: 'Cyrene',
+    element: 'Ice',
+    path: 'Remembrance',
+    imageUrl: '/assets/honkai-star-rail/characters/cyrene.webp',
+  },
+  {
     id: 'dan_heng_il',
     name: 'Dan Heng • Imbibitor Lunae',
     element: 'Imaginary',
@@ -72,11 +131,32 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/dan_heng_il.webp',
   },
   {
+    id: 'dan-heng-permansor-terrae',
+    name: 'Dan Heng • Permansor Terrae',
+    element: 'Physical',
+    path: 'Preservation',
+    imageUrl: '/assets/honkai-star-rail/characters/dan-heng-permansor-terrae.webp',
+  },
+  {
     id: 'dr_ratio',
     name: 'Dr. Ratio',
     element: 'Imaginary',
     path: 'The Hunt',
     imageUrl: '/assets/honkai-star-rail/characters/dr_ratio.webp',
+  },
+  {
+    id: 'evernight',
+    name: 'Evernight',
+    element: 'Ice',
+    path: 'Remembrance',
+    imageUrl: '/assets/honkai-star-rail/characters/evernight.webp',
+  },
+  {
+    id: 'feixiao',
+    name: 'Feixiao',
+    element: 'Wind',
+    path: 'The Hunt',
+    imageUrl: '/assets/honkai-star-rail/characters/feixiao.webp',
   },
   {
     id: 'firefly',
@@ -91,6 +171,13 @@ export const ALL_CHARACTERS: Character[] = [
     element: 'Quantum',
     path: 'Preservation',
     imageUrl: '/assets/honkai-star-rail/characters/fu_xuan.webp',
+  },
+  {
+    id: 'fugue',
+    name: 'Fugue',
+    element: 'Fire',
+    path: 'Nihility',
+    imageUrl: '/assets/honkai-star-rail/characters/fugue.webp',
   },
   {
     id: 'gepard',
@@ -114,9 +201,37 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/huohuo.webp',
   },
   {
+    id: 'hyacine',
+    name: 'Hyacine',
+    element: 'Wind',
+    path: 'Remembrance',
+    imageUrl: '/assets/honkai-star-rail/characters/hyacine.webp',
+  },
+  {
+    id: 'hysilens',
+    name: 'Hysilens',
+    element: 'Physical',
+    path: 'Nihility',
+    imageUrl: '/assets/honkai-star-rail/characters/hysilens.webp',
+  },
+  {
+    id: 'jade',
+    name: 'Jade',
+    element: 'Quantum',
+    path: 'Erudition',
+    imageUrl: '/assets/honkai-star-rail/characters/jade.webp',
+  },
+  {
+    id: 'jiaoqiu',
+    name: 'Jiaoqiu',
+    element: 'Fire',
+    path: 'Nihility',
+    imageUrl: '/assets/honkai-star-rail/characters/jiaoqiu.webp',
+  },
+  {
     id: 'jing_yuan',
     name: 'Jing Yuan',
-    element: 'Lightning',
+    element: 'Thunder',
     path: 'Erudition',
     imageUrl: '/assets/honkai-star-rail/characters/jing_yuan.webp',
   },
@@ -130,9 +245,16 @@ export const ALL_CHARACTERS: Character[] = [
   {
     id: 'kafka',
     name: 'Kafka',
-    element: 'Lightning',
+    element: 'Thunder',
     path: 'Nihility',
     imageUrl: '/assets/honkai-star-rail/characters/kafka.webp',
+  },
+  {
+    id: 'lingsha',
+    name: 'Lingsha',
+    element: 'Fire',
+    path: 'Abundance',
+    imageUrl: '/assets/honkai-star-rail/characters/lingsha.webp',
   },
   {
     id: 'luocha',
@@ -142,11 +264,46 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/luocha.webp',
   },
   {
+    id: 'mydei',
+    name: 'Mydei',
+    element: 'Imaginary',
+    path: 'Destruction',
+    imageUrl: '/assets/honkai-star-rail/characters/mydei.webp',
+  },
+  {
+    id: 'phainon',
+    name: 'Phainon',
+    element: 'Physical',
+    path: 'Destruction',
+    imageUrl: '/assets/honkai-star-rail/characters/phainon.webp',
+  },
+  {
+    id: 'rappa',
+    name: 'Rappa',
+    element: 'Imaginary',
+    path: 'Erudition',
+    imageUrl: '/assets/honkai-star-rail/characters/rappa.webp',
+  },
+  {
+    id: 'robin',
+    name: 'Robin',
+    element: 'Physical',
+    path: 'Harmony',
+    imageUrl: '/assets/honkai-star-rail/characters/robin.webp',
+  },
+  {
     id: 'ruan_mei',
     name: 'Ruan Mei',
     element: 'Ice',
     path: 'Harmony',
     imageUrl: '/assets/honkai-star-rail/characters/ruan_mei.webp',
+  },
+  {
+    id: 'saber',
+    name: 'Saber',
+    element: 'Wind',
+    path: 'Destruction',
+    imageUrl: '/assets/honkai-star-rail/characters/saber.webp',
   },
   {
     id: 'seele',
@@ -170,11 +327,46 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/sparkle.webp',
   },
   {
+    id: 'sparxie',
+    name: 'Sparxie',
+    element: 'Fire',
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/characters/sparxie.webp',
+  },
+  {
+    id: 'sunday',
+    name: 'Sunday',
+    element: 'Imaginary',
+    path: 'Harmony',
+    imageUrl: '/assets/honkai-star-rail/characters/sunday.webp',
+  },
+  {
+    id: 'the-dahlia',
+    name: 'The Dahlia',
+    element: 'Fire',
+    path: 'Nihility',
+    imageUrl: '/assets/honkai-star-rail/characters/the-dahlia.webp',
+  },
+  {
+    id: 'the-herta',
+    name: 'The Herta',
+    element: 'Ice',
+    path: 'Erudition',
+    imageUrl: '/assets/honkai-star-rail/characters/the-herta.webp',
+  },
+  {
     id: 'topaz',
     name: 'Topaz & Numby',
     element: 'Fire',
     path: 'The Hunt',
     imageUrl: '/assets/honkai-star-rail/characters/topaz.webp',
+  },
+  {
+    id: 'tribbie',
+    name: 'Tribbie',
+    element: 'Quantum',
+    path: 'Harmony',
+    imageUrl: '/assets/honkai-star-rail/characters/tribbie.webp',
   },
   {
     id: 'welt',
@@ -190,12 +382,25 @@ export const ALL_CHARACTERS: Character[] = [
     path: 'The Hunt',
     imageUrl: '/assets/honkai-star-rail/characters/yanqing.webp',
   },
-
+  {
+    id: 'yao-guang',
+    name: 'Yao Guang',
+    element: 'Physical',
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/characters/yao-guang.webp',
+  },
+  {
+    id: 'yunli',
+    name: 'Yunli',
+    element: 'Physical',
+    path: 'Destruction',
+    imageUrl: '/assets/honkai-star-rail/characters/yunli.webp',
+  },
   // 4-Stars
   {
     id: 'arlan',
     name: 'Arlan',
-    element: 'Lightning',
+    element: 'Thunder',
     path: 'Destruction',
     imageUrl: '/assets/honkai-star-rail/characters/arlan.webp',
   },
@@ -270,11 +475,11 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/march_7th.webp',
   },
   {
-    id: 'march_7th_hunt',
-    name: 'March 7th (Hunt)',
+    id: 'march_7th_the_hunt',
+    name: 'March 7th',
     element: 'Imaginary',
     path: 'The Hunt',
-    imageUrl: '/assets/honkai-star-rail/characters/march_7th_hunt.webp',
+    imageUrl: '/assets/honkai-star-rail/characters/march_7th_the_hunt.webp',
   },
   {
     id: 'misha',
@@ -286,7 +491,7 @@ export const ALL_CHARACTERS: Character[] = [
   {
     id: 'moze',
     name: 'Moze',
-    element: 'Lightning',
+    element: 'Thunder',
     path: 'The Hunt',
     imageUrl: '/assets/honkai-star-rail/characters/moze.webp',
   },
@@ -321,7 +526,7 @@ export const ALL_CHARACTERS: Character[] = [
   {
     id: 'serval',
     name: 'Serval',
-    element: 'Lightning',
+    element: 'Thunder',
     path: 'Erudition',
     imageUrl: '/assets/honkai-star-rail/characters/serval.webp',
   },
@@ -335,7 +540,7 @@ export const ALL_CHARACTERS: Character[] = [
   {
     id: 'tingyun',
     name: 'Tingyun',
-    element: 'Lightning',
+    element: 'Thunder',
     path: 'Harmony',
     imageUrl: '/assets/honkai-star-rail/characters/tingyun.webp',
   },
