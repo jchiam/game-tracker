@@ -16,6 +16,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
   const {
     availableArcanists,
     trackedArcanists,
+    isInitialLoad,
     addArcanist,
     removeArcanist,
     updateArcanistLevel,
@@ -38,48 +39,69 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       <header className="hero">
         <h1 className="title">Reverse: 1999 Arcanists</h1>
         <p className="subtitle">Track your arcanists and build progress.</p>
-        <div className="action-group">
-          <button className="secondary-action" disabled title="Coming soon">
-            Force Sync Arcanists
-          </button>
-          {session && (
-            <button className="primary-action" onClick={() => setIsModalOpen(true)}>
-              Add Arcanist
+        {session && (
+          <div className="roster-controls">
+            {trackedArcanists.length > 0 && (
+              <>
+                <input
+                  type="text"
+                  className="search-input"
+                  placeholder="Search by name, afflatus, or damage type..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <button
+                  className={`sort-btn ${sortBy === 'ALPHA' ? 'active' : ''}`}
+                  onClick={() => setSortBy((prev) => (prev === 'ALPHA' ? 'LEVEL' : 'ALPHA'))}
+                  title={
+                    sortBy === 'ALPHA'
+                      ? 'Sorted alphabetically — click to sort by Level'
+                      : 'Sorted by Level — click to sort alphabetically'
+                  }
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 14 14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <path d="M2 3h10M2 7h6M2 11h3" />
+                    <path d="M10 6v6M10 12l-2-2M10 12l2-2" />
+                  </svg>
+                  <span className="sort-btn-label">{sortBy === 'ALPHA' ? 'AZ' : 'Lv'}</span>
+                </button>
+              </>
+            )}
+            <button
+              className="add-arcanist-btn"
+              onClick={() => setIsModalOpen(true)}
+              title="Add Arcanist"
+            >
+              +
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </header>
-
-      {session && trackedArcanists.length > 0 && (
-        <div className="roster-controls">
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search roster..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-          />
-          <select
-            className="sort-select"
-            value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as 'ALPHA' | 'LEVEL')}
-          >
-            <option value="ALPHA">Sort by Name</option>
-            <option value="LEVEL">Sort by Level</option>
-          </select>
-        </div>
-      )}
 
       <section className="roster-grid">
         {isAuthLoading ? (
           <div className="empty-state">
             <p>Authenticating...</p>
           </div>
+        ) : isInitialLoad && session ? (
+          <div className="empty-state">
+            <p>Loading database sync...</p>
+          </div>
         ) : !session ? (
           <AuthGate onSignIn={onSignIn} />
         ) : trackedArcanists.length === 0 ? (
           <div className="empty-state">
-            <p>No arcanists tracked yet. Click "Add Arcanist" to begin!</p>
+            <p>No arcanists tracked yet. Use the + button to begin!</p>
           </div>
         ) : filteredRoster.length === 0 ? (
           <div className="empty-state">
