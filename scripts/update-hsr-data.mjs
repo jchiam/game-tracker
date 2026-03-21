@@ -6,7 +6,7 @@
 //
 // Usage: node scripts/update-hsr-data.mjs
 
-import { readFile, writeFile, mkdir } from 'fs/promises';
+import { readFile, writeFile, mkdir, access } from 'fs/promises';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 
@@ -63,6 +63,15 @@ async function loadExistingRelicSets() {
     return entries;
   } catch {
     return [];
+  }
+}
+
+async function fileExists(path) {
+  try {
+    await access(path);
+    return true;
+  } catch {
+    return false;
   }
 }
 
@@ -209,11 +218,13 @@ async function main() {
     const imageUrl = `/assets/honkai-star-rail/characters/${id}.webp`;
     const imageLocalPath = resolve(charImgDir, `${id}.webp`);
 
-    try {
-      await downloadBinary(`${STAR_RAIL_RES_BASE}/${c.icon}`, imageLocalPath);
-      charImgCount++;
-    } catch (e) {
-      console.warn(`  Warning: Could not download image for ${c.name}: ${e.message}`);
+    if (!(await fileExists(imageLocalPath))) {
+      try {
+        await downloadBinary(`${STAR_RAIL_RES_BASE}/${c.icon}`, imageLocalPath);
+        charImgCount++;
+      } catch (e) {
+        console.warn(`  Warning: Could not download image for ${c.name}: ${e.message}`);
+      }
     }
 
     characters.push({
@@ -244,11 +255,13 @@ async function main() {
     const iconUrl = `/assets/honkai-star-rail/relics/${id}.${ext}`;
     const iconLocalPath = resolve(relicImgDir, `${id}.${ext}`);
 
-    try {
-      await downloadBinary(`${STAR_RAIL_RES_BASE}/${i.icon}`, iconLocalPath);
-      relicImgCount++;
-    } catch (e) {
-      console.warn(`  Warning: Could not download relic icon ${id}: ${e.message}`);
+    if (!(await fileExists(iconLocalPath))) {
+      try {
+        await downloadBinary(`${STAR_RAIL_RES_BASE}/${i.icon}`, iconLocalPath);
+        relicImgCount++;
+      } catch (e) {
+        console.warn(`  Warning: Could not download relic icon ${id}: ${e.message}`);
+      }
     }
 
     relicSets.push({ id, name: i.name, icon: iconUrl });
