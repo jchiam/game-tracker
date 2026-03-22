@@ -14,7 +14,8 @@ export function Navbar({ userEmail, onSignIn, onSignOut }: NavbarProps) {
       <div className="nav-left">
         <GameSwitcher />
         <Link to="/" className="nav-brand">
-          <span className="brand-icon">✧</span> The JonZone Tracker
+          <img src="/brand-logo.webp" alt="JC" className="brand-logo" />
+          The JonZone Tracker
         </Link>
       </div>
       <div className="nav-auth">

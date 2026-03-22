@@ -17,12 +17,14 @@
   align-items: center;
 }
 
-.brand-icon {
-  color: var(--color-primary);
-  -webkit-text-fill-color: var(--color-primary);
-  font-size: 1.2rem;
+.brand-logo {
+  height: 40px;
+  width: auto;
   margin-right: var(--spacing-sm);
-  filter: drop-shadow(0 0 5px var(--color-primary-glow));
+  /* The logo has a light background — mix-blend-mode lighten makes it
+     render cleanly against the dark navbar without a visible box. */
+  mix-blend-mode: lighten;
+  opacity: 0.92;
 }
 
 .nav-brand {
