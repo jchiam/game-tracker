@@ -64,11 +64,36 @@ async function fileExists(path) {
   }
 }
 
-async function downloadBinary(url, destPath) {
+// Download a kornblume i0 image, crop a square from the top, and save as WebP.
+async function downloadAndCropArcanistImage(url, destPath) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const buffer = Buffer.from(await res.arrayBuffer());
-  await writeFile(destPath, buffer);
+
+  const sharp = (await import('sharp')).default;
+  const { width } = await sharp(buffer).metadata();
+
+  await sharp(buffer)
+    .extract({ left: 0, top: 0, width, height: width })
+    .resize(256, 256)
+    .webp({ quality: 85 })
+    .toFile(destPath);
+}
+
+// Build a reverse lookup from resolved wiki title → original kornblume name,
+// using the redirects and normalized arrays returned by the MediaWiki API.
+// This handles cases where the kornblume name differs from the wiki page title
+// (e.g. "Ezra Theodore" in kornblume → "Ezra" on the wiki).
+function buildReverseMap(query) {
+  const reverse = new Map();
+  for (const { from, to } of query?.redirects ?? []) {
+    reverse.set(to, from);
+  }
+  for (const { from, to } of query?.normalized ?? []) {
+    const original = reverse.get(from) ?? from;
+    reverse.set(to, original);
+  }
+  return reverse;
 }
 
 // Batch-fetch damage types from Fandom wiki (up to 50 titles per request)
@@ -79,17 +104,19 @@ async function fetchDamageTypes(names) {
   for (let i = 0; i < names.length; i += BATCH_SIZE) {
     const batch = names.slice(i, i + BATCH_SIZE);
     const titlesParam = batch.map((n) => encodeURIComponent(n)).join('|');
-    const url = `${FANDOM_API}?action=query&prop=revisions&titles=${titlesParam}&rvprop=content&rvslots=main&format=json`;
+    const url = `${FANDOM_API}?action=query&prop=revisions&titles=${titlesParam}&rvprop=content&rvslots=main&format=json&redirects`;
 
     try {
       const data = await fetchJSON(url);
+      const reverseMap = buildReverseMap(data.query);
       const pages = data.query?.pages ?? {};
       for (const page of Object.values(pages)) {
         const wikitext =
           page.revisions?.[0]?.slots?.main?.['*'] ?? page.revisions?.[0]?.['*'] ?? '';
         const dmgMatch = wikitext.match(/\|\s*damage\s*=\s*(\w+)/i);
         if (dmgMatch) {
-          damageMap.set(page.title, dmgMatch[1]);
+          const name = reverseMap.get(page.title) ?? page.title;
+          damageMap.set(name, dmgMatch[1]);
         }
       }
     } catch (e) {
@@ -129,6 +156,7 @@ function generateArcanistsTs(arcanists) {
       `    afflatus: '${a.afflatus}',`,
       `    damageType: '${a.damageType}',`,
       `    imageUrl: '${a.imageUrl}',`,
+      `    mugshot: '/assets/reverse-1999/arcanists/mugshots/${a.id}.webp',`,
       `  },`,
     ].join('\n');
 
@@ -166,8 +194,8 @@ async function main() {
 
   console.log(`  Found ${releasedRaw.length} released arcanists in kornblume`);
 
-  // Batch-fetch damage types from Fandom wiki
   const names = releasedRaw.map((c) => c.Name);
+
   console.log('  Fetching damage types from Fandom wiki...');
   const wikiDamage = await fetchDamageTypes(names);
   console.log(`  Got damage types for ${wikiDamage.size}/${names.length} arcanists`);
@@ -198,13 +226,15 @@ async function main() {
 
     if (!(await fileExists(imageLocalPath))) {
       try {
-        await downloadBinary(
-          `${KORNBLUME_BASE}/images/arcanists/icon/${c.Id}.webp`,
+        await downloadAndCropArcanistImage(
+          `${KORNBLUME_BASE}/images/arcanists/i0/${c.Id}.webp`,
           imageLocalPath,
         );
         imgCount++;
       } catch (e) {
-        console.warn(`  Warning: Could not download image for ${c.Name}: ${e.message}`);
+        console.warn(
+          `  Warning: Could not download image for ${c.Name}: ${e?.message ?? String(e)}`,
+        );
       }
     }
 

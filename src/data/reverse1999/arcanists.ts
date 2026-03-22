@@ -7,6 +7,7 @@ export interface Arcanist {
   afflatus: string;
   damageType: string;
   imageUrl: string;
+  mugshot: string;
 }
 
 export const ALL_ARCANISTS: Arcanist[] = [
@@ -17,6 +18,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/37.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/37.webp',
   },
   {
     id: '6',
@@ -24,6 +26,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/6.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/6.webp',
   },
   {
     id: 'a_knight',
@@ -31,6 +34,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/a_knight.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/a_knight.webp',
   },
   {
     id: 'aleph',
@@ -38,6 +42,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/aleph.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/aleph.webp',
   },
   {
     id: 'an_an_lee',
@@ -45,6 +50,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/an_an_lee.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/an_an_lee.webp',
   },
   {
     id: 'anjo_nala',
@@ -52,6 +58,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/anjo_nala.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/anjo_nala.webp',
   },
   {
     id: 'argus',
@@ -59,6 +66,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/argus.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/argus.webp',
   },
   {
     id: 'barcarola',
@@ -66,6 +74,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/barcarola.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/barcarola.webp',
   },
   {
     id: 'beryl',
@@ -73,6 +82,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/beryl.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/beryl.webp',
   },
   {
     id: 'brume',
@@ -80,6 +90,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/brume.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/brume.webp',
   },
   {
     id: 'centurion',
@@ -87,6 +98,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/centurion.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/centurion.webp',
   },
   {
     id: 'charon',
@@ -94,6 +106,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/charon.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/charon.webp',
   },
   {
     id: 'corvus',
@@ -101,6 +114,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/corvus.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/corvus.webp',
   },
   {
     id: 'druvis_iii',
@@ -108,6 +122,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/druvis_iii.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/druvis_iii.webp',
   },
   {
     id: 'eternity',
@@ -115,6 +130,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/eternity.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/eternity.webp',
   },
   {
     id: 'ezio_auditore',
@@ -122,13 +138,15 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/ezio_auditore.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/ezio_auditore.webp',
   },
   {
     id: 'ezra_theodore',
     name: 'Ezra Theodore',
     afflatus: 'Star',
-    damageType: 'Reality',
+    damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/ezra_theodore.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/ezra_theodore.webp',
   },
   {
     id: 'fatutu',
@@ -136,6 +154,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/fatutu.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/fatutu.webp',
   },
   {
     id: 'flutterpage',
@@ -143,6 +162,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/flutterpage.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/flutterpage.webp',
   },
   {
     id: 'getian',
@@ -150,6 +170,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/getian.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/getian.webp',
   },
   {
     id: 'hissabeth',
@@ -157,6 +178,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/hissabeth.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/hissabeth.webp',
   },
   {
     id: 'igor',
@@ -164,6 +186,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/igor.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/igor.webp',
   },
   {
     id: 'isolde',
@@ -171,6 +194,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/isolde.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/isolde.webp',
   },
   {
     id: 'j',
@@ -178,6 +202,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/j.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/j.webp',
   },
   {
     id: 'jessica',
@@ -185,6 +210,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/jessica.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/jessica.webp',
   },
   {
     id: 'jiu_niangzi',
@@ -192,6 +218,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/jiu_niangzi.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/jiu_niangzi.webp',
   },
   {
     id: 'kaalaa_baunaa',
@@ -199,6 +226,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/kaalaa_baunaa.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/kaalaa_baunaa.webp',
   },
   {
     id: 'kakania',
@@ -206,6 +234,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/kakania.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/kakania.webp',
   },
   {
     id: 'kassandra',
@@ -213,6 +242,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/kassandra.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/kassandra.webp',
   },
   {
     id: 'kiperina',
@@ -220,6 +250,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/kiperina.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/kiperina.webp',
   },
   {
     id: 'liang_yue',
@@ -227,6 +258,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/liang_yue.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/liang_yue.webp',
   },
   {
     id: 'lilya',
@@ -234,6 +266,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/lilya.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/lilya.webp',
   },
   {
     id: 'lopera',
@@ -241,6 +274,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/lopera.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/lopera.webp',
   },
   {
     id: 'lucy',
@@ -248,6 +282,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/lucy.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/lucy.webp',
   },
   {
     id: 'marcus',
@@ -255,6 +290,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/marcus.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/marcus.webp',
   },
   {
     id: 'marsha',
@@ -262,6 +298,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/marsha.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/marsha.webp',
   },
   {
     id: 'medicine_pocket',
@@ -269,6 +306,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/medicine_pocket.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/medicine_pocket.webp',
   },
   {
     id: 'melania',
@@ -276,6 +314,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/melania.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/melania.webp',
   },
   {
     id: 'mercuria',
@@ -283,6 +322,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/mercuria.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/mercuria.webp',
   },
   {
     id: 'moldir',
@@ -290,6 +330,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/moldir.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/moldir.webp',
   },
   {
     id: 'ms_newbabel',
@@ -297,6 +338,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/ms_newbabel.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/ms_newbabel.webp',
   },
   {
     id: 'nautika',
@@ -304,6 +346,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/nautika.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/nautika.webp',
   },
   {
     id: 'noire',
@@ -311,6 +354,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/noire.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/noire.webp',
   },
   {
     id: 'pickles',
@@ -318,6 +362,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/pickles.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/pickles.webp',
   },
   {
     id: 'recoleta',
@@ -325,6 +370,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/recoleta.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/recoleta.webp',
   },
   {
     id: 'regulus',
@@ -332,6 +378,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/regulus.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/regulus.webp',
   },
   {
     id: 'rubuska',
@@ -339,6 +386,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/rubuska.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/rubuska.webp',
   },
   {
     id: 'semmelweis',
@@ -346,6 +394,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/semmelweis.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/semmelweis.webp',
   },
   {
     id: 'sentinel',
@@ -353,6 +402,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/sentinel.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/sentinel.webp',
   },
   {
     id: 'shamane',
@@ -360,6 +410,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/shamane.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/shamane.webp',
   },
   {
     id: 'sotheby',
@@ -367,6 +418,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/sotheby.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/sotheby.webp',
   },
   {
     id: 'spathodea',
@@ -374,6 +426,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/spathodea.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/spathodea.webp',
   },
   {
     id: 'tooth_fairy',
@@ -381,6 +434,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/tooth_fairy.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/tooth_fairy.webp',
   },
   {
     id: 'tuesday',
@@ -388,6 +442,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/tuesday.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/tuesday.webp',
   },
   {
     id: 'ulrich',
@@ -395,6 +450,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/ulrich.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/ulrich.webp',
   },
   {
     id: 'vila',
@@ -402,6 +458,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/vila.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/vila.webp',
   },
   {
     id: 'voyager',
@@ -409,6 +466,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/voyager.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/voyager.webp',
   },
   {
     id: 'willow',
@@ -416,6 +474,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/willow.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/willow.webp',
   },
   {
     id: 'windsong',
@@ -423,6 +482,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/windsong.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/windsong.webp',
   },
   // 5-Stars
   {
@@ -431,6 +491,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/alexios.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/alexios.webp',
   },
   {
     id: 'avgust',
@@ -438,6 +499,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/avgust.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/avgust.webp',
   },
   {
     id: 'baby_blue',
@@ -445,6 +507,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/baby_blue.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/baby_blue.webp',
   },
   {
     id: 'balloon_party',
@@ -452,6 +515,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/balloon_party.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/balloon_party.webp',
   },
   {
     id: 'barbara',
@@ -459,6 +523,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/barbara.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/barbara.webp',
   },
   {
     id: 'bkornblume',
@@ -466,6 +531,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/bkornblume.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/bkornblume.webp',
   },
   {
     id: 'blonney',
@@ -473,6 +539,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/blonney.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/blonney.webp',
   },
   {
     id: 'brimley',
@@ -480,6 +547,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/brimley.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/brimley.webp',
   },
   {
     id: 'buddy_fairchild',
@@ -487,6 +555,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/buddy_fairchild.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/buddy_fairchild.webp',
   },
   {
     id: 'charlie',
@@ -494,6 +563,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/charlie.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/charlie.webp',
   },
   {
     id: 'click',
@@ -501,6 +571,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/click.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/click.webp',
   },
   {
     id: 'desert_flannel',
@@ -508,6 +579,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/desert_flannel.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/desert_flannel.webp',
   },
   {
     id: 'diggers',
@@ -515,6 +587,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/diggers.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/diggers.webp',
   },
   {
     id: 'dikke',
@@ -522,6 +595,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/dikke.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/dikke.webp',
   },
   {
     id: 'horropedia',
@@ -529,6 +603,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/horropedia.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/horropedia.webp',
   },
   {
     id: 'kanjira',
@@ -536,6 +611,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/kanjira.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/kanjira.webp',
   },
   {
     id: 'loggerhead',
@@ -543,6 +619,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/loggerhead.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/loggerhead.webp',
   },
   {
     id: 'lorelei',
@@ -550,6 +627,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/lorelei.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/lorelei.webp',
   },
   {
     id: 'matilda',
@@ -557,6 +635,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/matilda.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/matilda.webp',
   },
   {
     id: 'mr_duncan',
@@ -564,6 +643,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/mr_duncan.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/mr_duncan.webp',
   },
   {
     id: 'name_day',
@@ -571,6 +651,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/name_day.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/name_day.webp',
   },
   {
     id: 'necrologist',
@@ -578,6 +659,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/necrologist.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/necrologist.webp',
   },
   {
     id: 'satsuki',
@@ -585,6 +667,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/satsuki.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/satsuki.webp',
   },
   {
     id: 'sonetto',
@@ -592,6 +675,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/sonetto.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/sonetto.webp',
   },
   {
     id: 'sweetheart',
@@ -599,6 +683,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/sweetheart.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/sweetheart.webp',
   },
   {
     id: 'tennant',
@@ -606,6 +691,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/tennant.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/tennant.webp',
   },
   {
     id: 'ulu',
@@ -613,6 +699,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/ulu.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/ulu.webp',
   },
   {
     id: 'x',
@@ -620,6 +707,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists/x.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/x.webp',
   },
   {
     id: 'yenisei',
@@ -627,5 +715,6 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists/yenisei.webp',
+    mugshot: '/assets/reverse-1999/arcanists/mugshots/yenisei.webp',
   },
 ];

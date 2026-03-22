@@ -58,7 +58,7 @@ export function AddArcanistModal({
                 <div className="arcanist-list-info">
                   <div className="arcanist-list-img-wrapper">
                     <img
-                      src={arcanist.imageUrl}
+                      src={arcanist.mugshot}
                       alt={arcanist.name}
                       className="arcanist-list-img"
                       onError={(e) => {
