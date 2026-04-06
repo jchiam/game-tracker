@@ -8,7 +8,7 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
   if (!DB_ENABLED || !import.meta.env.VITE_SUPABASE_ANON_KEY) return [];
 
   const { data: dbData, error } = await supabase
-    .from('tracked_arcanists')
+    .from('r1999_tracked_arcanists')
     .select('id, arcanist_id, level, insight_level, is_favorited')
     .eq('profile_id', userId);
 
@@ -38,7 +38,7 @@ export async function insertArcanist(userId: string, arcanistId: string): Promis
   if (!DB_ENABLED) return null;
   await supabase.from('user_profiles').upsert({ id: userId, updated_at: new Date().toISOString() });
   const { data, error } = await supabase
-    .from('tracked_arcanists')
+    .from('r1999_tracked_arcanists')
     .insert({
       profile_id: userId,
       arcanist_id: arcanistId,
