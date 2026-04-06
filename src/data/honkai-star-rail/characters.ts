@@ -47,6 +47,13 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/argent.webp',
   },
   {
+    id: 'ashveil',
+    name: 'Ashveil',
+    element: 'Thunder',
+    path: 'The Hunt',
+    imageUrl: '/assets/honkai-star-rail/characters/ashveil.webp',
+  },
+  {
     id: 'aventurine',
     name: 'Aventurine',
     element: 'Imaginary',

@@ -44,6 +44,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     icon: '/assets/honkai-star-rail/relics/105.png',
   },
   {
+    id: '326',
+    name: 'City of Converging Stars',
+    icon: '/assets/honkai-star-rail/relics/326.png',
+  },
+  {
     id: '130',
     name: 'Diviner of Distant Reach',
     icon: '/assets/honkai-star-rail/relics/130.png',
@@ -177,6 +182,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     id: '116',
     name: 'Prisoner in Deep Confinement',
     icon: '/assets/honkai-star-rail/relics/116.png',
+  },
+  {
+    id: '325',
+    name: 'Punklorde Stage Zero',
+    icon: '/assets/honkai-star-rail/relics/325.png',
   },
   {
     id: '322',
