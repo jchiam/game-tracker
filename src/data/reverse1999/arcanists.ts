@@ -7,6 +7,7 @@ export interface Arcanist {
   afflatus: string;
   damageType: string;
   imageUrl: string;
+  mugshot: string;
 }
 
 export const ALL_ARCANISTS: Arcanist[] = [
