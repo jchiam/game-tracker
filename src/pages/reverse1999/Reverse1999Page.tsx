@@ -17,6 +17,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     availableArcanists,
     trackedArcanists,
     isInitialLoad,
+    pendingSaveCount,
     addArcanist,
     removeArcanist,
     updateArcanistLevel,
@@ -120,6 +121,13 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
           ))
         )}
       </section>
+
+      {pendingSaveCount > 0 && (
+        <div className="saving-toast" role="status" aria-live="polite">
+          <span className="saving-toast-dot" />
+          Saving...
+        </div>
+      )}
 
       {isModalOpen && session && (
         <AddArcanistModal
