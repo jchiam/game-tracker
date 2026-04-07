@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import Fuse from 'fuse.js';
 import { ALL_CHARACTERS, type Character } from '@/data/honkai-star-rail/characters';
@@ -14,6 +14,7 @@ import {
   deleteRelic,
   saveBuildPrefs,
 } from '@/services/honkai-star-rail/characterService';
+import { usePendingSaves } from '@/hooks/usePendingSaves';
 
 export const emptyRelic: EquippedRelic = { setId: null, mainStat: null, subStats: [] };
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
@@ -24,38 +25,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   const [trackedCharacters, setTrackedCharacters] = useState<HsrTrackedCharacter[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Debounce refs for DB writes
-  const pendingUpdates = useRef<Record<string, any>>({});
-  const updateTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const pendingRelicUpdates = useRef<
-    Record<string, { dbId: string; slot: string; relicData: EquippedRelic }>
-  >({});
-  const relicUpdateTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-
-  const queueDBUpdate = (dbId: string, updates: any) => {
-    pendingUpdates.current[dbId] = { ...pendingUpdates.current[dbId], ...updates };
-    if (updateTimeouts.current[dbId]) clearTimeout(updateTimeouts.current[dbId]);
-    updateTimeouts.current[dbId] = setTimeout(async () => {
-      const payload = pendingUpdates.current[dbId];
-      if (!payload) return;
-      delete pendingUpdates.current[dbId];
-      delete updateTimeouts.current[dbId];
-      await updateCharacter(dbId, payload);
-    }, 1000);
-  };
-
-  const queueRelicDBUpdate = (dbId: string, slot: string, relicData: EquippedRelic) => {
-    const key = `${dbId}-${slot}`;
-    pendingRelicUpdates.current[key] = { dbId, slot, relicData };
-    if (relicUpdateTimeouts.current[key]) clearTimeout(relicUpdateTimeouts.current[key]);
-    relicUpdateTimeouts.current[key] = setTimeout(async () => {
-      const payload = pendingRelicUpdates.current[key];
-      if (!payload) return;
-      delete pendingRelicUpdates.current[key];
-      delete relicUpdateTimeouts.current[key];
-      await upsertRelic(payload.dbId, payload.slot, payload.relicData);
-    }, 1000);
-  };
+  const { pendingSaveCount, queueUpdate, queueAction } = usePendingSaves();
 
   // Load from DB on session change
   useEffect(() => {
@@ -115,7 +85,8 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       prev.map((c) => (c.id === id ? { ...c, level: validLevel } : c)),
     );
     const char = trackedCharacters.find((c) => c.id === id);
-    if (char?.dbId) queueDBUpdate(char.dbId, { level: validLevel });
+    if (char?.dbId)
+      queueUpdate(char.dbId, { level: validLevel }, (p) => updateCharacter(char.dbId!, p));
   };
 
   const toggleCharacterTraces = (id: string, value: boolean) => {
@@ -123,7 +94,8 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       prev.map((c) => (c.id === id ? { ...c, tracesAttained: value } : c)),
     );
     const char = trackedCharacters.find((c) => c.id === id);
-    if (char?.dbId) queueDBUpdate(char.dbId, { traces_attained: value });
+    if (char?.dbId)
+      queueUpdate(char.dbId, { traces_attained: value }, (p) => updateCharacter(char.dbId!, p));
   };
 
   const toggleFavoriteCharacter = (id: string, value: boolean) => {
@@ -131,7 +103,8 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       prev.map((c) => (c.id === id ? { ...c, isFavorited: value } : c)),
     );
     const char = trackedCharacters.find((c) => c.id === id);
-    if (char?.dbId) queueDBUpdate(char.dbId, { is_favorited: value });
+    if (char?.dbId)
+      queueUpdate(char.dbId, { is_favorited: value }, (p) => updateCharacter(char.dbId!, p));
   };
 
   const saveRelicData = async (
@@ -143,7 +116,8 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       prev.map((c) => (c.id === charId ? { ...c, relics: { ...c.relics, [slot]: relicData } } : c)),
     );
     const char = trackedCharacters.find((c) => c.id === charId);
-    if (char?.dbId) queueRelicDBUpdate(char.dbId, slot, relicData);
+    if (char?.dbId)
+      queueAction(`${char.dbId}-${slot}`, () => upsertRelic(char.dbId!, slot, relicData));
   };
 
   const removeRelicData = async (editingRelic: {
@@ -203,6 +177,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     availableRelicSets,
     trackedCharacters,
     isInitialLoad,
+    pendingSaveCount,
     addCharacter,
     removeCharacter,
     updateCharacterLevel,

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import Fuse from 'fuse.js';
 import { ALL_ARCANISTS, type Arcanist } from '@/data/reverse1999/arcanists';
@@ -9,44 +9,14 @@ import {
   deleteArcanist,
   updateArcanist,
 } from '@/services/reverse1999/arcanistService';
+import { usePendingSaves } from '@/hooks/usePendingSaves';
 
 export function useArcanists(session: Session | null, isAuthLoading: boolean) {
   const [availableArcanists] = useState<Arcanist[]>(ALL_ARCANISTS);
   const [trackedArcanists, setTrackedArcanists] = useState<R1999TrackedArcanist[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [pendingSaveCount, setPendingSaveCount] = useState(0);
 
-  // Debounce refs for DB writes
-  const pendingUpdates = useRef<Record<string, any>>({});
-  const updateTimeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-
-  const queueDBUpdate = (dbId: string, updates: any) => {
-    pendingUpdates.current[dbId] = { ...pendingUpdates.current[dbId], ...updates };
-    if (updateTimeouts.current[dbId]) {
-      clearTimeout(updateTimeouts.current[dbId]);
-    } else {
-      setPendingSaveCount((n) => n + 1);
-    }
-    updateTimeouts.current[dbId] = setTimeout(async () => {
-      const payload = pendingUpdates.current[dbId];
-      if (!payload) return;
-      delete pendingUpdates.current[dbId];
-      delete updateTimeouts.current[dbId];
-      await updateArcanist(dbId, payload);
-      setPendingSaveCount((n) => n - 1);
-    }, 1000);
-  };
-
-  // Warn user if they try to leave with pending saves
-  useEffect(() => {
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (pendingSaveCount > 0) {
-        e.preventDefault();
-      }
-    };
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [pendingSaveCount]);
+  const { pendingSaveCount, queueUpdate } = usePendingSaves();
 
   // Load from DB on session change
   useEffect(() => {
@@ -102,13 +72,17 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     const validLevel = Math.min(60, Math.max(1, level));
     setTrackedArcanists((prev) => prev.map((a) => (a.id === id ? { ...a, level: validLevel } : a)));
     const arcanist = trackedArcanists.find((a) => a.id === id);
-    if (arcanist?.dbId) queueDBUpdate(arcanist.dbId, { level: validLevel });
+    if (arcanist?.dbId)
+      queueUpdate(arcanist.dbId, { level: validLevel }, (p) => updateArcanist(arcanist.dbId!, p));
   };
 
   const updateInsightLevel = (id: string, insightLevel: 0 | 1 | 2 | 3) => {
     setTrackedArcanists((prev) => prev.map((a) => (a.id === id ? { ...a, insightLevel } : a)));
     const arcanist = trackedArcanists.find((a) => a.id === id);
-    if (arcanist?.dbId) queueDBUpdate(arcanist.dbId, { insight_level: insightLevel });
+    if (arcanist?.dbId)
+      queueUpdate(arcanist.dbId, { insight_level: insightLevel }, (p) =>
+        updateArcanist(arcanist.dbId!, p),
+      );
   };
 
   const toggleFavoriteArcanist = (id: string, value: boolean) => {
@@ -116,7 +90,8 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       prev.map((a) => (a.id === id ? { ...a, isFavorited: value } : a)),
     );
     const arcanist = trackedArcanists.find((a) => a.id === id);
-    if (arcanist?.dbId) queueDBUpdate(arcanist.dbId, { is_favorited: value });
+    if (arcanist?.dbId)
+      queueUpdate(arcanist.dbId, { is_favorited: value }, (p) => updateArcanist(arcanist.dbId!, p));
   };
 
   const getFilteredRoster = useCallback(

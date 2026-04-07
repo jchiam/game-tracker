@@ -3,6 +3,7 @@ import { useArcanists } from '@/hooks/reverse1999/useArcanists';
 import { ArcanistCard } from './components/ArcanistCard';
 import { AddArcanistModal } from './components/AddArcanistModal';
 import { AuthGate } from '@/components/AuthGate';
+import { SavingToast } from '@/components/SavingToast';
 import type { Session } from '@supabase/supabase-js';
 import './Reverse1999Page.css';
 
@@ -122,12 +123,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
         )}
       </section>
 
-      {pendingSaveCount > 0 && (
-        <div className="saving-toast" role="status" aria-live="polite">
-          <span className="saving-toast-dot" />
-          Saving...
-        </div>
-      )}
+      <SavingToast visible={pendingSaveCount > 0} />
 
       {isModalOpen && session && (
         <AddArcanistModal

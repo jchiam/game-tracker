@@ -31,39 +31,6 @@
   margin-bottom: 2rem;
 }
 
-.saving-toast {
-  position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 200;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-primary);
-  border-radius: 999px;
-  color: var(--color-primary);
-  font-size: 0.9rem;
-  font-weight: 600;
-  box-shadow: 0 0 16px var(--color-primary-glow), 0 4px 12px rgba(0, 0, 0, 0.4);
-  pointer-events: none;
-  white-space: nowrap;
-}
-
-.saving-toast-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  animation: pulse 1.2s ease-in-out infinite;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.4; transform: scale(0.85); }
-  50% { opacity: 1; transform: scale(1); }
-}
 
 .roster-controls {
   display: flex;

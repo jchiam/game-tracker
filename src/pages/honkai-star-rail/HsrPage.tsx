@@ -7,6 +7,7 @@ import { RelicEditorModal } from './components/RelicEditorModal';
 import { AddCharacterModal } from './components/AddCharacterModal';
 import { PartiesTab } from './components/PartiesTab';
 import { AuthGate } from '@/components/AuthGate';
+import { SavingToast } from '@/components/SavingToast';
 import type { HsrTrackedCharacter } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 import './HsrPage.css';
@@ -23,6 +24,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     availableRelicSets,
     trackedCharacters,
     isInitialLoad,
+    pendingSaveCount,
     addCharacter,
     removeCharacter,
     updateCharacterLevel,
@@ -190,6 +192,8 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
             />
           );
         })()}
+
+      <SavingToast visible={pendingSaveCount > 0} />
 
       {isModalOpen && (
         <AddCharacterModal
