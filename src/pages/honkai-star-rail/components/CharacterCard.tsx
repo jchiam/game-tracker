@@ -1,6 +1,6 @@
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet } from '@/data/honkai-star-rail/relics';
-import { ConfirmCheckbox } from './ConfirmCheckbox';
+import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import './CharacterCard.css';
 
