@@ -14,7 +14,9 @@
   color: var(--color-primary);
   font-size: 0.9rem;
   font-weight: 600;
-  box-shadow: 0 0 16px var(--color-primary-glow), 0 4px 12px rgba(0, 0, 0, 0.4);
+  box-shadow:
+    0 0 16px var(--color-primary-glow),
+    0 4px 12px rgba(0, 0, 0, 0.4);
   pointer-events: none;
   white-space: nowrap;
 }
