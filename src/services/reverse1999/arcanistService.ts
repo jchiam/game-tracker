@@ -56,11 +56,11 @@ export async function insertArcanist(userId: string, arcanistId: string): Promis
 
 export async function deleteArcanist(dbId: string): Promise<void> {
   if (!DB_ENABLED) return;
-  await supabase.from('tracked_arcanists').delete().eq('id', dbId);
+  await supabase.from('r1999_tracked_arcanists').delete().eq('id', dbId);
 }
 
 export async function updateArcanist(dbId: string, updates: Record<string, any>): Promise<void> {
   if (!DB_ENABLED) return;
-  const { error } = await supabase.from('tracked_arcanists').update(updates).eq('id', dbId);
+  const { error } = await supabase.from('r1999_tracked_arcanists').update(updates).eq('id', dbId);
   if (error) console.error('DB Update Failed:', error);
 }
