@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import Fuse from 'fuse.js';
 import { ALL_ARCANISTS, type Arcanist } from '@/data/reverse1999/arcanists';
@@ -15,6 +15,9 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
   const [availableArcanists] = useState<Arcanist[]>(ALL_ARCANISTS);
   const [trackedArcanists, setTrackedArcanists] = useState<R1999TrackedArcanist[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Track in-flight inserts to prevent race condition on rapid adds
+  const pendingInserts = useRef<Set<string>>(new Set());
 
   const { pendingSaveCount, queueUpdate } = usePendingSaves();
 
@@ -48,7 +51,11 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       alert('Please log in first!');
       return;
     }
+    // Check both local state AND in-flight inserts to prevent duplicates
     if (trackedArcanists.some((a) => a.id === arcanist.id)) return;
+    if (pendingInserts.current.has(arcanist.id)) return;
+
+    pendingInserts.current.add(arcanist.id);
     const newArcanist: R1999TrackedArcanist = {
       ...arcanist,
       isFavorited: false,
@@ -57,6 +64,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     };
     setTrackedArcanists((prev) => [...prev, newArcanist]);
     const dbId = await insertArcanist(session.user.id, arcanist.id);
+    pendingInserts.current.delete(arcanist.id);
     if (dbId)
       setTrackedArcanists((prev) => prev.map((a) => (a.id === arcanist.id ? { ...a, dbId } : a)));
   };

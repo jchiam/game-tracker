@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import Fuse from 'fuse.js';
 import { ALL_CHARACTERS, type Character } from '@/data/honkai-star-rail/characters';
@@ -24,6 +24,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   const [availableRelicSets] = useState<RelicSet[]>(ALL_RELIC_SETS);
   const [trackedCharacters, setTrackedCharacters] = useState<HsrTrackedCharacter[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // Track in-flight inserts to prevent race condition on rapid adds
+  const pendingInserts = useRef<Set<string>>(new Set());
 
   const { pendingSaveCount, queueUpdate, queueAction } = usePendingSaves();
 
@@ -57,7 +60,11 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       alert('Please log in first!');
       return;
     }
+    // Check both local state AND in-flight inserts to prevent duplicates
     if (trackedCharacters.some((c) => c.id === char.id)) return;
+    if (pendingInserts.current.has(char.id)) return;
+
+    pendingInserts.current.add(char.id);
     const newChar: HsrTrackedCharacter = {
       ...char,
       isFavorited: false,
@@ -68,6 +75,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     };
     setTrackedCharacters((prev) => [...prev, newChar]);
     const dbId = await insertCharacter(session.user.id, char.id);
+    pendingInserts.current.delete(char.id);
     if (dbId)
       setTrackedCharacters((prev) => prev.map((c) => (c.id === char.id ? { ...c, dbId } : c)));
   };
