@@ -143,7 +143,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       ),
     );
     const char = trackedCharactersRef.current.find((c) => c.id === charId);
-    if (char?.dbId) queueAction(`${char.dbId}-${slot}-delete`, () => deleteRelic(char.dbId, slot));
+    if (char?.dbId) queueAction(`${char.dbId}-${slot}-delete`, () => deleteRelic(char.dbId!, slot));
   };
 
   const saveBuildPreferences = async (
