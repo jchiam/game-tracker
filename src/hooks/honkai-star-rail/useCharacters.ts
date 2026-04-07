@@ -27,6 +27,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
 
   // Track in-flight inserts to prevent race condition on rapid adds
   const pendingInserts = useRef<Set<string>>(new Set());
+  // Ref always holds the latest trackedCharacters to avoid stale closures in update functions
+  const trackedCharactersRef = useRef<HsrTrackedCharacter[]>([]);
+  trackedCharactersRef.current = trackedCharacters;
 
   const { pendingSaveCount, queueUpdate, queueAction } = usePendingSaves();
 
@@ -61,7 +64,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       return;
     }
     // Check both local state AND in-flight inserts to prevent duplicates
-    if (trackedCharacters.some((c) => c.id === char.id)) return;
+    if (trackedCharactersRef.current.some((c) => c.id === char.id)) return;
     if (pendingInserts.current.has(char.id)) return;
 
     pendingInserts.current.add(char.id);
@@ -82,7 +85,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
 
   const removeCharacter = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const charToRemove = trackedCharacters.find((c) => c.id === id);
+    const charToRemove = trackedCharactersRef.current.find((c) => c.id === id);
     setTrackedCharacters((prev) => prev.filter((c) => c.id !== id));
     if (charToRemove?.dbId) await deleteCharacter(charToRemove.dbId);
   };
@@ -92,7 +95,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     setTrackedCharacters((prev) =>
       prev.map((c) => (c.id === id ? { ...c, level: validLevel } : c)),
     );
-    const char = trackedCharacters.find((c) => c.id === id);
+    const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
       queueUpdate(char.dbId, { level: validLevel }, (p) => updateCharacter(char.dbId!, p));
   };
@@ -101,7 +104,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     setTrackedCharacters((prev) =>
       prev.map((c) => (c.id === id ? { ...c, tracesAttained: value } : c)),
     );
-    const char = trackedCharacters.find((c) => c.id === id);
+    const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
       queueUpdate(char.dbId, { traces_attained: value }, (p) => updateCharacter(char.dbId!, p));
   };
@@ -110,7 +113,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     setTrackedCharacters((prev) =>
       prev.map((c) => (c.id === id ? { ...c, isFavorited: value } : c)),
     );
-    const char = trackedCharacters.find((c) => c.id === id);
+    const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
       queueUpdate(char.dbId, { is_favorited: value }, (p) => updateCharacter(char.dbId!, p));
   };
@@ -123,7 +126,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     setTrackedCharacters((prev) =>
       prev.map((c) => (c.id === charId ? { ...c, relics: { ...c.relics, [slot]: relicData } } : c)),
     );
-    const char = trackedCharacters.find((c) => c.id === charId);
+    const char = trackedCharactersRef.current.find((c) => c.id === charId);
     if (char?.dbId)
       queueAction(`${char.dbId}-${slot}`, () => upsertRelic(char.dbId!, slot, relicData));
   };
@@ -138,8 +141,8 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
         c.id === charId ? { ...c, relics: { ...c.relics, [slot]: emptyRelic } } : c,
       ),
     );
-    const char = trackedCharacters.find((c) => c.id === charId);
-    if (char?.dbId) await deleteRelic(char.dbId, slot);
+    const char = trackedCharactersRef.current.find((c) => c.id === charId);
+    if (char?.dbId) queueAction(`${char.dbId}-${slot}-delete`, () => deleteRelic(char.dbId, slot));
   };
 
   const saveBuildPreferences = async (
@@ -149,7 +152,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     setTrackedCharacters((prev) =>
       prev.map((c) => (c.id === charId ? { ...c, buildPreferences: newPreferences } : c)),
     );
-    const char = trackedCharacters.find((c) => c.id === charId);
+    const char = trackedCharactersRef.current.find((c) => c.id === charId);
     if (char?.dbId) await saveBuildPrefs(char.dbId, newPreferences);
   };
 

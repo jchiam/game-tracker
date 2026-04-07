@@ -18,6 +18,9 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
 
   // Track in-flight inserts to prevent race condition on rapid adds
   const pendingInserts = useRef<Set<string>>(new Set());
+  // Ref always holds the latest trackedArcanists to avoid stale closures in update functions
+  const trackedArcanistsRef = useRef<R1999TrackedArcanist[]>([]);
+  trackedArcanistsRef.current = trackedArcanists;
 
   const { pendingSaveCount, queueUpdate } = usePendingSaves();
 
@@ -52,7 +55,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       return;
     }
     // Check both local state AND in-flight inserts to prevent duplicates
-    if (trackedArcanists.some((a) => a.id === arcanist.id)) return;
+    if (trackedArcanistsRef.current.some((a) => a.id === arcanist.id)) return;
     if (pendingInserts.current.has(arcanist.id)) return;
 
     pendingInserts.current.add(arcanist.id);
@@ -71,7 +74,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
 
   const removeArcanist = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const toRemove = trackedArcanists.find((a) => a.id === id);
+    const toRemove = trackedArcanistsRef.current.find((a) => a.id === id);
     setTrackedArcanists((prev) => prev.filter((a) => a.id !== id));
     if (toRemove?.dbId) await deleteArcanist(toRemove.dbId);
   };
@@ -79,14 +82,14 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
   const updateArcanistLevel = (id: string, level: number) => {
     const validLevel = Math.min(60, Math.max(1, level));
     setTrackedArcanists((prev) => prev.map((a) => (a.id === id ? { ...a, level: validLevel } : a)));
-    const arcanist = trackedArcanists.find((a) => a.id === id);
+    const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
       queueUpdate(arcanist.dbId, { level: validLevel }, (p) => updateArcanist(arcanist.dbId!, p));
   };
 
   const updateInsightLevel = (id: string, insightLevel: 0 | 1 | 2 | 3) => {
     setTrackedArcanists((prev) => prev.map((a) => (a.id === id ? { ...a, insightLevel } : a)));
-    const arcanist = trackedArcanists.find((a) => a.id === id);
+    const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
       queueUpdate(arcanist.dbId, { insight_level: insightLevel }, (p) =>
         updateArcanist(arcanist.dbId!, p),
@@ -97,7 +100,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     setTrackedArcanists((prev) =>
       prev.map((a) => (a.id === id ? { ...a, isFavorited: value } : a)),
     );
-    const arcanist = trackedArcanists.find((a) => a.id === id);
+    const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
       queueUpdate(arcanist.dbId, { is_favorited: value }, (p) => updateArcanist(arcanist.dbId!, p));
   };
