@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import type { HsrParty, HsrPartyMember } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
+import { addToast } from '@/utils/toast';
 import './PartyEditorModal.css';
 
 interface PartyEditorModalProps {
@@ -46,7 +47,7 @@ export function PartyEditorModal({
 
   const handleSave = () => {
     if (!name.trim()) {
-      alert('Please enter a party name');
+      addToast('Please enter a party name.', 'warning');
       return;
     }
     onSave({

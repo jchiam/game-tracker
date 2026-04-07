@@ -3,6 +3,7 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import { useArcanists } from '@/hooks/reverse1999/useArcanists';
 import type { Session } from '@supabase/supabase-js';
 import type { R1999TrackedArcanist } from '@/types';
+import * as toastUtils from '@/utils/toast';
 
 // Mock the service layer
 vi.mock('@/services/reverse1999/arcanistService', () => ({
@@ -154,7 +155,7 @@ describe('useArcanists', () => {
 
   describe('addArcanist', () => {
     beforeEach(() => {
-      vi.spyOn(window, 'alert').mockImplementation(() => {});
+      vi.spyOn(toastUtils, 'addToast').mockImplementation(() => 'test-id');
     });
 
     it('adds an arcanist to local state and DB', async () => {
@@ -250,7 +251,10 @@ describe('useArcanists', () => {
 
       expect(result.current.trackedArcanists).toHaveLength(0);
       expect(mockInsertArcanist).not.toHaveBeenCalled();
-      expect(window.alert).toHaveBeenCalledWith('Please log in first!');
+      expect(toastUtils.addToast).toHaveBeenCalledWith(
+        'Please log in to add arcanists.',
+        'warning',
+      );
     });
   });
 

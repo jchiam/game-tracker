@@ -1,6 +1,7 @@
 import { Routes, Route } from 'react-router-dom';
 import './App.css';
 import { Navbar } from '@/components/Navbar';
+import { ToastContainer } from '@/components/ToastContainer';
 import { HsrPage } from '@/pages/honkai-star-rail/HsrPage';
 import { SelectionPage } from '@/pages/SelectionPage';
 import { Reverse1999Page } from '@/pages/reverse1999/Reverse1999Page';
@@ -12,6 +13,7 @@ function App() {
   return (
     <div className="layout">
       <Navbar userEmail={session?.user?.email} onSignIn={signInWithGoogle} onSignOut={signOut} />
+      <ToastContainer />
       <Routes>
         <Route
           path="/"

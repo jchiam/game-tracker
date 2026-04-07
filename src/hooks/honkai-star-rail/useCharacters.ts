@@ -15,6 +15,7 @@ import {
   saveBuildPrefs,
 } from '@/services/honkai-star-rail/characterService';
 import { usePendingSaves } from '@/hooks/usePendingSaves';
+import { addToast } from '@/utils/toast';
 
 export const emptyRelic: EquippedRelic = { setId: null, mainStat: null, subStats: [] };
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
@@ -60,7 +61,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
 
   const addCharacter = async (char: Character) => {
     if (!session) {
-      alert('Please log in first!');
+      addToast('Please log in to add characters.', 'warning');
       return;
     }
     // Check both local state AND in-flight inserts to prevent duplicates

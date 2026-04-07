@@ -10,6 +10,7 @@ import {
   updateArcanist,
 } from '@/services/reverse1999/arcanistService';
 import { usePendingSaves } from '@/hooks/usePendingSaves';
+import { addToast } from '@/utils/toast';
 
 export function useArcanists(session: Session | null, isAuthLoading: boolean) {
   const [availableArcanists] = useState<Arcanist[]>(ALL_ARCANISTS);
@@ -51,7 +52,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
 
   const addArcanist = async (arcanist: Arcanist) => {
     if (!session) {
-      alert('Please log in first!');
+      addToast('Please log in to add arcanists.', 'warning');
       return;
     }
     // Check both local state AND in-flight inserts to prevent duplicates
