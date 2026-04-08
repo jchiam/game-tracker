@@ -24,6 +24,10 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Run update script
+        env:
+          IMAGEKIT_PRIVATE_KEY: ${{ secrets.IMAGEKIT_PRIVATE_KEY }}
+          IMAGEKIT_PUBLIC_KEY: ${{ secrets.IMAGEKIT_PUBLIC_KEY }}
+          IMAGEKIT_URL_ENDPOINT: ${{ secrets.IMAGEKIT_URL_ENDPOINT }}
         run: node scripts/update-r1999-data.mjs
 
       - name: Format generated files

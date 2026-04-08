@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import type { Arcanist } from '@/data/reverse1999/arcanists';
 import type { R1999TrackedArcanist } from '@/types';
+import { IMAGEKIT_URL_ENDPOINT, isImageKitEnabled, toImageKitPath } from '@/lib/imagekit';
 import './Modal.css';
 import './AddArcanistModal.css';
 
@@ -58,7 +59,11 @@ export function AddArcanistModal({
                 <div className="arcanist-list-info">
                   <div className="arcanist-list-img-wrapper">
                     <img
-                      src={arcanist.mugshot}
+                      src={
+                        isImageKitEnabled
+                          ? `${IMAGEKIT_URL_ENDPOINT}${toImageKitPath(arcanist.imageUrl)}`
+                          : arcanist.imageUrl
+                      }
                       alt={arcanist.name}
                       className="arcanist-list-img"
                       onError={(e) => {

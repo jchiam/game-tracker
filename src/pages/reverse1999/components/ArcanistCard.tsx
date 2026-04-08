@@ -1,4 +1,5 @@
 import type { R1999TrackedArcanist } from '@/types';
+import { IMAGEKIT_URL_ENDPOINT, isImageKitEnabled, toImageKitPath } from '@/lib/imagekit';
 import './ArcanistCard.css';
 
 interface ArcanistCardProps {
@@ -20,7 +21,11 @@ export function ArcanistCard({
     <div className="arcanist-card">
       <div className="arcanist-card-header">
         <img
-          src={arcanist.imageUrl}
+          src={
+            isImageKitEnabled
+              ? `${IMAGEKIT_URL_ENDPOINT}${toImageKitPath(arcanist.imageUrl)}`
+              : arcanist.imageUrl
+          }
           alt={arcanist.name}
           className="arcanist-image"
           onError={(e) => {

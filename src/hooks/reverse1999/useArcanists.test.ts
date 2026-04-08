@@ -46,8 +46,7 @@ const mockArcanist = {
   name: '37',
   afflatus: 'Star',
   damageType: 'Mental',
-  imageUrl: '/assets/reverse-1999/arcanists/37.webp',
-  mugshot: '/assets/reverse-1999/arcanists/mugshots/37.webp',
+  imageUrl: '/assets/reverse-1999/arcanists-mugshots/37.webp',
 };
 
 const mockArcanist2 = {
@@ -55,8 +54,7 @@ const mockArcanist2 = {
   name: '6',
   afflatus: 'Intellect',
   damageType: 'Mental',
-  imageUrl: '/assets/reverse-1999/arcanists/6.webp',
-  mugshot: '/assets/reverse-1999/arcanists/mugshots/6.webp',
+  imageUrl: '/assets/reverse-1999/arcanists-mugshots/6.webp',
 };
 
 const mockSession: Session = {
@@ -91,8 +89,7 @@ function trackedArcanist(
     name,
     afflatus: 'Star',
     damageType: 'Mental',
-    imageUrl: `/assets/reverse-1999/arcanists/${arcanistId}.webp`,
-    mugshot: `/assets/reverse-1999/arcanists/mugshots/${arcanistId}.webp`,
+    imageUrl: `/assets/reverse-1999/arcanists-mugshots/${arcanistId}.webp`,
     dbId: 'db-uuid',
     isFavorited: false,
     level: 1,
