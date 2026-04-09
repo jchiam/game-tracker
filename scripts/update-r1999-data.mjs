@@ -392,9 +392,7 @@ async function main() {
           buffer = await downloadImage(`${HEADICON_BASE}/${headiconId}.png`);
           console.log(`      Source: headicon ${headiconId}`);
         } else {
-          buffer = await downloadImage(
-            `${KORNBLUME_BASE}/images/arcanists/icon/${c.Id}.webp`,
-          );
+          buffer = await downloadImage(`${KORNBLUME_BASE}/images/arcanists/icon/${c.Id}.webp`);
           console.log(`      Source: kornblume icon (no headicon matched)`);
         }
         mugshotCount++;
