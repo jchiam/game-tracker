@@ -56,14 +56,6 @@ export function createSupabaseAuthHandlers(options: SupabaseMockOptions = {}) {
     http.get('*/auth/v1/authorize', async () => {
       return HttpResponse.redirect('https://oauth.example.com/callback', 302);
     }),
-
-    // Helper to set session (not a real endpoint, used by tests)
-    {
-      _setSession: (session: typeof initialSession) => {
-        currentSession = session;
-      },
-      _getSession: () => currentSession,
-    },
   ];
 }
 

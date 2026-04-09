@@ -227,7 +227,7 @@ describe('usePendingSaves', () => {
       });
 
       const mockEvent = { preventDefault: vi.fn() } as unknown as BeforeUnloadEvent;
-      beforeunloadHandler?.(mockEvent);
+      (beforeunloadHandler as ((e: BeforeUnloadEvent) => void) | null)?.(mockEvent);
 
       expect(mockEvent.preventDefault).toHaveBeenCalled();
     });

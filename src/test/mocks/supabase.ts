@@ -97,7 +97,6 @@ export function createMockSupabaseClient(
       order: vi.fn().mockReturnThis(),
       single: vi.fn().mockResolvedValue({ data: null, error: null }),
       maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
-      select: vi.fn().mockReturnThis(),
     }),
   };
 }
