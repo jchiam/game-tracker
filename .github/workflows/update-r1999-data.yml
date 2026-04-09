@@ -1,4 +1,4 @@
-name: Update Reverse 1999 Data
+name: Update R1999 Data
 
 on:
   schedule:

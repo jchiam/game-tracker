@@ -3,6 +3,7 @@
 [![CI](https://github.com/jchiam/game-tracker/actions/workflows/ci.yml/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/jchiam/game-tracker/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/github-code-scanning/codeql)
 [![Dependabot Updates](https://github.com/jchiam/game-tracker/actions/workflows/dependabot/dependabot-updates/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/dependabot/dependabot-updates)
+[![codecov](https://codecov.io/gh/jchiam/game-tracker/graph/badge.svg?token=T7Q2FAR138)](https://codecov.io/gh/jchiam/game-tracker)
 
 [![Update HSR Data](https://github.com/jchiam/game-tracker/actions/workflows/update-hsr-data.yml/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/update-hsr-data.yml)
 [![Update R1999 Data](https://github.com/jchiam/game-tracker/actions/workflows/update-r1999-data.yml/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/update-r1999-data.yml)
