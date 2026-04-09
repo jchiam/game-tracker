@@ -1,9 +1,6 @@
 export const IMAGEKIT_URL_ENDPOINT = (import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT ?? '').trim();
-console.log(
-  IMAGEKIT_URL_ENDPOINT
-    ? `ImageKit configured with endpoint: ${IMAGEKIT_URL_ENDPOINT}`
-    : 'ImageKit not configured',
-);
+if (!IMAGEKIT_URL_ENDPOINT)
+  console.warn('ImageKit not configured: VITE_IMAGEKIT_URL_ENDPOINT is not set');
 
 // Whether ImageKit is configured in this environment
 export const isImageKitEnabled = IMAGEKIT_URL_ENDPOINT.length > 0;
