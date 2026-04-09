@@ -1,5 +1,6 @@
 import type { R1999TrackedArcanist } from '@/types';
-import { IMAGEKIT_URL_ENDPOINT, isImageKitEnabled, toImageKitPath } from '@/lib/imagekit';
+import { getMugshotUrl } from '@/lib/imagekit';
+import { useState } from 'react';
 import './ArcanistCard.css';
 
 interface ArcanistCardProps {
@@ -17,22 +18,34 @@ export function ArcanistCard({
   onUpdateInsight,
   onToggleFavorite,
 }: ArcanistCardProps) {
+  const [imgLoading, setImgLoading] = useState(true);
+  const [imgError, setImgError] = useState(false);
+  const imageUrl = getMugshotUrl(arcanist.imageUrl);
+
   return (
     <div className="arcanist-card">
       <div className="arcanist-card-header">
-        <img
-          src={
-            isImageKitEnabled
-              ? `${IMAGEKIT_URL_ENDPOINT}${toImageKitPath(arcanist.imageUrl)}`
-              : arcanist.imageUrl
-          }
-          alt={arcanist.name}
-          className="arcanist-image"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = `https://ui-avatars.com/api/?name=${arcanist.name.replace(' ', '+')}&background=1a1a1a&color=fff&size=250`;
-          }}
-        />
+        <div className="arcanist-image-wrapper">
+          {imgLoading && !imgError && (
+            <div className="arcanist-image-spinner">
+              <div className="spinner-dot" />
+              <div className="spinner-dot" />
+              <div className="spinner-dot" />
+            </div>
+          )}
+          <img
+            src={imageUrl}
+            alt={arcanist.name}
+            className={`arcanist-image ${imgLoading ? 'loading' : 'loaded'}`}
+            onLoad={() => setImgLoading(false)}
+            onError={(e) => {
+              setImgLoading(false);
+              setImgError(true);
+              const target = e.target as HTMLImageElement;
+              target.src = `https://ui-avatars.com/api/?name=${arcanist.name.replace(' ', '+')}&background=1a1a1a&color=fff&size=250`;
+            }}
+          />
+        </div>
         <div className="arcanist-card-header-overlay"></div>
         <div className="arcanist-card-overlay-controls">
           <div className="arcanist-overlay-top">

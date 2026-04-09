@@ -1,18 +1,24 @@
 // Auto-update script for Reverse: 1999 arcanist data.
-// Fetches the latest data from two sources and regenerates:
+// Fetches the latest data from three sources and regenerates:
 //   - src/data/reverse1999/arcanists.ts
 //
-// Also downloads two image sets from kornblume and uploads new ones to ImageKit:
-//   - i0 (cropped square mugshots) → local: arcanists-mugshots/  ImageKit: /reverse_1999/arcanists_mugshots
-//   - i2 (full-art portraits)      → local: arcanists/           ImageKit: /reverse_1999/arcanists
+// Also downloads mugshot and full-art images and uploads to ImageKit:
+//   - mugshot (CN headicon via ArcanistMap, fallback to kornblume icon)
+//                                              → ImageKit: /reverse_1999/arcanists_mugshots
+//   - i2 (full-art portraits from kornblume)  → ImageKit: /reverse_1999/arcanists
 //
 // Data sources:
 //   - windbow27/kornblume: arcanist list (Name, Rarity, Afflatus, IsReleased, Id for images)
 //   - reverse1999.fandom.com: damage type (Mental / Reality) via wikitext batch API
+//   - myssal/Reverse-1999-CN-Asset (ArcanistMap.json): headicon IDs → primary mugshot source
 //
-// Usage: node scripts/update-r1999-data.mjs
+// Usage:
+//   node scripts/update-r1999-data.mjs                   # only upload missing assets
+//   node scripts/update-r1999-data.mjs --reupload-all    # force reupload all assets
+//   node scripts/update-r1999-data.mjs --reupload-mugshots
+//   node scripts/update-r1999-data.mjs --reupload-full-art
 
-import { readFile, writeFile, mkdir, access } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import ImageKit from 'imagekit';
@@ -20,11 +26,25 @@ import ImageKit from 'imagekit';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 
-const imagekitClient = process.env.IMAGEKIT_PRIVATE_KEY
+// Load .env.local if present (Node 22+ built-in)
+try {
+  process.loadEnvFile(resolve(ROOT, '.env.local'));
+} catch {
+  // No .env.local — rely on environment variables already set (e.g. CI secrets)
+}
+
+const IMAGEKIT_PRIVATE_KEY =
+  process.env.IMAGEKIT_PRIVATE_KEY ?? process.env.VITE_IMAGEKIT_PRIVATE_KEY ?? '';
+const IMAGEKIT_PUBLIC_KEY =
+  process.env.IMAGEKIT_PUBLIC_KEY ?? process.env.VITE_IMAGEKIT_PUBLIC_KEY ?? '';
+const IMAGEKIT_URL_ENDPOINT =
+  process.env.IMAGEKIT_URL_ENDPOINT ?? process.env.VITE_IMAGEKIT_URL_ENDPOINT ?? '';
+
+const imagekitClient = IMAGEKIT_PRIVATE_KEY
   ? new ImageKit({
-      privateKey: process.env.IMAGEKIT_PRIVATE_KEY,
-      publicKey: process.env.IMAGEKIT_PUBLIC_KEY ?? '',
-      urlEndpoint: process.env.IMAGEKIT_URL_ENDPOINT ?? '',
+      privateKey: IMAGEKIT_PRIVATE_KEY,
+      publicKey: IMAGEKIT_PUBLIC_KEY,
+      urlEndpoint: IMAGEKIT_URL_ENDPOINT,
     })
   : null;
 
@@ -34,8 +54,71 @@ if (imagekitClient) {
   console.log('ImageKit uploads skipped (IMAGEKIT_PRIVATE_KEY not set)');
 }
 
+const args = new Set(process.argv.slice(2));
+const reuploadMugshots = args.has('--reupload-all') || args.has('--reupload-mugshots');
+const reuploadFullArt = args.has('--reupload-all') || args.has('--reupload-full-art');
+if (reuploadMugshots || reuploadFullArt) {
+  const targets = [reuploadMugshots && 'mugshots', reuploadFullArt && 'full-art']
+    .filter(Boolean)
+    .join(' + ');
+  console.log(`Reupload mode: ${targets}`);
+}
+
 const KORNBLUME_BASE = 'https://raw.githubusercontent.com/windbow27/kornblume/main/public';
 const FANDOM_API = 'https://reverse1999.fandom.com/api.php';
+const HEADICON_BASE =
+  'https://raw.githubusercontent.com/myssal/Reverse-1999-CN-Asset/master/singlebg/headicon_img';
+const ARCANIST_MAP_URL =
+  'https://raw.githubusercontent.com/myssal/Reverse-1999-CN-Asset/master/mappings/ArcanistMap.json';
+
+// Kornblume names that cannot be auto-matched to ArcanistMap entries.
+// nameEng differs fundamentally (different English name or Cyrillic script).
+const NAME_OVERRIDES = {
+  Jessica: 3056, // nameEng: 'Changeling' — different English name (CN: 洁西卡)
+  Vila: 3087, // nameEng: 'Вила' — Cyrillic
+  Yenisei: 3082, // nameEng: 'Енисей' — Cyrillic
+};
+
+// Build a lookup function from ArcanistMap entries: kornblumeName → headiconId string.
+// Uses four strategies in priority order before falling back to NAME_OVERRIDES.
+function buildHeadiconLookup(arcanistMap) {
+  const byNameEng = new Map(); // nameEng.toLowerCase() → characterId
+  const byCNName = new Map(); // CN name (exact) → characterId
+
+  for (const entry of arcanistMap) {
+    const eng = (entry.nameEng ?? '').toLowerCase().trim();
+    const cn = (entry.name ?? '').trim();
+    if (eng) byNameEng.set(eng, entry.id);
+    if (cn) byCNName.set(cn, entry.id);
+  }
+
+  return function findHeadiconId(kornblumeName) {
+    // Manual overrides for unmatchable names
+    if (NAME_OVERRIDES[kornblumeName] !== undefined) {
+      return String(NAME_OVERRIDES[kornblumeName]) + '01';
+    }
+
+    const key = kornblumeName.toLowerCase();
+
+    // Strategy 1: exact nameEng match (covers most characters)
+    if (byNameEng.has(key)) return String(byNameEng.get(key)) + '01';
+
+    // Strategy 2: exact CN name match (covers '37' → CN '37', '6' → CN '6', 'J' → CN 'J')
+    if (byCNName.has(kornblumeName)) return String(byCNName.get(kornblumeName)) + '01';
+
+    // Strategy 3: kornblumeName starts with nameEng ('Liang Yue' starts with 'Liang')
+    for (const [eng, id] of byNameEng.entries()) {
+      if (eng.length > 3 && key.startsWith(eng)) return String(id) + '01';
+    }
+
+    // Strategy 4: nameEng starts with kornblumeName ('Matilda Bouanich' starts with 'Matilda')
+    for (const [eng, id] of byNameEng.entries()) {
+      if (key.length > 3 && eng.startsWith(key)) return String(id) + '01';
+    }
+
+    return null;
+  };
+}
 
 async function fetchJSON(url) {
   const res = await fetch(url);
@@ -73,79 +156,72 @@ async function loadExistingArcanists() {
   }
 }
 
-async function fileExists(path) {
+// Download a raw image and return the buffer.
+async function downloadImage(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return Buffer.from(await res.arrayBuffer());
+}
+
+// Derive ImageKit folder and fileName from a local asset path.
+// Path mapping mirrors toImageKitPath() from src/lib/imagekit.ts.
+function toImageKitLocation(localAssetPath) {
+  const normalized = localAssetPath.replace(/\\/g, '/');
+  const assetsIdx = normalized.indexOf('/assets/');
+  if (assetsIdx === -1) return null;
+  const segments = normalized
+    .slice(assetsIdx)
+    .replace(/^\/assets/, '')
+    .split('/');
+  const mapped = segments.map((seg, i) =>
+    i < segments.length - 1 ? seg.replace(/[^a-zA-Z0-9]/g, '_') : seg,
+  );
+  return {
+    fileName: mapped[mapped.length - 1],
+    folder: '/' + mapped.slice(0, -1).filter(Boolean).join('/'),
+  };
+}
+
+// Check whether a file already exists on ImageKit. Returns false if ImageKit is not configured.
+async function existsOnImageKit(localAssetPath) {
+  if (!imagekitClient) return false;
+  const loc = toImageKitLocation(localAssetPath);
+  if (!loc) return false;
   try {
-    await access(path);
-    return true;
+    const existing = await imagekitClient.listFiles({
+      path: loc.folder,
+      name: loc.fileName,
+      limit: 1,
+    });
+    return existing.length > 0;
   } catch {
     return false;
   }
 }
 
-// Download a raw image and save it to disk, returning the buffer.
-async function downloadImage(url, destPath) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const buffer = Buffer.from(await res.arrayBuffer());
-  await writeFile(destPath, buffer);
-  return buffer;
-}
-
-// Download a kornblume i0 image, crop a square from the top, save as WebP, and return the buffer.
-async function downloadAndCropArcanistImage(url, destPath) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const buffer = Buffer.from(await res.arrayBuffer());
-
-  const sharp = (await import('sharp')).default;
-  const { width } = await sharp(buffer).metadata();
-
-  const processed = await sharp(buffer)
-    .extract({ left: 0, top: 0, width, height: width })
-    .webp({ quality: 85 })
-    .toBuffer();
-
-  await writeFile(destPath, processed);
-  return processed;
-}
-
-// Upload a processed image buffer to ImageKit, mirroring the local asset path structure.
-// Path mapping mirrors toImageKitPath() from src/lib/imagekit.ts.
-async function uploadToImageKit(buffer, destPath, overrideFolder = null) {
+// Upload a buffer to ImageKit using the path derived from a local asset path.
+async function uploadToImageKit(buffer, localAssetPath) {
   if (!imagekitClient) return;
-
-  const normalized = destPath.replace(/\\/g, '/');
-  const assetsIdx = normalized.indexOf('/assets/');
-  if (assetsIdx === -1) {
-    console.warn(`  ImageKit: could not derive asset path from ${destPath}`);
+  const loc = toImageKitLocation(localAssetPath);
+  if (!loc) {
+    console.warn(`    ImageKit: could not derive asset path from ${localAssetPath}`);
     return;
   }
-  const localPath = normalized.slice(assetsIdx);
-
-  const segments = localPath.replace(/^\/assets/, '').split('/');
-  const mapped = segments.map((seg, i) =>
-    i < segments.length - 1 ? seg.replace(/[^a-zA-Z0-9]/g, '_') : seg,
-  );
-  const fileName = mapped[mapped.length - 1];
-  const folder = overrideFolder ?? '/' + mapped.slice(0, -1).filter(Boolean).join('/');
-
   try {
-    const existing = await imagekitClient.listFiles({ path: folder, name: fileName, limit: 1 });
-    if (existing.length > 0) {
-      console.log(`  ImageKit: skipped ${fileName} (already exists)`);
-      return;
-    }
-    await imagekitClient.upload({ file: buffer, fileName, folder, useUniqueFileName: false });
-    console.log(`  ImageKit: uploaded ${fileName}`);
+    await imagekitClient.upload({
+      file: buffer,
+      fileName: loc.fileName,
+      folder: loc.folder,
+      useUniqueFileName: false,
+    });
+    console.log(`    Uploaded to ImageKit: ${loc.folder}/${loc.fileName}`);
   } catch (e) {
-    console.warn(`  ImageKit upload failed for ${fileName}: ${e?.message ?? String(e)}`);
+    console.warn(`    ImageKit upload failed: ${e?.message ?? String(e)}`);
   }
 }
 
 // Build a reverse lookup from resolved wiki title → original kornblume name,
 // using the redirects and normalized arrays returned by the MediaWiki API.
-// This handles cases where the kornblume name differs from the wiki page title
-// (e.g. "Ezra Theodore" in kornblume → "Ezra" on the wiki).
 function buildReverseMap(query) {
   const reverse = new Map();
   for (const { from, to } of query?.redirects ?? []) {
@@ -196,8 +272,9 @@ function generateArcanistsTs(arcanists) {
   const fiveStars = arcanists.filter((a) => a.rarity === 5);
 
   const lines = [
-    '// Auto-generated from kornblume and Reverse: 1999 Wiki — do not edit manually.',
+    '// Auto-generated from kornblume, Reverse: 1999 Wiki, and CN ArcanistMap — do not edit manually.',
     '// Run `node scripts/update-r1999-data.mjs` or trigger the GitHub Actions workflow to update.',
+    '// imageUrl resolves to the best available mugshot: CN headicon first, kornblume icon as fallback.',
     '',
     'export interface Arcanist {',
     '  id: string;',
@@ -210,8 +287,8 @@ function generateArcanistsTs(arcanists) {
     'export const ALL_ARCANISTS: Arcanist[] = [',
   ];
 
-  const formatEntry = (a) =>
-    [
+  const formatEntry = (a) => {
+    return [
       `  {`,
       `    id: '${a.id}',`,
       `    name: '${a.name}',`,
@@ -220,6 +297,7 @@ function generateArcanistsTs(arcanists) {
       `    imageUrl: '${a.imageUrl}',`,
       `  },`,
     ].join('\n');
+  };
 
   if (sixStars.length > 0) {
     lines.push('  // 6-Stars');
@@ -238,15 +316,20 @@ function generateArcanistsTs(arcanists) {
 }
 
 async function main() {
-  console.log('Fetching data from kornblume and Fandom wiki...');
+  console.log('Fetching data from kornblume, Fandom wiki, and CN ArcanistMap...');
 
   const [
     kornblumeData,
+    arcanistMap,
     { entries: existingEntries, idMap: existingIds, damageMap: existingDamage },
   ] = await Promise.all([
     fetchJSON(`${KORNBLUME_BASE}/data/arcanists.json`),
+    fetchJSON(ARCANIST_MAP_URL),
     loadExistingArcanists(),
   ]);
+
+  const findHeadiconId = buildHeadiconLookup(arcanistMap);
+  console.log(`  ArcanistMap loaded (${arcanistMap.length} entries)`);
 
   // Filter to released playable characters only (rarity 5 and 6)
   const releasedRaw = kornblumeData.filter(
@@ -261,13 +344,9 @@ async function main() {
   const wikiDamage = await fetchDamageTypes(names);
   console.log(`  Got damage types for ${wikiDamage.size}/${names.length} arcanists`);
 
-  // Ensure output directories exist
+  // These paths are used only to derive ImageKit folder/filename — images are not stored locally.
   const mugshotDir = resolve(ROOT, 'public/assets/reverse-1999/arcanists-mugshots');
   const fullArtDir = resolve(ROOT, 'public/assets/reverse-1999/arcanists');
-  await Promise.all([
-    mkdir(mugshotDir, { recursive: true }),
-    mkdir(fullArtDir, { recursive: true }),
-  ]);
 
   // Sort: 6-stars first, then alphabetically within each group
   releasedRaw.sort((a, b) => {
@@ -279,49 +358,79 @@ async function main() {
   let mugshotCount = 0;
   let fullArtCount = 0;
   const unknownDamage = [];
+  const unmatchedHeadicons = [];
+  const total = releasedRaw.length;
 
-  for (const c of releasedRaw) {
+  console.log(`\nProcessing images for ${total} arcanists...`);
+
+  for (let idx = 0; idx < releasedRaw.length; idx++) {
+    const c = releasedRaw[idx];
     const id = existingIds.get(c.Name) ?? slugify(c.Name);
     const afflatus = c.Afflatus ?? 'Unknown';
     const damageType = wikiDamage.get(c.Name) ?? existingDamage.get(c.Name) ?? 'Unknown';
 
     if (damageType === 'Unknown') unknownDamage.push(c.Name);
 
+    const headiconId = findHeadiconId(c.Name);
+    if (!headiconId) unmatchedHeadicons.push(c.Name);
+
     const imageUrl = `/assets/reverse-1999/arcanists-mugshots/${id}.webp`;
 
+    console.log(`  [${idx + 1}/${total}] ${c.Name}`);
+
+    // Mugshot: headicon (primary) or kornblume icon (fallback) → unified mugshot folder
     const mugshotLocalPath = resolve(mugshotDir, `${id}.webp`);
-    if (!(await fileExists(mugshotLocalPath))) {
+    const mugshotOnKit = !reuploadMugshots && (await existsOnImageKit(mugshotLocalPath));
+    if (mugshotOnKit) {
+      console.log(`    Mugshot already on ImageKit, skipping`);
+    } else {
       try {
-        const mugshotBuffer = await downloadAndCropArcanistImage(
-          `${KORNBLUME_BASE}/images/arcanists/i0/${c.Id}.webp`,
-          mugshotLocalPath,
-        );
+        const reason = reuploadMugshots ? 'reupload requested' : 'missing from ImageKit';
+        console.log(`    Mugshot ${reason} — downloading...`);
+        let buffer;
+        if (headiconId) {
+          buffer = await downloadImage(`${HEADICON_BASE}/${headiconId}.png`);
+          console.log(`      Source: headicon ${headiconId}`);
+        } else {
+          buffer = await downloadImage(
+            `${KORNBLUME_BASE}/images/arcanists/icon/${c.Id}.webp`,
+          );
+          console.log(`      Source: kornblume icon (no headicon matched)`);
+        }
         mugshotCount++;
-        await uploadToImageKit(mugshotBuffer, mugshotLocalPath);
+        await uploadToImageKit(buffer, mugshotLocalPath);
       } catch (e) {
-        console.warn(
-          `  Warning: Could not download mugshot for ${c.Name}: ${e?.message ?? String(e)}`,
-        );
+        console.warn(`    Warning: Could not process mugshot: ${e?.message ?? String(e)}`);
       }
     }
 
+    // Full-art portrait (kornblume i2)
     const fullArtLocalPath = resolve(fullArtDir, `${id}.webp`);
-    if (!(await fileExists(fullArtLocalPath))) {
+    const fullArtOnKit = !reuploadFullArt && (await existsOnImageKit(fullArtLocalPath));
+    if (fullArtOnKit) {
+      console.log(`    Full-art already on ImageKit, skipping`);
+    } else {
       try {
+        const reason = reuploadFullArt ? 'reupload requested' : 'missing from ImageKit';
+        console.log(`    Full-art ${reason} — downloading and uploading...`);
         const fullArtBuffer = await downloadImage(
           `${KORNBLUME_BASE}/images/arcanists/i2/${c.Id}.webp`,
-          fullArtLocalPath,
         );
         fullArtCount++;
         await uploadToImageKit(fullArtBuffer, fullArtLocalPath);
       } catch (e) {
-        console.warn(
-          `  Warning: Could not download full-art image for ${c.Name}: ${e?.message ?? String(e)}`,
-        );
+        console.warn(`    Warning: Could not process full-art: ${e?.message ?? String(e)}`);
       }
     }
 
-    arcanists.push({ id, name: c.Name, afflatus, damageType, rarity: c.Rarity, imageUrl });
+    arcanists.push({
+      id,
+      name: c.Name,
+      afflatus,
+      damageType,
+      rarity: c.Rarity,
+      imageUrl,
+    });
   }
 
   // Write generated TypeScript file
@@ -346,6 +455,13 @@ async function main() {
   for (const a of added)
     console.log(`    + ${a.name} [${a.rarity}★ ${a.afflatus} · ${a.damageType}]`);
   for (const a of removed) console.log(`    - ${a.name} (removed from source)`);
+
+  if (unmatchedHeadicons.length > 0) {
+    console.warn(
+      `\n  Warning: No headicon match for ${unmatchedHeadicons.length} arcanist(s) — kornblume icon used as fallback:`,
+    );
+    for (const name of unmatchedHeadicons) console.warn(`    ? ${name}`);
+  }
 
   if (unknownDamage.length > 0) {
     console.warn(

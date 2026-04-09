@@ -42,6 +42,11 @@ jobs:
         if: steps.changes.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: |
+            Automated weekly update of R1999 arcanist data and image assets from:
+            - [kornblume](https://github.com/windbow27/kornblume) — arcanist list, afflatus, images
+            - [Reverse: 1999 Wiki](https://reverse1999.fandom.com) — damage types
+            - [Reverse-1999-CN-Asset ArcanistMap](https://github.com/myssal/Reverse-1999-CN-Asset) — headicon images (primary mugshot source)
         run: |
           BRANCH="chore/update-r1999-data-$(date -u +%Y%m%d)"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -52,6 +57,6 @@ jobs:
           git push origin "$BRANCH"
           gh pr create \
             --title "chore: update Reverse 1999 arcanist data" \
-            --body "Automated weekly update of R1999 arcanist list and image assets from [kornblume](https://github.com/windbow27/kornblume) and the [Reverse: 1999 Wiki](https://reverse1999.fandom.com)." \
+            --body "$PR_BODY" \
             --base main \
             --head "$BRANCH"

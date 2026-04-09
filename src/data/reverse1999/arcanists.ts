@@ -1,5 +1,6 @@
-// Auto-generated from kornblume and Reverse: 1999 Wiki — do not edit manually.
+// Auto-generated from kornblume, Reverse: 1999 Wiki, and CN ArcanistMap — do not edit manually.
 // Run `node scripts/update-r1999-data.mjs` or trigger the GitHub Actions workflow to update.
+// imageUrl resolves to the best available mugshot: CN headicon first, kornblume icon as fallback.
 
 export interface Arcanist {
   id: string;
