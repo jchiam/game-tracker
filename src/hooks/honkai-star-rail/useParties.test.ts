@@ -205,10 +205,7 @@ describe('useParties', () => {
       const { result } = renderHook(() => useParties(mockSession));
       await waitFor(() => expect(result.current.isLoading).toBe(false));
 
-      mockLoadParties.mockResolvedValueOnce([
-        makeParty('p1', 'Alpha'),
-        makeParty('p2', 'Beta'),
-      ]);
+      mockLoadParties.mockResolvedValueOnce([makeParty('p1', 'Alpha'), makeParty('p2', 'Beta')]);
 
       await act(async () => {
         await result.current.refreshParties();

@@ -9,8 +9,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 function createBuilder(result: { data: any; error: any } = { data: null, error: null }) {
   const builder: Record<string, any> = {};
   for (const method of [
-    'select', 'eq', 'insert', 'update', 'delete', 'upsert',
-    'match', 'order', 'filter', 'gte', 'lte',
+    'select',
+    'eq',
+    'insert',
+    'update',
+    'delete',
+    'upsert',
+    'match',
+    'order',
+    'filter',
+    'gte',
+    'lte',
   ]) {
     builder[method] = vi.fn().mockReturnValue(builder);
   }
@@ -23,9 +32,7 @@ function createBuilder(result: { data: any; error: any } = { data: null, error: 
 describe('characterService', () => {
   describe('DB disabled (no VITE_SUPABASE_URL)', () => {
     it('loadCharactersFromDB returns empty array', async () => {
-      const { loadCharactersFromDB } = await import(
-        '@/services/honkai-star-rail/characterService'
-      );
+      const { loadCharactersFromDB } = await import('@/services/honkai-star-rail/characterService');
       expect(await loadCharactersFromDB('user-1')).toEqual([]);
     });
 
@@ -105,9 +112,7 @@ describe('characterService', () => {
     });
 
     it('loadCharactersFromDB returns empty array on error', async () => {
-      mockFrom.mockReturnValue(
-        createBuilder({ data: null, error: { message: 'DB error' } }),
-      );
+      mockFrom.mockReturnValue(createBuilder({ data: null, error: { message: 'DB error' } }));
 
       const result = await service.loadCharactersFromDB('user-1');
       expect(result).toEqual([]);

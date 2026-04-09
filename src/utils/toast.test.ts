@@ -10,7 +10,8 @@ describe('toast utility', () => {
 
   describe('addToast', () => {
     it('creates a toast with default type "info"', async () => {
-      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } = await import('@/utils/toast');
+      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } =
+        await import('@/utils/toast');
       const toasts: Toast[][] = [];
       subscribeToastFresh((t) => toasts.push([...t]));
 
@@ -28,7 +29,8 @@ describe('toast utility', () => {
     });
 
     it('creates a toast with custom type', async () => {
-      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } = await import('@/utils/toast');
+      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } =
+        await import('@/utils/toast');
       const toasts: Toast[][] = [];
       subscribeToastFresh((t) => toasts.push([...t]));
 
@@ -50,7 +52,8 @@ describe('toast utility', () => {
     });
 
     it('notifies subscribers when toast is added', async () => {
-      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } = await import('@/utils/toast');
+      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } =
+        await import('@/utils/toast');
       const listener = vi.fn();
       subscribeToastFresh(listener);
       listener.mockClear(); // clear the initial call
@@ -65,7 +68,8 @@ describe('toast utility', () => {
 
     it('auto-removes toast after duration', async () => {
       vi.useFakeTimers();
-      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } = await import('@/utils/toast');
+      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } =
+        await import('@/utils/toast');
       const toasts: Toast[][] = [];
       subscribeToastFresh((t) => toasts.push([...t]));
 
@@ -83,7 +87,8 @@ describe('toast utility', () => {
     });
 
     it('does not auto-remove when duration is 0', async () => {
-      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } = await import('@/utils/toast');
+      const { addToast: addToastFresh, subscribeToast: subscribeToastFresh } =
+        await import('@/utils/toast');
       const toasts: Toast[][] = [];
       subscribeToastFresh((t) => toasts.push([...t]));
 
@@ -95,7 +100,11 @@ describe('toast utility', () => {
 
   describe('removeToast', () => {
     it('removes a toast by ID', async () => {
-      const { addToast: addToastFresh, removeToast: removeToastFresh, subscribeToast: subscribeToastFresh } = await import('@/utils/toast');
+      const {
+        addToast: addToastFresh,
+        removeToast: removeToastFresh,
+        subscribeToast: subscribeToastFresh,
+      } = await import('@/utils/toast');
       const toasts: Toast[][] = [];
       subscribeToastFresh((t) => toasts.push([...t]));
 
@@ -106,7 +115,8 @@ describe('toast utility', () => {
     });
 
     it('does nothing if ID does not exist', async () => {
-      const { removeToast: removeToastFresh, subscribeToast: subscribeToastFresh } = await import('@/utils/toast');
+      const { removeToast: removeToastFresh, subscribeToast: subscribeToastFresh } =
+        await import('@/utils/toast');
       const toasts: Toast[][] = [];
       subscribeToastFresh((t) => toasts.push([...t]));
 
@@ -116,7 +126,11 @@ describe('toast utility', () => {
     });
 
     it('notifies subscribers when toast is removed', async () => {
-      const { addToast: addToastFresh, removeToast: removeToastFresh, subscribeToast: subscribeToastFresh } = await import('@/utils/toast');
+      const {
+        addToast: addToastFresh,
+        removeToast: removeToastFresh,
+        subscribeToast: subscribeToastFresh,
+      } = await import('@/utils/toast');
       const listener = vi.fn();
       subscribeToastFresh(listener);
 
@@ -133,7 +147,8 @@ describe('toast utility', () => {
 
   describe('subscribeToast', () => {
     it('calls listener immediately with current toasts', async () => {
-      const { subscribeToast: subscribeFresh, addToast: addToastFresh } = await import('@/utils/toast');
+      const { subscribeToast: subscribeFresh, addToast: addToastFresh } =
+        await import('@/utils/toast');
       addToastFresh('Existing toast');
 
       const listener = vi.fn();
@@ -154,7 +169,8 @@ describe('toast utility', () => {
     });
 
     it('stops calling listener after unsubscribe', async () => {
-      const { subscribeToast: subscribeFresh, addToast: addToastFresh } = await import('@/utils/toast');
+      const { subscribeToast: subscribeFresh, addToast: addToastFresh } =
+        await import('@/utils/toast');
       const listener = vi.fn();
       const unsubscribe = subscribeFresh(listener);
 
@@ -167,7 +183,8 @@ describe('toast utility', () => {
     });
 
     it('can have multiple subscribers', async () => {
-      const { subscribeToast: subscribeFresh, addToast: addToastFresh } = await import('@/utils/toast');
+      const { subscribeToast: subscribeFresh, addToast: addToastFresh } =
+        await import('@/utils/toast');
       const listener1 = vi.fn();
       const listener2 = vi.fn();
 

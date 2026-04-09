@@ -76,7 +76,9 @@ describe('CharacterCard', () => {
 
   it('calls onToggleFavorite when favorite button is clicked', () => {
     const onToggleFavorite = vi.fn();
-    render(<CharacterCard char={makeChar()} {...defaultProps} onToggleFavorite={onToggleFavorite} />);
+    render(
+      <CharacterCard char={makeChar()} {...defaultProps} onToggleFavorite={onToggleFavorite} />,
+    );
     fireEvent.click(screen.getByTitle('Favorite Character'));
     expect(onToggleFavorite).toHaveBeenCalledWith('char-1', true);
   });

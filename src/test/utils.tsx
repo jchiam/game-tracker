@@ -34,18 +34,11 @@ export interface RenderOptions {
  * Render a component with all necessary providers (Router, etc.)
  * Use this instead of raw `render` for component tests.
  */
-export function renderWithProviders(
-  ui: ReactElement,
-  options: RenderOptions = {},
-) {
-  const { route = '/', wrapper: CustomWrapper, ...rest } = options;
+export function renderWithProviders(ui: ReactElement, options: RenderOptions = {}) {
+  const { route = '/', wrapper: CustomWrapper } = options;
 
   function Providers({ children }: { children: React.ReactNode }) {
-    return (
-      <MemoryRouter initialEntries={[route]}>
-        {children}
-      </MemoryRouter>
-    );
+    return <MemoryRouter initialEntries={[route]}>{children}</MemoryRouter>;
   }
 
   const wrapper = CustomWrapper

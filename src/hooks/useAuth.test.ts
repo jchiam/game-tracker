@@ -53,7 +53,9 @@ const mockSession: Session = {
 
 // Helper to create a mock subscription return value
 function mockSubscription() {
-  return { data: { subscription: { id: 'test-sub', callback: vi.fn(), unsubscribe: vi.fn() } } } as ReturnType<typeof supabaseModule.supabase.auth.onAuthStateChange>;
+  return {
+    data: { subscription: { id: 'test-sub', callback: vi.fn(), unsubscribe: vi.fn() } },
+  } as ReturnType<typeof supabaseModule.supabase.auth.onAuthStateChange>;
 }
 
 describe('useAuth', () => {
@@ -61,7 +63,10 @@ describe('useAuth', () => {
     vi.clearAllMocks();
     mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
     mockOnAuthStateChange.mockReturnValue(mockSubscription());
-    mockSignInWithOAuth.mockResolvedValue({ data: { provider: 'google', url: 'https://oauth.example.com' }, error: null });
+    mockSignInWithOAuth.mockResolvedValue({
+      data: { provider: 'google', url: 'https://oauth.example.com' },
+      error: null,
+    });
     mockSignOut.mockResolvedValue({ error: null });
   });
 
@@ -104,7 +109,9 @@ describe('useAuth', () => {
 
     it('subscribes to auth state changes on mount', async () => {
       const unsubscribe = vi.fn();
-      mockOnAuthStateChange.mockReturnValue({ data: { subscription: { id: 'test-sub', callback: vi.fn(), unsubscribe } } } as ReturnType<typeof supabaseModule.supabase.auth.onAuthStateChange>);
+      mockOnAuthStateChange.mockReturnValue({
+        data: { subscription: { id: 'test-sub', callback: vi.fn(), unsubscribe } },
+      } as ReturnType<typeof supabaseModule.supabase.auth.onAuthStateChange>);
       mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
 
       renderHook(() => useAuth());
@@ -114,7 +121,9 @@ describe('useAuth', () => {
 
     it('unsubscribes on unmount', async () => {
       const unsubscribe = vi.fn();
-      mockOnAuthStateChange.mockReturnValue({ data: { subscription: { id: 'test-sub', callback: vi.fn(), unsubscribe } } } as ReturnType<typeof supabaseModule.supabase.auth.onAuthStateChange>);
+      mockOnAuthStateChange.mockReturnValue({
+        data: { subscription: { id: 'test-sub', callback: vi.fn(), unsubscribe } },
+      } as ReturnType<typeof supabaseModule.supabase.auth.onAuthStateChange>);
       mockGetSession.mockResolvedValue({ data: { session: null }, error: null });
 
       const { unmount } = renderHook(() => useAuth());

@@ -6,7 +6,13 @@ import type { HsrParty } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
 
 const availableCharacters: Character[] = [
-  { id: 'acheron', name: 'Acheron', element: 'Thunder', path: 'Nihility', imageUrl: '/acheron.webp' },
+  {
+    id: 'acheron',
+    name: 'Acheron',
+    element: 'Thunder',
+    path: 'Nihility',
+    imageUrl: '/acheron.webp',
+  },
 ];
 
 function makeParty(overrides: Partial<HsrParty> = {}): HsrParty {
@@ -51,7 +57,10 @@ describe('PartiesTab', () => {
     renderWithProviders(
       <PartiesTab
         {...defaultProps}
-        parties={[makeParty({ name: 'Team Alpha' }), makeParty({ id: 'party-2', name: 'Team Beta' })]}
+        parties={[
+          makeParty({ name: 'Team Alpha' }),
+          makeParty({ id: 'party-2', name: 'Team Beta' }),
+        ]}
         session={session}
       />,
     );

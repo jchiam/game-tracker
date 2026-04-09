@@ -5,7 +5,13 @@ import type { HsrParty } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
 
 const availableCharacters: Character[] = [
-  { id: 'acheron', name: 'Acheron', element: 'Thunder', path: 'Nihility', imageUrl: '/acheron.webp' },
+  {
+    id: 'acheron',
+    name: 'Acheron',
+    element: 'Thunder',
+    path: 'Nihility',
+    imageUrl: '/acheron.webp',
+  },
   { id: 'blade', name: 'Blade', element: 'Wind', path: 'Destruction', imageUrl: '/blade.webp' },
 ];
 

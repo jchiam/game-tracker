@@ -40,15 +40,15 @@ export function createMockSession(overrides: Partial<Session> = {}): Session {
 /**
  * Create a mock Supabase auth client with configurable behavior.
  */
-export function createMockAuthClient(options: {
-  initialSession?: Session | null;
-  onSignOut?: () => void;
-} = {}) {
+export function createMockAuthClient(
+  options: {
+    initialSession?: Session | null;
+    onSignOut?: () => void;
+  } = {},
+) {
   const { initialSession = null, onSignOut } = options;
   let currentSession = initialSession;
-  const authStateListeners: Array<
-    (event: string, session: Session | null) => void
-  > = [];
+  const authStateListeners: Array<(event: string, session: Session | null) => void> = [];
 
   return {
     getSession: vi.fn().mockResolvedValue({ data: { session: currentSession }, error: null }),
@@ -58,7 +58,9 @@ export function createMockAuthClient(options: {
         unsubscribe: vi.fn(),
       };
     }),
-    signInWithOAuth: vi.fn().mockResolvedValue({ data: { url: 'https://oauth.example.com' }, error: null }),
+    signInWithOAuth: vi
+      .fn()
+      .mockResolvedValue({ data: { url: 'https://oauth.example.com' }, error: null }),
     signOut: vi.fn().mockImplementation(async () => {
       currentSession = null;
       onSignOut?.();
@@ -76,9 +78,11 @@ export function createMockAuthClient(options: {
 /**
  * Create a full mock Supabase client with all methods mocked.
  */
-export function createMockSupabaseClient(options: {
-  initialSession?: Session | null;
-} = {}) {
+export function createMockSupabaseClient(
+  options: {
+    initialSession?: Session | null;
+  } = {},
+) {
   const auth = createMockAuthClient({ initialSession: options.initialSession });
 
   return {
@@ -107,9 +111,11 @@ export function createMockSupabaseClient(options: {
  * vi.mock('@/lib/supabase', () => createSupabaseMockFactory({ initialSession: mockSession }));
  * ```
  */
-export function createSupabaseMockFactory(options: {
-  initialSession?: Session | null;
-} = {}) {
+export function createSupabaseMockFactory(
+  options: {
+    initialSession?: Session | null;
+  } = {},
+) {
   const client = createMockSupabaseClient(options);
   return {
     supabase: client,

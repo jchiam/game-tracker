@@ -79,16 +79,12 @@ describe('HsrPage', () => {
   });
 
   it('shows "Authenticating..." while auth is loading', () => {
-    renderWithProviders(
-      <HsrPage session={null} isAuthLoading={true} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={null} isAuthLoading={true} onSignIn={vi.fn()} />);
     expect(screen.getByText(/authenticating/i)).toBeInTheDocument();
   });
 
   it('shows AuthGate when there is no session', () => {
-    renderWithProviders(
-      <HsrPage session={null} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={null} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument();
   });
 
@@ -98,17 +94,13 @@ describe('HsrPage', () => {
       isInitialLoad: true,
     });
     const session = createMockSession();
-    renderWithProviders(
-      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByText(/loading database sync/i)).toBeInTheDocument();
   });
 
   it('shows empty state when no characters are tracked', () => {
     const session = createMockSession();
-    renderWithProviders(
-      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByText(/no characters tracked yet/i)).toBeInTheDocument();
   });
 
@@ -120,9 +112,7 @@ describe('HsrPage', () => {
       trackedCharacters: chars,
       getFilteredRoster: vi.fn().mockReturnValue(chars),
     });
-    renderWithProviders(
-      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByText('Acheron')).toBeInTheDocument();
     expect(screen.getByText('Blade')).toBeInTheDocument();
   });
@@ -134,34 +124,26 @@ describe('HsrPage', () => {
       trackedCharacters: [makeChar('acheron', 'Acheron')],
       getFilteredRoster: vi.fn().mockReturnValue([]), // search filters all out
     });
-    renderWithProviders(
-      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByText(/no characters match your search/i)).toBeInTheDocument();
   });
 
   it('shows the add character button when session exists', () => {
     const session = createMockSession();
-    renderWithProviders(
-      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByTitle('Add Character')).toBeInTheDocument();
   });
 
   it('opens AddCharacterModal when add button is clicked', () => {
     const session = createMockSession();
-    renderWithProviders(
-      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByTitle('Add Character'));
     expect(screen.getByRole('heading', { name: /add character/i })).toBeInTheDocument();
   });
 
   it('switches to Parties tab when Parties button is clicked', () => {
     const session = createMockSession();
-    renderWithProviders(
-      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: /parties/i }));
     // PartiesTab is now visible (shows empty parties state)
     expect(screen.getByText(/no parties configured/i)).toBeInTheDocument();
@@ -173,9 +155,7 @@ describe('HsrPage', () => {
       ...defaultPartiesHook,
       parties: [makeParty('p1', 'Alpha Team'), makeParty('p2', 'Beta Team')],
     });
-    renderWithProviders(
-      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: /parties/i }));
     expect(screen.getByText('Alpha Team')).toBeInTheDocument();
     expect(screen.getByText('Beta Team')).toBeInTheDocument();
@@ -187,16 +167,12 @@ describe('HsrPage', () => {
       ...defaultCharactersHook,
       pendingSaveCount: 2,
     });
-    renderWithProviders(
-      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
   it('renders the page title', () => {
-    renderWithProviders(
-      <HsrPage session={null} isAuthLoading={false} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<HsrPage session={null} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByRole('heading', { name: /honkai star rail tracker/i })).toBeInTheDocument();
   });
 });

@@ -9,8 +9,20 @@ import type { R1999TrackedArcanist } from '@/types';
 
 const availableArcanists: Arcanist[] = [
   { id: '37', name: '37', afflatus: 'Star', damageType: 'Mental', imageUrl: '/37.webp' },
-  { id: 'regulus', name: 'Regulus', afflatus: 'Star', damageType: 'Mental', imageUrl: '/regulus.webp' },
-  { id: 'vertin', name: 'Vertin', afflatus: 'Star', damageType: 'Reality', imageUrl: '/vertin.webp' },
+  {
+    id: 'regulus',
+    name: 'Regulus',
+    afflatus: 'Star',
+    damageType: 'Mental',
+    imageUrl: '/regulus.webp',
+  },
+  {
+    id: 'vertin',
+    name: 'Vertin',
+    afflatus: 'Star',
+    damageType: 'Reality',
+    imageUrl: '/vertin.webp',
+  },
 ];
 
 const emptyTracked: R1999TrackedArcanist[] = [];

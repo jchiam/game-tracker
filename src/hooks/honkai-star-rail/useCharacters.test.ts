@@ -18,7 +18,13 @@ vi.mock('@/services/honkai-star-rail/characterService', () => ({
 vi.mock('@/hooks/usePendingSaves', () => ({
   usePendingSaves: () => ({
     pendingSaveCount: 0,
-    queueUpdate: vi.fn((_key: string, updates: Record<string, any>, flushFn: (p: Record<string, any>) => Promise<void>) => flushFn(updates)),
+    queueUpdate: vi.fn(
+      (
+        _key: string,
+        updates: Record<string, any>,
+        flushFn: (p: Record<string, any>) => Promise<void>,
+      ) => flushFn(updates),
+    ),
     queueAction: vi.fn((_key: string, action: () => Promise<void>) => action()),
   }),
 }));

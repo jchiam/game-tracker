@@ -36,7 +36,7 @@ export function createSupabaseAuthHandlers(options: SupabaseMockOptions = {}) {
 
     // POST /auth/v1/token - Token refresh
     http.post('*/auth/v1/token', async ({ request }) => {
-      const body = await request.json() as Record<string, unknown>;
+      const body = (await request.json()) as Record<string, unknown>;
       if (body.grant_type === 'refresh_token') {
         if (!currentSession) {
           return HttpResponse.json({ error: 'Invalid refresh token' }, { status: 400 });

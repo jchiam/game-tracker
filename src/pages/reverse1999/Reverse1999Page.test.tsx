@@ -49,9 +49,7 @@ describe('Reverse1999Page', () => {
   });
 
   it('shows "Authenticating..." while auth is loading', () => {
-    renderWithProviders(
-      <Reverse1999Page session={null} isAuthLoading={true} onSignIn={vi.fn()} />,
-    );
+    renderWithProviders(<Reverse1999Page session={null} isAuthLoading={true} onSignIn={vi.fn()} />);
     expect(screen.getByText(/authenticating/i)).toBeInTheDocument();
   });
 

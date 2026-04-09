@@ -9,7 +9,13 @@ vi.mock('@/utils/toast', () => ({ addToast: vi.fn() }));
 import * as toastModule from '@/utils/toast';
 
 const availableCharacters: Character[] = [
-  { id: 'acheron', name: 'Acheron', element: 'Thunder', path: 'Nihility', imageUrl: '/acheron.webp' },
+  {
+    id: 'acheron',
+    name: 'Acheron',
+    element: 'Thunder',
+    path: 'Nihility',
+    imageUrl: '/acheron.webp',
+  },
   { id: 'blade', name: 'Blade', element: 'Wind', path: 'Destruction', imageUrl: '/blade.webp' },
   { id: 'kafka', name: 'Kafka', element: 'Thunder', path: 'Nihility', imageUrl: '/kafka.webp' },
 ];
@@ -68,7 +74,11 @@ describe('PartyEditorModal', () => {
   it('calls onClose when cancel button is clicked', () => {
     const onClose = vi.fn();
     render(
-      <PartyEditorModal availableCharacters={availableCharacters} onSave={vi.fn()} onClose={onClose} />,
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={onClose}
+      />,
     );
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -77,7 +87,11 @@ describe('PartyEditorModal', () => {
   it('calls onClose when close (✕) button is clicked', () => {
     const onClose = vi.fn();
     render(
-      <PartyEditorModal availableCharacters={availableCharacters} onSave={vi.fn()} onClose={onClose} />,
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={onClose}
+      />,
     );
     fireEvent.click(screen.getByRole('button', { name: '✕' }));
     expect(onClose).toHaveBeenCalledTimes(1);
@@ -86,13 +100,14 @@ describe('PartyEditorModal', () => {
   it('shows a warning toast and does not call onSave when name is empty', () => {
     const onSave = vi.fn();
     render(
-      <PartyEditorModal availableCharacters={availableCharacters} onSave={onSave} onClose={vi.fn()} />,
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={onSave}
+        onClose={vi.fn()}
+      />,
     );
     fireEvent.click(screen.getByRole('button', { name: /save party/i }));
-    expect(toastModule.addToast).toHaveBeenCalledWith(
-      'Please enter a party name.',
-      'warning',
-    );
+    expect(toastModule.addToast).toHaveBeenCalledWith('Please enter a party name.', 'warning');
     expect(onSave).not.toHaveBeenCalled();
   });
 
@@ -100,18 +115,24 @@ describe('PartyEditorModal', () => {
     const onSave = vi.fn().mockResolvedValue(undefined);
     const user = userEvent.setup();
     render(
-      <PartyEditorModal availableCharacters={availableCharacters} onSave={onSave} onClose={vi.fn()} />,
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={onSave}
+        onClose={vi.fn()}
+      />,
     );
     await user.type(screen.getByPlaceholderText(/memory of chaos/i), 'New Team');
     fireEvent.click(screen.getByRole('button', { name: /save party/i }));
-    expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({ name: 'New Team', members: [] }),
-    );
+    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ name: 'New Team', members: [] }));
   });
 
   it('renders 4 team slots', () => {
     render(
-      <PartyEditorModal availableCharacters={availableCharacters} onSave={vi.fn()} onClose={vi.fn()} />,
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />,
     );
     expect(screen.getByText('Slot 1')).toBeInTheDocument();
     expect(screen.getByText('Slot 4')).toBeInTheDocument();
@@ -119,7 +140,11 @@ describe('PartyEditorModal', () => {
 
   it('opens character picker when a slot is clicked', () => {
     render(
-      <PartyEditorModal availableCharacters={availableCharacters} onSave={vi.fn()} onClose={vi.fn()} />,
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />,
     );
     fireEvent.click(screen.getByText('Slot 1'));
     expect(screen.getByPlaceholderText(/search character/i)).toBeInTheDocument();
@@ -127,7 +152,11 @@ describe('PartyEditorModal', () => {
 
   it('selects a character into the slot when clicked from the picker', () => {
     render(
-      <PartyEditorModal availableCharacters={availableCharacters} onSave={vi.fn()} onClose={vi.fn()} />,
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />,
     );
     fireEvent.click(screen.getByText('Slot 1'));
     fireEvent.click(screen.getByText('Acheron'));
@@ -138,7 +167,11 @@ describe('PartyEditorModal', () => {
 
   it('removes a member from a slot when the remove button is clicked', () => {
     const { container } = render(
-      <PartyEditorModal availableCharacters={availableCharacters} onSave={vi.fn()} onClose={vi.fn()} />,
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />,
     );
     fireEvent.click(screen.getByText('Slot 1'));
     fireEvent.click(screen.getByText('Acheron'));
@@ -149,7 +182,11 @@ describe('PartyEditorModal', () => {
 
   it('closes the picker when cancel is clicked', () => {
     const { container } = render(
-      <PartyEditorModal availableCharacters={availableCharacters} onSave={vi.fn()} onClose={vi.fn()} />,
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />,
     );
     fireEvent.click(screen.getByText('Slot 1'));
     expect(screen.getByPlaceholderText(/search character/i)).toBeInTheDocument();

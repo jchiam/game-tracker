@@ -73,7 +73,13 @@ describe('ArcanistCard', () => {
 
   it('calls onToggleFavorite when favorite button is clicked', () => {
     const onToggleFavorite = vi.fn();
-    render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} onToggleFavorite={onToggleFavorite} />);
+    render(
+      <ArcanistCard
+        arcanist={makeArcanist()}
+        {...defaultProps}
+        onToggleFavorite={onToggleFavorite}
+      />,
+    );
     fireEvent.click(screen.getByTitle('Favorite Arcanist'));
     expect(onToggleFavorite).toHaveBeenCalledWith('arc-1', true);
   });
@@ -87,14 +93,22 @@ describe('ArcanistCard', () => {
 
   it('calls onUpdateLevel when level slider changes', () => {
     const onUpdateLevel = vi.fn();
-    render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} onUpdateLevel={onUpdateLevel} />);
+    render(
+      <ArcanistCard arcanist={makeArcanist()} {...defaultProps} onUpdateLevel={onUpdateLevel} />,
+    );
     fireEvent.change(screen.getByRole('slider'), { target: { value: '60' } });
     expect(onUpdateLevel).toHaveBeenCalledWith('arc-1', 60);
   });
 
   it('calls onUpdateInsight when an insight button is clicked', () => {
     const onUpdateInsight = vi.fn();
-    render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} onUpdateInsight={onUpdateInsight} />);
+    render(
+      <ArcanistCard
+        arcanist={makeArcanist()}
+        {...defaultProps}
+        onUpdateInsight={onUpdateInsight}
+      />,
+    );
     fireEvent.click(screen.getByText('I3'));
     expect(onUpdateInsight).toHaveBeenCalledWith('arc-1', 3);
   });
