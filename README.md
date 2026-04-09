@@ -75,3 +75,47 @@ vercel
 
 **Important Deployment Step for Vercel:**
 When setting up the project on Vercel, you must configure the exact same Environment Variables (`VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY`) in the Vercel dashboard settings under the project's **Environment Variables** tab so that the production build can communicate with your Supabase Postgres database.
+
+## Wiki
+
+This project has a [GitHub Wiki](https://github.com/jchiam/game-tracker/wiki) with detailed documentation on game tracker features, data architecture, and development setup.
+
+The wiki is managed as a git submodule in the `wiki/` directory.
+
+### Working with the Wiki
+
+**Initial Setup (First Time Only):**
+
+```bash
+# Initialize and clone the wiki submodule
+git submodule update --init --recursive
+```
+
+**Editing the Wiki:**
+
+```bash
+# Navigate to the wiki directory
+cd wiki
+
+# Make your changes to the markdown files
+# ...
+
+# Commit and push changes
+git add .
+git commit -m "Update wiki pages"
+git push
+```
+
+**Pulling Wiki Updates:**
+
+```bash
+# Pull latest wiki changes along with the main repo
+git pull --recurse-submodules
+```
+
+**Cloning the Repo with Wiki:**
+
+```bash
+# Clone the repo with the wiki submodule already initialized
+git clone --recurse-submodules https://github.com/jchiam/game-tracker.git
+```
