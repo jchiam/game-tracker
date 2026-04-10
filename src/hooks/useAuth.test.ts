@@ -53,8 +53,9 @@ const mockSession: Session = {
 
 // Helper to create a mock subscription return value
 function mockSubscription() {
+  const unsubscribe = vi.fn();
   return {
-    data: { subscription: { id: 'test-sub', callback: vi.fn(), unsubscribe: vi.fn() } },
+    data: { subscription: { id: 'test-sub', callback: vi.fn(), unsubscribe } },
   } as ReturnType<typeof supabaseModule.supabase.auth.onAuthStateChange>;
 }
 
