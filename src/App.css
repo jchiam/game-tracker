@@ -85,6 +85,10 @@
   color: #bcbcbc;
   border: 1px solid rgba(188, 188, 188, 0.3);
 }
+.element-thunder {
+  color: #d97afe;
+  border: 1px solid rgba(217, 122, 254, 0.55);
+}
 
 /* Keyframe used by page-level animations */
 @keyframes fade-in-up {

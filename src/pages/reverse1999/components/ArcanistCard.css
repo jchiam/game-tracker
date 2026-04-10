@@ -374,13 +374,19 @@
   border-color: rgba(147, 112, 219, 0.6);
   color: #c9a8f8;
 }
+.afflatus-badge.afflatus-spirit {
+  background: rgba(100, 180, 220, 0.25);
+  border-color: rgba(100, 180, 220, 0.6);
+  color: #90d0f0;
+}
 
 .damage-badge.damage-mental {
   background: rgba(147, 112, 219, 0.2);
   border-color: rgba(147, 112, 219, 0.5);
   color: #c9a8f8;
 }
-.damage-badge.damage-reality {
+.damage-badge.damage-reality,
+.damage-badge.damage-real {
   background: rgba(212, 175, 55, 0.2);
   border-color: rgba(212, 175, 55, 0.5);
   color: #f5d68a;
