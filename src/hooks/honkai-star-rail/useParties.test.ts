@@ -4,13 +4,13 @@ import { useParties } from '@/hooks/honkai-star-rail/useParties';
 import type { Session } from '@supabase/supabase-js';
 import type { HsrParty } from '@/types';
 
-vi.mock('@/services/partyService', () => ({
+vi.mock('@/services/honkai-star-rail/partyService', () => ({
   loadParties: vi.fn(),
   saveParty: vi.fn(),
   deleteParty: vi.fn(),
 }));
 
-import * as partyService from '@/services/partyService';
+import * as partyService from '@/services/honkai-star-rail/partyService';
 
 const mockLoadParties = vi.mocked(partyService.loadParties);
 const mockSaveParty = vi.mocked(partyService.saveParty);

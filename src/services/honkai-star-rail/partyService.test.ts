@@ -27,24 +27,24 @@ describe('partyService', () => {
     });
 
     it('loadParties returns empty array', async () => {
-      const { loadParties } = await import('@/services/partyService');
+      const { loadParties } = await import('@/services/honkai-star-rail/partyService');
       expect(await loadParties('user-1')).toEqual([]);
     });
 
     it('saveParty returns null', async () => {
-      const { saveParty } = await import('@/services/partyService');
+      const { saveParty } = await import('@/services/honkai-star-rail/partyService');
       expect(await saveParty('user-1', { name: 'My Team', members: [] })).toBeNull();
     });
 
     it('deleteParty returns false', async () => {
-      const { deleteParty } = await import('@/services/partyService');
+      const { deleteParty } = await import('@/services/honkai-star-rail/partyService');
       expect(await deleteParty('party-1')).toBe(false);
     });
   });
 
   describe('DB enabled (VITE_SUPABASE_URL set)', () => {
     let mockFrom: ReturnType<typeof vi.fn>;
-    let service: typeof import('@/services/partyService');
+    let service: typeof import('@/services/honkai-star-rail/partyService');
 
     beforeEach(async () => {
       vi.resetModules();
@@ -57,7 +57,7 @@ describe('partyService', () => {
         supabase: { from: mockFrom },
       }));
 
-      service = await import('@/services/partyService');
+      service = await import('@/services/honkai-star-rail/partyService');
     });
 
     afterEach(() => {

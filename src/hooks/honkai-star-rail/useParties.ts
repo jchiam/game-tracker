@@ -5,7 +5,7 @@ import {
   loadParties,
   saveParty as apiSaveParty,
   deleteParty as apiDeleteParty,
-} from '@/services/partyService';
+} from '@/services/honkai-star-rail/partyService';
 
 export function useParties(session: Session | null) {
   const [parties, setParties] = useState<HsrParty[]>([]);
