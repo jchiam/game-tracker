@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { HsrPage } from '@/pages/honkai-star-rail/HsrPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import type { HsrTrackedCharacter, HsrParty } from '@/types';
@@ -211,6 +211,126 @@ describe('HsrPage', () => {
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByTitle(/^Head/));
     expect(screen.getByRole('heading', { name: /edit head/i })).toBeInTheDocument();
+  });
+
+  // --- Tab active classes ---
+
+  it('Roster tab button has active class by default', () => {
+    renderWithProviders(<HsrPage session={null} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(screen.getByRole('button', { name: /roster/i })).toHaveClass('active');
+    expect(screen.getByRole('button', { name: /parties/i })).not.toHaveClass('active');
+  });
+
+  it('Parties tab button gets active class when clicked', () => {
+    const session = createMockSession();
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /parties/i }));
+    expect(screen.getByRole('button', { name: /parties/i })).toHaveClass('active');
+    expect(screen.getByRole('button', { name: /roster/i })).not.toHaveClass('active');
+  });
+
+  // --- Search / sort controls visibility ---
+
+  it('does not show search or sort controls when no characters are tracked', () => {
+    const session = createMockSession();
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(screen.queryByPlaceholderText(/search by name/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle(/sorted by relic score/i)).not.toBeInTheDocument();
+  });
+
+  it('shows search and sort controls when characters are tracked', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(screen.getByPlaceholderText(/search by name/i)).toBeInTheDocument();
+    expect(screen.getByTitle(/sorted by relic score/i)).toBeInTheDocument();
+  });
+
+  // --- Sort button toggle ---
+
+  it('sort button has active class and ★ label in default SCORE mode', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    const sortBtn = screen.getByTitle(/sorted by relic score/i);
+    expect(sortBtn).toHaveClass('active');
+    expect(sortBtn).toHaveTextContent('★');
+  });
+
+  it('sort button loses active class and shows AZ label after toggling to ALPHA', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle(/sorted by relic score/i));
+    const sortBtn = screen.getByTitle(/sorted alphabetically/i);
+    expect(sortBtn).not.toHaveClass('active');
+    expect(sortBtn).toHaveTextContent('AZ');
+  });
+
+  it('passes ALPHA to getFilteredRoster after toggling sort', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    const getFilteredRoster = vi.fn().mockReturnValue(chars);
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster,
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle(/sorted by relic score/i));
+    expect(getFilteredRoster).toHaveBeenCalledWith('', 'ALPHA', expect.any(Function));
+  });
+
+  // --- AddCharacterModal: adding closes the modal ---
+
+  it('closes AddCharacterModal after a character is added', async () => {
+    const session = createMockSession();
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      availableCharacters: [
+        { id: 'acheron', name: 'Acheron', element: 'Thunder', path: 'Nihility', imageUrl: '/acheron.webp' },
+      ],
+      addCharacter: vi.fn().mockResolvedValue(undefined),
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Add Character'));
+    expect(screen.getByRole('heading', { name: /add character/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Acheron'));
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /add character/i })).not.toBeInTheDocument();
+    });
+  });
+
+  // --- RelicEditorModal: close button dismisses the modal ---
+
+  it('closes RelicEditorModal when the close button is clicked', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle(/^Head/));
+    expect(screen.getByRole('heading', { name: /edit head/i })).toBeInTheDocument();
+    fireEvent.click(document.querySelector('.close-btn')!);
+    expect(screen.queryByRole('heading', { name: /edit head/i })).not.toBeInTheDocument();
   });
 
   // --- Tab toggle round-trip ---
