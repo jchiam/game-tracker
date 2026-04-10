@@ -21,7 +21,7 @@
 import { readFile, writeFile } from 'fs/promises';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import ImageKit from 'imagekit';
+import ImageKit from '@imagekit/nodejs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -188,12 +188,12 @@ async function existsOnImageKit(localAssetPath) {
   const loc = toImageKitLocation(localAssetPath);
   if (!loc) return false;
   try {
-    const existing = await imagekitClient.listFiles({
+    const existing = await imagekitClient.assets.list({
       path: loc.folder,
-      name: loc.fileName,
+      searchQuery: loc.fileName,
       limit: 1,
     });
-    return existing.length > 0;
+    return existing.data.length > 0;
   } catch {
     return false;
   }
@@ -208,7 +208,7 @@ async function uploadToImageKit(buffer, localAssetPath) {
     return;
   }
   try {
-    await imagekitClient.upload({
+    await imagekitClient.files.upload({
       file: buffer,
       fileName: loc.fileName,
       folder: loc.folder,
