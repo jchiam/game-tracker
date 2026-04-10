@@ -13,6 +13,19 @@ function createBuilder(result: { data: any; error: any } = { data: null, error: 
 
 describe('partyService', () => {
   describe('DB disabled (no VITE_SUPABASE_URL)', () => {
+    beforeEach(async () => {
+      vi.resetModules();
+      vi.stubEnv('VITE_SUPABASE_URL', '');
+      vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
+      vi.doMock('@/lib/supabase', () => ({
+        supabase: { from: vi.fn() },
+      }));
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
     it('loadParties returns empty array', async () => {
       const { loadParties } = await import('@/services/partyService');
       expect(await loadParties('user-1')).toEqual([]);

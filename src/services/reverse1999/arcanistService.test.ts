@@ -13,6 +13,19 @@ function createBuilder(result: { data: any; error: any } = { data: null, error: 
 
 describe('arcanistService', () => {
   describe('DB disabled (no VITE_SUPABASE_URL)', () => {
+    beforeEach(async () => {
+      vi.resetModules();
+      vi.stubEnv('VITE_SUPABASE_URL', '');
+      vi.stubEnv('VITE_SUPABASE_ANON_KEY', '');
+      vi.doMock('@/lib/supabase', () => ({
+        supabase: { from: vi.fn() },
+      }));
+    });
+
+    afterEach(() => {
+      vi.unstubAllEnvs();
+    });
+
     it('loadArcanistsFromDB returns empty array', async () => {
       const { loadArcanistsFromDB } = await import('@/services/reverse1999/arcanistService');
       expect(await loadArcanistsFromDB('user-1')).toEqual([]);
