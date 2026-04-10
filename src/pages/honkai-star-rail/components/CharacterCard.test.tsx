@@ -272,4 +272,120 @@ describe('CharacterCard', () => {
     fireEvent.error(relicImg);
     expect(relicImg).toHaveStyle({ display: 'none' });
   });
+
+  // --- Favorite button direction ---
+
+  it('calls onToggleFavorite with false when unfavoriting a favorited character', () => {
+    const onToggleFavorite = vi.fn();
+    render(
+      <CharacterCard
+        char={makeChar({ isFavorited: true })}
+        {...defaultProps}
+        onToggleFavorite={onToggleFavorite}
+      />,
+    );
+    fireEvent.click(screen.getByTitle('Unfavorite Character'));
+    expect(onToggleFavorite).toHaveBeenCalledWith('char-1', false);
+  });
+
+  it('favorite button has active class when character is favorited', () => {
+    const { container } = render(
+      <CharacterCard char={makeChar({ isFavorited: true })} {...defaultProps} />,
+    );
+    expect(container.querySelector('.favorite-btn.active')).toBeInTheDocument();
+  });
+
+  it('favorite button does not have active class when character is not favorited', () => {
+    const { container } = render(
+      <CharacterCard char={makeChar({ isFavorited: false })} {...defaultProps} />,
+    );
+    expect(container.querySelector('.favorite-btn.active')).not.toBeInTheDocument();
+  });
+
+  // --- Relic fallback icons ---
+
+  it('shows ⬡ fallback for a cavern slot when equipped set is not in availableRelicSets', () => {
+    const char = makeChar({
+      relics: { ...emptyRelics, head: { setId: '101', mainStat: 'HP', subStats: [] } },
+    });
+    render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[{ id: '999', name: 'Other Set', icon: '/other.png' }]}
+      />,
+    );
+    expect(screen.getAllByText('⬡').length).toBeGreaterThan(0);
+  });
+
+  it('shows ○ fallback for a planar slot when equipped set is not in availableRelicSets', () => {
+    const char = makeChar({
+      relics: { ...emptyRelics, sphere: { setId: '301', mainStat: 'ATK%', subStats: [] } },
+    });
+    render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[{ id: '999', name: 'Other Set', icon: '/other.png' }]}
+      />,
+    );
+    expect(screen.getAllByText('○').length).toBeGreaterThan(0);
+  });
+
+  it('constructs remote GitHub URL for relic icon when icon path is relative', () => {
+    const char = makeChar({
+      relics: { ...emptyRelics, head: { setId: '101', mainStat: 'HP', subStats: [] } },
+    });
+    render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[{ id: '101', name: 'Test Set', icon: 'icon/relic/101.png' }]}
+      />,
+    );
+    expect(screen.getByAltText('Relic')).toHaveAttribute(
+      'src',
+      expect.stringContaining('raw.githubusercontent.com'),
+    );
+  });
+
+  // --- Build preferences operator rendering ---
+
+  it('renders >= operator as ≥ in build preferences display', () => {
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: {
+          body: [
+            { stat: 'CRIT Rate', operator: '>=', orderIndex: 0 },
+            { stat: 'CRIT DMG', operator: null, orderIndex: 1 },
+          ],
+          feet: [],
+          sphere: [],
+          rope: [],
+        },
+        subStats: [],
+      },
+    });
+    render(<CharacterCard char={char} {...defaultProps} />);
+    expect(screen.getByText('≥')).toBeInTheDocument();
+  });
+
+  // --- Score badge value ---
+
+  it('score badge displays the score value in X.Y% format', () => {
+    vi.mocked(calculateRelicScore).mockReturnValue(72.5);
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: {
+          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+          feet: [],
+          sphere: [],
+          rope: [],
+        },
+        subStats: [],
+      },
+    });
+    render(<CharacterCard char={char} {...defaultProps} />);
+    expect(screen.getByText('72.5%')).toBeInTheDocument();
+  });
 });

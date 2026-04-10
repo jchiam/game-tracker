@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { PartiesTab } from '@/pages/honkai-star-rail/components/PartiesTab';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import type { HsrParty } from '@/types';
@@ -103,5 +104,30 @@ describe('PartiesTab', () => {
     );
     fireEvent.click(screen.getByTitle('Edit Party'));
     expect(screen.getByRole('heading', { name: /edit party/i })).toBeInTheDocument();
+  });
+
+  it('closes the party editor modal after saving a new party', async () => {
+    const user = userEvent.setup();
+    const session = createMockSession();
+    const onSaveParty = vi.fn().mockResolvedValue('party-1');
+    renderWithProviders(
+      <PartiesTab {...defaultProps} onSaveParty={onSaveParty} session={session} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /create new party/i }));
+    expect(screen.getByRole('heading', { name: /create new party/i })).toBeInTheDocument();
+    await user.type(screen.getByPlaceholderText(/memory of chaos/i), 'My Party');
+    fireEvent.click(screen.getByRole('button', { name: /save party/i }));
+    await waitFor(() => {
+      expect(screen.queryByRole('heading', { name: /create new party/i })).not.toBeInTheDocument();
+    });
+  });
+
+  it('closes the party editor modal when the cancel button is clicked', () => {
+    const session = createMockSession();
+    renderWithProviders(<PartiesTab {...defaultProps} session={session} />);
+    fireEvent.click(screen.getByRole('button', { name: /create new party/i }));
+    expect(screen.getByRole('heading', { name: /create new party/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }));
+    expect(screen.queryByRole('heading', { name: /create new party/i })).not.toBeInTheDocument();
   });
 });

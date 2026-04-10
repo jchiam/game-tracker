@@ -597,4 +597,109 @@ describe('RelicEditorModal', () => {
       expect.objectContaining({ subStats: [] }),
     );
   });
+
+  // --- Equip tab: substat type change ---
+
+  it('calls onSave when a substat type select is changed', () => {
+    const onSave = vi.fn();
+    const char = makeChar({
+      relics: {
+        head: null,
+        hands: null,
+        body: { setId: null, mainStat: null, subStats: [{ type: 'HP', value: '3.2%' }] },
+        feet: null,
+        sphere: null,
+        rope: null,
+      },
+    });
+    render(
+      <RelicEditorModal
+        char={char}
+        slot="body"
+        availableRelicSets={[]}
+        emptyRelic={emptyRelic}
+        onSave={onSave}
+        onRemove={vi.fn()}
+        onUpdateBuildPreferences={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    const selects = screen.getAllByRole('combobox');
+    // selects[0] = relic set, selects[1] = main stat, selects[2] = substat type
+    fireEvent.change(selects[2], { target: { value: 'CRIT Rate' } });
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subStats: [expect.objectContaining({ type: 'CRIT Rate' })],
+      }),
+    );
+  });
+
+  // --- Preferences tab: stat select changes ---
+
+  it('calls onUpdateBuildPreferences when a main stat preference stat is changed', () => {
+    const onUpdateBuildPreferences = vi.fn();
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: {
+          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+          feet: [],
+          sphere: [],
+          rope: [],
+        },
+        subStats: [],
+      },
+    });
+    render(
+      <RelicEditorModal
+        char={char}
+        slot="body"
+        availableRelicSets={[]}
+        emptyRelic={emptyRelic}
+        onSave={vi.fn()}
+        onRemove={vi.fn()}
+        onUpdateBuildPreferences={onUpdateBuildPreferences}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    const prefSelects = screen.getAllByRole('combobox');
+    fireEvent.change(prefSelects[0], { target: { value: 'CRIT DMG' } });
+    expect(onUpdateBuildPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mainStats: expect.objectContaining({
+          body: expect.arrayContaining([expect.objectContaining({ stat: 'CRIT DMG' })]),
+        }),
+      }),
+    );
+  });
+
+  it('calls onUpdateBuildPreferences when a sub stat preference stat is changed', () => {
+    const onUpdateBuildPreferences = vi.fn();
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: { body: [], feet: [], sphere: [], rope: [] },
+        subStats: [{ stat: 'HP', operator: null, orderIndex: 0 }],
+      },
+    });
+    render(
+      <RelicEditorModal
+        char={char}
+        slot="body"
+        availableRelicSets={[]}
+        emptyRelic={emptyRelic}
+        onSave={vi.fn()}
+        onRemove={vi.fn()}
+        onUpdateBuildPreferences={onUpdateBuildPreferences}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    const prefSelects = screen.getAllByRole('combobox');
+    fireEvent.change(prefSelects[0], { target: { value: 'CRIT Rate' } });
+    expect(onUpdateBuildPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subStats: expect.arrayContaining([expect.objectContaining({ stat: 'CRIT Rate' })]),
+      }),
+    );
+  });
 });

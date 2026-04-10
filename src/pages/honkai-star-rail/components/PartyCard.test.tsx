@@ -123,4 +123,31 @@ describe('PartyCard', () => {
     fireEvent.click(screen.getByTitle('Delete Party'));
     expect(onDelete).toHaveBeenCalledTimes(1);
   });
+
+  // --- Slot avatar CSS classes ---
+
+  it('occupied slot avatar has an element-specific CSS class', () => {
+    const party = makeParty({ members: [{ characterId: 'acheron', slotIndex: 0 }] });
+    const { container } = render(
+      <PartyCard
+        party={party}
+        availableCharacters={availableCharacters}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+    expect(container.querySelector('.slot-avatar.element-thunder')).toBeInTheDocument();
+  });
+
+  it('empty slot avatar has the "empty" CSS class', () => {
+    const { container } = render(
+      <PartyCard
+        party={makeParty()}
+        availableCharacters={availableCharacters}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+      />,
+    );
+    expect(container.querySelectorAll('.slot-avatar.empty')).toHaveLength(4);
+  });
 });

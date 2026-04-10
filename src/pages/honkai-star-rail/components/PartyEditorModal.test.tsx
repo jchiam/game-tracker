@@ -272,4 +272,33 @@ describe('PartyEditorModal', () => {
       expect.objectContaining({ id: 'existing-id', name: 'New Name' }),
     );
   });
+
+  // --- Modal overlay and slot active state ---
+
+  it('calls onClose when the modal overlay is clicked', () => {
+    const onClose = vi.fn();
+    const { container } = render(
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={onClose}
+      />,
+    );
+    fireEvent.click(container.querySelector('.modal-overlay')!);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('active slot gets the "active" CSS class when clicked', () => {
+    const { container } = render(
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByText('Slot 1'));
+    const slots = container.querySelectorAll('.builder-slot');
+    expect(slots[0]).toHaveClass('active');
+    expect(slots[1]).not.toHaveClass('active');
+  });
 });

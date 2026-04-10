@@ -169,4 +169,69 @@ describe('AddCharacterModal', () => {
     fireEvent.error(img);
     expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
   });
+
+  it('shows empty state when all available characters are already tracked', () => {
+    const allTracked = availableCharacters.map((c) => ({
+      ...c,
+      dbId: `db-${c.id}`,
+      isFavorited: false,
+      level: 60,
+      tracesAttained: false,
+      relics: { head: null, hands: null, body: null, feet: null, sphere: null, rope: null },
+      buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] },
+    })) as HsrTrackedCharacter[];
+    render(
+      <AddCharacterModal
+        availableCharacters={availableCharacters}
+        trackedCharacters={allTracked}
+        onAddCharacter={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(screen.getByText(/no characters found/i)).toBeInTheDocument();
+  });
+
+  it('renders characters in alphabetical order', () => {
+    const unordered: Character[] = [
+      { id: 'z-char', name: 'Zephyr', element: 'Wind', path: 'Hunt', imageUrl: '/z.webp' },
+      { id: 'a-char', name: 'Aglaea', element: 'Lightning', path: 'Remembrance', imageUrl: '/a.webp' },
+      { id: 'm-char', name: 'March', element: 'Ice', path: 'Preservation', imageUrl: '/m.webp' },
+    ];
+    const { container } = render(
+      <AddCharacterModal
+        availableCharacters={unordered}
+        trackedCharacters={emptyTracked}
+        onAddCharacter={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    const names = Array.from(container.querySelectorAll('.char-list-name')).map(
+      (el) => el.textContent,
+    );
+    expect(names).toEqual(['Aglaea', 'March', 'Zephyr']);
+  });
+
+  it('element badge has the correct CSS class for the character element', () => {
+    const { container } = render(
+      <AddCharacterModal
+        availableCharacters={availableCharacters}
+        trackedCharacters={emptyTracked}
+        onAddCharacter={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(container.querySelector('.element-badge.element-thunder')).toBeInTheDocument();
+  });
+
+  it('path badge has the correct CSS class for the character path', () => {
+    const { container } = render(
+      <AddCharacterModal
+        availableCharacters={availableCharacters}
+        trackedCharacters={emptyTracked}
+        onAddCharacter={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    expect(container.querySelector('.path-badge.path-nihility')).toBeInTheDocument();
+  });
 });
