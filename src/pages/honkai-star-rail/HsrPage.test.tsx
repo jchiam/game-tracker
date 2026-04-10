@@ -303,7 +303,13 @@ describe('HsrPage', () => {
     vi.mocked(useCharacters).mockReturnValue({
       ...defaultCharactersHook,
       availableCharacters: [
-        { id: 'acheron', name: 'Acheron', element: 'Thunder', path: 'Nihility', imageUrl: '/acheron.webp' },
+        {
+          id: 'acheron',
+          name: 'Acheron',
+          element: 'Thunder',
+          path: 'Nihility',
+          imageUrl: '/acheron.webp',
+        },
       ],
       addCharacter: vi.fn().mockResolvedValue(undefined),
     });

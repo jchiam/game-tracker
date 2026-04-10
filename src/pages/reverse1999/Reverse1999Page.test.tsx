@@ -163,4 +163,107 @@ describe('Reverse1999Page', () => {
     });
     expect(getFilteredRoster).toHaveBeenCalledWith('Vertin', expect.any(String));
   });
+
+  // --- Search / sort controls visibility ---
+
+  it('does not show search or sort controls when no arcanists are tracked', () => {
+    const session = createMockSession();
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(screen.queryByPlaceholderText(/search by name, afflatus/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle(/sorted alphabetically/i)).not.toBeInTheDocument();
+  });
+
+  it('shows search and sort controls when arcanists are tracked', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster: vi.fn().mockReturnValue(arcanists),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(screen.getByPlaceholderText(/search by name, afflatus/i)).toBeInTheDocument();
+    expect(screen.getByTitle(/sorted alphabetically/i)).toBeInTheDocument();
+  });
+
+  // --- Sort button toggle ---
+
+  it('sort button has active class and AZ label in default ALPHA mode', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster: vi.fn().mockReturnValue(arcanists),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    const sortBtn = screen.getByTitle(/sorted alphabetically/i);
+    expect(sortBtn).toHaveClass('active');
+    expect(sortBtn).toHaveTextContent('AZ');
+  });
+
+  it('sort button loses active class and shows Lv label after toggling to LEVEL', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster: vi.fn().mockReturnValue(arcanists),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/sorted alphabetically/i));
+    const sortBtn = screen.getByTitle(/sorted by level/i);
+    expect(sortBtn).not.toHaveClass('active');
+    expect(sortBtn).toHaveTextContent('Lv');
+  });
+
+  it('passes LEVEL to getFilteredRoster after toggling sort', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    const getFilteredRoster = vi.fn().mockReturnValue(arcanists);
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster,
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/sorted alphabetically/i));
+    expect(getFilteredRoster).toHaveBeenCalledWith('', 'LEVEL');
+  });
+
+  // --- AddArcanistModal: adding closes the modal ---
+
+  it('closes AddArcanistModal after an arcanist is added', () => {
+    const session = createMockSession();
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      availableArcanists: [
+        {
+          id: 'regulus',
+          name: 'Regulus',
+          afflatus: 'Star',
+          damageType: 'Mental',
+          imageUrl: '/regulus.webp',
+        },
+      ],
+      addArcanist: vi.fn(),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle('Add Arcanist'));
+    expect(screen.getByRole('heading', { name: /add arcanist/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Regulus'));
+    expect(screen.queryByRole('heading', { name: /add arcanist/i })).not.toBeInTheDocument();
+  });
 });

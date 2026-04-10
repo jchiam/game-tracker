@@ -194,7 +194,13 @@ describe('AddCharacterModal', () => {
   it('renders characters in alphabetical order', () => {
     const unordered: Character[] = [
       { id: 'z-char', name: 'Zephyr', element: 'Wind', path: 'Hunt', imageUrl: '/z.webp' },
-      { id: 'a-char', name: 'Aglaea', element: 'Lightning', path: 'Remembrance', imageUrl: '/a.webp' },
+      {
+        id: 'a-char',
+        name: 'Aglaea',
+        element: 'Lightning',
+        path: 'Remembrance',
+        imageUrl: '/a.webp',
+      },
       { id: 'm-char', name: 'March', element: 'Ice', path: 'Preservation', imageUrl: '/m.webp' },
     ];
     const { container } = render(
