@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
+import './SelectionPage.css';
 
 const GAMES = [
   {
@@ -41,7 +42,7 @@ export function SelectionPage({ session, isAuthLoading, signInWithGoogle }: Sele
 
   if (isAuthLoading) {
     return (
-      <div className="empty-state">
+      <div className="selection-empty">
         <p>Checking authentication...</p>
       </div>
     );
@@ -49,19 +50,14 @@ export function SelectionPage({ session, isAuthLoading, signInWithGoogle }: Sele
 
   return (
     <main className="main-content" style={{ minHeight: '100vh', padding: 'var(--spacing-xl)' }}>
-      <header className="hero" style={{ marginBottom: '3rem' }}>
-        <h1 className="title">Select Game</h1>
-        <p className="subtitle">Choose a game to track your progress and manage your inventory.</p>
+      <header className="selection-hero">
+        <h1 className="selection-title">Select Game</h1>
+        <p className="selection-subtitle">
+          Choose a game to track your progress and manage your inventory.
+        </p>
       </header>
 
-      <section
-        className="roster-grid"
-        style={{
-          maxWidth: '900px',
-          margin: '0 auto',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
-        }}
-      >
+      <section className="selection-grid">
         {GAMES.map((game) => (
           <button key={game.id} onClick={() => handleGameSelect(game.path)} className="game-card">
             <div className={`game-card-header ${game.bgClass}`}>
