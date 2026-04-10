@@ -3,6 +3,11 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { CharacterCard } from '@/pages/honkai-star-rail/components/CharacterCard';
 import type { HsrTrackedCharacter } from '@/types';
 
+vi.mock('@/utils/relicScoring', () => ({
+  calculateRelicScore: vi.fn().mockReturnValue(0),
+}));
+import { calculateRelicScore } from '@/utils/relicScoring';
+
 const emptyRelics: HsrTrackedCharacter['relics'] = {
   head: null,
   hands: null,
@@ -135,5 +140,106 @@ describe('CharacterCard', () => {
     });
     render(<CharacterCard char={char} {...defaultProps} />);
     expect(screen.getByText('Prioritize CRIT')).toBeInTheDocument();
+  });
+
+  // --- Traces checkbox ---
+
+  it('calls onToggleTraces after two clicks (confirm flow)', () => {
+    const onToggleTraces = vi.fn();
+    render(<CharacterCard char={makeChar()} {...defaultProps} onToggleTraces={onToggleTraces} />);
+    fireEvent.click(screen.getByText('All Traces Attained'));
+    // First click sets confirming state — label changes
+    fireEvent.click(screen.getByText('Click to confirm'));
+    expect(onToggleTraces).toHaveBeenCalledWith('char-1', true);
+  });
+
+  // --- Score badge tier classes ---
+
+  it('applies tier-s class to score badge when score is 80 or above', () => {
+    vi.mocked(calculateRelicScore).mockReturnValue(80);
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: {
+          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+          feet: [],
+          sphere: [],
+          rope: [],
+        },
+        subStats: [],
+      },
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.score-badge.tier-s')).toBeInTheDocument();
+  });
+
+  it('applies tier-a class to score badge when score is between 50 and 79', () => {
+    vi.mocked(calculateRelicScore).mockReturnValue(65);
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: {
+          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+          feet: [],
+          sphere: [],
+          rope: [],
+        },
+        subStats: [],
+      },
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.score-badge.tier-a')).toBeInTheDocument();
+  });
+
+  it('applies tier-b class to score badge when score is below 50', () => {
+    vi.mocked(calculateRelicScore).mockReturnValue(30);
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: {
+          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+          feet: [],
+          sphere: [],
+          rope: [],
+        },
+        subStats: [],
+      },
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.score-badge.tier-b')).toBeInTheDocument();
+  });
+
+  // --- Relic slot rendering ---
+
+  it('renders all 6 relic slots', () => {
+    const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    expect(container.querySelectorAll('.relic-slot')).toHaveLength(6);
+  });
+
+  it('marks a relic slot as active when a relic with a setId is equipped', () => {
+    const char = makeChar({
+      relics: {
+        ...emptyRelics,
+        head: { setId: '101', mainStat: 'HP', subStats: [] },
+      },
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.relic-slot.active')).toBeInTheDocument();
+  });
+
+  it('shows a relic set icon image when the equipped set is found in availableRelicSets', () => {
+    const char = makeChar({
+      relics: {
+        ...emptyRelics,
+        head: { setId: '101', mainStat: 'HP', subStats: [] },
+      },
+    });
+    render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[
+          { id: '101', name: 'Passerby of Wandering Cloud', icon: '/icon1.png' },
+        ]}
+      />,
+    );
+    expect(screen.getByAltText('Relic')).toBeInTheDocument();
   });
 });

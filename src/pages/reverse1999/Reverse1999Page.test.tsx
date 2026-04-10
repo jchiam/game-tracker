@@ -143,4 +143,24 @@ describe('Reverse1999Page', () => {
     );
     expect(screen.queryByTitle('Add Arcanist')).not.toBeInTheDocument();
   });
+
+  // --- Search input wiring ---
+
+  it('passes the typed search term to getFilteredRoster', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    const getFilteredRoster = vi.fn().mockReturnValue(arcanists);
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster,
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.change(screen.getByPlaceholderText(/search by name, afflatus/i), {
+      target: { value: 'Vertin' },
+    });
+    expect(getFilteredRoster).toHaveBeenCalledWith('Vertin', expect.any(String));
+  });
 });

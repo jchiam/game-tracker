@@ -194,4 +194,82 @@ describe('PartyEditorModal', () => {
     fireEvent.click(container.querySelector('.cancel-picker')!);
     expect(screen.queryByPlaceholderText(/search character/i)).not.toBeInTheDocument();
   });
+
+  // --- Picker search filtering ---
+
+  it('filters the character picker list by search term', async () => {
+    const user = userEvent.setup();
+    render(
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByText('Slot 1'));
+    await user.type(screen.getByPlaceholderText(/search character/i), 'Ach');
+    expect(screen.getByText('Acheron')).toBeInTheDocument();
+    expect(screen.queryByText('Blade')).not.toBeInTheDocument();
+    expect(screen.queryByText('Kafka')).not.toBeInTheDocument();
+  });
+
+  it('excludes a character already assigned to another slot from the picker', () => {
+    const { container } = render(
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    // Assign Acheron to slot 1
+    fireEvent.click(screen.getByText('Slot 1'));
+    fireEvent.click(screen.getByText('Acheron'));
+    // Open picker for slot 2 — Acheron is assigned and should not appear as a selectable picker item
+    fireEvent.click(screen.getByText('Slot 2'));
+    const pickerItemTexts = Array.from(container.querySelectorAll('.picker-item span')).map(
+      (el) => el.textContent,
+    );
+    expect(pickerItemTexts).not.toContain('Acheron');
+  });
+
+  // --- Save payload ---
+
+  it('includes notes in the onSave payload', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(
+      <PartyEditorModal
+        availableCharacters={availableCharacters}
+        onSave={onSave}
+        onClose={vi.fn()}
+      />,
+    );
+    await user.type(screen.getByPlaceholderText(/memory of chaos/i), 'My Team');
+    await user.type(screen.getByPlaceholderText(/strategy/i), 'Rush the boss');
+    fireEvent.click(screen.getByRole('button', { name: /save party/i }));
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ name: 'My Team', notes: 'Rush the boss' }),
+    );
+  });
+
+  it('passes the existing party id when saving an edit', async () => {
+    const onSave = vi.fn().mockResolvedValue(undefined);
+    const user = userEvent.setup();
+    render(
+      <PartyEditorModal
+        party={makeParty({ id: 'existing-id', name: 'Old Name' })}
+        availableCharacters={availableCharacters}
+        onSave={onSave}
+        onClose={vi.fn()}
+      />,
+    );
+    // Clear and retype name
+    const nameInput = screen.getByDisplayValue('Old Name');
+    await user.clear(nameInput);
+    await user.type(nameInput, 'New Name');
+    fireEvent.click(screen.getByRole('button', { name: /save party/i }));
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 'existing-id', name: 'New Name' }),
+    );
+  });
 });

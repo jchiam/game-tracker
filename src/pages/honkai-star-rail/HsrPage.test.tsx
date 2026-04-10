@@ -175,4 +175,58 @@ describe('HsrPage', () => {
     renderWithProviders(<HsrPage session={null} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByRole('heading', { name: /honkai star rail tracker/i })).toBeInTheDocument();
   });
+
+  // --- Search input wiring ---
+
+  it('passes the typed search term to getFilteredRoster', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    const getFilteredRoster = vi.fn().mockReturnValue(chars);
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster,
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.change(screen.getByPlaceholderText(/search by name, element, or path/i), {
+      target: { value: 'Blade' },
+    });
+    expect(getFilteredRoster).toHaveBeenCalledWith(
+      'Blade',
+      expect.any(String),
+      expect.any(Function),
+    );
+  });
+
+  // --- Relic editor modal integration ---
+
+  it('opens RelicEditorModal when a relic slot on a character card is clicked', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle(/^Head/));
+    expect(screen.getByRole('heading', { name: /edit head/i })).toBeInTheDocument();
+  });
+
+  // --- Tab toggle round-trip ---
+
+  it('switches back to the character roster after visiting the Parties tab', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /parties/i }));
+    expect(screen.getByText(/no parties configured/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: /roster/i }));
+    expect(screen.getByText('Acheron')).toBeInTheDocument();
+  });
 });
