@@ -242,4 +242,34 @@ describe('CharacterCard', () => {
     );
     expect(screen.getByAltText('Relic')).toBeInTheDocument();
   });
+
+  // --- Image error handling ---
+
+  it('falls back to ui-avatars when the character image fails to load', () => {
+    render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    const img = screen.getByAltText('Acheron');
+    fireEvent.error(img);
+    expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
+  });
+
+  it('hides the relic set icon when it fails to load', () => {
+    const char = makeChar({
+      relics: {
+        ...emptyRelics,
+        head: { setId: '101', mainStat: 'HP', subStats: [] },
+      },
+    });
+    render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[
+          { id: '101', name: 'Passerby of Wandering Cloud', icon: '/icon1.png' },
+        ]}
+      />,
+    );
+    const relicImg = screen.getByAltText('Relic');
+    fireEvent.error(relicImg);
+    expect(relicImg).toHaveStyle({ display: 'none' });
+  });
 });

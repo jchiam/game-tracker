@@ -155,4 +155,18 @@ describe('AddCharacterModal', () => {
     fireEvent.click(container.querySelector('.modal-content')!);
     expect(onClose).not.toHaveBeenCalled();
   });
+
+  it('falls back to ui-avatars when a character list image fails to load', () => {
+    render(
+      <AddCharacterModal
+        availableCharacters={availableCharacters}
+        trackedCharacters={emptyTracked}
+        onAddCharacter={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    const img = screen.getByAltText('Acheron');
+    fireEvent.error(img);
+    expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
+  });
 });

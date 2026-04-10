@@ -112,4 +112,25 @@ describe('ArcanistCard', () => {
     fireEvent.click(screen.getByText('I3'));
     expect(onUpdateInsight).toHaveBeenCalledWith('arc-1', 3);
   });
+
+  // --- Image loading states ---
+
+  it('shows the loading spinner before the image loads', () => {
+    const { container } = render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
+    expect(container.querySelector('.arcanist-image-spinner')).toBeInTheDocument();
+  });
+
+  it('hides the loading spinner after the image loads successfully', () => {
+    const { container } = render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
+    fireEvent.load(screen.getByAltText('Regulus'));
+    expect(container.querySelector('.arcanist-image-spinner')).not.toBeInTheDocument();
+  });
+
+  it('hides the loading spinner and falls back to ui-avatars when the image fails to load', () => {
+    const { container } = render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
+    const img = screen.getByAltText('Regulus');
+    fireEvent.error(img);
+    expect(container.querySelector('.arcanist-image-spinner')).not.toBeInTheDocument();
+    expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
+  });
 });

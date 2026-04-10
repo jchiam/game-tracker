@@ -146,4 +146,18 @@ describe('AddArcanistModal', () => {
     fireEvent.click(container.querySelector('.modal-overlay')!);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
+
+  it('falls back to ui-avatars when an arcanist list image fails to load', () => {
+    render(
+      <AddArcanistModal
+        availableArcanists={availableArcanists}
+        trackedArcanists={emptyTracked}
+        onAddArcanist={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    const img = screen.getByAltText('Regulus');
+    fireEvent.error(img);
+    expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
+  });
 });

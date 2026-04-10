@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { SelectionPage } from '@/pages/SelectionPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 
@@ -68,5 +68,14 @@ describe('SelectionPage', () => {
     );
     expect(screen.getByText(/track trailblazers/i)).toBeInTheDocument();
     expect(screen.getByText(/track arcanists/i)).toBeInTheDocument();
+  });
+
+  it('falls back to ui-avatars when a game card image fails to load', () => {
+    renderWithProviders(
+      <SelectionPage session={null} isAuthLoading={false} signInWithGoogle={vi.fn()} />,
+    );
+    const img = screen.getByAltText('Honkai Star Rail');
+    fireEvent.error(img);
+    expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
   });
 });
