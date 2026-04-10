@@ -276,5 +276,246 @@ describe('characterService', () => {
       expect(mockFrom).toHaveBeenCalledWith('hsr_equipped_relics');
       expect(mockFrom).toHaveBeenCalledWith('hsr_relic_substats');
     });
+
+    it('upsertRelic deletes existing substats before inserting new ones', async () => {
+      const relicBuilder = createBuilder({ data: { id: 'relic-db-id' }, error: null });
+      const substatBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'hsr_equipped_relics') return relicBuilder;
+        return substatBuilder;
+      });
+
+      await service.upsertRelic('db-uuid-1', 'head', {
+        setId: '101',
+        mainStat: 'HP',
+        subStats: [{ type: 'CRIT Rate', value: '5.8' }],
+      });
+
+      expect(substatBuilder.delete).toHaveBeenCalled();
+      expect(substatBuilder.eq).toHaveBeenCalledWith('relic_id', 'relic-db-id');
+      expect(substatBuilder.insert).toHaveBeenCalledWith([
+        { relic_id: 'relic-db-id', stat_type: 'CRIT Rate', stat_value: '5.8' },
+      ]);
+    });
+
+    it('upsertRelic skips substat insert when subStats is empty', async () => {
+      const relicBuilder = createBuilder({ data: { id: 'relic-db-id' }, error: null });
+      const substatBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'hsr_equipped_relics') return relicBuilder;
+        return substatBuilder;
+      });
+
+      await service.upsertRelic('db-uuid-1', 'head', {
+        setId: '101',
+        mainStat: 'HP',
+        subStats: [],
+      });
+
+      expect(substatBuilder.delete).toHaveBeenCalled();
+      expect(substatBuilder.insert).not.toHaveBeenCalled();
+    });
+
+    it('upsertRelic logs error and skips substats when relic upsert fails', async () => {
+      const relicBuilder = createBuilder({ data: null, error: { message: 'Upsert failed' } });
+      const substatBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'hsr_equipped_relics') return relicBuilder;
+        return substatBuilder;
+      });
+
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await service.upsertRelic('db-uuid-1', 'head', {
+        setId: '101',
+        mainStat: 'HP',
+        subStats: [],
+      });
+
+      expect(consoleSpy).toHaveBeenCalledWith('Relic Upsert Error:', expect.any(Object));
+      expect(substatBuilder.delete).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
+    });
+
+    it('deleteRelic calls delete on hsr_equipped_relics with correct match', async () => {
+      const builder = createBuilder({ data: null, error: null });
+      mockFrom.mockReturnValue(builder);
+
+      await service.deleteRelic('db-uuid-1', 'head');
+
+      expect(mockFrom).toHaveBeenCalledWith('hsr_equipped_relics');
+      expect(builder.delete).toHaveBeenCalled();
+      expect(builder.match).toHaveBeenCalledWith({
+        tracked_character_id: 'db-uuid-1',
+        slot: 'head',
+      });
+    });
+
+    it('updateCharacter logs error when DB update fails', async () => {
+      const builder = createBuilder({ data: null, error: { message: 'Update failed' } });
+      mockFrom.mockReturnValue(builder);
+
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await service.updateCharacter('db-uuid-1', { level: 80 });
+
+      expect(consoleSpy).toHaveBeenCalledWith('DB Update Failed:', expect.any(Object));
+      consoleSpy.mockRestore();
+    });
+
+    it('loadCharactersFromDB maps build_preference_main_stats and sub_stats correctly', async () => {
+      const dbRow = {
+        id: 'db-uuid-1',
+        character_id: 'acheron',
+        level: 60,
+        traces_attained: false,
+        is_favorited: false,
+        build_comments: '',
+        hsr_equipped_relics: [],
+        hsr_build_preference_main_stats: [
+          { id: 'pref-1', slot: 'body', stat: 'CRIT Rate', operator_to_next: null, order_index: 0 },
+        ],
+        hsr_build_preference_sub_stats: [
+          { id: 'pref-2', stat: 'CRIT DMG', operator_to_next: '>', order_index: 0 },
+        ],
+      };
+
+      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+      const result = await service.loadCharactersFromDB('user-1');
+
+      expect(result[0].buildPreferences.mainStats.body).toEqual([
+        { stat: 'CRIT Rate', operator: null, orderIndex: 0 },
+      ]);
+      expect(result[0].buildPreferences.subStats).toEqual([
+        { stat: 'CRIT DMG', operator: '>', orderIndex: 0 },
+      ]);
+    });
+
+    it('loadCharactersFromDB maps is_favorited and build_comments correctly', async () => {
+      const dbRow = {
+        id: 'db-uuid-1',
+        character_id: 'acheron',
+        level: 60,
+        traces_attained: false,
+        is_favorited: true,
+        build_comments: 'Rush CRIT stats',
+        hsr_equipped_relics: [],
+        hsr_build_preference_main_stats: [],
+        hsr_build_preference_sub_stats: [],
+      };
+
+      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+      const result = await service.loadCharactersFromDB('user-1');
+
+      expect(result[0].isFavorited).toBe(true);
+      expect(result[0].buildPreferences.comments).toBe('Rush CRIT stats');
+    });
+
+    it('saveBuildPrefs deletes old prefs and updates build_comments', async () => {
+      const builder = createBuilder({ data: null, error: null });
+      mockFrom.mockReturnValue(builder);
+
+      await service.saveBuildPrefs('db-uuid-1', {
+        mainStats: { body: [], feet: [], sphere: [], rope: [] },
+        subStats: [],
+        comments: 'My build notes',
+      });
+
+      expect(mockFrom).toHaveBeenCalledWith('hsr_build_preference_main_stats');
+      expect(mockFrom).toHaveBeenCalledWith('hsr_build_preference_sub_stats');
+      expect(mockFrom).toHaveBeenCalledWith('hsr_tracked_characters');
+      expect(builder.update).toHaveBeenCalledWith({ build_comments: 'My build notes' });
+    });
+
+    it('saveBuildPrefs inserts main stat prefs when present', async () => {
+      const mainBuilder = createBuilder({ data: null, error: null });
+      const otherBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'hsr_build_preference_main_stats') return mainBuilder;
+        return otherBuilder;
+      });
+
+      await service.saveBuildPrefs('db-uuid-1', {
+        mainStats: {
+          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+          feet: [],
+          sphere: [],
+          rope: [],
+        },
+        subStats: [],
+      });
+
+      expect(mainBuilder.insert).toHaveBeenCalledWith([
+        expect.objectContaining({
+          tracked_character_id: 'db-uuid-1',
+          slot: 'body',
+          stat: 'CRIT Rate',
+          operator_to_next: null,
+          order_index: 0,
+        }),
+      ]);
+    });
+
+    it('saveBuildPrefs inserts sub stat prefs when present', async () => {
+      const subBuilder = createBuilder({ data: null, error: null });
+      const otherBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'hsr_build_preference_sub_stats') return subBuilder;
+        return otherBuilder;
+      });
+
+      await service.saveBuildPrefs('db-uuid-1', {
+        mainStats: { body: [], feet: [], sphere: [], rope: [] },
+        subStats: [{ stat: 'CRIT DMG', operator: '>', orderIndex: 0 }],
+      });
+
+      expect(subBuilder.insert).toHaveBeenCalledWith([
+        expect.objectContaining({
+          tracked_character_id: 'db-uuid-1',
+          stat: 'CRIT DMG',
+          operator_to_next: '>',
+          order_index: 0,
+        }),
+      ]);
+    });
+
+    it('saveBuildPrefs skips main stat insert when all slots are empty', async () => {
+      const mainBuilder = createBuilder({ data: null, error: null });
+      const otherBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'hsr_build_preference_main_stats') return mainBuilder;
+        return otherBuilder;
+      });
+
+      await service.saveBuildPrefs('db-uuid-1', {
+        mainStats: { body: [], feet: [], sphere: [], rope: [] },
+        subStats: [],
+      });
+
+      expect(mainBuilder.insert).not.toHaveBeenCalled();
+    });
+
+    it('saveBuildPrefs skips sub stat insert when subStats is empty', async () => {
+      const subBuilder = createBuilder({ data: null, error: null });
+      const otherBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'hsr_build_preference_sub_stats') return subBuilder;
+        return otherBuilder;
+      });
+
+      await service.saveBuildPrefs('db-uuid-1', {
+        mainStats: { body: [], feet: [], sphere: [], rope: [] },
+        subStats: [],
+      });
+
+      expect(subBuilder.insert).not.toHaveBeenCalled();
+    });
   });
 });

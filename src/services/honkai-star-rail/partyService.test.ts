@@ -248,5 +248,71 @@ describe('partyService', () => {
       const result = await service.deleteParty('party-uuid-1');
       expect(result).toBe(false);
     });
+
+    it('loadParties returns empty array when data is null', async () => {
+      mockFrom.mockReturnValue(createBuilder({ data: null, error: null }));
+
+      const result = await service.loadParties('user-1');
+      expect(result).toEqual([]);
+    });
+
+    it('loadParties handles a party with no members', async () => {
+      const dbRows = [
+        {
+          id: 'party-1',
+          profile_id: 'user-1',
+          name: 'Solo Team',
+          notes: null,
+          created_at: '2024-01-01T00:00:00Z',
+          hsr_party_members: [],
+        },
+      ];
+
+      mockFrom.mockReturnValue(createBuilder({ data: dbRows, error: null }));
+
+      const result = await service.loadParties('user-1');
+      expect(result[0].members).toEqual([]);
+    });
+
+    it('saveParty returns null on update error', async () => {
+      const partyBuilder = createBuilder({ data: null, error: { message: 'Update failed' } });
+      mockFrom.mockReturnValue(partyBuilder);
+
+      const result = await service.saveParty('user-1', {
+        id: 'existing-id',
+        name: 'Updated Name',
+        members: [],
+      });
+
+      expect(result).toBeNull();
+    });
+
+    it('saveParty skips member insert when members array is empty', async () => {
+      const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
+      const memberBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'hsr_parties') return partyBuilder;
+        return memberBuilder;
+      });
+
+      await service.saveParty('user-1', { name: 'Empty Team', members: [] });
+
+      expect(memberBuilder.insert).not.toHaveBeenCalled();
+    });
+
+    it('saveParty defaults notes to empty string when not provided', async () => {
+      const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
+      const memberBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'hsr_parties') return partyBuilder;
+        return memberBuilder;
+      });
+
+      await service.saveParty('user-1', { name: 'No Notes Team', members: [] });
+
+      expect(partyBuilder.insert).toHaveBeenCalledWith(expect.objectContaining({ notes: '' }));
+    });
   });
 });
