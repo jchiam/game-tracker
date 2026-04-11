@@ -15,6 +15,7 @@ function makeArcanist(overrides: Partial<R1999TrackedArcanist> = {}): R1999Track
     isFavorited: false,
     level: 40,
     insightLevel: 2,
+    portraitLevel: 0,
     ...overrides,
   };
 }
@@ -23,6 +24,7 @@ const defaultProps = {
   onRemove: vi.fn(),
   onUpdateLevel: vi.fn(),
   onUpdateInsight: vi.fn(),
+  onUpdatePortrait: vi.fn(),
   onToggleFavorite: vi.fn(),
 };
 

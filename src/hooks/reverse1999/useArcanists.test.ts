@@ -94,6 +94,7 @@ function trackedArcanist(
     isFavorited: false,
     level: 1,
     insightLevel: 0,
+    portraitLevel: 0,
     ...overrides,
   };
 }
@@ -171,6 +172,7 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists[0].id).toBe('37');
       expect(result.current.trackedArcanists[0].level).toBe(1);
       expect(result.current.trackedArcanists[0].insightLevel).toBe(0);
+      expect(result.current.trackedArcanists[0].portraitLevel).toBe(0);
       expect(mockInsertArcanist).toHaveBeenCalledWith('test-user-123', '37');
     });
 
@@ -344,6 +346,50 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists[0].insightLevel).toBe(2);
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
         insight_level: 2,
+      });
+    });
+  });
+
+  describe('updatePortraitLevel', () => {
+    it('updates portrait level in local state and queues DB update', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'existing-db-id', portraitLevel: 0 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updatePortraitLevel('37', 3);
+      });
+
+      expect(result.current.trackedArcanists[0].portraitLevel).toBe(3);
+      expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
+        portrait_level: 3,
+      });
+    });
+
+    it('can reset portrait level to 0', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'existing-db-id', portraitLevel: 4 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updatePortraitLevel('37', 0);
+      });
+
+      expect(result.current.trackedArcanists[0].portraitLevel).toBe(0);
+      expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
+        portrait_level: 0,
       });
     });
   });

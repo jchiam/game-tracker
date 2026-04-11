@@ -334,6 +334,56 @@
   box-shadow: 0 0 8px var(--color-primary-glow) inset;
 }
 
+/* Portrait Levels */
+.portrait-row {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.portrait-btn {
+  flex: 1;
+  padding: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: unset;
+  text-align: center;
+}
+
+.portrait-btn::before {
+  display: none;
+}
+
+.portrait-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.portrait-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary-glow) inset;
+}
+
+.portrait-btn.portrait-reset {
+  color: var(--color-text-secondary);
+  font-size: 0.7rem;
+  opacity: 0.6;
+}
+
+.portrait-btn.portrait-reset:hover {
+  opacity: 1;
+  border-color: var(--color-text-secondary);
+}
+
 /* Badges */
 .afflatus-badge,
 .damage-badge {

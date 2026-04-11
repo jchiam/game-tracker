@@ -9,7 +9,7 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
 
   const { data: dbData, error } = await supabase
     .from('r1999_tracked_arcanists')
-    .select('id, arcanist_id, level, insight_level, is_favorited')
+    .select('id, arcanist_id, level, insight_level, portrait_level, is_favorited')
     .eq('profile_id', userId);
 
   if (error) {
@@ -29,6 +29,7 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
         isFavorited: !!row.is_favorited,
         level: row.level,
         insightLevel: row.insight_level as 0 | 1 | 2 | 3,
+        portraitLevel: row.portrait_level ?? 0,
       };
     })
     .filter(Boolean) as R1999TrackedArcanist[];
@@ -44,6 +45,7 @@ export async function insertArcanist(userId: string, arcanistId: string): Promis
       arcanist_id: arcanistId,
       level: 1,
       insight_level: 0,
+      portrait_level: 0,
     })
     .select('id')
     .single();

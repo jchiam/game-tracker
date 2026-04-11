@@ -20,6 +20,7 @@ function makeArcanist(id: string, name: string): R1999TrackedArcanist {
     isFavorited: false,
     level: 40,
     insightLevel: 2,
+    portraitLevel: 0,
   };
 }
 
@@ -32,6 +33,7 @@ const defaultArcanistsHook = {
   removeArcanist: vi.fn(),
   updateArcanistLevel: vi.fn(),
   updateInsightLevel: vi.fn(),
+  updatePortraitLevel: vi.fn(),
   toggleFavoriteArcanist: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };

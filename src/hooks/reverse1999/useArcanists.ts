@@ -65,6 +65,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       isFavorited: false,
       level: 1,
       insightLevel: 0,
+      portraitLevel: 0,
     };
     setTrackedArcanists((prev) => [...prev, newArcanist]);
     const dbId = await insertArcanist(session.user.id, arcanist.id);
@@ -93,6 +94,15 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
       queueUpdate(arcanist.dbId, { insight_level: insightLevel }, (p) =>
+        updateArcanist(arcanist.dbId!, p),
+      );
+  };
+
+  const updatePortraitLevel = (id: string, portraitLevel: number) => {
+    setTrackedArcanists((prev) => prev.map((a) => (a.id === id ? { ...a, portraitLevel } : a)));
+    const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
+    if (arcanist?.dbId)
+      queueUpdate(arcanist.dbId, { portrait_level: portraitLevel }, (p) =>
         updateArcanist(arcanist.dbId!, p),
       );
   };
@@ -138,6 +148,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     removeArcanist,
     updateArcanistLevel,
     updateInsightLevel,
+    updatePortraitLevel,
     toggleFavoriteArcanist,
     getFilteredRoster,
   };

@@ -46,4 +46,5 @@ export interface R1999TrackedArcanist extends Arcanist {
   isFavorited: boolean;
   level: number;
   insightLevel: 0 | 1 | 2 | 3;
+  portraitLevel: number; // 0–5 (varies by rarity: 6★=5, 5★=3, 4★=2, 3★=1)
 }

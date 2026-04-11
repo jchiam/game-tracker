@@ -8,6 +8,7 @@ interface ArcanistCardProps {
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
   onUpdateInsight: (id: string, insightLevel: 0 | 1 | 2 | 3) => void;
+  onUpdatePortrait: (id: string, portraitLevel: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
 }
 
@@ -16,6 +17,7 @@ export function ArcanistCard({
   onRemove,
   onUpdateLevel,
   onUpdateInsight,
+  onUpdatePortrait,
   onToggleFavorite,
 }: ArcanistCardProps) {
   const [imgLoading, setImgLoading] = useState(true);
@@ -110,6 +112,25 @@ export function ArcanistCard({
                 onClick={() => onUpdateInsight(arcanist.id!, level)}
               >
                 I{level}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="progress-section">
+          <div className="section-header">
+            <span>Portrait Level</span>
+            <span className="section-value">{arcanist.portraitLevel} / 5</span>
+          </div>
+          <div className="portrait-row">
+            {([0, 1, 2, 3, 4, 5] as const).map((level) => (
+              <button
+                key={level}
+                className={`portrait-btn ${level === 0 ? 'portrait-reset' : ''} ${arcanist.portraitLevel === level ? 'active' : ''}`}
+                onClick={() => onUpdatePortrait(arcanist.id!, level)}
+                title={level === 0 ? 'Reset portrait level' : `Portrait ${level}`}
+              >
+                P{level}
               </button>
             ))}
           </div>
