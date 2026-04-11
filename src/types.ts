@@ -47,4 +47,5 @@ export interface R1999TrackedArcanist extends Arcanist {
   level: number;
   insightLevel: 0 | 1 | 2 | 3;
   portraitLevel: number; // 0–5 (varies by rarity: 6★=5, 5★=3, 4★=2, 3★=1)
+  resonanceLevel: number; // 0–15 (recommended stop at 10 for max 7x7 grid)
 }

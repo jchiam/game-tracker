@@ -24,6 +24,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     updateArcanistLevel,
     updateInsightLevel,
     updatePortraitLevel,
+    updateResonanceLevel,
     toggleFavoriteArcanist,
     getFilteredRoster,
   } = useArcanists(session, isAuthLoading);
@@ -119,6 +120,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
               onUpdateLevel={updateArcanistLevel}
               onUpdateInsight={updateInsightLevel}
               onUpdatePortrait={updatePortraitLevel}
+              onUpdateResonance={updateResonanceLevel}
               onToggleFavorite={toggleFavoriteArcanist}
             />
           ))

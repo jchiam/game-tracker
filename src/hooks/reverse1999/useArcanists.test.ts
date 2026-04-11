@@ -95,6 +95,7 @@ function trackedArcanist(
     level: 1,
     insightLevel: 0,
     portraitLevel: 0,
+    resonanceLevel: 0,
     ...overrides,
   };
 }
@@ -173,6 +174,7 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists[0].level).toBe(1);
       expect(result.current.trackedArcanists[0].insightLevel).toBe(0);
       expect(result.current.trackedArcanists[0].portraitLevel).toBe(0);
+      expect(result.current.trackedArcanists[0].resonanceLevel).toBe(0);
       expect(mockInsertArcanist).toHaveBeenCalledWith('test-user-123', '37');
     });
 
@@ -391,6 +393,53 @@ describe('useArcanists', () => {
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
         portrait_level: 0,
       });
+    });
+  });
+
+  describe('updateResonanceLevel', () => {
+    it('updates resonance level in local state and queues DB update', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'existing-db-id', resonanceLevel: 0 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updateResonanceLevel('37', 10);
+      });
+
+      expect(result.current.trackedArcanists[0].resonanceLevel).toBe(10);
+      expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
+        resonance_level: 10,
+      });
+    });
+
+    it('clamps resonance level to valid range (0-15)', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'existing-db-id', resonanceLevel: 5 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updateResonanceLevel('37', -1);
+      });
+
+      expect(result.current.trackedArcanists[0].resonanceLevel).toBe(0);
+
+      await act(async () => {
+        result.current.updateResonanceLevel('37', 999);
+      });
+
+      expect(result.current.trackedArcanists[0].resonanceLevel).toBe(15);
     });
   });
 

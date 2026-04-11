@@ -384,6 +384,34 @@
   border-color: var(--color-text-secondary);
 }
 
+/* Resonance Level */
+.resonance-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  margin: 8px 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) inset;
+}
+
+.resonance-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--color-primary-glow);
+  transition: transform var(--transition-fast);
+}
+
+.resonance-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
 /* Badges */
 .afflatus-badge,
 .damage-badge {

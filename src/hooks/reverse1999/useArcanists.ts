@@ -66,6 +66,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       level: 1,
       insightLevel: 0,
       portraitLevel: 0,
+      resonanceLevel: 0,
     };
     setTrackedArcanists((prev) => [...prev, newArcanist]);
     const dbId = await insertArcanist(session.user.id, arcanist.id);
@@ -103,6 +104,18 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
       queueUpdate(arcanist.dbId, { portrait_level: portraitLevel }, (p) =>
+        updateArcanist(arcanist.dbId!, p),
+      );
+  };
+
+  const updateResonanceLevel = (id: string, resonanceLevel: number) => {
+    const validLevel = Math.min(15, Math.max(0, resonanceLevel));
+    setTrackedArcanists((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, resonanceLevel: validLevel } : a)),
+    );
+    const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
+    if (arcanist?.dbId)
+      queueUpdate(arcanist.dbId, { resonance_level: validLevel }, (p) =>
         updateArcanist(arcanist.dbId!, p),
       );
   };
@@ -149,6 +162,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     updateArcanistLevel,
     updateInsightLevel,
     updatePortraitLevel,
+    updateResonanceLevel,
     toggleFavoriteArcanist,
     getFilteredRoster,
   };

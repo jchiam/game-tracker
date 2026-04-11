@@ -9,6 +9,7 @@ interface ArcanistCardProps {
   onUpdateLevel: (id: string, level: number) => void;
   onUpdateInsight: (id: string, insightLevel: 0 | 1 | 2 | 3) => void;
   onUpdatePortrait: (id: string, portraitLevel: number) => void;
+  onUpdateResonance: (id: string, resonanceLevel: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
 }
 
@@ -18,6 +19,7 @@ export function ArcanistCard({
   onUpdateLevel,
   onUpdateInsight,
   onUpdatePortrait,
+  onUpdateResonance,
   onToggleFavorite,
 }: ArcanistCardProps) {
   const [imgLoading, setImgLoading] = useState(true);
@@ -134,6 +136,24 @@ export function ArcanistCard({
               </button>
             ))}
           </div>
+        </div>
+
+        <div className="progress-section">
+          <div className="section-header">
+            <span>Resonance Level</span>
+            <span className="section-value">{arcanist.resonanceLevel} / 15</span>
+          </div>
+          <input
+            type="range"
+            min="0"
+            max="15"
+            value={arcanist.resonanceLevel}
+            onChange={(e) => onUpdateResonance(arcanist.id!, parseInt(e.target.value))}
+            className="resonance-slider"
+            style={{
+              background: `linear-gradient(to right, var(--color-primary) ${(arcanist.resonanceLevel / 15) * 100}%, rgba(255,255,255,0.1) ${(arcanist.resonanceLevel / 15) * 100}%)`,
+            }}
+          />
         </div>
       </div>
     </div>
