@@ -22,6 +22,8 @@ function makeArcanist(id: string, name: string): R1999TrackedArcanist {
     insightLevel: 2,
     portraitLevel: 0,
     resonanceLevel: 0,
+    psychubeId: null,
+    psychubeLevel: 0,
   };
 }
 
@@ -38,6 +40,7 @@ const defaultArcanistsHook = {
   updateInsightLevel: vi.fn(),
   updatePortraitLevel: vi.fn(),
   updateResonanceLevel: vi.fn(),
+  updatePsychube: vi.fn(),
   toggleFavoriteArcanist: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };

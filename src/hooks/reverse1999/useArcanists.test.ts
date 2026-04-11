@@ -98,6 +98,8 @@ function trackedArcanist(
     insightLevel: 0,
     portraitLevel: 0,
     resonanceLevel: 0,
+    psychubeId: null,
+    psychubeLevel: 0,
     ...overrides,
   };
 }
@@ -211,6 +213,8 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists[0].insightLevel).toBe(0);
       expect(result.current.trackedArcanists[0].portraitLevel).toBe(0);
       expect(result.current.trackedArcanists[0].resonanceLevel).toBe(0);
+      expect(result.current.trackedArcanists[0].psychubeId).toBeNull();
+      expect(result.current.trackedArcanists[0].psychubeLevel).toBe(0);
       expect(mockInsertArcanist).toHaveBeenCalledWith('test-user-123', '37');
     });
 
@@ -522,6 +526,62 @@ describe('useArcanists', () => {
       });
 
       expect(result.current.trackedArcanists[0].resonanceLevel).toBe(15);
+    });
+  });
+
+  describe('updatePsychube', () => {
+    it('updates psychube in local state and queues DB update', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', {
+          dbId: 'existing-db-id',
+          psychubeId: null,
+          psychubeLevel: 0,
+        }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updatePsychube('37', 28, 10);
+      });
+
+      expect(result.current.trackedArcanists[0].psychubeId).toBe(28);
+      expect(result.current.trackedArcanists[0].psychubeLevel).toBe(10);
+      expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
+        psychube_id: 28,
+        psychube_level: 10,
+      });
+    });
+
+    it('can clear psychube by setting id to null', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', {
+          dbId: 'existing-db-id',
+          psychubeId: 2,
+          psychubeLevel: 5,
+        }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updatePsychube('37', null, 0);
+      });
+
+      expect(result.current.trackedArcanists[0].psychubeId).toBeNull();
+      expect(result.current.trackedArcanists[0].psychubeLevel).toBe(0);
+      expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
+        psychube_id: null,
+        psychube_level: 0,
+      });
     });
   });
 

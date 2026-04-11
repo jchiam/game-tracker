@@ -1,4 +1,5 @@
 import type { R1999TrackedArcanist } from '@/types';
+import { ALL_PSYCHUBES } from '@/data/reverse1999/psychubes';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { useState } from 'react';
 import './ArcanistCard.css';
@@ -10,6 +11,7 @@ interface ArcanistCardProps {
   onUpdateInsight: (id: string, insightLevel: 0 | 1 | 2 | 3) => void;
   onUpdatePortrait: (id: string, portraitLevel: number) => void;
   onUpdateResonance: (id: string, resonanceLevel: number) => void;
+  onUpdatePsychube: (id: string, psychubeId: number | null, psychubeLevel: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
 }
 
@@ -20,6 +22,7 @@ export function ArcanistCard({
   onUpdateInsight,
   onUpdatePortrait,
   onUpdateResonance,
+  onUpdatePsychube,
   onToggleFavorite,
 }: ArcanistCardProps) {
   const [imgLoading, setImgLoading] = useState(true);
@@ -152,6 +155,48 @@ export function ArcanistCard({
             className="resonance-slider"
             style={{
               background: `linear-gradient(to right, var(--color-primary) ${(arcanist.resonanceLevel / 15) * 100}%, rgba(255,255,255,0.1) ${(arcanist.resonanceLevel / 15) * 100}%)`,
+            }}
+          />
+        </div>
+
+        <div className="progress-section">
+          <div className="section-header">
+            <span>Psychube</span>
+            <span className="section-value">{arcanist.psychubeLevel} / 30</span>
+          </div>
+          <select
+            className="psychube-select"
+            value={arcanist.psychubeId ?? ''}
+            onChange={(e) =>
+              onUpdatePsychube(
+                arcanist.id!,
+                e.target.value ? Number(e.target.value) : null,
+                arcanist.psychubeLevel,
+              )
+            }
+          >
+            <option value="">No Psychube</option>
+            {ALL_PSYCHUBES.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name} ({p.rarity}★)
+              </option>
+            ))}
+          </select>
+          <input
+            type="range"
+            min="0"
+            max="30"
+            value={arcanist.psychubeLevel}
+            onChange={(e) =>
+              onUpdatePsychube(
+                arcanist.id!,
+                arcanist.psychubeId,
+                parseInt(e.target.value),
+              )
+            }
+            className="psychube-slider"
+            style={{
+              background: `linear-gradient(to right, var(--color-primary) ${(arcanist.psychubeLevel / 30) * 100}%, rgba(255,255,255,0.1) ${(arcanist.psychubeLevel / 30) * 100}%)`,
             }}
           />
         </div>

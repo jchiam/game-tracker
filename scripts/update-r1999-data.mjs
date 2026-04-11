@@ -315,17 +315,86 @@ function generateArcanistsTs(arcanists) {
   return lines.join('\n');
 }
 
+async function loadExistingPsychubes() {
+  const filePath = resolve(ROOT, 'src/data/reverse1999/psychubes.ts');
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    const entries = [];
+    const regex = /id:\s*(\d+),\s*name:\s*'([^']+)'/gs;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      entries.push({ id: parseInt(match[1]), name: match[2] });
+    }
+    return entries;
+  } catch {
+    return [];
+  }
+}
+
+function generatePsychubesTs(psychubes) {
+  const sixStars = psychubes.filter((p) => p.rarity === 6);
+  const fiveStars = psychubes.filter((p) => p.rarity === 5);
+  const fourStars = psychubes.filter((p) => p.rarity === 4);
+  const threeStars = psychubes.filter((p) => p.rarity === 3);
+
+  const lines = [
+    '// Auto-generated from kornblume — do not edit manually.',
+    '// Run `node scripts/update-r1999-data.mjs` or trigger the GitHub Actions workflow to update.',
+    '',
+    'export interface Psychube {',
+    '  id: number;',
+    "  name: string;",
+    '  rarity: number;',
+    "  tag: string; // Primary combat focus: None / ATK / Heal / Survival / Critical",
+    "  imageUrl: string;",
+    '}',
+    '',
+    'export const ALL_PSYCHUBES: Psychube[] = [',
+  ];
+
+  const formatEntry = (p) => {
+    return [
+      '  {',
+      `    id: ${p.id},`,
+      `    name: '${p.name}',`,
+      `    rarity: ${p.rarity},`,
+      `    tag: '${p.tag}',`,
+      `    imageUrl: '/assets/reverse-1999/psychubes/${p.id}.webp',`,
+      '  },',
+    ].join('\n');
+  };
+
+  const addGroup = (label, items) => {
+    if (items.length > 0) {
+      lines.push(`  // ${label}`);
+      lines.push(...items.map(formatEntry));
+    }
+  };
+
+  addGroup('6-Stars', sixStars);
+  addGroup('5-Stars', fiveStars);
+  addGroup('4-Stars', fourStars);
+  addGroup('3-Stars', threeStars);
+
+  lines.push('];', '');
+  return lines.join('\n');
+}
+
 async function main() {
   console.log('Fetching data from kornblume, Fandom wiki, and CN ArcanistMap...');
 
   const [
     kornblumeData,
+    kornblumePsychubes,
     arcanistMap,
     { entries: existingEntries, idMap: existingIds, damageMap: existingDamage },
+    existingPsychubes,
   ] = await Promise.all([
     fetchJSON(`${KORNBLUME_BASE}/data/arcanists.json`),
+    fetchJSON(`${KORNBLUME_BASE}/data/psychubes.json`),
     fetchJSON(ARCANIST_MAP_URL),
     loadExistingArcanists(),
+    loadExistingPsychubes(),
   ]);
 
   const findHeadiconId = buildHeadiconLookup(arcanistMap);
@@ -468,6 +537,39 @@ async function main() {
     for (const name of unknownDamage) console.warn(`    ? ${name}`);
     console.warn('  Update these manually in src/data/reverse1999/arcanists.ts.');
   }
+
+  // --- Psychubes ---
+  const releasedPsychubes = kornblumePsychubes.filter((p) => p.IsReleased === true && p.Name);
+  releasedPsychubes.sort((a, b) => {
+    if (a.Rarity !== b.Rarity) return b.Rarity - a.Rarity;
+    return a.Name.localeCompare(b.Name);
+  });
+
+  const psychubes = releasedPsychubes.map((p) => ({
+    id: p.Id,
+    name: p.Name,
+    rarity: p.Rarity,
+    tag: p.Tag ?? 'None',
+    imageUrl: `/assets/reverse-1999/psychubes/${p.Id}.webp`,
+  }));
+
+  const psychubePath = resolve(ROOT, 'src/data/reverse1999/psychubes.ts');
+  await writeFile(psychubePath, generatePsychubesTs(psychubes), 'utf-8');
+
+  const existingPsychubeNames = new Set(existingPsychubes.map((e) => e.name));
+  const newPsychubeNames = new Set(psychubes.map((p) => p.name));
+  const psychubeAdded = psychubes.filter((p) => !existingPsychubeNames.has(p.name));
+  const psychubeRemoved = existingPsychubes.filter((e) => !newPsychubeNames.has(e.name));
+
+  const psychubeDiff =
+    psychubeAdded.length || psychubeRemoved.length
+      ? `+${psychubeAdded.length} added, -${psychubeRemoved.length} removed`
+      : 'no changes';
+
+  console.log(`  Psychubes : ${psychubes.length} total (${psychubeDiff})`);
+  for (const p of psychubeAdded)
+    console.log(`    + ${p.name} [${p.rarity}★ ${p.tag}]`);
+  for (const p of psychubeRemoved) console.log(`    - ${p.name} (removed from source)`);
 }
 
 main().catch((e) => {
