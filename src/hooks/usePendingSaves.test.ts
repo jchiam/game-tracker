@@ -199,6 +199,59 @@ describe('usePendingSaves', () => {
     });
   });
 
+  describe('onFlushError callback', () => {
+    it('calls onFlushError when queueUpdate flush function throws', async () => {
+      const onFlushError = vi.fn();
+      const { result } = renderHook(() => usePendingSaves(500, onFlushError));
+      const flushFn = vi.fn().mockRejectedValue(new Error('DB error'));
+
+      act(() => {
+        result.current.queueUpdate('key-1', { level: 10 }, flushFn);
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+
+      expect(onFlushError).toHaveBeenCalledTimes(1);
+      expect(result.current.pendingSaveCount).toBe(0);
+    });
+
+    it('calls onFlushError when queueAction action throws', async () => {
+      const onFlushError = vi.fn();
+      const { result } = renderHook(() => usePendingSaves(500, onFlushError));
+      const action = vi.fn().mockRejectedValue(new Error('DB error'));
+
+      act(() => {
+        result.current.queueAction('action-1', action);
+      });
+
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+
+      expect(onFlushError).toHaveBeenCalledTimes(1);
+      expect(result.current.pendingSaveCount).toBe(0);
+    });
+
+    it('still decrements pendingSaveCount even when flush throws', async () => {
+      const { result } = renderHook(() => usePendingSaves(500));
+      const flushFn = vi.fn().mockRejectedValue(new Error('DB error'));
+
+      act(() => {
+        result.current.queueUpdate('key-1', { level: 10 }, flushFn);
+      });
+
+      expect(result.current.pendingSaveCount).toBe(1);
+
+      await act(async () => {
+        vi.advanceTimersByTime(500);
+      });
+
+      expect(result.current.pendingSaveCount).toBe(0);
+    });
+  });
+
   describe('beforeunload guard', () => {
     it('adds beforeunload listener when there are pending saves', () => {
       const addEventListener = vi.spyOn(window, 'addEventListener');

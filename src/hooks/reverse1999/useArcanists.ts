@@ -16,6 +16,8 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
   const [availableArcanists] = useState<Arcanist[]>(ALL_ARCANISTS);
   const [trackedArcanists, setTrackedArcanists] = useState<R1999TrackedArcanist[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isLoadError, setIsLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Track in-flight inserts to prevent race condition on rapid adds
   const pendingInserts = useRef<Set<string>>(new Set());
@@ -23,7 +25,9 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
   const trackedArcanistsRef = useRef<R1999TrackedArcanist[]>([]);
   trackedArcanistsRef.current = trackedArcanists;
 
-  const { pendingSaveCount, queueUpdate } = usePendingSaves();
+  const { pendingSaveCount, queueUpdate } = usePendingSaves(1000, () =>
+    addToast('Failed to save changes. Please try again.', 'error'),
+  );
 
   // Load from DB on session change
   useEffect(() => {
@@ -37,9 +41,13 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     (async () => {
       try {
         const roster = await loadArcanistsFromDB(session.user.id);
-        if (isMounted) setTrackedArcanists(roster);
+        if (isMounted) {
+          setTrackedArcanists(roster);
+          setIsLoadError(false);
+        }
       } catch (e) {
         console.error(e);
+        if (isMounted) setIsLoadError(true);
       } finally {
         if (isMounted) setIsInitialLoad(false);
       }
@@ -48,7 +56,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id, isAuthLoading]);
+  }, [session?.user?.id, isAuthLoading, retryCount]);
 
   const addArcanist = async (arcanist: Arcanist) => {
     if (!session) {
@@ -69,17 +77,33 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       resonanceLevel: 0,
     };
     setTrackedArcanists((prev) => [...prev, newArcanist]);
-    const dbId = await insertArcanist(session.user.id, arcanist.id);
-    pendingInserts.current.delete(arcanist.id);
-    if (dbId)
-      setTrackedArcanists((prev) => prev.map((a) => (a.id === arcanist.id ? { ...a, dbId } : a)));
+    try {
+      const dbId = await insertArcanist(session.user.id, arcanist.id);
+      if (dbId)
+        setTrackedArcanists((prev) => prev.map((a) => (a.id === arcanist.id ? { ...a, dbId } : a)));
+    } catch (e) {
+      console.error(e);
+      setTrackedArcanists((prev) => prev.filter((a) => a.id !== arcanist.id));
+      addToast('Failed to add arcanist. Please try again.', 'error');
+    } finally {
+      pendingInserts.current.delete(arcanist.id);
+    }
   };
 
   const removeArcanist = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const toRemove = trackedArcanistsRef.current.find((a) => a.id === id);
+    const snapshot = trackedArcanistsRef.current;
     setTrackedArcanists((prev) => prev.filter((a) => a.id !== id));
-    if (toRemove?.dbId) await deleteArcanist(toRemove.dbId);
+    if (toRemove?.dbId) {
+      try {
+        await deleteArcanist(toRemove.dbId);
+      } catch (err) {
+        console.error(err);
+        setTrackedArcanists(snapshot);
+        addToast('Failed to remove arcanist. Please try again.', 'error');
+      }
+    }
   };
 
   const updateArcanistLevel = (id: string, level: number) => {
@@ -152,10 +176,18 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     [trackedArcanists],
   );
 
+  const retryLoad = () => {
+    setIsLoadError(false);
+    setIsInitialLoad(true);
+    setRetryCount((n) => n + 1);
+  };
+
   return {
     availableArcanists,
     trackedArcanists,
     isInitialLoad,
+    isLoadError,
+    retryLoad,
     pendingSaveCount,
     addArcanist,
     removeArcanist,

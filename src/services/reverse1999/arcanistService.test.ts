@@ -84,11 +84,10 @@ describe('arcanistService', () => {
       expect(result).toEqual([]);
     });
 
-    it('loadArcanistsFromDB returns empty array on error', async () => {
+    it('loadArcanistsFromDB throws on DB error', async () => {
       mockFrom.mockReturnValue(createBuilder({ data: null, error: { message: 'DB error' } }));
 
-      const result = await service.loadArcanistsFromDB('user-1');
-      expect(result).toEqual([]);
+      await expect(service.loadArcanistsFromDB('user-1')).rejects.toEqual({ message: 'DB error' });
     });
 
     it('loadArcanistsFromDB transforms DB rows into R1999TrackedArcanist objects', async () => {
@@ -146,12 +145,13 @@ describe('arcanistService', () => {
       expect(result).toBe('new-arcanist-db-id');
     });
 
-    it('insertArcanist returns null on DB error', async () => {
+    it('insertArcanist throws on DB error', async () => {
       const arcanistBuilder = createBuilder({ data: null, error: { message: 'Insert failed' } });
       mockFrom.mockReturnValue(arcanistBuilder);
 
-      const result = await service.insertArcanist('user-1', '37');
-      expect(result).toBeNull();
+      await expect(service.insertArcanist('user-1', '37')).rejects.toEqual({
+        message: 'Insert failed',
+      });
     });
 
     it('deleteArcanist calls delete on the correct table with correct id', async () => {

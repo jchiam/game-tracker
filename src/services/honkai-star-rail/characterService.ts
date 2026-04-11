@@ -25,7 +25,7 @@ export async function loadCharactersFromDB(userId: string): Promise<HsrTrackedCh
 
   if (error) {
     console.error('Error fetching data:', error);
-    return [];
+    throw error;
   }
 
   if (!dbData || dbData.length === 0) return [];
@@ -102,20 +102,27 @@ export async function insertCharacter(userId: string, charId: string): Promise<s
     .single();
   if (error) {
     console.error('DB Insert Failed:', error);
-    return null;
+    throw error;
   }
   return data?.id ?? null;
 }
 
 export async function deleteCharacter(dbId: string): Promise<void> {
   if (!DB_ENABLED) return;
-  await supabase.from('hsr_tracked_characters').delete().eq('id', dbId);
+  const { error } = await supabase.from('hsr_tracked_characters').delete().eq('id', dbId);
+  if (error) {
+    console.error('DB Delete Failed:', error);
+    throw error;
+  }
 }
 
 export async function updateCharacter(dbId: string, updates: Record<string, any>): Promise<void> {
   if (!DB_ENABLED) return;
   const { error } = await supabase.from('hsr_tracked_characters').update(updates).eq('id', dbId);
-  if (error) console.error('DB Update Failed:', error);
+  if (error) {
+    console.error('DB Update Failed:', error);
+    throw error;
+  }
 }
 
 export async function upsertRelic(
@@ -138,19 +145,23 @@ export async function upsertRelic(
     .select('id')
     .single();
 
-  if (relicRow && !relicErr) {
-    await supabase.from('hsr_relic_substats').delete().eq('relic_id', relicRow.id);
-    if (relicData.subStats.length > 0) {
-      await supabase.from('hsr_relic_substats').insert(
-        relicData.subStats.map((s) => ({
-          relic_id: relicRow.id,
-          stat_type: s.type,
-          stat_value: s.value,
-        })),
-      );
-    }
-  } else {
+  if (relicErr) {
     console.error('Relic Upsert Error:', relicErr);
+    throw relicErr;
+  }
+  await supabase.from('hsr_relic_substats').delete().eq('relic_id', relicRow.id);
+  if (relicData.subStats.length > 0) {
+    const { error: substatErr } = await supabase.from('hsr_relic_substats').insert(
+      relicData.subStats.map((s) => ({
+        relic_id: relicRow.id,
+        stat_type: s.type,
+        stat_value: s.value,
+      })),
+    );
+    if (substatErr) {
+      console.error('Relic Substat Insert Error:', substatErr);
+      throw substatErr;
+    }
   }
 }
 
@@ -195,10 +206,16 @@ export async function saveBuildPrefs(
 
   if (mainInserts.length > 0) {
     const { error } = await supabase.from('hsr_build_preference_main_stats').insert(mainInserts);
-    if (error) console.error('Error saving main stat prefs:', error);
+    if (error) {
+      console.error('Error saving main stat prefs:', error);
+      throw error;
+    }
   }
   if (subInserts.length > 0) {
     const { error } = await supabase.from('hsr_build_preference_sub_stats').insert(subInserts);
-    if (error) console.error('Error saving sub stat prefs:', error);
+    if (error) {
+      console.error('Error saving sub stat prefs:', error);
+      throw error;
+    }
   }
 }

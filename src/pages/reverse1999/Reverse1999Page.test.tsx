@@ -29,6 +29,8 @@ const defaultArcanistsHook = {
   availableArcanists: [],
   trackedArcanists: [],
   isInitialLoad: false,
+  isLoadError: false,
+  retryLoad: vi.fn(),
   pendingSaveCount: 0,
   addArcanist: vi.fn(),
   removeArcanist: vi.fn(),
@@ -74,6 +76,46 @@ describe('Reverse1999Page', () => {
       <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
     expect(screen.getByText(/loading database sync/i)).toBeInTheDocument();
+  });
+
+  it('shows load error state when isLoadError is true', () => {
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      isLoadError: true,
+    });
+    const session = createMockSession();
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(screen.getByText(/failed to load data/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+  });
+
+  it('disables the add arcanist button when isLoadError is true', () => {
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      isLoadError: true,
+    });
+    const session = createMockSession();
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(screen.getByTitle('Add Arcanist')).toBeDisabled();
+  });
+
+  it('calls retryLoad when Retry button is clicked', () => {
+    const retryLoad = vi.fn();
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      isLoadError: true,
+      retryLoad,
+    });
+    const session = createMockSession();
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+    expect(retryLoad).toHaveBeenCalledTimes(1);
   });
 
   it('shows empty state when no arcanists are tracked', () => {

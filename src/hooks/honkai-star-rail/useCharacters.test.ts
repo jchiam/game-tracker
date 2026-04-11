@@ -16,7 +16,7 @@ vi.mock('@/services/honkai-star-rail/characterService', () => ({
 }));
 
 vi.mock('@/hooks/usePendingSaves', () => ({
-  usePendingSaves: () => ({
+  usePendingSaves: (_delay?: number, _onFlushError?: unknown) => ({
     pendingSaveCount: 0,
     queueUpdate: vi.fn(
       (
@@ -162,6 +162,36 @@ describe('useCharacters', () => {
       expect(mockLoadCharactersFromDB).not.toHaveBeenCalled();
     });
 
+    it('sets isLoadError when DB fetch throws', async () => {
+      mockLoadCharactersFromDB.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      expect(result.current.isLoadError).toBe(true);
+      expect(result.current.trackedCharacters).toHaveLength(0);
+    });
+
+    it('clears isLoadError and reloads on retryLoad', async () => {
+      mockLoadCharactersFromDB
+        .mockRejectedValueOnce(new Error('DB error'))
+        .mockResolvedValueOnce([trackedChar('acheron', 'Acheron')]);
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+
+      await waitFor(() => expect(result.current.isLoadError).toBe(true));
+
+      act(() => {
+        result.current.retryLoad();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoadError).toBe(false);
+        expect(result.current.trackedCharacters).toHaveLength(1);
+      });
+    });
+
     it('exposes availableCharacters and availableRelicSets', async () => {
       const { result } = renderHook(() => useCharacters(mockSession, false));
       await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
@@ -259,6 +289,23 @@ describe('useCharacters', () => {
       );
       expect(mockInsertCharacter).not.toHaveBeenCalled();
     });
+
+    it('reverts optimistic add and shows error toast when insertCharacter throws', async () => {
+      mockInsertCharacter.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      await act(async () => {
+        await result.current.addCharacter(baseChar);
+      });
+
+      expect(result.current.trackedCharacters).toHaveLength(0);
+      expect(toastUtils.addToast).toHaveBeenCalledWith(
+        'Failed to add character. Please try again.',
+        'error',
+      );
+    });
   });
 
   describe('removeCharacter', () => {
@@ -278,6 +325,28 @@ describe('useCharacters', () => {
 
       expect(result.current.trackedCharacters).toHaveLength(0);
       expect(mockDeleteCharacter).toHaveBeenCalledWith('existing-db-id');
+    });
+
+    it('reverts optimistic remove and shows error toast when deleteCharacter throws', async () => {
+      mockLoadCharactersFromDB.mockResolvedValue([
+        trackedChar('acheron', 'Acheron', { dbId: 'existing-db-id' }),
+      ]);
+      mockDeleteCharacter.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      await act(async () => {
+        await result.current.removeCharacter('acheron', {
+          stopPropagation: vi.fn(),
+        } as any);
+      });
+
+      expect(result.current.trackedCharacters).toHaveLength(1);
+      expect(toastUtils.addToast).toHaveBeenCalledWith(
+        'Failed to remove character. Please try again.',
+        'error',
+      );
     });
   });
 

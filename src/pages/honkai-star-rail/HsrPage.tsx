@@ -7,6 +7,7 @@ import { RelicEditorModal } from './components/RelicEditorModal';
 import { AddCharacterModal } from './components/AddCharacterModal';
 import { PartiesTab } from './components/PartiesTab';
 import { AuthGate } from '@/components/AuthGate';
+import { LoadErrorState } from '@/components/LoadErrorState';
 import { SavingToast } from '@/components/SavingToast';
 import type { HsrTrackedCharacter } from '@/types';
 import type { Session } from '@supabase/supabase-js';
@@ -24,6 +25,8 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     availableRelicSets,
     trackedCharacters,
     isInitialLoad,
+    isLoadError,
+    retryLoad,
     pendingSaveCount,
     addCharacter,
     removeCharacter,
@@ -120,6 +123,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
               className="add-character-btn"
               onClick={() => setIsModalOpen(true)}
               title="Add Character"
+              disabled={isLoadError}
             >
               +
             </button>
@@ -137,6 +141,8 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
             <div className="empty-state">
               <p>Loading database sync...</p>
             </div>
+          ) : isLoadError ? (
+            <LoadErrorState onRetry={retryLoad} />
           ) : !session ? (
             <AuthGate onSignIn={onSignIn} />
           ) : trackedCharacters.length === 0 ? (

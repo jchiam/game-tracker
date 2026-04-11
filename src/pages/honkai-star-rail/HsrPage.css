@@ -180,6 +180,21 @@
   font-size: 1.1rem;
 }
 
+.retry-button {
+  margin-top: 1rem;
+  padding: 0.5rem 1.5rem;
+  background: var(--color-accent, #6c63ff);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.retry-button:hover {
+  opacity: 0.85;
+}
+
 .empty-state.auth-gate {
   display: flex;
   flex-direction: column;

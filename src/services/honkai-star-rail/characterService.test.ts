@@ -124,11 +124,10 @@ describe('characterService', () => {
       expect(result).toEqual([]);
     });
 
-    it('loadCharactersFromDB returns empty array on error', async () => {
+    it('loadCharactersFromDB throws on DB error', async () => {
       mockFrom.mockReturnValue(createBuilder({ data: null, error: { message: 'DB error' } }));
 
-      const result = await service.loadCharactersFromDB('user-1');
-      expect(result).toEqual([]);
+      await expect(service.loadCharactersFromDB('user-1')).rejects.toEqual({ message: 'DB error' });
     });
 
     it('loadCharactersFromDB transforms DB rows into HsrTrackedCharacter objects', async () => {
@@ -226,12 +225,13 @@ describe('characterService', () => {
       expect(result).toBe('new-char-db-id');
     });
 
-    it('insertCharacter returns null on DB error', async () => {
+    it('insertCharacter throws on DB error', async () => {
       const charBuilder = createBuilder({ data: null, error: { message: 'Insert failed' } });
       mockFrom.mockReturnValue(charBuilder);
 
-      const result = await service.insertCharacter('user-1', 'acheron');
-      expect(result).toBeNull();
+      await expect(service.insertCharacter('user-1', 'acheron')).rejects.toEqual({
+        message: 'Insert failed',
+      });
     });
 
     it('deleteCharacter calls delete on the correct table and id', async () => {
@@ -318,7 +318,7 @@ describe('characterService', () => {
       expect(substatBuilder.insert).not.toHaveBeenCalled();
     });
 
-    it('upsertRelic logs error and skips substats when relic upsert fails', async () => {
+    it('upsertRelic throws and skips substats when relic upsert fails', async () => {
       const relicBuilder = createBuilder({ data: null, error: { message: 'Upsert failed' } });
       const substatBuilder = createBuilder({ data: null, error: null });
 
@@ -327,16 +327,10 @@ describe('characterService', () => {
         return substatBuilder;
       });
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      await service.upsertRelic('db-uuid-1', 'head', {
-        setId: '101',
-        mainStat: 'HP',
-        subStats: [],
-      });
-
-      expect(consoleSpy).toHaveBeenCalledWith('Relic Upsert Error:', expect.any(Object));
+      await expect(
+        service.upsertRelic('db-uuid-1', 'head', { setId: '101', mainStat: 'HP', subStats: [] }),
+      ).rejects.toEqual({ message: 'Upsert failed' });
       expect(substatBuilder.delete).not.toHaveBeenCalled();
-      consoleSpy.mockRestore();
     });
 
     it('deleteRelic calls delete on hsr_equipped_relics with correct match', async () => {
@@ -353,15 +347,13 @@ describe('characterService', () => {
       });
     });
 
-    it('updateCharacter logs error when DB update fails', async () => {
+    it('updateCharacter throws when DB update fails', async () => {
       const builder = createBuilder({ data: null, error: { message: 'Update failed' } });
       mockFrom.mockReturnValue(builder);
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      await service.updateCharacter('db-uuid-1', { level: 80 });
-
-      expect(consoleSpy).toHaveBeenCalledWith('DB Update Failed:', expect.any(Object));
-      consoleSpy.mockRestore();
+      await expect(service.updateCharacter('db-uuid-1', { level: 80 })).rejects.toEqual({
+        message: 'Update failed',
+      });
     });
 
     it('loadCharactersFromDB maps build_preference_main_stats and sub_stats correctly', async () => {

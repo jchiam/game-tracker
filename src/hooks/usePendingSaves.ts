@@ -11,7 +11,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
  * pendingSaveCount is >0 while any write is in flight, and the hook
  * installs a beforeunload guard to warn the user before leaving.
  */
-export function usePendingSaves(delayMs = 1000) {
+export function usePendingSaves(delayMs = 1000, onFlushError?: (e: unknown) => void) {
   const [pendingSaveCount, setPendingSaveCount] = useState(0);
   const pendingPayloads = useRef<Record<string, Record<string, any>>>({});
   const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
@@ -40,8 +40,14 @@ export function usePendingSaves(delayMs = 1000) {
         const payload = pendingPayloads.current[key];
         delete pendingPayloads.current[key];
         delete timeouts.current[key];
-        await flushFn(payload);
-        setPendingSaveCount((n) => n - 1);
+        try {
+          await flushFn(payload);
+        } catch (e) {
+          console.error(e);
+          onFlushError?.(e);
+        } finally {
+          setPendingSaveCount((n) => n - 1);
+        }
       }, delayMs);
     },
     [delayMs],
@@ -57,8 +63,14 @@ export function usePendingSaves(delayMs = 1000) {
       const captured = action;
       timeouts.current[key] = setTimeout(async () => {
         delete timeouts.current[key];
-        await captured();
-        setPendingSaveCount((n) => n - 1);
+        try {
+          await captured();
+        } catch (e) {
+          console.error(e);
+          onFlushError?.(e);
+        } finally {
+          setPendingSaveCount((n) => n - 1);
+        }
       }, delayMs);
     },
     [delayMs],

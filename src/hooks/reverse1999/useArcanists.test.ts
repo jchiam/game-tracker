@@ -15,9 +15,11 @@ vi.mock('@/services/reverse1999/arcanistService', () => ({
 
 // Mock usePendingSaves to execute actions immediately (no debounce in tests)
 vi.mock('@/hooks/usePendingSaves', () => ({
-  usePendingSaves: () => ({
+  usePendingSaves: (_delay?: number, _onFlushError?: unknown) => ({
     pendingSaveCount: 0,
-    queueUpdate: vi.fn((_key, updates, flushFn) => flushFn(updates)),
+    queueUpdate: vi.fn((_key: unknown, updates: unknown, flushFn: (p: unknown) => unknown) =>
+      flushFn(updates),
+    ),
     queueAction: vi.fn(),
   }),
 }));
@@ -150,6 +152,40 @@ describe('useArcanists', () => {
 
       expect(mockLoadArcanistsFromDB).not.toHaveBeenCalled();
     });
+
+    it('sets isLoadError when DB fetch throws', async () => {
+      mockLoadArcanistsFromDB.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      expect(result.current.isLoadError).toBe(true);
+      expect(result.current.trackedArcanists).toHaveLength(0);
+    });
+
+    it('clears isLoadError and reloads on retryLoad', async () => {
+      mockLoadArcanistsFromDB
+        .mockRejectedValueOnce(new Error('DB error'))
+        .mockResolvedValueOnce([trackedArcanist('37', '37')]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isLoadError).toBe(true);
+      });
+
+      act(() => {
+        result.current.retryLoad();
+      });
+
+      await waitFor(() => {
+        expect(result.current.isLoadError).toBe(false);
+        expect(result.current.trackedArcanists).toHaveLength(1);
+      });
+    });
   });
 
   describe('addArcanist', () => {
@@ -257,6 +293,26 @@ describe('useArcanists', () => {
         'warning',
       );
     });
+
+    it('reverts optimistic add and shows error toast when insertArcanist throws', async () => {
+      mockInsertArcanist.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        await result.current.addArcanist(mockArcanist);
+      });
+
+      expect(result.current.trackedArcanists).toHaveLength(0);
+      expect(toastUtils.addToast).toHaveBeenCalledWith(
+        'Failed to add arcanist. Please try again.',
+        'error',
+      );
+    });
   });
 
   describe('removeArcanist', () => {
@@ -279,6 +335,32 @@ describe('useArcanists', () => {
 
       expect(result.current.trackedArcanists).toHaveLength(0);
       expect(mockDeleteArcanist).toHaveBeenCalledWith('existing-db-id');
+    });
+
+    it('reverts optimistic remove and shows error toast when deleteArcanist throws', async () => {
+      vi.spyOn(toastUtils, 'addToast').mockImplementation(() => 'test-id');
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'existing-db-id' }),
+      ]);
+      mockDeleteArcanist.mockRejectedValue(new Error('DB error'));
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        await result.current.removeArcanist('37', {
+          stopPropagation: vi.fn(),
+        } as any);
+      });
+
+      expect(result.current.trackedArcanists).toHaveLength(1);
+      expect(toastUtils.addToast).toHaveBeenCalledWith(
+        'Failed to remove arcanist. Please try again.',
+        'error',
+      );
     });
   });
 

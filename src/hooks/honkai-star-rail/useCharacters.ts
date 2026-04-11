@@ -25,6 +25,8 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   const [availableRelicSets] = useState<RelicSet[]>(ALL_RELIC_SETS);
   const [trackedCharacters, setTrackedCharacters] = useState<HsrTrackedCharacter[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [isLoadError, setIsLoadError] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
 
   // Track in-flight inserts to prevent race condition on rapid adds
   const pendingInserts = useRef<Set<string>>(new Set());
@@ -32,7 +34,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   const trackedCharactersRef = useRef<HsrTrackedCharacter[]>([]);
   trackedCharactersRef.current = trackedCharacters;
 
-  const { pendingSaveCount, queueUpdate, queueAction } = usePendingSaves();
+  const { pendingSaveCount, queueUpdate, queueAction } = usePendingSaves(1000, () =>
+    addToast('Failed to save changes. Please try again.', 'error'),
+  );
 
   // Load from DB on session change
   useEffect(() => {
@@ -46,9 +50,13 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     (async () => {
       try {
         const roster = await loadCharactersFromDB(session.user.id);
-        if (isMounted) setTrackedCharacters(roster);
+        if (isMounted) {
+          setTrackedCharacters(roster);
+          setIsLoadError(false);
+        }
       } catch (e) {
         console.error(e);
+        if (isMounted) setIsLoadError(true);
       } finally {
         if (isMounted) setIsInitialLoad(false);
       }
@@ -57,7 +65,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id, isAuthLoading]);
+  }, [session?.user?.id, isAuthLoading, retryCount]);
 
   const addCharacter = async (char: Character) => {
     if (!session) {
@@ -78,17 +86,33 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] },
     };
     setTrackedCharacters((prev) => [...prev, newChar]);
-    const dbId = await insertCharacter(session.user.id, char.id);
-    pendingInserts.current.delete(char.id);
-    if (dbId)
-      setTrackedCharacters((prev) => prev.map((c) => (c.id === char.id ? { ...c, dbId } : c)));
+    try {
+      const dbId = await insertCharacter(session.user.id, char.id);
+      if (dbId)
+        setTrackedCharacters((prev) => prev.map((c) => (c.id === char.id ? { ...c, dbId } : c)));
+    } catch (e) {
+      console.error(e);
+      setTrackedCharacters((prev) => prev.filter((c) => c.id !== char.id));
+      addToast('Failed to add character. Please try again.', 'error');
+    } finally {
+      pendingInserts.current.delete(char.id);
+    }
   };
 
   const removeCharacter = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
     const charToRemove = trackedCharactersRef.current.find((c) => c.id === id);
+    const snapshot = trackedCharactersRef.current;
     setTrackedCharacters((prev) => prev.filter((c) => c.id !== id));
-    if (charToRemove?.dbId) await deleteCharacter(charToRemove.dbId);
+    if (charToRemove?.dbId) {
+      try {
+        await deleteCharacter(charToRemove.dbId);
+      } catch (err) {
+        console.error(err);
+        setTrackedCharacters(snapshot);
+        addToast('Failed to remove character. Please try again.', 'error');
+      }
+    }
   };
 
   const updateCharacterLevel = (id: string, level: number) => {
@@ -184,11 +208,19 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     [trackedCharacters],
   );
 
+  const retryLoad = () => {
+    setIsLoadError(false);
+    setIsInitialLoad(true);
+    setRetryCount((n) => n + 1);
+  };
+
   return {
     availableCharacters,
     availableRelicSets,
     trackedCharacters,
     isInitialLoad,
+    isLoadError,
+    retryLoad,
     pendingSaveCount,
     addCharacter,
     removeCharacter,

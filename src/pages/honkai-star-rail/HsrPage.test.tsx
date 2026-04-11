@@ -52,6 +52,8 @@ const defaultCharactersHook = {
   availableRelicSets: [],
   trackedCharacters: [],
   isInitialLoad: false,
+  isLoadError: false,
+  retryLoad: vi.fn(),
   pendingSaveCount: 0,
   addCharacter: vi.fn(),
   removeCharacter: vi.fn(),
@@ -96,6 +98,40 @@ describe('HsrPage', () => {
     const session = createMockSession();
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByText(/loading database sync/i)).toBeInTheDocument();
+  });
+
+  it('shows load error state when isLoadError is true', () => {
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      isLoadError: true,
+    });
+    const session = createMockSession();
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(screen.getByText(/failed to load data/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
+  });
+
+  it('disables the add character button when isLoadError is true', () => {
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      isLoadError: true,
+    });
+    const session = createMockSession();
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(screen.getByTitle('Add Character')).toBeDisabled();
+  });
+
+  it('calls retryLoad when Retry button is clicked', () => {
+    const retryLoad = vi.fn();
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      isLoadError: true,
+      retryLoad,
+    });
+    const session = createMockSession();
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+    expect(retryLoad).toHaveBeenCalledTimes(1);
   });
 
   it('shows empty state when no characters are tracked', () => {

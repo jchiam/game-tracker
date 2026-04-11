@@ -3,6 +3,7 @@ import { useArcanists } from '@/hooks/reverse1999/useArcanists';
 import { ArcanistCard } from './components/ArcanistCard';
 import { AddArcanistModal } from './components/AddArcanistModal';
 import { AuthGate } from '@/components/AuthGate';
+import { LoadErrorState } from '@/components/LoadErrorState';
 import { SavingToast } from '@/components/SavingToast';
 import type { Session } from '@supabase/supabase-js';
 import './Reverse1999Page.css';
@@ -18,6 +19,8 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     availableArcanists,
     trackedArcanists,
     isInitialLoad,
+    isLoadError,
+    retryLoad,
     pendingSaveCount,
     addArcanist,
     removeArcanist,
@@ -85,6 +88,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
               className="add-arcanist-btn"
               onClick={() => setIsModalOpen(true)}
               title="Add Arcanist"
+              disabled={isLoadError}
             >
               +
             </button>
@@ -101,6 +105,8 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
           <div className="empty-state">
             <p>Loading database sync...</p>
           </div>
+        ) : isLoadError ? (
+          <LoadErrorState onRetry={retryLoad} />
         ) : !session ? (
           <AuthGate onSignIn={onSignIn} />
         ) : trackedArcanists.length === 0 ? (

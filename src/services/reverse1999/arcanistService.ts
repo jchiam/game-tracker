@@ -14,7 +14,7 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
 
   if (error) {
     console.error('Error fetching arcanists:', error);
-    return [];
+    throw error;
   }
 
   if (!dbData || dbData.length === 0) return [];
@@ -53,18 +53,25 @@ export async function insertArcanist(userId: string, arcanistId: string): Promis
     .single();
   if (error) {
     console.error('DB Insert Failed:', error);
-    return null;
+    throw error;
   }
   return data?.id ?? null;
 }
 
 export async function deleteArcanist(dbId: string): Promise<void> {
   if (!DB_ENABLED) return;
-  await supabase.from('r1999_tracked_arcanists').delete().eq('id', dbId);
+  const { error } = await supabase.from('r1999_tracked_arcanists').delete().eq('id', dbId);
+  if (error) {
+    console.error('DB Delete Failed:', error);
+    throw error;
+  }
 }
 
 export async function updateArcanist(dbId: string, updates: Record<string, any>): Promise<void> {
   if (!DB_ENABLED) return;
   const { error } = await supabase.from('r1999_tracked_arcanists').update(updates).eq('id', dbId);
-  if (error) console.error('DB Update Failed:', error);
+  if (error) {
+    console.error('DB Update Failed:', error);
+    throw error;
+  }
 }

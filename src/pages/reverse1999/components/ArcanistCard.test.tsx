@@ -100,7 +100,7 @@ describe('ArcanistCard', () => {
     render(
       <ArcanistCard arcanist={makeArcanist()} {...defaultProps} onUpdateLevel={onUpdateLevel} />,
     );
-    fireEvent.change(screen.getByRole('slider'), { target: { value: '60' } });
+    fireEvent.change(screen.getByDisplayValue('40'), { target: { value: '60' } });
     expect(onUpdateLevel).toHaveBeenCalledWith('arc-1', 60);
   });
 
