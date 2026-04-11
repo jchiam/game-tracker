@@ -1,4 +1,4 @@
-import '@testing-library/jest-dom/vitest';
+import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 
 // Suppress console.warn and console.error globally — these fire from expected
