@@ -95,7 +95,6 @@ describe('arcanistService', () => {
         id: 'db-uuid-1',
         arcanist_id: '37', // must match ALL_ARCANISTS
         level: 40,
-        insight_level: 2,
         is_favorited: true,
       };
 
@@ -107,7 +106,6 @@ describe('arcanistService', () => {
       expect(result[0].id).toBe('37');
       expect(result[0].dbId).toBe('db-uuid-1');
       expect(result[0].level).toBe(40);
-      expect(result[0].insightLevel).toBe(2);
       expect(result[0].isFavorited).toBe(true);
       expect(result[0].name).toBe('37');
     });
@@ -118,7 +116,6 @@ describe('arcanistService', () => {
           id: 'db-uuid-1',
           arcanist_id: 'unknown-arcanist',
           level: 1,
-          insight_level: 0,
           is_favorited: false,
         },
       ];
@@ -169,10 +166,10 @@ describe('arcanistService', () => {
       const builder = createBuilder({ data: null, error: null });
       mockFrom.mockReturnValue(builder);
 
-      await service.updateArcanist('db-uuid-1', { level: 40, insight_level: 2 });
+      await service.updateArcanist('db-uuid-1', { level: 40, euphoria_stage: 2 });
 
       expect(mockFrom).toHaveBeenCalledWith('r1999_tracked_arcanists');
-      expect(builder.update).toHaveBeenCalledWith({ level: 40, insight_level: 2 });
+      expect(builder.update).toHaveBeenCalledWith({ level: 40, euphoria_stage: 2 });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });
   });

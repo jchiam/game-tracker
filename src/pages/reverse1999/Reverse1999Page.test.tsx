@@ -19,11 +19,12 @@ function makeArcanist(id: string, name: string): R1999TrackedArcanist {
     imageUrl: `/assets/${id}.webp`,
     isFavorited: false,
     level: 40,
-    insightLevel: 2,
     portraitLevel: 0,
     resonanceLevel: 0,
+    euphoriaStage: 0,
     psychubeId: null,
-    psychubeLevel: 0,
+    psychubeLevel: 1,
+    psychubeAmplification: 0,
   };
 }
 
@@ -37,10 +38,11 @@ const defaultArcanistsHook = {
   addArcanist: vi.fn(),
   removeArcanist: vi.fn(),
   updateArcanistLevel: vi.fn(),
-  updateInsightLevel: vi.fn(),
   updatePortraitLevel: vi.fn(),
   updateResonanceLevel: vi.fn(),
+  updateEuphoriaStage: vi.fn(),
   updatePsychube: vi.fn(),
+  updatePsychubeAmplification: vi.fn(),
   toggleFavoriteArcanist: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };

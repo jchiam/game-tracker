@@ -14,11 +14,12 @@ function makeArcanist(overrides: Partial<R1999TrackedArcanist> = {}): R1999Track
     dbId: 'db-1',
     isFavorited: false,
     level: 40,
-    insightLevel: 2,
     portraitLevel: 0,
     resonanceLevel: 0,
+    euphoriaStage: 0,
     psychubeId: null,
-    psychubeLevel: 0,
+    psychubeLevel: 1,
+    psychubeAmplification: 0,
     ...overrides,
   };
 }
@@ -26,10 +27,11 @@ function makeArcanist(overrides: Partial<R1999TrackedArcanist> = {}): R1999Track
 const defaultProps = {
   onRemove: vi.fn(),
   onUpdateLevel: vi.fn(),
-  onUpdateInsight: vi.fn(),
   onUpdatePortrait: vi.fn(),
   onUpdateResonance: vi.fn(),
+  onUpdateEuphoriaStage: vi.fn(),
   onUpdatePsychube: vi.fn(),
+  onUpdatePsychubeAmplification: vi.fn(),
   onToggleFavorite: vi.fn(),
 };
 
@@ -52,20 +54,6 @@ describe('ArcanistCard', () => {
   it('renders damage type badge', () => {
     render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
     expect(screen.getByText('Mental')).toBeInTheDocument();
-  });
-
-  it('renders all insight level buttons', () => {
-    render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
-    expect(screen.getByText('I0')).toBeInTheDocument();
-    expect(screen.getByText('I1')).toBeInTheDocument();
-    expect(screen.getByText('I2')).toBeInTheDocument();
-    expect(screen.getByText('I3')).toBeInTheDocument();
-  });
-
-  it('marks the current insight level as active', () => {
-    render(<ArcanistCard arcanist={makeArcanist({ insightLevel: 2 })} {...defaultProps} />);
-    expect(screen.getByText('I2')).toHaveClass('active');
-    expect(screen.getByText('I1')).not.toHaveClass('active');
   });
 
   it('shows unfavorite star when favorited', () => {
@@ -107,17 +95,29 @@ describe('ArcanistCard', () => {
     expect(onUpdateLevel).toHaveBeenCalledWith('arc-1', 60);
   });
 
-  it('calls onUpdateInsight when an insight button is clicked', () => {
-    const onUpdateInsight = vi.fn();
+  it('renders all euphoria stage buttons', () => {
+    render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
+    expect(screen.getByText('E0')).toBeInTheDocument();
+    expect(screen.getByText('E4')).toBeInTheDocument();
+  });
+
+  it('marks the current euphoria stage as active', () => {
+    render(<ArcanistCard arcanist={makeArcanist({ euphoriaStage: 2 })} {...defaultProps} />);
+    expect(screen.getByText('E2')).toHaveClass('active');
+    expect(screen.getByText('E1')).not.toHaveClass('active');
+  });
+
+  it('calls onUpdateEuphoriaStage when a euphoria button is clicked', () => {
+    const onUpdateEuphoriaStage = vi.fn();
     render(
       <ArcanistCard
         arcanist={makeArcanist()}
         {...defaultProps}
-        onUpdateInsight={onUpdateInsight}
+        onUpdateEuphoriaStage={onUpdateEuphoriaStage}
       />,
     );
-    fireEvent.click(screen.getByText('I3'));
-    expect(onUpdateInsight).toHaveBeenCalledWith('arc-1', 3);
+    fireEvent.click(screen.getByText('E3'));
+    expect(onUpdateEuphoriaStage).toHaveBeenCalledWith('arc-1', 3);
   });
 
   // --- Image loading states ---

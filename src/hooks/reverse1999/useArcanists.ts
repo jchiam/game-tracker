@@ -72,11 +72,12 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       ...arcanist,
       isFavorited: false,
       level: 1,
-      insightLevel: 0,
       portraitLevel: 0,
       resonanceLevel: 0,
+      euphoriaStage: 0,
       psychubeId: null,
-      psychubeLevel: 0,
+      psychubeLevel: 1,
+      psychubeAmplification: 0,
     };
     setTrackedArcanists((prev) => [...prev, newArcanist]);
     try {
@@ -116,15 +117,6 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       queueUpdate(arcanist.dbId, { level: validLevel }, (p) => updateArcanist(arcanist.dbId!, p));
   };
 
-  const updateInsightLevel = (id: string, insightLevel: 0 | 1 | 2 | 3) => {
-    setTrackedArcanists((prev) => prev.map((a) => (a.id === id ? { ...a, insightLevel } : a)));
-    const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
-    if (arcanist?.dbId)
-      queueUpdate(arcanist.dbId, { insight_level: insightLevel }, (p) =>
-        updateArcanist(arcanist.dbId!, p),
-      );
-  };
-
   const updatePortraitLevel = (id: string, portraitLevel: number) => {
     setTrackedArcanists((prev) => prev.map((a) => (a.id === id ? { ...a, portraitLevel } : a)));
     const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
@@ -156,6 +148,30 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
         arcanist.dbId,
         { psychube_id: psychubeId, psychube_level: psychubeLevel },
         (p) => updateArcanist(arcanist.dbId!, p),
+      );
+  };
+
+  const updateEuphoriaStage = (id: string, stage: number) => {
+    const validStage = Math.min(4, Math.max(0, stage));
+    setTrackedArcanists((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, euphoriaStage: validStage } : a)),
+    );
+    const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
+    if (arcanist?.dbId)
+      queueUpdate(arcanist.dbId, { euphoria_stage: validStage }, (p) =>
+        updateArcanist(arcanist.dbId!, p),
+      );
+  };
+
+  const updatePsychubeAmplification = (id: string, level: number) => {
+    const validLevel = Math.min(5, Math.max(0, level));
+    setTrackedArcanists((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, psychubeAmplification: validLevel } : a)),
+    );
+    const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
+    if (arcanist?.dbId)
+      queueUpdate(arcanist.dbId, { psychube_amplification: validLevel }, (p) =>
+        updateArcanist(arcanist.dbId!, p),
       );
   };
 
@@ -207,10 +223,11 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     addArcanist,
     removeArcanist,
     updateArcanistLevel,
-    updateInsightLevel,
     updatePortraitLevel,
     updateResonanceLevel,
+    updateEuphoriaStage,
     updatePsychube,
+    updatePsychubeAmplification,
     toggleFavoriteArcanist,
     getFilteredRoster,
   };

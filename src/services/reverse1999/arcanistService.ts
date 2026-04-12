@@ -9,7 +9,7 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
 
   const { data: dbData, error } = await supabase
     .from('r1999_tracked_arcanists')
-    .select('id, arcanist_id, level, insight_level, portrait_level, resonance_level, psychube_id, psychube_level, is_favorited')
+    .select('id, arcanist_id, level, portrait_level, resonance_level, is_favorited, euphoria_stage, psychube_id, psychube_level, psychube_amplification')
     .eq('profile_id', userId);
 
   if (error) {
@@ -28,11 +28,12 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
         dbId: row.id,
         isFavorited: !!row.is_favorited,
         level: row.level,
-        insightLevel: row.insight_level as 0 | 1 | 2 | 3,
         portraitLevel: row.portrait_level ?? 0,
         resonanceLevel: row.resonance_level ?? 0,
+        euphoriaStage: row.euphoria_stage ?? 0,
         psychubeId: row.psychube_id ?? null,
-        psychubeLevel: row.psychube_level ?? 0,
+        psychubeLevel: row.psychube_level ?? 1,
+        psychubeAmplification: row.psychube_amplification ?? 0,
       };
     })
     .filter(Boolean) as R1999TrackedArcanist[];
@@ -47,11 +48,12 @@ export async function insertArcanist(userId: string, arcanistId: string): Promis
       profile_id: userId,
       arcanist_id: arcanistId,
       level: 1,
-      insight_level: 0,
       portrait_level: 0,
       resonance_level: 0,
+      euphoria_stage: 0,
       psychube_id: null,
-      psychube_level: 0,
+      psychube_level: 1,
+      psychube_amplification: 0,
     })
     .select('id')
     .single();

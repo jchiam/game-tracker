@@ -8,10 +8,11 @@ interface ArcanistCardProps {
   arcanist: R1999TrackedArcanist;
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
-  onUpdateInsight: (id: string, insightLevel: 0 | 1 | 2 | 3) => void;
   onUpdatePortrait: (id: string, portraitLevel: number) => void;
   onUpdateResonance: (id: string, resonanceLevel: number) => void;
+  onUpdateEuphoriaStage: (id: string, stage: number) => void;
   onUpdatePsychube: (id: string, psychubeId: number | null, psychubeLevel: number) => void;
+  onUpdatePsychubeAmplification: (id: string, level: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
 }
 
@@ -19,10 +20,11 @@ export function ArcanistCard({
   arcanist,
   onRemove,
   onUpdateLevel,
-  onUpdateInsight,
   onUpdatePortrait,
   onUpdateResonance,
+  onUpdateEuphoriaStage,
   onUpdatePsychube,
+  onUpdatePsychubeAmplification,
   onToggleFavorite,
 }: ArcanistCardProps) {
   const [imgLoading, setImgLoading] = useState(true);
@@ -108,21 +110,6 @@ export function ArcanistCard({
         </div>
 
         <div className="progress-section">
-          <div className="section-header">Insight Level</div>
-          <div className="insight-row">
-            {([0, 1, 2, 3] as const).map((level) => (
-              <button
-                key={level}
-                className={`insight-btn ${arcanist.insightLevel === level ? 'active' : ''}`}
-                onClick={() => onUpdateInsight(arcanist.id!, level)}
-              >
-                I{level}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="progress-section">
           <div className="section-header">
             <span>Portrait Level</span>
             <span className="section-value">{arcanist.portraitLevel} / 5</span>
@@ -160,9 +147,24 @@ export function ArcanistCard({
         </div>
 
         <div className="progress-section">
+          <div className="section-header">Euphoria</div>
+          <div className="euphoria-row">
+            {([0, 1, 2, 3, 4] as const).map((stage) => (
+              <button
+                key={stage}
+                className={`euphoria-btn ${arcanist.euphoriaStage === stage ? 'active' : ''}`}
+                onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
+              >
+                E{stage}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="progress-section">
           <div className="section-header">
             <span>Psychube</span>
-            <span className="section-value">{arcanist.psychubeLevel} / 30</span>
+            <span className="section-value">{arcanist.psychubeLevel} / 80</span>
           </div>
           <select
             className="psychube-select"
@@ -184,8 +186,8 @@ export function ArcanistCard({
           </select>
           <input
             type="range"
-            min="0"
-            max="30"
+            min="1"
+            max="80"
             value={arcanist.psychubeLevel}
             onChange={(e) =>
               onUpdatePsychube(
@@ -196,9 +198,22 @@ export function ArcanistCard({
             }
             className="psychube-slider"
             style={{
-              background: `linear-gradient(to right, var(--color-primary) ${(arcanist.psychubeLevel / 30) * 100}%, rgba(255,255,255,0.1) ${(arcanist.psychubeLevel / 30) * 100}%)`,
+              background: `linear-gradient(to right, var(--color-primary) ${((arcanist.psychubeLevel - 1) / 79) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 79) * 100}%)`,
             }}
           />
+          <div className="amplification-row">
+            <span className="section-sublabel">Amplify</span>
+            {([0, 1, 2, 3, 4, 5] as const).map((lvl) => (
+              <button
+                key={lvl}
+                className={`amplify-btn ${lvl === 0 ? 'amplify-reset' : ''} ${arcanist.psychubeAmplification === lvl ? 'active' : ''}`}
+                onClick={() => onUpdatePsychubeAmplification(arcanist.id!, lvl)}
+                title={lvl === 0 ? 'Clear amplification' : `A${lvl}`}
+              >
+                {lvl === 0 ? '—' : `A${lvl}`}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

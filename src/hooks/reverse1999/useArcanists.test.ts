@@ -95,11 +95,12 @@ function trackedArcanist(
     dbId: 'db-uuid',
     isFavorited: false,
     level: 1,
-    insightLevel: 0,
     portraitLevel: 0,
     resonanceLevel: 0,
+    euphoriaStage: 0,
     psychubeId: null,
-    psychubeLevel: 0,
+    psychubeLevel: 1,
+    psychubeAmplification: 0,
     ...overrides,
   };
 }
@@ -117,7 +118,7 @@ describe('useArcanists', () => {
   describe('initial load', () => {
     it('loads arcanists from DB when session is present', async () => {
       mockLoadArcanistsFromDB.mockResolvedValue([
-        trackedArcanist('37', '37', { level: 30, insightLevel: 2, isFavorited: true }),
+        trackedArcanist('37', '37', { level: 30, isFavorited: true }),
       ]);
 
       const { result } = renderHook(() => useArcanists(mockSession, false));
@@ -130,7 +131,6 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists).toHaveLength(1);
       expect(result.current.trackedArcanists[0].name).toBe('37');
       expect(result.current.trackedArcanists[0].level).toBe(30);
-      expect(result.current.trackedArcanists[0].insightLevel).toBe(2);
       expect(result.current.trackedArcanists[0].isFavorited).toBe(true);
     });
 
@@ -210,11 +210,12 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists).toHaveLength(1);
       expect(result.current.trackedArcanists[0].id).toBe('37');
       expect(result.current.trackedArcanists[0].level).toBe(1);
-      expect(result.current.trackedArcanists[0].insightLevel).toBe(0);
       expect(result.current.trackedArcanists[0].portraitLevel).toBe(0);
       expect(result.current.trackedArcanists[0].resonanceLevel).toBe(0);
       expect(result.current.trackedArcanists[0].psychubeId).toBeNull();
-      expect(result.current.trackedArcanists[0].psychubeLevel).toBe(0);
+      expect(result.current.trackedArcanists[0].psychubeLevel).toBe(1);
+      expect(result.current.trackedArcanists[0].euphoriaStage).toBe(0);
+      expect(result.current.trackedArcanists[0].psychubeAmplification).toBe(0);
       expect(mockInsertArcanist).toHaveBeenCalledWith('test-user-123', '37');
     });
 
@@ -415,28 +416,6 @@ describe('useArcanists', () => {
     });
   });
 
-  describe('updateInsightLevel', () => {
-    it('updates insight level in local state and queues DB update', async () => {
-      mockLoadArcanistsFromDB.mockResolvedValue([
-        trackedArcanist('37', '37', { dbId: 'existing-db-id', insightLevel: 0 }),
-      ]);
-
-      const { result } = renderHook(() => useArcanists(mockSession, false));
-
-      await waitFor(() => {
-        expect(result.current.isInitialLoad).toBe(false);
-      });
-
-      await act(async () => {
-        result.current.updateInsightLevel('37', 2);
-      });
-
-      expect(result.current.trackedArcanists[0].insightLevel).toBe(2);
-      expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
-        insight_level: 2,
-      });
-    });
-  });
 
   describe('updatePortraitLevel', () => {
     it('updates portrait level in local state and queues DB update', async () => {

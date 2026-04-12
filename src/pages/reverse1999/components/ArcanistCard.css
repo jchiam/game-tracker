@@ -295,45 +295,6 @@
   transform: scale(1.2);
 }
 
-/* Insight Levels */
-.insight-row {
-  display: flex;
-  gap: var(--spacing-sm);
-}
-
-.insight-btn {
-  flex: 1;
-  padding: 6px;
-  font-size: 0.8rem;
-  font-weight: 600;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--color-border);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  min-width: unset;
-  text-align: center;
-}
-
-.insight-btn::before {
-  display: none;
-}
-
-.insight-btn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  transform: none;
-  box-shadow: none;
-}
-
-.insight-btn.active {
-  background: rgba(212, 175, 55, 0.15);
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  box-shadow: 0 0 8px var(--color-primary-glow) inset;
-}
-
 /* Portrait Levels */
 .portrait-row {
   display: flex;
@@ -382,6 +343,45 @@
 .portrait-btn.portrait-reset:hover {
   opacity: 1;
   border-color: var(--color-text-secondary);
+}
+
+/* Euphoria */
+.euphoria-row {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.euphoria-btn {
+  flex: 1;
+  padding: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: unset;
+  text-align: center;
+}
+
+.euphoria-btn::before {
+  display: none;
+}
+
+.euphoria-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.euphoria-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary-glow) inset;
 }
 
 /* Resonance Level */
@@ -467,6 +467,68 @@
 
 .psychube-slider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
+}
+
+/* Psychube Amplification */
+.amplification-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-top: 4px;
+}
+
+.section-sublabel {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.amplify-btn {
+  flex: 1;
+  padding: 5px 4px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: unset;
+  text-align: center;
+}
+
+.amplify-btn::before {
+  display: none;
+}
+
+.amplify-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.amplify-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  box-shadow: 0 0 8px var(--color-primary-glow) inset;
+}
+
+.amplify-btn.amplify-reset {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.amplify-btn.amplify-reset:hover {
+  opacity: 1;
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-secondary);
 }
 
 /* Badges */
