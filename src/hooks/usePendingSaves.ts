@@ -15,6 +15,10 @@ export function usePendingSaves(delayMs = 1000, onFlushError?: (e: unknown) => v
   const [pendingSaveCount, setPendingSaveCount] = useState(0);
   const pendingPayloads = useRef<Record<string, Record<string, any>>>({});
   const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const onFlushErrorRef = useRef(onFlushError);
+  useEffect(() => {
+    onFlushErrorRef.current = onFlushError;
+  }, [onFlushError]);
 
   useEffect(() => {
     const handler = (e: BeforeUnloadEvent) => {
@@ -44,7 +48,7 @@ export function usePendingSaves(delayMs = 1000, onFlushError?: (e: unknown) => v
           await flushFn(payload);
         } catch (e) {
           console.error(e);
-          onFlushError?.(e);
+          onFlushErrorRef.current?.(e);
         } finally {
           setPendingSaveCount((n) => n - 1);
         }
@@ -67,7 +71,7 @@ export function usePendingSaves(delayMs = 1000, onFlushError?: (e: unknown) => v
           await captured();
         } catch (e) {
           console.error(e);
-          onFlushError?.(e);
+          onFlushErrorRef.current?.(e);
         } finally {
           setPendingSaveCount((n) => n - 1);
         }
