@@ -416,7 +416,6 @@ describe('useArcanists', () => {
     });
   });
 
-
   describe('updatePortraitLevel', () => {
     it('updates portrait level in local state and queues DB update', async () => {
       mockLoadArcanistsFromDB.mockResolvedValue([

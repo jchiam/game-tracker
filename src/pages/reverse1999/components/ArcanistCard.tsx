@@ -190,11 +190,7 @@ export function ArcanistCard({
             max="60"
             value={arcanist.psychubeLevel}
             onChange={(e) =>
-              onUpdatePsychube(
-                arcanist.id!,
-                arcanist.psychubeId,
-                parseInt(e.target.value),
-              )
+              onUpdatePsychube(arcanist.id!, arcanist.psychubeId, parseInt(e.target.value))
             }
             className="psychube-slider"
             style={{

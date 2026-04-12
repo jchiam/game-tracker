@@ -9,7 +9,9 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
 
   const { data: dbData, error } = await supabase
     .from('r1999_tracked_arcanists')
-    .select('id, arcanist_id, level, portrait_level, resonance_level, is_favorited, euphoria_stage, psychube_id, psychube_level, psychube_amplification')
+    .select(
+      'id, arcanist_id, level, portrait_level, resonance_level, is_favorited, euphoria_stage, psychube_id, psychube_level, psychube_amplification',
+    )
     .eq('profile_id', userId);
 
   if (error) {

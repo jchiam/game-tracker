@@ -144,10 +144,8 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     );
     const arcanist = trackedArcanistsRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
-      queueUpdate(
-        arcanist.dbId,
-        { psychube_id: psychubeId, psychube_level: psychubeLevel },
-        (p) => updateArcanist(arcanist.dbId!, p),
+      queueUpdate(arcanist.dbId, { psychube_id: psychubeId, psychube_level: psychubeLevel }, (p) =>
+        updateArcanist(arcanist.dbId!, p),
       );
   };
 

@@ -356,10 +356,10 @@ function generatePsychubesTs(psychubes) {
     '',
     'export interface Psychube {',
     '  id: number;',
-    "  name: string;",
+    '  name: string;',
     '  rarity: number;',
-    "  tag: string; // Primary combat focus: None / ATK / Heal / Survival / Critical",
-    "  imageUrl: string;",
+    '  tag: string; // Primary combat focus: None / ATK / Heal / Survival / Critical',
+    '  imageUrl: string;',
     '}',
     '',
     'export const ALL_PSYCHUBES: Psychube[] = [',
@@ -655,7 +655,9 @@ async function main() {
   // Pre-fetch all image URLs in batches (3 API calls instead of 150)
   console.log('  Fetching psychube image URLs from Fandom wiki...');
   const psychubeImageUrlMap = await fetchAllPsychubeImageUrls(validPsychubeNames);
-  console.log(`  Got image URLs for ${psychubeImageUrlMap.size}/${validPsychubeNames.length} psychubes`);
+  console.log(
+    `  Got image URLs for ${psychubeImageUrlMap.size}/${validPsychubeNames.length} psychubes`,
+  );
 
   // Pre-check ImageKit existence in parallel (one concurrent batch instead of 150 serial calls)
   console.log('  Checking ImageKit for existing psychube images...');
@@ -666,7 +668,9 @@ async function main() {
     localFiles.map((f) => (reuploadPsychubes ? Promise.resolve(false) : existsOnImageKit(f))),
   );
   const alreadyOnKitCount = onKitResults.filter(Boolean).length;
-  console.log(`  ${alreadyOnKitCount} already on ImageKit, ${localFiles.length - alreadyOnKitCount} to upload`);
+  console.log(
+    `  ${alreadyOnKitCount} already on ImageKit, ${localFiles.length - alreadyOnKitCount} to upload`,
+  );
 
   const psychubes = [];
   let psychubeImageCount = 0;
