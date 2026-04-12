@@ -13,12 +13,13 @@ interface ProgressStyle {
   activeBg: string;
 }
 
-// Anchor points for the continuous gradient (gray → orange → gold → teal)
+// Anchor points for the continuous gradient
+// Rust → Amber → Gold → Teal (absence → radiance)
 const COLOR_STOPS = [
-  { pct: 0,    r: 160, g: 160, b: 181 }, // #a0a0b5 gray
-  { pct: 0.33, r: 224, g: 128, b:  80 }, // #e08050 orange
-  { pct: 0.67, r: 212, g: 175, b:  55 }, // #d4af37 gold
-  { pct: 1,    r:  76, g: 201, b: 160 }, // #4cc9a0 teal
+  { pct: 0, r: 138, g: 96, b: 80 }, // #8a6050 dull rust, lacking / uninvested
+  { pct: 0.33, r: 200, g: 128, b: 64 }, // #c88040 warm amber, kindling
+  { pct: 0.67, r: 212, g: 175, b: 55 }, // #d4af37 gold, forged
+  { pct: 1, r: 64, g: 200, b: 160 }, // #40c8a0 teal, complete
 ];
 
 function lerpColor(pct: number): [number, number, number] {
@@ -45,10 +46,10 @@ function getProgressStyle(value: number, min: number, max: number): ProgressStyl
   const pct = max === min ? 1 : (value - min) / (max - min);
   const [r, g, b] = lerpColor(pct);
   return {
-    color:       `rgb(${r}, ${g}, ${b})`,
+    color: `rgb(${r}, ${g}, ${b})`,
     borderColor: `rgba(${r}, ${g}, ${b}, 0.5)`,
-    glowColor:   `rgba(${r}, ${g}, ${b}, 0.25)`,
-    activeBg:    `rgba(${r}, ${g}, ${b}, 0.12)`,
+    glowColor: `rgba(${r}, ${g}, ${b}, 0.25)`,
+    activeBg: `rgba(${r}, ${g}, ${b}, 0.12)`,
   };
 }
 
@@ -89,9 +90,16 @@ export function ArcanistCard({
   const portraitPs = getProgressStyle(arcanist.portraitLevel, 0, 5);
   const resonancePs = getProgressStyle(arcanist.resonanceLevel, 0, 15);
   const euphoriaPs = getProgressStyle(arcanist.euphoriaStage, 0, 4);
-  const psychubePs = arcanist.psychubeId
+  // Psychube line: name always teal (100%), level/amp colored individually
+  const psychubeNamePs = arcanist.psychubeId
+    ? getProgressStyle(60, 1, 60)
+    : getProgressStyle(0, 0, 1); // rust when unequipped
+  const psychubeLevelPs = arcanist.psychubeId
     ? getProgressStyle(arcanist.psychubeLevel, 1, 60)
-    : getProgressStyle(0, 0, 1); // force gray when no psychube
+    : getProgressStyle(arcanist.psychubeLevel, 1, 60); // always based on actual level
+  const psychubeAmpPs = arcanist.psychubeId
+    ? getProgressStyle(arcanist.psychubeAmplification, 1, 5)
+    : getProgressStyle(0, 0, 1); // rust when unequipped
 
   return (
     <div className={`arcanist-card ${isEditing ? 'is-editing' : ''}`}>
@@ -164,16 +172,46 @@ export function ArcanistCard({
         {/* Static summary — visible in static mode, collapses when editing */}
         <div className="arcanist-static-summary">
           <div className="arcanist-static-stats">
-            <span className="stat-chip" style={{ color: levelPs.color, borderColor: levelPs.borderColor }}>Lv {arcanist.level}</span>
-            <span className="stat-chip" style={{ color: portraitPs.color, borderColor: portraitPs.borderColor }}>P{arcanist.portraitLevel}</span>
-            <span className="stat-chip" style={{ color: resonancePs.color, borderColor: resonancePs.borderColor }}>R{arcanist.resonanceLevel}</span>
-            <span className="stat-chip" style={{ color: euphoriaPs.color, borderColor: euphoriaPs.borderColor }}>E{arcanist.euphoriaStage}</span>
+            <span
+              className="stat-chip"
+              style={{ color: levelPs.color, borderColor: levelPs.borderColor }}
+            >
+              Lv {arcanist.level}
+            </span>
+            <span
+              className="stat-chip"
+              style={{ color: portraitPs.color, borderColor: portraitPs.borderColor }}
+            >
+              P{arcanist.portraitLevel}
+            </span>
+            <span
+              className="stat-chip"
+              style={{ color: resonancePs.color, borderColor: resonancePs.borderColor }}
+            >
+              R{arcanist.resonanceLevel}
+            </span>
+            <span
+              className="stat-chip"
+              style={{ color: euphoriaPs.color, borderColor: euphoriaPs.borderColor }}
+            >
+              E{arcanist.euphoriaStage}
+            </span>
           </div>
-          <div className="arcanist-static-psychube" style={{ color: psychubePs.color }}>
+          <div className="arcanist-static-psychube">
             {selectedPsychube ? (
-              `${selectedPsychube.name} · Lv ${arcanist.psychubeLevel} · A${arcanist.psychubeAmplification}`
+              <>
+                <span style={{ color: psychubeNamePs.color }}>{selectedPsychube.name}</span>
+                <span style={{ color: psychubeLevelPs.color }}>
+                  &nbsp;·&nbsp;Lv&nbsp;{arcanist.psychubeLevel}
+                </span>
+                <span style={{ color: psychubeAmpPs.color }}>
+                  &nbsp;·&nbsp;A{arcanist.psychubeAmplification}
+                </span>
+              </>
             ) : (
-              <span className="no-psychube">—</span>
+              <span className="no-psychube" style={{ color: psychubeNamePs.color }}>
+                —
+              </span>
             )}
           </div>
         </div>
@@ -220,16 +258,22 @@ export function ArcanistCard({
                       className={`portrait-btn ${level === 0 ? 'portrait-reset' : ''} ${isActive ? 'active' : ''}`}
                       onClick={() => onUpdatePortrait(arcanist.id!, level)}
                       title={level === 0 ? 'Reset portrait level' : `Portrait ${level}`}
-                      style={isActive ? {
-                        color: btnPs.color,
-                        borderColor: btnPs.borderColor,
-                        background: btnPs.activeBg,
-                        boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
-                      } : isPassed ? {
-                        color: btnPs.color,
-                        borderColor: btnPs.borderColor,
-                        opacity: 0.35,
-                      } : undefined}
+                      style={
+                        isActive
+                          ? {
+                              color: btnPs.color,
+                              borderColor: btnPs.borderColor,
+                              background: btnPs.activeBg,
+                              boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
+                            }
+                          : isPassed
+                            ? {
+                                color: btnPs.color,
+                                borderColor: btnPs.borderColor,
+                                opacity: 0.35,
+                              }
+                            : undefined
+                      }
                     >
                       P{level}
                     </button>
@@ -273,16 +317,22 @@ export function ArcanistCard({
                       key={stage}
                       className={`euphoria-btn ${isActive ? 'active' : ''}`}
                       onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
-                      style={isActive ? {
-                        color: btnPs.color,
-                        borderColor: btnPs.borderColor,
-                        background: btnPs.activeBg,
-                        boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
-                      } : isPassed ? {
-                        color: btnPs.color,
-                        borderColor: btnPs.borderColor,
-                        opacity: 0.35,
-                      } : undefined}
+                      style={
+                        isActive
+                          ? {
+                              color: btnPs.color,
+                              borderColor: btnPs.borderColor,
+                              background: btnPs.activeBg,
+                              boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
+                            }
+                          : isPassed
+                            ? {
+                                color: btnPs.color,
+                                borderColor: btnPs.borderColor,
+                                opacity: 0.35,
+                              }
+                            : undefined
+                      }
                     >
                       E{stage}
                     </button>
@@ -327,9 +377,9 @@ export function ArcanistCard({
                 className="psychube-slider"
                 style={
                   {
-                    '--slider-fill-color': psychubePs.color,
-                    '--slider-fill-glow': psychubePs.glowColor,
-                    background: `linear-gradient(to right, ${psychubePs.color} ${((arcanist.psychubeLevel - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 59) * 100}%)`,
+                    '--slider-fill-color': psychubeLevelPs.color,
+                    '--slider-fill-glow': psychubeLevelPs.glowColor,
+                    background: `linear-gradient(to right, ${psychubeLevelPs.color} ${((arcanist.psychubeLevel - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 59) * 100}%)`,
                   } as React.CSSProperties
                 }
               />
@@ -345,16 +395,22 @@ export function ArcanistCard({
                       className={`amplify-btn ${isActive ? 'active' : ''}`}
                       onClick={() => onUpdatePsychubeAmplification(arcanist.id!, lvl)}
                       title={`A${lvl}`}
-                      style={isActive ? {
-                        color: btnPs.color,
-                        borderColor: btnPs.borderColor,
-                        background: btnPs.activeBg,
-                        boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
-                      } : isPassed ? {
-                        color: btnPs.color,
-                        borderColor: btnPs.borderColor,
-                        opacity: 0.35,
-                      } : undefined}
+                      style={
+                        isActive
+                          ? {
+                              color: btnPs.color,
+                              borderColor: btnPs.borderColor,
+                              background: btnPs.activeBg,
+                              boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
+                            }
+                          : isPassed
+                            ? {
+                                color: btnPs.color,
+                                borderColor: btnPs.borderColor,
+                                opacity: 0.35,
+                              }
+                            : undefined
+                      }
                     >
                       {`A${lvl}`}
                     </button>

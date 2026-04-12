@@ -33,7 +33,7 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
         portraitLevel: row.portrait_level ?? 0,
         resonanceLevel: row.resonance_level ?? 0,
         euphoriaStage: row.euphoria_stage ?? 0,
-        psychubeId: row.psychube_id ?? null,
+        psychubeId: row.psychube_id != null ? Number(row.psychube_id) : null,
         psychubeLevel: row.psychube_level ?? 1,
         psychubeAmplification: row.psychube_amplification ?? 1,
       };
