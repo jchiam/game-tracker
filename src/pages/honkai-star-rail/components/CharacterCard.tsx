@@ -98,6 +98,7 @@ export function CharacterCard({
           </div>
           <input
             type="range"
+            name={`level-${char.id}`}
             min="1"
             max="80"
             value={char.level}

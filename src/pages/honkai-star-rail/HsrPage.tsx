@@ -87,6 +87,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
               <>
                 <input
                   type="text"
+                  name="character-search"
                   className="roster-search-input"
                   placeholder="Search by name, element, or path..."
                   value={searchTerm}

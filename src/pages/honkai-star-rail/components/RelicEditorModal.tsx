@@ -173,6 +173,7 @@ export function RelicEditorModal({
               <div className="form-group">
                 <label>Relic Set</label>
                 <select
+                  name="relic-set"
                   value={currentRelic.setId || ''}
                   onChange={(e) => validateAndSave({ setId: e.target.value })}
                 >
@@ -209,6 +210,7 @@ export function RelicEditorModal({
                   </div>
                 ) : (
                   <select
+                    name="relic-main-stat"
                     value={currentRelic.mainStat || ''}
                     onChange={(e) => validateAndSave({ mainStat: e.target.value })}
                   >
@@ -227,6 +229,7 @@ export function RelicEditorModal({
                 {currentRelic.subStats.map((sub, idx) => (
                   <div key={idx} className="substat-row">
                     <select
+                      name={`substat-type-${idx}`}
                       value={sub.type}
                       onChange={(e) => {
                         const newSubs = [...currentRelic.subStats];
@@ -251,6 +254,7 @@ export function RelicEditorModal({
                     </select>
                     <input
                       type="text"
+                      name={`substat-value-${idx}`}
                       placeholder="Value"
                       value={sub.value}
                       onChange={(e) => {
@@ -305,6 +309,7 @@ export function RelicEditorModal({
                     {currentPrefs.mainStats[slot].map((pref, idx) => (
                       <div key={idx} className="pref-item">
                         <select
+                          name={`pref-main-stat-${idx}`}
                           value={pref.stat}
                           onChange={(e) => updateMainStatPref(idx, { stat: e.target.value })}
                         >
@@ -316,6 +321,7 @@ export function RelicEditorModal({
                         </select>
                         {idx < currentPrefs.mainStats[slot].length - 1 ? (
                           <select
+                            name={`pref-main-stat-operator-${idx}`}
                             className="operator-select"
                             value={pref.operator || '>'}
                             onChange={(e) => updateMainStatPref(idx, { operator: e.target.value })}
@@ -347,6 +353,7 @@ export function RelicEditorModal({
                   {currentPrefs.subStats.map((pref, idx) => (
                     <div key={idx} className="pref-item">
                       <select
+                        name={`pref-sub-stat-${idx}`}
                         value={pref.stat}
                         onChange={(e) => updateSubStatPref(idx, { stat: e.target.value })}
                       >
@@ -358,6 +365,7 @@ export function RelicEditorModal({
                       </select>
                       {idx < currentPrefs.subStats.length - 1 ? (
                         <select
+                          name={`pref-sub-stat-operator-${idx}`}
                           className="operator-select"
                           value={pref.operator || '>'}
                           onChange={(e) => updateSubStatPref(idx, { operator: e.target.value })}

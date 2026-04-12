@@ -40,6 +40,7 @@ export function AddCharacterModal({
         <div className="modal-search">
           <input
             type="text"
+            name="add-character-search"
             placeholder="Search characters..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

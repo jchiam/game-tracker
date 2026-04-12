@@ -131,6 +131,7 @@ export function ArcanistCard({
               </div>
               <input
                 type="range"
+                name={`level-${arcanist.id}`}
                 min="1"
                 max="60"
                 value={arcanist.level}
@@ -168,6 +169,7 @@ export function ArcanistCard({
               </div>
               <input
                 type="range"
+                name={`resonance-${arcanist.id}`}
                 min="0"
                 max="15"
                 value={arcanist.resonanceLevel}
@@ -200,6 +202,7 @@ export function ArcanistCard({
                 <span className="section-value">{arcanist.psychubeLevel} / 60</span>
               </div>
               <select
+                name={`psychube-${arcanist.id}`}
                 className="psychube-select"
                 value={arcanist.psychubeId ?? ''}
                 onChange={(e) =>
@@ -219,6 +222,7 @@ export function ArcanistCard({
               </select>
               <input
                 type="range"
+                name={`psychube-level-${arcanist.id}`}
                 min="1"
                 max="60"
                 value={arcanist.psychubeLevel}

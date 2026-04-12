@@ -54,6 +54,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
               <>
                 <input
                   type="text"
+                  name="arcanist-search"
                   className="search-input"
                   placeholder="Search by name, afflatus, or damage type..."
                   value={searchTerm}

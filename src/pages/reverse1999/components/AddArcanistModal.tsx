@@ -41,6 +41,7 @@ export function AddArcanistModal({
         <div className="modal-search">
           <input
             type="text"
+            name="add-arcanist-search"
             placeholder="Search arcanists..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}

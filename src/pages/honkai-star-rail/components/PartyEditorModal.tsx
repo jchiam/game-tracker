@@ -73,6 +73,7 @@ export function PartyEditorModal({
             <label>Party Name</label>
             <input
               type="text"
+              name="party-name"
               placeholder="e.g. Memory of Chaos 12-1"
               value={name}
               onChange={(e) => setName(e.target.value)}
@@ -135,6 +136,7 @@ export function PartyEditorModal({
                 <div className="picker-header">
                   <input
                     type="text"
+                    name="party-character-search"
                     placeholder="Search character..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
