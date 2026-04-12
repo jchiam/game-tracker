@@ -34,3 +34,11 @@ export function getAvatarUrl(localPath: string): string {
   const tr = 'tr:w-128,h-128,fo-face,c-at_max';
   return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
 }
+
+// Returns a fully-formed ImageKit URL for a psychube icon.
+// Psychube icons are already square artwork — no crop transform needed.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getPsychubeUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  return `${IMAGEKIT_URL_ENDPOINT}${toImageKitPath(localPath)}`;
+}

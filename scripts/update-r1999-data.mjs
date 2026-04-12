@@ -2,26 +2,28 @@
 // Fetches the latest data from three sources and regenerates:
 //   - src/data/reverse1999/arcanists.ts
 //
-// Also downloads mugshot and full-art images and uploads to ImageKit:
-//   - mugshot (CN headicon via ArcanistMap, fallback to kornblume icon)
+// Also downloads images and uploads to ImageKit:
+//   - arcanist mugshot (CN headicon via ArcanistMap, fallback to kornblume icon)
 //                                              → ImageKit: /reverse_1999/arcanists_mugshots
-//   - i2 (full-art portraits from kornblume)  → ImageKit: /reverse_1999/arcanists
+//   - arcanist full-art portrait (kornblume)   → ImageKit: /reverse_1999/arcanists
+//   - psychube icon (Fandom wiki CDN)          → ImageKit: /reverse_1999/psychubes
 //
 // Data sources:
 //   - windbow27/kornblume: arcanist list (Name, Rarity, Afflatus, IsReleased, Id for images)
-//   - reverse1999.fandom.com: damage type (Mental / Reality) via wikitext batch API
+//   - reverse1999.fandom.com: arcanist damage type + psychube list, rarities, and images
 //   - myssal/Reverse-1999-CN-Asset (ArcanistMap.json): headicon IDs → primary mugshot source
 //
 // Usage:
-//   node scripts/update-r1999-data.mjs                   # only upload missing assets
-//   node scripts/update-r1999-data.mjs --reupload-all    # force reupload all assets
+//   node scripts/update-r1999-data.mjs                    # only upload missing assets
+//   node scripts/update-r1999-data.mjs --reupload-all     # force reupload all assets
 //   node scripts/update-r1999-data.mjs --reupload-mugshots
 //   node scripts/update-r1999-data.mjs --reupload-full-art
+//   node scripts/update-r1999-data.mjs --reupload-psychubes
 
 import { readFile, writeFile } from 'fs/promises';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
-import ImageKit from '@imagekit/nodejs';
+import ImageKit, { toFile } from '@imagekit/nodejs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
@@ -57,8 +59,13 @@ if (imagekitClient) {
 const args = new Set(process.argv.slice(2));
 const reuploadMugshots = args.has('--reupload-all') || args.has('--reupload-mugshots');
 const reuploadFullArt = args.has('--reupload-all') || args.has('--reupload-full-art');
-if (reuploadMugshots || reuploadFullArt) {
-  const targets = [reuploadMugshots && 'mugshots', reuploadFullArt && 'full-art']
+const reuploadPsychubes = args.has('--reupload-all') || args.has('--reupload-psychubes');
+if (reuploadMugshots || reuploadFullArt || reuploadPsychubes) {
+  const targets = [
+    reuploadMugshots && 'mugshots',
+    reuploadFullArt && 'full-art',
+    reuploadPsychubes && 'psychubes',
+  ]
     .filter(Boolean)
     .join(' + ');
   console.log(`Reupload mode: ${targets}`);
@@ -126,6 +133,11 @@ async function fetchJSON(url) {
   return res.json();
 }
 
+// Escape single quotes so they're safe inside single-quoted JS string literals.
+function esc(str) {
+  return str.replace(/'/g, "\\'");
+}
+
 function slugify(name) {
   return name
     .toLowerCase()
@@ -190,10 +202,10 @@ async function existsOnImageKit(localAssetPath) {
   try {
     const existing = await imagekitClient.assets.list({
       path: loc.folder,
-      searchQuery: loc.fileName,
+      searchQuery: `name = "${loc.fileName}"`,
       limit: 1,
     });
-    return existing.data.length > 0;
+    return existing.length > 0;
   } catch {
     return false;
   }
@@ -208,8 +220,9 @@ async function uploadToImageKit(buffer, localAssetPath) {
     return;
   }
   try {
+    const uploadable = await toFile(buffer, loc.fileName, { type: 'image/webp' });
     await imagekitClient.files.upload({
-      file: buffer,
+      file: uploadable,
       fileName: loc.fileName,
       folder: loc.folder,
       useUniqueFileName: false,
@@ -291,7 +304,7 @@ function generateArcanistsTs(arcanists) {
     return [
       `  {`,
       `    id: '${a.id}',`,
-      `    name: '${a.name}',`,
+      `    name: '${esc(a.name)}',`,
       `    afflatus: '${a.afflatus}',`,
       `    damageType: '${a.damageType}',`,
       `    imageUrl: '${a.imageUrl}',`,
@@ -338,7 +351,7 @@ function generatePsychubesTs(psychubes) {
   const threeStars = psychubes.filter((p) => p.rarity === 3);
 
   const lines = [
-    '// Auto-generated from kornblume — do not edit manually.',
+    '// Auto-generated from Reverse: 1999 Fandom Wiki — do not edit manually.',
     '// Run `node scripts/update-r1999-data.mjs` or trigger the GitHub Actions workflow to update.',
     '',
     'export interface Psychube {',
@@ -356,7 +369,7 @@ function generatePsychubesTs(psychubes) {
     return [
       '  {',
       `    id: ${p.id},`,
-      `    name: '${p.name}',`,
+      `    name: '${esc(p.name)}',`,
       `    rarity: ${p.rarity},`,
       `    tag: '${p.tag}',`,
       `    imageUrl: '/assets/reverse-1999/psychubes/${p.id}.webp',`,
@@ -380,18 +393,96 @@ function generatePsychubesTs(psychubes) {
   return lines.join('\n');
 }
 
+// Fetch all psychube page titles from the Fandom wiki category.
+async function fetchAllPsychubeNames() {
+  const url = `${FANDOM_API}?action=query&list=categorymembers&cmtitle=Category:Psychubes&cmlimit=500&format=json`;
+  const data = await fetchJSON(url);
+  return (data.query?.categorymembers ?? [])
+    .map((m) => m.title)
+    .filter((t) => !t.startsWith('Category:'));
+}
+
+// Batch-fetch psychube rarities from Fandom wiki wikitext (same pattern as fetchDamageTypes).
+async function fetchPsychubeRarities(names) {
+  const rarityMap = new Map();
+  const BATCH_SIZE = 50;
+
+  for (let i = 0; i < names.length; i += BATCH_SIZE) {
+    const batch = names.slice(i, i + BATCH_SIZE);
+    const titlesParam = batch.map((n) => encodeURIComponent(n)).join('|');
+    const url = `${FANDOM_API}?action=query&prop=revisions&titles=${titlesParam}&rvprop=content&rvslots=main&format=json&redirects`;
+
+    try {
+      const data = await fetchJSON(url);
+      const reverseMap = buildReverseMap(data.query);
+      const pages = data.query?.pages ?? {};
+      for (const page of Object.values(pages)) {
+        const wikitext =
+          page.revisions?.[0]?.slots?.main?.['*'] ?? page.revisions?.[0]?.['*'] ?? '';
+        const m = wikitext.match(/\|\s*rarity\s*=\s*(\d)/i);
+        if (m) {
+          const name = reverseMap.get(page.title) ?? page.title;
+          rarityMap.set(name, parseInt(m[1]));
+        }
+      }
+    } catch (e) {
+      console.warn(
+        `  Warning: Could not fetch psychube rarities for batch starting at index ${i}: ${e.message}`,
+      );
+    }
+  }
+
+  return rarityMap;
+}
+
+// Batch-fetch CDN image URLs for all psychubes from the Fandom wiki file API.
+// Returns a Map<psychubeName, cdnUrl>. Processes up to 50 files per request.
+async function fetchAllPsychubeImageUrls(names) {
+  const urlMap = new Map();
+  const BATCH_SIZE = 50;
+
+  for (let i = 0; i < names.length; i += BATCH_SIZE) {
+    const batch = names.slice(i, i + BATCH_SIZE);
+    // Track File:Name.png → original name through normalizations/redirects
+    const fileTitleToName = new Map(batch.map((n) => [`File:${n}.png`, n]));
+    const titlesParam = batch.map((n) => `File:${encodeURIComponent(n)}.png`).join('|');
+    const url = `${FANDOM_API}?action=query&titles=${titlesParam}&prop=imageinfo&iiprop=url&format=json&redirects`;
+
+    try {
+      const data = await fetchJSON(url);
+      for (const { from, to } of data.query?.normalized ?? []) {
+        const name = fileTitleToName.get(from);
+        if (name) fileTitleToName.set(to, name);
+      }
+      for (const { from, to } of data.query?.redirects ?? []) {
+        const name = fileTitleToName.get(from);
+        if (name) fileTitleToName.set(to, name);
+      }
+      for (const page of Object.values(data.query?.pages ?? {})) {
+        const imgUrl = page.imageinfo?.[0]?.url ?? null;
+        const name = fileTitleToName.get(page.title);
+        if (imgUrl && name) urlMap.set(name, imgUrl);
+      }
+    } catch (e) {
+      console.warn(
+        `  Warning: Could not fetch psychube image URLs for batch at index ${i}: ${e.message}`,
+      );
+    }
+  }
+
+  return urlMap;
+}
+
 async function main() {
   console.log('Fetching data from kornblume, Fandom wiki, and CN ArcanistMap...');
 
   const [
     kornblumeData,
-    kornblumePsychubes,
     arcanistMap,
     { entries: existingEntries, idMap: existingIds, damageMap: existingDamage },
     existingPsychubes,
   ] = await Promise.all([
     fetchJSON(`${KORNBLUME_BASE}/data/arcanists.json`),
-    fetchJSON(`${KORNBLUME_BASE}/data/psychubes.json`),
     fetchJSON(ARCANIST_MAP_URL),
     loadExistingArcanists(),
     loadExistingPsychubes(),
@@ -538,20 +629,80 @@ async function main() {
     console.warn('  Update these manually in src/data/reverse1999/arcanists.ts.');
   }
 
-  // --- Psychubes ---
-  const releasedPsychubes = kornblumePsychubes.filter((p) => p.IsReleased === true && p.Name);
-  releasedPsychubes.sort((a, b) => {
-    if (a.Rarity !== b.Rarity) return b.Rarity - a.Rarity;
-    return a.Name.localeCompare(b.Name);
+  // --- Psychubes (Fandom wiki source) ---
+  console.log('\nFetching psychube list from Fandom wiki...');
+  const wikiPsychubeNames = await fetchAllPsychubeNames();
+  console.log(`  Found ${wikiPsychubeNames.length} psychubes on wiki`);
+
+  console.log('  Fetching psychube rarities from Fandom wiki...');
+  const psychubeRarityMap = await fetchPsychubeRarities(wikiPsychubeNames);
+  console.log(`  Got rarities for ${psychubeRarityMap.size}/${wikiPsychubeNames.length} psychubes`);
+
+  // Only process psychubes for which we have rarity data
+  const validPsychubeNames = wikiPsychubeNames.filter((n) => psychubeRarityMap.has(n));
+  const skippedCount = wikiPsychubeNames.length - validPsychubeNames.length;
+  if (skippedCount > 0)
+    console.warn(`  Skipping ${skippedCount} psychube(s) with no rarity in wikitext`);
+
+  // Sort: highest rarity first, then alphabetical — IDs assigned in this order
+  validPsychubeNames.sort((a, b) => {
+    const ra = psychubeRarityMap.get(a);
+    const rb = psychubeRarityMap.get(b);
+    if (ra !== rb) return rb - ra;
+    return a.localeCompare(b);
   });
 
-  const psychubes = releasedPsychubes.map((p) => ({
-    id: p.Id,
-    name: p.Name,
-    rarity: p.Rarity,
-    tag: p.Tag ?? 'None',
-    imageUrl: `/assets/reverse-1999/psychubes/${p.Id}.webp`,
-  }));
+  // Pre-fetch all image URLs in batches (3 API calls instead of 150)
+  console.log('  Fetching psychube image URLs from Fandom wiki...');
+  const psychubeImageUrlMap = await fetchAllPsychubeImageUrls(validPsychubeNames);
+  console.log(`  Got image URLs for ${psychubeImageUrlMap.size}/${validPsychubeNames.length} psychubes`);
+
+  // Pre-check ImageKit existence in parallel (one concurrent batch instead of 150 serial calls)
+  console.log('  Checking ImageKit for existing psychube images...');
+  const localFiles = validPsychubeNames.map((_, idx) =>
+    resolve(ROOT, `public/assets/reverse-1999/psychubes/${idx + 1}.webp`),
+  );
+  const onKitResults = await Promise.all(
+    localFiles.map((f) => (reuploadPsychubes ? Promise.resolve(false) : existsOnImageKit(f))),
+  );
+  const alreadyOnKitCount = onKitResults.filter(Boolean).length;
+  console.log(`  ${alreadyOnKitCount} already on ImageKit, ${localFiles.length - alreadyOnKitCount} to upload`);
+
+  const psychubes = [];
+  let psychubeImageCount = 0;
+
+  console.log(`\nProcessing images for ${validPsychubeNames.length} psychubes...`);
+
+  for (let idx = 0; idx < validPsychubeNames.length; idx++) {
+    const name = validPsychubeNames[idx];
+    const rarity = psychubeRarityMap.get(name);
+    const id = idx + 1;
+    const localPath = `/assets/reverse-1999/psychubes/${id}.webp`;
+    const localFile = localFiles[idx];
+
+    console.log(`  [${idx + 1}/${validPsychubeNames.length}] ${name}`);
+
+    if (onKitResults[idx]) {
+      console.log(`    Already on ImageKit, skipping`);
+    } else {
+      try {
+        const reason = reuploadPsychubes ? 'reupload requested' : 'missing from ImageKit';
+        console.log(`    Image ${reason} — downloading...`);
+        const wikiImgUrl = psychubeImageUrlMap.get(name);
+        if (wikiImgUrl) {
+          const buffer = await downloadImage(wikiImgUrl);
+          psychubeImageCount++;
+          await uploadToImageKit(buffer, localFile);
+        } else {
+          console.warn(`    No image found on wiki`);
+        }
+      } catch (e) {
+        console.warn(`    Image failed: ${e?.message ?? String(e)}`);
+      }
+    }
+
+    psychubes.push({ id, name, rarity, tag: 'None', imageUrl: localPath });
+  }
 
   const psychubePath = resolve(ROOT, 'src/data/reverse1999/psychubes.ts');
   await writeFile(psychubePath, generatePsychubesTs(psychubes), 'utf-8');
@@ -566,10 +717,11 @@ async function main() {
       ? `+${psychubeAdded.length} added, -${psychubeRemoved.length} removed`
       : 'no changes';
 
-  console.log(`  Psychubes : ${psychubes.length} total (${psychubeDiff})`);
-  for (const p of psychubeAdded)
-    console.log(`    + ${p.name} [${p.rarity}★ ${p.tag}]`);
-  for (const p of psychubeRemoved) console.log(`    - ${p.name} (removed from source)`);
+  console.log(
+    `  Psychubes : ${psychubes.length} total (${psychubeDiff}) — ${psychubeImageCount} images uploaded`,
+  );
+  for (const p of psychubeAdded) console.log(`    + ${p.name} [${p.rarity}★]`);
+  for (const p of psychubeRemoved) console.log(`    - ${p.name} (not on wiki)`);
 }
 
 main().catch((e) => {
