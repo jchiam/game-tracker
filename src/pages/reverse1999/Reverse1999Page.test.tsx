@@ -24,7 +24,7 @@ function makeArcanist(id: string, name: string): R1999TrackedArcanist {
     euphoriaStage: 0,
     psychubeId: null,
     psychubeLevel: 1,
-    psychubeAmplification: 0,
+    psychubeAmplification: 1,
   };
 }
 

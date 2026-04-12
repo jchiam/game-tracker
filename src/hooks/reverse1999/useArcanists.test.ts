@@ -100,7 +100,7 @@ function trackedArcanist(
     euphoriaStage: 0,
     psychubeId: null,
     psychubeLevel: 1,
-    psychubeAmplification: 0,
+    psychubeAmplification: 1,
     ...overrides,
   };
 }
@@ -215,7 +215,7 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists[0].psychubeId).toBeNull();
       expect(result.current.trackedArcanists[0].psychubeLevel).toBe(1);
       expect(result.current.trackedArcanists[0].euphoriaStage).toBe(0);
-      expect(result.current.trackedArcanists[0].psychubeAmplification).toBe(0);
+      expect(result.current.trackedArcanists[0].psychubeAmplification).toBe(1);
       expect(mockInsertArcanist).toHaveBeenCalledWith('test-user-123', '37');
     });
 

@@ -164,7 +164,7 @@ export function ArcanistCard({
         <div className="progress-section">
           <div className="section-header">
             <span>Psychube</span>
-            <span className="section-value">{arcanist.psychubeLevel} / 80</span>
+            <span className="section-value">{arcanist.psychubeLevel} / 60</span>
           </div>
           <select
             className="psychube-select"
@@ -187,7 +187,7 @@ export function ArcanistCard({
           <input
             type="range"
             min="1"
-            max="80"
+            max="60"
             value={arcanist.psychubeLevel}
             onChange={(e) =>
               onUpdatePsychube(
@@ -198,19 +198,19 @@ export function ArcanistCard({
             }
             className="psychube-slider"
             style={{
-              background: `linear-gradient(to right, var(--color-primary) ${((arcanist.psychubeLevel - 1) / 79) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 79) * 100}%)`,
+              background: `linear-gradient(to right, var(--color-primary) ${((arcanist.psychubeLevel - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 59) * 100}%)`,
             }}
           />
           <div className="amplification-row">
             <span className="section-sublabel">Amplify</span>
-            {([0, 1, 2, 3, 4, 5] as const).map((lvl) => (
+            {([1, 2, 3, 4, 5] as const).map((lvl) => (
               <button
                 key={lvl}
-                className={`amplify-btn ${lvl === 0 ? 'amplify-reset' : ''} ${arcanist.psychubeAmplification === lvl ? 'active' : ''}`}
+                className={`amplify-btn ${arcanist.psychubeAmplification === lvl ? 'active' : ''}`}
                 onClick={() => onUpdatePsychubeAmplification(arcanist.id!, lvl)}
-                title={lvl === 0 ? 'Clear amplification' : `A${lvl}`}
+                title={`A${lvl}`}
               >
-                {lvl === 0 ? '—' : `A${lvl}`}
+                {`A${lvl}`}
               </button>
             ))}
           </div>

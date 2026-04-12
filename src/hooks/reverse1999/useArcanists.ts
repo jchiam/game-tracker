@@ -77,7 +77,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       euphoriaStage: 0,
       psychubeId: null,
       psychubeLevel: 1,
-      psychubeAmplification: 0,
+      psychubeAmplification: 1,
     };
     setTrackedArcanists((prev) => [...prev, newArcanist]);
     try {
@@ -164,7 +164,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
   };
 
   const updatePsychubeAmplification = (id: string, level: number) => {
-    const validLevel = Math.min(5, Math.max(0, level));
+    const validLevel = Math.min(5, Math.max(1, level));
     setTrackedArcanists((prev) =>
       prev.map((a) => (a.id === id ? { ...a, psychubeAmplification: validLevel } : a)),
     );

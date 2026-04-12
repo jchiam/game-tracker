@@ -33,7 +33,7 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
         euphoriaStage: row.euphoria_stage ?? 0,
         psychubeId: row.psychube_id ?? null,
         psychubeLevel: row.psychube_level ?? 1,
-        psychubeAmplification: row.psychube_amplification ?? 0,
+        psychubeAmplification: row.psychube_amplification ?? 1,
       };
     })
     .filter(Boolean) as R1999TrackedArcanist[];
@@ -53,7 +53,7 @@ export async function insertArcanist(userId: string, arcanistId: string): Promis
       euphoria_stage: 0,
       psychube_id: null,
       psychube_level: 1,
-      psychube_amplification: 0,
+      psychube_amplification: 1,
     })
     .select('id')
     .single();

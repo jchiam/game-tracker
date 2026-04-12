@@ -19,7 +19,7 @@ function makeArcanist(overrides: Partial<R1999TrackedArcanist> = {}): R1999Track
     euphoriaStage: 0,
     psychubeId: null,
     psychubeLevel: 1,
-    psychubeAmplification: 0,
+    psychubeAmplification: 1,
     ...overrides,
   };
 }

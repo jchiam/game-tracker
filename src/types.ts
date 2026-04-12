@@ -49,6 +49,6 @@ export interface R1999TrackedArcanist extends Arcanist {
   resonanceLevel: number; // 0–15 (recommended stop at 10 for max 7x7 grid)
   euphoriaStage: number; // 0–4 (post-v2.0 "E" system upgrade stages)
   psychubeId: number | null; // reference to which Psychube is equipped (from psychubes.ts)
-  psychubeLevel: number; // 1–80
-  psychubeAmplification: number; // 0 = none, 1–5 = A1–A5
+  psychubeLevel: number; // 1–60
+  psychubeAmplification: number; // 1–5 (A1–A5)
 }
