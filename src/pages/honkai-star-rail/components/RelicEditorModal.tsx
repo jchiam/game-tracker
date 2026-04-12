@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet, EquippedRelic } from '@/data/honkai-star-rail/relics';
-import './Modal.css';
+import { Modal } from '@/components/Modal';
 import './RelicEditorModal.css';
 
 interface RelicEditorModalProps {
@@ -26,14 +26,6 @@ export function RelicEditorModal({
   onClose,
 }: RelicEditorModalProps) {
   const [activeTab, setActiveTab] = useState<'equip' | 'preferences'>('equip');
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
   const currentRelic = char.relics[slot] || emptyRelic;
   const currentPrefs = char.buildPreferences || {
     mainStats: { body: [], feet: [], sphere: [], rope: [] },
@@ -151,267 +143,12 @@ export function RelicEditorModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content relic-editor" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Edit {slot.charAt(0).toUpperCase() + slot.slice(1)}</h2>
-          <button className="close-btn" onClick={onClose}>
-            ✕
-          </button>
-        </div>
-
-        <div className="modal-tabs">
-          <button
-            className={`tab-btn ${activeTab === 'equip' ? 'active' : ''}`}
-            onClick={() => setActiveTab('equip')}
-          >
-            Equip Relic
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
-            onClick={() => setActiveTab('preferences')}
-          >
-            Build Preferences
-          </button>
-        </div>
-
-        <div className="relic-editor-body">
-          {activeTab === 'equip' ? (
-            <>
-              <div className="form-group">
-                <label>Relic Set</label>
-                <select
-                  name="relic-set"
-                  value={currentRelic.setId || ''}
-                  onChange={(e) => validateAndSave({ setId: e.target.value })}
-                >
-                  <option value="">-- No Set --</option>
-                  {availableRelicSets
-                    .filter((set) => {
-                      if (slot === 'sphere' || slot === 'rope') {
-                        return set.id.startsWith('3');
-                      } else {
-                        return set.id.startsWith('1');
-                      }
-                    })
-                    .map((set) => (
-                      <option key={set.id} value={set.id}>
-                        {set.name}
-                      </option>
-                    ))}
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Main Stat</label>
-                {slot === 'head' || slot === 'hands' ? (
-                  <div
-                    style={{
-                      padding: '10px 14px',
-                      background: 'rgba(255,255,255,0.02)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--color-primary)',
-                    }}
-                  >
-                    {slot === 'head' ? 'HP' : 'ATK'} (Fixed)
-                  </div>
-                ) : (
-                  <select
-                    name="relic-main-stat"
-                    value={currentRelic.mainStat || ''}
-                    onChange={(e) => validateAndSave({ mainStat: e.target.value })}
-                  >
-                    <option value="">-- No Main Stat --</option>
-                    {validMainStats[slot].map((stat) => (
-                      <option key={stat} value={stat}>
-                        {stat}
-                      </option>
-                    ))}
-                  </select>
-                )}
-              </div>
-
-              <div className="substats-section">
-                <label>Substats (Max 4)</label>
-                {currentRelic.subStats.map((sub, idx) => (
-                  <div key={idx} className="substat-row">
-                    <select
-                      name={`substat-type-${idx}`}
-                      value={sub.type}
-                      onChange={(e) => {
-                        const newSubs = [...currentRelic.subStats];
-                        newSubs[idx] = { ...newSubs[idx], type: e.target.value };
-                        validateAndSave({ subStats: newSubs });
-                      }}
-                    >
-                      <option value="">- Stat -</option>
-                      {allSubStats
-                        .filter(
-                          (s) =>
-                            s !== currentRelic.mainStat ||
-                            (slot === 'head' && s === 'HP') ||
-                            (slot === 'hands' && s === 'ATK'),
-                        ) // Allow raw versions if main stat matches but type differs, wait actually HP == HP so block it.
-                        .filter((s) => s !== currentRelic.mainStat)
-                        .map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                    </select>
-                    <input
-                      type="text"
-                      name={`substat-value-${idx}`}
-                      placeholder="Value"
-                      value={sub.value}
-                      onChange={(e) => {
-                        const newSubs = [...currentRelic.subStats];
-                        newSubs[idx] = { ...newSubs[idx], value: e.target.value };
-                        validateAndSave({ subStats: newSubs });
-                      }}
-                    />
-                    <button
-                      className="remove-substat"
-                      onClick={() => {
-                        const newSubs = currentRelic.subStats.filter((_, i) => i !== idx);
-                        validateAndSave({ subStats: newSubs });
-                      }}
-                    >
-                      ✕
-                    </button>
-                  </div>
-                ))}
-
-                {currentRelic.subStats.length < 4 && (
-                  <button
-                    className="add-substat-btn"
-                    onClick={() =>
-                      Object.assign(() => {
-                        const defaultSafeStat =
-                          allSubStats.find((s) => s !== currentRelic.mainStat) || 'CRIT Rate';
-                        validateAndSave({
-                          subStats: [
-                            ...currentRelic.subStats,
-                            { type: defaultSafeStat, value: '2.5%' },
-                          ],
-                        });
-                      })()
-                    }
-                  >
-                    + Add Substat
-                  </button>
-                )}
-              </div>
-            </>
-          ) : (
-            <div className="preferences-tab">
-              <p className="tab-description">
-                Define the ideal stats you want to roll for this character.
-              </p>
-
-              {slot !== 'head' && slot !== 'hands' && (
-                <div className="pref-section">
-                  <h3>Preferred Main Stat ({slot.charAt(0).toUpperCase() + slot.slice(1)})</h3>
-                  <div className="pref-chain">
-                    {currentPrefs.mainStats[slot].map((pref, idx) => (
-                      <div key={idx} className="pref-item">
-                        <select
-                          name={`pref-main-stat-${idx}`}
-                          value={pref.stat}
-                          onChange={(e) => updateMainStatPref(idx, { stat: e.target.value })}
-                        >
-                          {validMainStats[slot].map((s) => (
-                            <option key={s} value={s}>
-                              {s}
-                            </option>
-                          ))}
-                        </select>
-                        {idx < currentPrefs.mainStats[slot].length - 1 ? (
-                          <select
-                            name={`pref-main-stat-operator-${idx}`}
-                            className="operator-select"
-                            value={pref.operator || '>'}
-                            onChange={(e) => updateMainStatPref(idx, { operator: e.target.value })}
-                          >
-                            <option value=">">&gt;</option>
-                            <option value=">=">&ge;</option>
-                            <option value="OR">OR</option>
-                          </select>
-                        ) : (
-                          <button
-                            className="remove-pref-btn"
-                            onClick={() => removeMainStatPref(idx)}
-                          >
-                            ✕
-                          </button>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  <button className="add-pref-btn" onClick={addMainStatPref}>
-                    + Add Priority
-                  </button>
-                </div>
-              )}
-
-              <div className="pref-section">
-                <h3>Preferred Substats (Global)</h3>
-                <div className="pref-chain">
-                  {currentPrefs.subStats.map((pref, idx) => (
-                    <div key={idx} className="pref-item">
-                      <select
-                        name={`pref-sub-stat-${idx}`}
-                        value={pref.stat}
-                        onChange={(e) => updateSubStatPref(idx, { stat: e.target.value })}
-                      >
-                        {allSubStats.map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
-                      {idx < currentPrefs.subStats.length - 1 ? (
-                        <select
-                          name={`pref-sub-stat-operator-${idx}`}
-                          className="operator-select"
-                          value={pref.operator || '>'}
-                          onChange={(e) => updateSubStatPref(idx, { operator: e.target.value })}
-                        >
-                          <option value=">">&gt;</option>
-                          <option value=">=">&ge;</option>
-                          <option value="OR">OR</option>
-                        </select>
-                      ) : (
-                        <button className="remove-pref-btn" onClick={() => removeSubStatPref(idx)}>
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button className="add-pref-btn" onClick={addSubStatPref}>
-                  + Add Priority
-                </button>
-              </div>
-
-              <div className="pref-section">
-                <h3>Build Comments</h3>
-                <textarea
-                  className="build-comments-textarea"
-                  placeholder="Additional notes about this build..."
-                  value={currentPrefs.comments || ''}
-                  onChange={(e) => {
-                    const newPrefs = { ...currentPrefs, comments: e.target.value };
-                    onUpdateBuildPreferences(newPrefs);
-                  }}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="modal-footer">
+    <Modal
+      title={`Edit ${slot.charAt(0).toUpperCase() + slot.slice(1)}`}
+      onClose={onClose}
+      className="relic-editor"
+      footer={
+        <>
           {activeTab === 'equip' && (
             <button className="secondary-action danger" onClick={onRemove}>
               Un-equip Relic
@@ -420,8 +157,256 @@ export function RelicEditorModal({
           <button className="primary-action" onClick={onClose}>
             Done
           </button>
-        </div>
+        </>
+      }
+    >
+      <div className="modal-tabs">
+        <button
+          className={`tab-btn ${activeTab === 'equip' ? 'active' : ''}`}
+          onClick={() => setActiveTab('equip')}
+        >
+          Equip Relic
+        </button>
+        <button
+          className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
+          onClick={() => setActiveTab('preferences')}
+        >
+          Build Preferences
+        </button>
       </div>
-    </div>
+
+      <div className="relic-editor-body">
+        {activeTab === 'equip' ? (
+          <>
+            <div className="form-group">
+              <label>Relic Set</label>
+              <select
+                name="relic-set"
+                value={currentRelic.setId || ''}
+                onChange={(e) => validateAndSave({ setId: e.target.value })}
+              >
+                <option value="">-- No Set --</option>
+                {availableRelicSets
+                  .filter((set) => {
+                    if (slot === 'sphere' || slot === 'rope') {
+                      return set.id.startsWith('3');
+                    } else {
+                      return set.id.startsWith('1');
+                    }
+                  })
+                  .map((set) => (
+                    <option key={set.id} value={set.id}>
+                      {set.name}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="form-group">
+              <label>Main Stat</label>
+              {slot === 'head' || slot === 'hands' ? (
+                <div
+                  style={{
+                    padding: '10px 14px',
+                    background: 'rgba(255,255,255,0.02)',
+                    border: '1px solid var(--color-border)',
+                    borderRadius: 'var(--radius-md)',
+                    color: 'var(--color-primary)',
+                  }}
+                >
+                  {slot === 'head' ? 'HP' : 'ATK'} (Fixed)
+                </div>
+              ) : (
+                <select
+                  name="relic-main-stat"
+                  value={currentRelic.mainStat || ''}
+                  onChange={(e) => validateAndSave({ mainStat: e.target.value })}
+                >
+                  <option value="">-- No Main Stat --</option>
+                  {validMainStats[slot].map((stat) => (
+                    <option key={stat} value={stat}>
+                      {stat}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+
+            <div className="substats-section">
+              <label>Substats (Max 4)</label>
+              {currentRelic.subStats.map((sub, idx) => (
+                <div key={idx} className="substat-row">
+                  <select
+                    name={`substat-type-${idx}`}
+                    value={sub.type}
+                    onChange={(e) => {
+                      const newSubs = [...currentRelic.subStats];
+                      newSubs[idx] = { ...newSubs[idx], type: e.target.value };
+                      validateAndSave({ subStats: newSubs });
+                    }}
+                  >
+                    <option value="">- Stat -</option>
+                    {allSubStats
+                      .filter(
+                        (s) =>
+                          s !== currentRelic.mainStat ||
+                          (slot === 'head' && s === 'HP') ||
+                          (slot === 'hands' && s === 'ATK'),
+                      ) // Allow raw versions if main stat matches but type differs, wait actually HP == HP so block it.
+                      .filter((s) => s !== currentRelic.mainStat)
+                      .map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                  </select>
+                  <input
+                    type="text"
+                    name={`substat-value-${idx}`}
+                    placeholder="Value"
+                    value={sub.value}
+                    onChange={(e) => {
+                      const newSubs = [...currentRelic.subStats];
+                      newSubs[idx] = { ...newSubs[idx], value: e.target.value };
+                      validateAndSave({ subStats: newSubs });
+                    }}
+                  />
+                  <button
+                    className="remove-substat"
+                    onClick={() => {
+                      const newSubs = currentRelic.subStats.filter((_, i) => i !== idx);
+                      validateAndSave({ subStats: newSubs });
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              {currentRelic.subStats.length < 4 && (
+                <button
+                  className="add-substat-btn"
+                  onClick={() =>
+                    Object.assign(() => {
+                      const defaultSafeStat =
+                        allSubStats.find((s) => s !== currentRelic.mainStat) || 'CRIT Rate';
+                      validateAndSave({
+                        subStats: [
+                          ...currentRelic.subStats,
+                          { type: defaultSafeStat, value: '2.5%' },
+                        ],
+                      });
+                    })()
+                  }
+                >
+                  + Add Substat
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="preferences-tab">
+            <p className="tab-description">
+              Define the ideal stats you want to roll for this character.
+            </p>
+
+            {slot !== 'head' && slot !== 'hands' && (
+              <div className="pref-section">
+                <h3>Preferred Main Stat ({slot.charAt(0).toUpperCase() + slot.slice(1)})</h3>
+                <div className="pref-chain">
+                  {currentPrefs.mainStats[slot].map((pref, idx) => (
+                    <div key={idx} className="pref-item">
+                      <select
+                        name={`pref-main-stat-${idx}`}
+                        value={pref.stat}
+                        onChange={(e) => updateMainStatPref(idx, { stat: e.target.value })}
+                      >
+                        {validMainStats[slot].map((s) => (
+                          <option key={s} value={s}>
+                            {s}
+                          </option>
+                        ))}
+                      </select>
+                      {idx < currentPrefs.mainStats[slot].length - 1 ? (
+                        <select
+                          name={`pref-main-stat-operator-${idx}`}
+                          className="operator-select"
+                          value={pref.operator || '>'}
+                          onChange={(e) => updateMainStatPref(idx, { operator: e.target.value })}
+                        >
+                          <option value=">">&gt;</option>
+                          <option value=">=">&ge;</option>
+                          <option value="OR">OR</option>
+                        </select>
+                      ) : (
+                        <button className="remove-pref-btn" onClick={() => removeMainStatPref(idx)}>
+                          ✕
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+                <button className="add-pref-btn" onClick={addMainStatPref}>
+                  + Add Priority
+                </button>
+              </div>
+            )}
+
+            <div className="pref-section">
+              <h3>Preferred Substats (Global)</h3>
+              <div className="pref-chain">
+                {currentPrefs.subStats.map((pref, idx) => (
+                  <div key={idx} className="pref-item">
+                    <select
+                      name={`pref-sub-stat-${idx}`}
+                      value={pref.stat}
+                      onChange={(e) => updateSubStatPref(idx, { stat: e.target.value })}
+                    >
+                      {allSubStats.map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                    {idx < currentPrefs.subStats.length - 1 ? (
+                      <select
+                        name={`pref-sub-stat-operator-${idx}`}
+                        className="operator-select"
+                        value={pref.operator || '>'}
+                        onChange={(e) => updateSubStatPref(idx, { operator: e.target.value })}
+                      >
+                        <option value=">">&gt;</option>
+                        <option value=">=">&ge;</option>
+                        <option value="OR">OR</option>
+                      </select>
+                    ) : (
+                      <button className="remove-pref-btn" onClick={() => removeSubStatPref(idx)}>
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <button className="add-pref-btn" onClick={addSubStatPref}>
+                + Add Priority
+              </button>
+            </div>
+
+            <div className="pref-section">
+              <h3>Build Comments</h3>
+              <textarea
+                className="build-comments-textarea"
+                placeholder="Additional notes about this build..."
+                value={currentPrefs.comments || ''}
+                onChange={(e) => {
+                  const newPrefs = { ...currentPrefs, comments: e.target.value };
+                  onUpdateBuildPreferences(newPrefs);
+                }}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </Modal>
   );
 }

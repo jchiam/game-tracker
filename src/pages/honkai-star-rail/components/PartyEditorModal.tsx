@@ -1,9 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import type { HsrParty, HsrPartyMember } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
 import { addToast } from '@/utils/toast';
-import './Modal.css';
-import './PartyEditorModal.css';
+import { Modal } from '@/components/Modal';
+import '@/components/PartyEditorModal.css';
 
 interface PartyEditorModalProps {
   party?: HsrParty;
@@ -23,21 +23,6 @@ export function PartyEditorModal({
   const [members, setMembers] = useState<HsrPartyMember[]>(party?.members || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        if (activeSlot !== null) {
-          setActiveSlot(null);
-          setSearchTerm('');
-        } else {
-          onClose();
-        }
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [activeSlot, onClose]);
 
   const filteredCharacters = useMemo(() => {
     return availableCharacters.filter(
@@ -75,120 +60,124 @@ export function PartyEditorModal({
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content party-editor" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>{party ? 'Edit Party' : 'Create New Party'}</h2>
-          <button className="close-btn" onClick={onClose}>
-            ✕
-          </button>
-        </div>
-
-        <div className="party-editor-body">
-          <div className="form-group">
-            <label>Party Name</label>
-            <input
-              type="text"
-              name="party-name"
-              placeholder="e.g. Memory of Chaos 12-1"
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label>Notes (Optional)</label>
-            <textarea
-              placeholder="Strategy, alternative members, etc..."
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
-          </div>
-
-          <div className="team-builder-section">
-            <label>Team Selection</label>
-            <div className="team-slots">
-              {[0, 1, 2, 3].map((slotIndex) => {
-                const member = members.find((m) => m.slotIndex === slotIndex);
-                const character = member
-                  ? availableCharacters.find((c) => c.id === member.characterId)
-                  : null;
-
-                return (
-                  <div
-                    key={slotIndex}
-                    className={`builder-slot ${activeSlot === slotIndex ? 'active' : ''} ${character ? 'occupied' : 'empty'}`}
-                    onClick={() => setActiveSlot(slotIndex)}
-                  >
-                    {character ? (
-                      <>
-                        <img src={character.imageUrl} alt={character.name} className="slot-img" />
-                        <div className="slot-overlay">
-                          <span className="slot-name">{character.name}</span>
-                        </div>
-                        <button
-                          className="remove-member-btn"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            removeMember(slotIndex);
-                          }}
-                        >
-                          ✕
-                        </button>
-                      </>
-                    ) : (
-                      <div className="slot-placeholder">
-                        <span className="plus">+</span>
-                        <span>Slot {slotIndex + 1}</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {activeSlot !== null && (
-              <div className="character-picker">
-                <div className="picker-header">
-                  <input
-                    type="text"
-                    name="party-character-search"
-                    placeholder="Search character..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    autoFocus
-                  />
-                  <button className="cancel-picker" onClick={() => setActiveSlot(null)}>
-                    Cancel
-                  </button>
-                </div>
-                <div className="picker-list">
-                  {filteredCharacters.map((char) => (
-                    <div
-                      key={char.id}
-                      className="picker-item"
-                      onClick={() => handleSelectCharacter(char.id)}
-                    >
-                      <img src={char.imageUrl} alt={char.name} />
-                      <span>{char.name}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="modal-footer">
+    <Modal
+      title={party ? 'Edit Party' : 'Create New Party'}
+      onClose={onClose}
+      className="party-editor"
+      onEscPress={() => {
+        if (activeSlot !== null) {
+          setActiveSlot(null);
+          setSearchTerm('');
+        } else {
+          onClose();
+        }
+      }}
+      footer={
+        <>
           <button className="secondary-action" onClick={onClose}>
             Cancel
           </button>
           <button className="primary-action" onClick={handleSave}>
             Save Party
           </button>
+        </>
+      }
+    >
+      <div className="party-editor-body">
+        <div className="form-group">
+          <label>Party Name</label>
+          <input
+            type="text"
+            name="party-name"
+            placeholder="e.g. Memory of Chaos 12-1"
+            autoFocus
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <label>Notes (Optional)</label>
+          <textarea
+            placeholder="Strategy, alternative members, etc..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
+        </div>
+
+        <div className="team-builder-section">
+          <label>Team Selection</label>
+          <div className="team-slots">
+            {[0, 1, 2, 3].map((slotIndex) => {
+              const member = members.find((m) => m.slotIndex === slotIndex);
+              const character = member
+                ? availableCharacters.find((c) => c.id === member.characterId)
+                : null;
+
+              return (
+                <div
+                  key={slotIndex}
+                  className={`builder-slot ${activeSlot === slotIndex ? 'active' : ''} ${character ? 'occupied' : 'empty'}`}
+                  onClick={() => setActiveSlot(slotIndex)}
+                >
+                  {character ? (
+                    <>
+                      <img src={character.imageUrl} alt={character.name} className="slot-img" />
+                      <div className="slot-overlay">
+                        <span className="slot-name">{character.name}</span>
+                      </div>
+                      <button
+                        className="remove-member-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removeMember(slotIndex);
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </>
+                  ) : (
+                    <div className="slot-placeholder">
+                      <span className="plus">+</span>
+                      <span>Slot {slotIndex + 1}</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {activeSlot !== null && (
+            <div className="character-picker">
+              <div className="picker-header">
+                <input
+                  type="text"
+                  name="party-character-search"
+                  placeholder="Search character..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  autoFocus
+                />
+                <button className="cancel-picker" onClick={() => setActiveSlot(null)}>
+                  Cancel
+                </button>
+              </div>
+              <div className="picker-list">
+                {filteredCharacters.map((char) => (
+                  <div
+                    key={char.id}
+                    className="picker-item"
+                    onClick={() => handleSelectCharacter(char.id)}
+                  >
+                    <img src={char.imageUrl} alt={char.name} />
+                    <span>{char.name}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
-    </div>
+    </Modal>
   );
 }

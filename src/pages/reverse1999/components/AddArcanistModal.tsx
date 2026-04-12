@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import type { Arcanist } from '@/data/reverse1999/arcanists';
 import type { R1999TrackedArcanist } from '@/types';
 import { getAvatarUrl } from '@/lib/imagekit';
-import './Modal.css';
-import './AddArcanistModal.css';
+import { Modal } from '@/components/Modal';
+import '@/components/AddEntityModal.css';
 
 interface AddArcanistModalProps {
   availableArcanists: Arcanist[];
@@ -20,14 +20,6 @@ export function AddArcanistModal({
 }: AddArcanistModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
-
   const filteredAvailable = availableArcanists
     .filter(
       (a) =>
@@ -37,68 +29,57 @@ export function AddArcanistModal({
     .sort((a, b) => a.name.localeCompare(b.name));
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>Add Arcanist</h2>
-          <button className="close-btn" onClick={onClose}>
-            ✕
-          </button>
-        </div>
+    <Modal title="Add Arcanist" onClose={onClose}>
+      <div className="modal-search">
+        <input
+          type="text"
+          name="add-arcanist-search"
+          placeholder="Search arcanists..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          autoFocus
+        />
+      </div>
 
-        <div className="modal-search">
-          <input
-            type="text"
-            name="add-arcanist-search"
-            placeholder="Search arcanists..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            autoFocus
-          />
-        </div>
-
-        <div className="arcanist-list">
-          {filteredAvailable.length > 0 ? (
-            filteredAvailable.map((arcanist) => (
-              <div
-                key={arcanist.id}
-                className="arcanist-list-item"
-                onClick={() => onAddArcanist(arcanist)}
-              >
-                <div className="arcanist-list-info">
-                  <div className="arcanist-list-img-wrapper">
-                    <img
-                      src={getAvatarUrl(arcanist.imageUrl)}
-                      alt={arcanist.name}
-                      className="arcanist-list-img"
-                      onError={(e) => {
-                        const target = e.target as HTMLImageElement;
-                        target.src = `https://ui-avatars.com/api/?name=${arcanist.name.replace(' ', '+')}&background=1a1a1a&color=fff`;
-                      }}
-                    />
-                  </div>
-                  <div className="arcanist-list-details">
-                    <span className="arcanist-list-name">{arcanist.name}</span>
-                    <div className="arcanist-list-tags">
-                      <span
-                        className={`afflatus-badge afflatus-${arcanist.afflatus.toLowerCase()}`}
-                      >
-                        {arcanist.afflatus}
-                      </span>
-                      <span className={`damage-badge damage-${arcanist.damageType.toLowerCase()}`}>
-                        {arcanist.damageType}
-                      </span>
-                    </div>
+      <div className="modal-list">
+        {filteredAvailable.length > 0 ? (
+          filteredAvailable.map((arcanist) => (
+            <div
+              key={arcanist.id}
+              className="modal-list-item"
+              onClick={() => onAddArcanist(arcanist)}
+            >
+              <div className="modal-list-info">
+                <div className="modal-list-img-wrapper">
+                  <img
+                    src={getAvatarUrl(arcanist.imageUrl)}
+                    alt={arcanist.name}
+                    className="modal-list-img"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = `https://ui-avatars.com/api/?name=${arcanist.name.replace(' ', '+')}&background=1a1a1a&color=fff`;
+                    }}
+                  />
+                </div>
+                <div className="modal-list-details">
+                  <span className="modal-list-name">{arcanist.name}</span>
+                  <div className="modal-list-tags">
+                    <span className={`afflatus-badge afflatus-${arcanist.afflatus.toLowerCase()}`}>
+                      {arcanist.afflatus}
+                    </span>
+                    <span className={`damage-badge damage-${arcanist.damageType.toLowerCase()}`}>
+                      {arcanist.damageType}
+                    </span>
                   </div>
                 </div>
-                <button className="add-btn">+</button>
               </div>
-            ))
-          ) : (
-            <div className="no-results">No arcanists found matching &quot;{searchTerm}&quot;</div>
-          )}
-        </div>
+              <button className="add-btn">+</button>
+            </div>
+          ))
+        ) : (
+          <div className="no-results">No arcanists found matching &quot;{searchTerm}&quot;</div>
+        )}
       </div>
-    </div>
+    </Modal>
   );
 }

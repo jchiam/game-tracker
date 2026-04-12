@@ -211,7 +211,7 @@ describe('AddCharacterModal', () => {
         onClose={vi.fn()}
       />,
     );
-    const names = Array.from(container.querySelectorAll('.char-list-name')).map(
+    const names = Array.from(container.querySelectorAll('.modal-list-name')).map(
       (el) => el.textContent,
     );
     expect(names).toEqual(['Aglaea', 'March', 'Zephyr']);
