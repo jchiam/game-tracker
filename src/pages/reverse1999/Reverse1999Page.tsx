@@ -1,7 +1,9 @@
 import { useState, useMemo } from 'react';
 import { useArcanists } from '@/hooks/reverse1999/useArcanists';
+import { useParties } from '@/hooks/reverse1999/useParties';
 import { ArcanistCard } from './components/ArcanistCard';
 import { AddArcanistModal } from './components/AddArcanistModal';
+import { PartiesTab } from './components/PartiesTab';
 import { AuthGate } from '@/components/AuthGate';
 import { LoadErrorState } from '@/components/LoadErrorState';
 import { SavingToast } from '@/components/SavingToast';
@@ -34,6 +36,9 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     getFilteredRoster,
   } = useArcanists(session, isAuthLoading);
 
+  const { parties, saveParty, deleteParty } = useParties(session);
+
+  const [view, setView] = useState<'roster' | 'lineups'>('roster');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'ALPHA' | 'LEVEL'>('ALPHA');
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,7 +53,23 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       <header className="hero">
         <h1 className="title">Reverse: 1999 Arcanists</h1>
         <p className="subtitle">Track your arcanists and build progress.</p>
-        {session && (
+
+        <div className="view-selector">
+          <button
+            className={`view-btn ${view === 'roster' ? 'active' : ''}`}
+            onClick={() => setView('roster')}
+          >
+            Roster
+          </button>
+          <button
+            className={`view-btn ${view === 'lineups' ? 'active' : ''}`}
+            onClick={() => setView('lineups')}
+          >
+            Lineups
+          </button>
+        </div>
+
+        {view === 'roster' && session && (
           <div className="roster-controls">
             {trackedArcanists.length > 0 && (
               <>
@@ -99,44 +120,54 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
         )}
       </header>
 
-      <section className="roster-grid">
-        {isAuthLoading ? (
-          <div className="empty-state">
-            <p>Authenticating...</p>
-          </div>
-        ) : isInitialLoad && session ? (
-          <div className="empty-state">
-            <p>Loading database sync...</p>
-          </div>
-        ) : isLoadError ? (
-          <LoadErrorState onRetry={retryLoad} />
-        ) : !session ? (
-          <AuthGate onSignIn={onSignIn} />
-        ) : trackedArcanists.length === 0 ? (
-          <div className="empty-state">
-            <p>No arcanists tracked yet. Use the + button to begin!</p>
-          </div>
-        ) : filteredRoster.length === 0 ? (
-          <div className="empty-state">
-            <p>No arcanists match your search.</p>
-          </div>
-        ) : (
-          filteredRoster.map((arcanist) => (
-            <ArcanistCard
-              key={arcanist.id!}
-              arcanist={arcanist}
-              onRemove={removeArcanist}
-              onUpdateLevel={updateArcanistLevel}
-              onUpdatePortrait={updatePortraitLevel}
-              onUpdateResonance={updateResonanceLevel}
-              onUpdateEuphoriaStage={updateEuphoriaStage}
-              onUpdatePsychube={updatePsychube}
-              onUpdatePsychubeAmplification={updatePsychubeAmplification}
-              onToggleFavorite={toggleFavoriteArcanist}
-            />
-          ))
-        )}
-      </section>
+      {view === 'roster' ? (
+        <section className="roster-grid">
+          {isAuthLoading ? (
+            <div className="empty-state">
+              <p>Authenticating...</p>
+            </div>
+          ) : isInitialLoad && session ? (
+            <div className="empty-state">
+              <p>Loading database sync...</p>
+            </div>
+          ) : isLoadError ? (
+            <LoadErrorState onRetry={retryLoad} />
+          ) : !session ? (
+            <AuthGate onSignIn={onSignIn} />
+          ) : trackedArcanists.length === 0 ? (
+            <div className="empty-state">
+              <p>No arcanists tracked yet. Use the + button to begin!</p>
+            </div>
+          ) : filteredRoster.length === 0 ? (
+            <div className="empty-state">
+              <p>No arcanists match your search.</p>
+            </div>
+          ) : (
+            filteredRoster.map((arcanist) => (
+              <ArcanistCard
+                key={arcanist.id!}
+                arcanist={arcanist}
+                onRemove={removeArcanist}
+                onUpdateLevel={updateArcanistLevel}
+                onUpdatePortrait={updatePortraitLevel}
+                onUpdateResonance={updateResonanceLevel}
+                onUpdateEuphoriaStage={updateEuphoriaStage}
+                onUpdatePsychube={updatePsychube}
+                onUpdatePsychubeAmplification={updatePsychubeAmplification}
+                onToggleFavorite={toggleFavoriteArcanist}
+              />
+            ))
+          )}
+        </section>
+      ) : (
+        <PartiesTab
+          parties={parties}
+          availableArcanists={availableArcanists}
+          onSaveParty={saveParty}
+          onDeleteParty={deleteParty}
+          session={session}
+        />
+      )}
 
       <SavingToast visible={pendingSaveCount > 0} />
 

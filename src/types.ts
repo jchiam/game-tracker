@@ -52,3 +52,17 @@ export interface R1999TrackedArcanist extends Arcanist {
   psychubeLevel: number; // 1–60
   psychubeAmplification: number; // 1–5 (A1–A5)
 }
+
+export interface R1999Party {
+  id: string;
+  profileId: string;
+  name: string;
+  notes: string | null;
+  members: R1999PartyMember[];
+  createdAt: string;
+}
+
+export interface R1999PartyMember {
+  arcanistId: string;
+  slotIndex: number; // 0–3
+}
