@@ -4,6 +4,54 @@ import { getMugshotUrl } from '@/lib/imagekit';
 import { useState } from 'react';
 import './ArcanistCard.css';
 
+// ─── Progress color gradient utilities ──────────────────────────────
+
+interface ProgressStyle {
+  color: string;
+  borderColor: string;
+  glowColor: string;
+  activeBg: string;
+}
+
+// Anchor points for the continuous gradient (gray → orange → gold → teal)
+const COLOR_STOPS = [
+  { pct: 0,    r: 160, g: 160, b: 181 }, // #a0a0b5 gray
+  { pct: 0.33, r: 224, g: 128, b:  80 }, // #e08050 orange
+  { pct: 0.67, r: 212, g: 175, b:  55 }, // #d4af37 gold
+  { pct: 1,    r:  76, g: 201, b: 160 }, // #4cc9a0 teal
+];
+
+function lerpColor(pct: number): [number, number, number] {
+  const clamped = Math.max(0, Math.min(1, pct));
+  let lo = COLOR_STOPS[0];
+  let hi = COLOR_STOPS[COLOR_STOPS.length - 1];
+  for (let i = 0; i < COLOR_STOPS.length - 1; i++) {
+    if (clamped >= COLOR_STOPS[i].pct && clamped <= COLOR_STOPS[i + 1].pct) {
+      lo = COLOR_STOPS[i];
+      hi = COLOR_STOPS[i + 1];
+      break;
+    }
+  }
+  const span = hi.pct - lo.pct;
+  const t = span === 0 ? 1 : (clamped - lo.pct) / span;
+  return [
+    Math.round(lo.r + t * (hi.r - lo.r)),
+    Math.round(lo.g + t * (hi.g - lo.g)),
+    Math.round(lo.b + t * (hi.b - lo.b)),
+  ];
+}
+
+function getProgressStyle(value: number, min: number, max: number): ProgressStyle {
+  const pct = max === min ? 1 : (value - min) / (max - min);
+  const [r, g, b] = lerpColor(pct);
+  return {
+    color:       `rgb(${r}, ${g}, ${b})`,
+    borderColor: `rgba(${r}, ${g}, ${b}, 0.5)`,
+    glowColor:   `rgba(${r}, ${g}, ${b}, 0.25)`,
+    activeBg:    `rgba(${r}, ${g}, ${b}, 0.12)`,
+  };
+}
+
 interface ArcanistCardProps {
   arcanist: R1999TrackedArcanist;
   onRemove: (id: string, e: React.MouseEvent) => void;
@@ -35,6 +83,15 @@ export function ArcanistCard({
   const selectedPsychube = arcanist.psychubeId
     ? (ALL_PSYCHUBES.find((p) => p.id === arcanist.psychubeId) ?? null)
     : null;
+
+  // Progress color styles per dimension
+  const levelPs = getProgressStyle(arcanist.level, 1, 60);
+  const portraitPs = getProgressStyle(arcanist.portraitLevel, 0, 5);
+  const resonancePs = getProgressStyle(arcanist.resonanceLevel, 0, 15);
+  const euphoriaPs = getProgressStyle(arcanist.euphoriaStage, 0, 4);
+  const psychubePs = arcanist.psychubeId
+    ? getProgressStyle(arcanist.psychubeLevel, 1, 60)
+    : getProgressStyle(0, 0, 1); // force gray when no psychube
 
   return (
     <div className={`arcanist-card ${isEditing ? 'is-editing' : ''}`}>
@@ -107,12 +164,12 @@ export function ArcanistCard({
         {/* Static summary — visible in static mode, collapses when editing */}
         <div className="arcanist-static-summary">
           <div className="arcanist-static-stats">
-            <span className="stat-chip">Lv {arcanist.level}</span>
-            <span className="stat-chip">P{arcanist.portraitLevel}</span>
-            <span className="stat-chip">R{arcanist.resonanceLevel}</span>
-            <span className="stat-chip">E{arcanist.euphoriaStage}</span>
+            <span className="stat-chip" style={{ color: levelPs.color, borderColor: levelPs.borderColor }}>Lv {arcanist.level}</span>
+            <span className="stat-chip" style={{ color: portraitPs.color, borderColor: portraitPs.borderColor }}>P{arcanist.portraitLevel}</span>
+            <span className="stat-chip" style={{ color: resonancePs.color, borderColor: resonancePs.borderColor }}>R{arcanist.resonanceLevel}</span>
+            <span className="stat-chip" style={{ color: euphoriaPs.color, borderColor: euphoriaPs.borderColor }}>E{arcanist.euphoriaStage}</span>
           </div>
-          <div className="arcanist-static-psychube">
+          <div className="arcanist-static-psychube" style={{ color: psychubePs.color }}>
             {selectedPsychube ? (
               `${selectedPsychube.name} · Lv ${arcanist.psychubeLevel} · A${arcanist.psychubeAmplification}`
             ) : (
@@ -137,9 +194,13 @@ export function ArcanistCard({
                 value={arcanist.level}
                 onChange={(e) => onUpdateLevel(arcanist.id!, parseInt(e.target.value))}
                 className="level-slider"
-                style={{
-                  background: `linear-gradient(to right, var(--color-primary) ${(arcanist.level / 60) * 100}%, rgba(255,255,255,0.1) ${(arcanist.level / 60) * 100}%)`,
-                }}
+                style={
+                  {
+                    '--slider-fill-color': levelPs.color,
+                    '--slider-fill-glow': levelPs.glowColor,
+                    background: `linear-gradient(to right, ${levelPs.color} ${((arcanist.level - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.level - 1) / 59) * 100}%)`,
+                  } as React.CSSProperties
+                }
               />
             </div>
 
@@ -149,16 +210,31 @@ export function ArcanistCard({
                 <span className="section-value">{arcanist.portraitLevel} / 5</span>
               </div>
               <div className="portrait-row">
-                {([0, 1, 2, 3, 4, 5] as const).map((level) => (
-                  <button
-                    key={level}
-                    className={`portrait-btn ${level === 0 ? 'portrait-reset' : ''} ${arcanist.portraitLevel === level ? 'active' : ''}`}
-                    onClick={() => onUpdatePortrait(arcanist.id!, level)}
-                    title={level === 0 ? 'Reset portrait level' : `Portrait ${level}`}
-                  >
-                    P{level}
-                  </button>
-                ))}
+                {([0, 1, 2, 3, 4, 5] as const).map((level) => {
+                  const btnPs = getProgressStyle(level, 0, 5);
+                  const isActive = arcanist.portraitLevel === level;
+                  const isPassed = level > 0 && level < arcanist.portraitLevel;
+                  return (
+                    <button
+                      key={level}
+                      className={`portrait-btn ${level === 0 ? 'portrait-reset' : ''} ${isActive ? 'active' : ''}`}
+                      onClick={() => onUpdatePortrait(arcanist.id!, level)}
+                      title={level === 0 ? 'Reset portrait level' : `Portrait ${level}`}
+                      style={isActive ? {
+                        color: btnPs.color,
+                        borderColor: btnPs.borderColor,
+                        background: btnPs.activeBg,
+                        boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
+                      } : isPassed ? {
+                        color: btnPs.color,
+                        borderColor: btnPs.borderColor,
+                        opacity: 0.35,
+                      } : undefined}
+                    >
+                      P{level}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -175,24 +251,43 @@ export function ArcanistCard({
                 value={arcanist.resonanceLevel}
                 onChange={(e) => onUpdateResonance(arcanist.id!, parseInt(e.target.value))}
                 className="resonance-slider"
-                style={{
-                  background: `linear-gradient(to right, var(--color-primary) ${(arcanist.resonanceLevel / 15) * 100}%, rgba(255,255,255,0.1) ${(arcanist.resonanceLevel / 15) * 100}%)`,
-                }}
+                style={
+                  {
+                    '--slider-fill-color': resonancePs.color,
+                    '--slider-fill-glow': resonancePs.glowColor,
+                    background: `linear-gradient(to right, ${resonancePs.color} ${(arcanist.resonanceLevel / 15) * 100}%, rgba(255,255,255,0.1) ${(arcanist.resonanceLevel / 15) * 100}%)`,
+                  } as React.CSSProperties
+                }
               />
             </div>
 
             <div className="progress-section">
               <div className="section-header">Euphoria</div>
               <div className="euphoria-row">
-                {([0, 1, 2, 3, 4] as const).map((stage) => (
-                  <button
-                    key={stage}
-                    className={`euphoria-btn ${arcanist.euphoriaStage === stage ? 'active' : ''}`}
-                    onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
-                  >
-                    E{stage}
-                  </button>
-                ))}
+                {([0, 1, 2, 3, 4] as const).map((stage) => {
+                  const btnPs = getProgressStyle(stage, 0, 4);
+                  const isActive = arcanist.euphoriaStage === stage;
+                  const isPassed = stage < arcanist.euphoriaStage;
+                  return (
+                    <button
+                      key={stage}
+                      className={`euphoria-btn ${isActive ? 'active' : ''}`}
+                      onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
+                      style={isActive ? {
+                        color: btnPs.color,
+                        borderColor: btnPs.borderColor,
+                        background: btnPs.activeBg,
+                        boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
+                      } : isPassed ? {
+                        color: btnPs.color,
+                        borderColor: btnPs.borderColor,
+                        opacity: 0.35,
+                      } : undefined}
+                    >
+                      E{stage}
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -230,22 +325,41 @@ export function ArcanistCard({
                   onUpdatePsychube(arcanist.id!, arcanist.psychubeId, parseInt(e.target.value))
                 }
                 className="psychube-slider"
-                style={{
-                  background: `linear-gradient(to right, var(--color-primary) ${((arcanist.psychubeLevel - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 59) * 100}%)`,
-                }}
+                style={
+                  {
+                    '--slider-fill-color': psychubePs.color,
+                    '--slider-fill-glow': psychubePs.glowColor,
+                    background: `linear-gradient(to right, ${psychubePs.color} ${((arcanist.psychubeLevel - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 59) * 100}%)`,
+                  } as React.CSSProperties
+                }
               />
               <div className="amplification-row">
                 <span className="section-sublabel">Amplify</span>
-                {([1, 2, 3, 4, 5] as const).map((lvl) => (
-                  <button
-                    key={lvl}
-                    className={`amplify-btn ${arcanist.psychubeAmplification === lvl ? 'active' : ''}`}
-                    onClick={() => onUpdatePsychubeAmplification(arcanist.id!, lvl)}
-                    title={`A${lvl}`}
-                  >
-                    {`A${lvl}`}
-                  </button>
-                ))}
+                {([1, 2, 3, 4, 5] as const).map((lvl) => {
+                  const btnPs = getProgressStyle(lvl, 1, 5);
+                  const isActive = arcanist.psychubeAmplification === lvl;
+                  const isPassed = lvl < arcanist.psychubeAmplification;
+                  return (
+                    <button
+                      key={lvl}
+                      className={`amplify-btn ${isActive ? 'active' : ''}`}
+                      onClick={() => onUpdatePsychubeAmplification(arcanist.id!, lvl)}
+                      title={`A${lvl}`}
+                      style={isActive ? {
+                        color: btnPs.color,
+                        borderColor: btnPs.borderColor,
+                        background: btnPs.activeBg,
+                        boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
+                      } : isPassed ? {
+                        color: btnPs.color,
+                        borderColor: btnPs.borderColor,
+                        opacity: 0.35,
+                      } : undefined}
+                    >
+                      {`A${lvl}`}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
