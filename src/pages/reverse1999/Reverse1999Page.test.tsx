@@ -8,7 +8,12 @@ vi.mock('@/hooks/reverse1999/useArcanists', () => ({
   useArcanists: vi.fn(),
 }));
 
+vi.mock('@/hooks/reverse1999/useParties', () => ({
+  useParties: vi.fn(),
+}));
+
 import { useArcanists } from '@/hooks/reverse1999/useArcanists';
+import { useParties } from '@/hooks/reverse1999/useParties';
 
 function makeArcanist(id: string, name: string): R1999TrackedArcanist {
   return {
@@ -50,6 +55,13 @@ const defaultArcanistsHook = {
 describe('Reverse1999Page', () => {
   beforeEach(() => {
     vi.mocked(useArcanists).mockReturnValue(defaultArcanistsHook);
+    vi.mocked(useParties).mockReturnValue({
+      parties: [],
+      isLoading: false,
+      saveParty: vi.fn().mockResolvedValue(null),
+      deleteParty: vi.fn().mockResolvedValue(false),
+      refreshParties: vi.fn().mockResolvedValue(undefined),
+    });
   });
 
   it('renders the page title', () => {
