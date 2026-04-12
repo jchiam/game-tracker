@@ -25,7 +25,6 @@
 }
 
 .arcanist-card:hover {
-  transform: translateY(-5px) scale(1.02);
   border-color: var(--color-primary);
   box-shadow:
     0 10px 30px rgba(0, 0, 0, 0.5),
@@ -42,6 +41,9 @@
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
   overflow: hidden;
+  /* Isolate on its own compositing layer so body layout changes
+     do not cause subpixel shifts in the absolutely-positioned overlay */
+  transform: translateZ(0);
 }
 
 .arcanist-image {
@@ -116,7 +118,6 @@
 }
 
 .arcanist-card:hover .arcanist-image {
-  transform: scale(1.05);
   opacity: 1;
 }
 
@@ -164,18 +165,100 @@
   gap: 4px;
 }
 
+/* ─── Card body ────────────────────────────────────────────────── */
+
 .arcanist-card-body {
-  padding: var(--spacing-lg) var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  padding: var(--spacing-md) var(--spacing-md) 0;
+}
+
+/* Name sits above both sections — always visible */
+.arcanist-card-body > .arcanist-name {
+  margin-bottom: 6px;
+}
+
+/* ─── Static summary (default / collapsed state) ───────────────── */
+
+.arcanist-static-summary {
+  padding-bottom: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition:
+    opacity 0.2s ease,
+    max-height 0.3s ease,
+    padding 0.3s ease;
+  max-height: 80px;
+  overflow: hidden;
+}
+
+.arcanist-card-body.is-editing .arcanist-static-summary {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+
+.arcanist-static-stats {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.stat-chip {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 2px 8px;
+  letter-spacing: 0.03em;
+}
+
+.arcanist-static-psychube {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.no-psychube {
+  opacity: 0.4;
+}
+
+/* ─── Edit body (expanded state) ───────────────────────────────── */
+
+.arcanist-edit-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.arcanist-card-body.is-editing .arcanist-edit-body {
+  /* Large enough for all five progress sections */
+  max-height: 700px;
+}
+
+.arcanist-edit-body-inner {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
+  padding-bottom: var(--spacing-lg);
 }
+
+/* ─── Shared name style ─────────────────────────────────────────── */
 
 .arcanist-name {
   font-size: 1.5rem;
   margin-bottom: 0;
   color: #fff;
 }
+
+/* ─── Header overlay buttons ────────────────────────────────────── */
 
 .remove-btn {
   background: transparent;
@@ -242,7 +325,45 @@
   box-shadow: 0 0 8px var(--color-primary-glow) inset;
 }
 
-/* Progress sections */
+.edit-toggle-btn {
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  backdrop-filter: blur(4px);
+  padding: 0;
+  min-width: unset;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.edit-toggle-btn::before {
+  display: none;
+}
+
+.edit-toggle-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.edit-toggle-btn.active {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: rgba(212, 175, 55, 0.15);
+}
+
+/* ─── Progress sections (inside edit body) ──────────────────────── */
+
 .progress-section {
   display: flex;
   flex-direction: column;
@@ -520,18 +641,8 @@
   box-shadow: 0 0 8px var(--color-primary-glow) inset;
 }
 
-.amplify-btn.amplify-reset {
-  color: var(--color-text-secondary);
-  opacity: 0.6;
-}
+/* ─── Badges ────────────────────────────────────────────────────── */
 
-.amplify-btn.amplify-reset:hover {
-  opacity: 1;
-  border-color: var(--color-text-secondary);
-  color: var(--color-text-secondary);
-}
-
-/* Badges */
 .afflatus-badge,
 .damage-badge {
   padding: 3px 8px;

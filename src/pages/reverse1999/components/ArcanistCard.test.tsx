@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { ArcanistCard } from '@/pages/reverse1999/components/ArcanistCard';
 import type { R1999TrackedArcanist } from '@/types';
 
@@ -35,14 +35,49 @@ const defaultProps = {
   onToggleFavorite: vi.fn(),
 };
 
+function openEditMode() {
+  fireEvent.click(screen.getByTitle('Edit'));
+}
+
 describe('ArcanistCard', () => {
   it('renders the arcanist name', () => {
     render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
     expect(screen.getByText('Regulus')).toBeInTheDocument();
   });
 
-  it('renders the current level', () => {
+  it('renders stat chips in static mode', () => {
+    const { container } = render(
+      <ArcanistCard arcanist={makeArcanist({ level: 55 })} {...defaultProps} />,
+    );
+    const statsRow = container.querySelector('.arcanist-static-stats') as HTMLElement;
+    expect(within(statsRow).getByText('Lv 55')).toBeInTheDocument();
+    expect(within(statsRow).getByText('P0')).toBeInTheDocument();
+    expect(within(statsRow).getByText('R0')).toBeInTheDocument();
+    expect(within(statsRow).getByText('E0')).toBeInTheDocument();
+  });
+
+  it('renders "—" when no psychube is equipped', () => {
+    const { container } = render(
+      <ArcanistCard arcanist={makeArcanist({ psychubeId: null })} {...defaultProps} />,
+    );
+    expect(container.querySelector('.no-psychube')).toBeInTheDocument();
+  });
+
+  it('shows the edit toggle button', () => {
+    render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
+    expect(screen.getByTitle('Edit')).toBeInTheDocument();
+  });
+
+  it('toggles to edit mode and shows done button', () => {
+    const { container } = render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
+    openEditMode();
+    expect(screen.getByTitle('Done editing')).toBeInTheDocument();
+    expect(container.querySelector('.arcanist-card-body.is-editing')).toBeInTheDocument();
+  });
+
+  it('renders the current level value in edit body', () => {
     render(<ArcanistCard arcanist={makeArcanist({ level: 55 })} {...defaultProps} />);
+    // The "55 / 60" label is in the edit body (always in DOM)
     expect(screen.getByText('55 / 60')).toBeInTheDocument();
   });
 
@@ -96,27 +131,32 @@ describe('ArcanistCard', () => {
   });
 
   it('renders all euphoria stage buttons', () => {
-    render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
-    expect(screen.getByText('E0')).toBeInTheDocument();
-    expect(screen.getByText('E4')).toBeInTheDocument();
+    const { container } = render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
+    const euphoriaRow = container.querySelector('.euphoria-row') as HTMLElement;
+    expect(within(euphoriaRow).getByText('E0')).toBeInTheDocument();
+    expect(within(euphoriaRow).getByText('E4')).toBeInTheDocument();
   });
 
   it('marks the current euphoria stage as active', () => {
-    render(<ArcanistCard arcanist={makeArcanist({ euphoriaStage: 2 })} {...defaultProps} />);
-    expect(screen.getByText('E2')).toHaveClass('active');
-    expect(screen.getByText('E1')).not.toHaveClass('active');
+    const { container } = render(
+      <ArcanistCard arcanist={makeArcanist({ euphoriaStage: 2 })} {...defaultProps} />,
+    );
+    const euphoriaRow = container.querySelector('.euphoria-row') as HTMLElement;
+    expect(within(euphoriaRow).getByText('E2')).toHaveClass('active');
+    expect(within(euphoriaRow).getByText('E1')).not.toHaveClass('active');
   });
 
   it('calls onUpdateEuphoriaStage when a euphoria button is clicked', () => {
     const onUpdateEuphoriaStage = vi.fn();
-    render(
+    const { container } = render(
       <ArcanistCard
         arcanist={makeArcanist()}
         {...defaultProps}
         onUpdateEuphoriaStage={onUpdateEuphoriaStage}
       />,
     );
-    fireEvent.click(screen.getByText('E3'));
+    const euphoriaRow = container.querySelector('.euphoria-row') as HTMLElement;
+    fireEvent.click(within(euphoriaRow).getByText('E3'));
     expect(onUpdateEuphoriaStage).toHaveBeenCalledWith('arc-1', 3);
   });
 

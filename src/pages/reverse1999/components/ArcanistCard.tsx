@@ -29,10 +29,15 @@ export function ArcanistCard({
 }: ArcanistCardProps) {
   const [imgLoading, setImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
   const imageUrl = getMugshotUrl(arcanist.imageUrl);
+  const selectedPsychube = arcanist.psychubeId
+    ? (ALL_PSYCHUBES.find((p) => p.id === arcanist.psychubeId) ?? null)
+    : null;
 
   return (
-    <div className="arcanist-card">
+    <div className={`arcanist-card ${isEditing ? 'is-editing' : ''}`}>
       <div className="arcanist-card-header">
         <div className="arcanist-image-wrapper">
           {imgLoading && !imgError && (
@@ -85,130 +90,160 @@ export function ArcanistCard({
                 {arcanist.damageType}
               </span>
             </div>
+            <button
+              className={`edit-toggle-btn ${isEditing ? 'active' : ''}`}
+              onClick={() => setIsEditing((v) => !v)}
+              title={isEditing ? 'Done editing' : 'Edit'}
+            >
+              {isEditing ? '✓' : '✎'}
+            </button>
           </div>
         </div>
       </div>
-      <div className="arcanist-card-body">
+
+      <div className={`arcanist-card-body ${isEditing ? 'is-editing' : ''}`}>
         <h3 className="arcanist-name">{arcanist.name}</h3>
 
-        <div className="progress-section">
-          <div className="section-header">
-            <span>Level</span>
-            <span className="section-value">{arcanist.level} / 60</span>
+        {/* Static summary — visible in static mode, collapses when editing */}
+        <div className="arcanist-static-summary">
+          <div className="arcanist-static-stats">
+            <span className="stat-chip">Lv {arcanist.level}</span>
+            <span className="stat-chip">P{arcanist.portraitLevel}</span>
+            <span className="stat-chip">R{arcanist.resonanceLevel}</span>
+            <span className="stat-chip">E{arcanist.euphoriaStage}</span>
           </div>
-          <input
-            type="range"
-            min="1"
-            max="60"
-            value={arcanist.level}
-            onChange={(e) => onUpdateLevel(arcanist.id!, parseInt(e.target.value))}
-            className="level-slider"
-            style={{
-              background: `linear-gradient(to right, var(--color-primary) ${(arcanist.level / 60) * 100}%, rgba(255,255,255,0.1) ${(arcanist.level / 60) * 100}%)`,
-            }}
-          />
+          <div className="arcanist-static-psychube">
+            {selectedPsychube ? (
+              `${selectedPsychube.name} · Lv ${arcanist.psychubeLevel} · A${arcanist.psychubeAmplification}`
+            ) : (
+              <span className="no-psychube">—</span>
+            )}
+          </div>
         </div>
 
-        <div className="progress-section">
-          <div className="section-header">
-            <span>Portrait Level</span>
-            <span className="section-value">{arcanist.portraitLevel} / 5</span>
-          </div>
-          <div className="portrait-row">
-            {([0, 1, 2, 3, 4, 5] as const).map((level) => (
-              <button
-                key={level}
-                className={`portrait-btn ${level === 0 ? 'portrait-reset' : ''} ${arcanist.portraitLevel === level ? 'active' : ''}`}
-                onClick={() => onUpdatePortrait(arcanist.id!, level)}
-                title={level === 0 ? 'Reset portrait level' : `Portrait ${level}`}
+        {/* Edit body — always in DOM, expands when editing */}
+        <div className="arcanist-edit-body" aria-hidden={!isEditing}>
+          <div className="arcanist-edit-body-inner">
+            <div className="progress-section">
+              <div className="section-header">
+                <span>Level</span>
+                <span className="section-value">{arcanist.level} / 60</span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="60"
+                value={arcanist.level}
+                onChange={(e) => onUpdateLevel(arcanist.id!, parseInt(e.target.value))}
+                className="level-slider"
+                style={{
+                  background: `linear-gradient(to right, var(--color-primary) ${(arcanist.level / 60) * 100}%, rgba(255,255,255,0.1) ${(arcanist.level / 60) * 100}%)`,
+                }}
+              />
+            </div>
+
+            <div className="progress-section">
+              <div className="section-header">
+                <span>Portrait Level</span>
+                <span className="section-value">{arcanist.portraitLevel} / 5</span>
+              </div>
+              <div className="portrait-row">
+                {([0, 1, 2, 3, 4, 5] as const).map((level) => (
+                  <button
+                    key={level}
+                    className={`portrait-btn ${level === 0 ? 'portrait-reset' : ''} ${arcanist.portraitLevel === level ? 'active' : ''}`}
+                    onClick={() => onUpdatePortrait(arcanist.id!, level)}
+                    title={level === 0 ? 'Reset portrait level' : `Portrait ${level}`}
+                  >
+                    P{level}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="progress-section">
+              <div className="section-header">
+                <span>Resonance Level</span>
+                <span className="section-value">{arcanist.resonanceLevel} / 15</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="15"
+                value={arcanist.resonanceLevel}
+                onChange={(e) => onUpdateResonance(arcanist.id!, parseInt(e.target.value))}
+                className="resonance-slider"
+                style={{
+                  background: `linear-gradient(to right, var(--color-primary) ${(arcanist.resonanceLevel / 15) * 100}%, rgba(255,255,255,0.1) ${(arcanist.resonanceLevel / 15) * 100}%)`,
+                }}
+              />
+            </div>
+
+            <div className="progress-section">
+              <div className="section-header">Euphoria</div>
+              <div className="euphoria-row">
+                {([0, 1, 2, 3, 4] as const).map((stage) => (
+                  <button
+                    key={stage}
+                    className={`euphoria-btn ${arcanist.euphoriaStage === stage ? 'active' : ''}`}
+                    onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
+                  >
+                    E{stage}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="progress-section">
+              <div className="section-header">
+                <span>Psychube</span>
+                <span className="section-value">{arcanist.psychubeLevel} / 60</span>
+              </div>
+              <select
+                className="psychube-select"
+                value={arcanist.psychubeId ?? ''}
+                onChange={(e) =>
+                  onUpdatePsychube(
+                    arcanist.id!,
+                    e.target.value ? Number(e.target.value) : null,
+                    arcanist.psychubeLevel,
+                  )
+                }
               >
-                P{level}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="progress-section">
-          <div className="section-header">
-            <span>Resonance Level</span>
-            <span className="section-value">{arcanist.resonanceLevel} / 15</span>
-          </div>
-          <input
-            type="range"
-            min="0"
-            max="15"
-            value={arcanist.resonanceLevel}
-            onChange={(e) => onUpdateResonance(arcanist.id!, parseInt(e.target.value))}
-            className="resonance-slider"
-            style={{
-              background: `linear-gradient(to right, var(--color-primary) ${(arcanist.resonanceLevel / 15) * 100}%, rgba(255,255,255,0.1) ${(arcanist.resonanceLevel / 15) * 100}%)`,
-            }}
-          />
-        </div>
-
-        <div className="progress-section">
-          <div className="section-header">Euphoria</div>
-          <div className="euphoria-row">
-            {([0, 1, 2, 3, 4] as const).map((stage) => (
-              <button
-                key={stage}
-                className={`euphoria-btn ${arcanist.euphoriaStage === stage ? 'active' : ''}`}
-                onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
-              >
-                E{stage}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="progress-section">
-          <div className="section-header">
-            <span>Psychube</span>
-            <span className="section-value">{arcanist.psychubeLevel} / 60</span>
-          </div>
-          <select
-            className="psychube-select"
-            value={arcanist.psychubeId ?? ''}
-            onChange={(e) =>
-              onUpdatePsychube(
-                arcanist.id!,
-                e.target.value ? Number(e.target.value) : null,
-                arcanist.psychubeLevel,
-              )
-            }
-          >
-            <option value="">No Psychube</option>
-            {ALL_PSYCHUBES.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name} ({p.rarity}★)
-              </option>
-            ))}
-          </select>
-          <input
-            type="range"
-            min="1"
-            max="60"
-            value={arcanist.psychubeLevel}
-            onChange={(e) =>
-              onUpdatePsychube(arcanist.id!, arcanist.psychubeId, parseInt(e.target.value))
-            }
-            className="psychube-slider"
-            style={{
-              background: `linear-gradient(to right, var(--color-primary) ${((arcanist.psychubeLevel - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 59) * 100}%)`,
-            }}
-          />
-          <div className="amplification-row">
-            <span className="section-sublabel">Amplify</span>
-            {([1, 2, 3, 4, 5] as const).map((lvl) => (
-              <button
-                key={lvl}
-                className={`amplify-btn ${arcanist.psychubeAmplification === lvl ? 'active' : ''}`}
-                onClick={() => onUpdatePsychubeAmplification(arcanist.id!, lvl)}
-                title={`A${lvl}`}
-              >
-                {`A${lvl}`}
-              </button>
-            ))}
+                <option value="">No Psychube</option>
+                {ALL_PSYCHUBES.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name} ({p.rarity}★)
+                  </option>
+                ))}
+              </select>
+              <input
+                type="range"
+                min="1"
+                max="60"
+                value={arcanist.psychubeLevel}
+                onChange={(e) =>
+                  onUpdatePsychube(arcanist.id!, arcanist.psychubeId, parseInt(e.target.value))
+                }
+                className="psychube-slider"
+                style={{
+                  background: `linear-gradient(to right, var(--color-primary) ${((arcanist.psychubeLevel - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 59) * 100}%)`,
+                }}
+              />
+              <div className="amplification-row">
+                <span className="section-sublabel">Amplify</span>
+                {([1, 2, 3, 4, 5] as const).map((lvl) => (
+                  <button
+                    key={lvl}
+                    className={`amplify-btn ${arcanist.psychubeAmplification === lvl ? 'active' : ''}`}
+                    onClick={() => onUpdatePsychubeAmplification(arcanist.id!, lvl)}
+                    title={`A${lvl}`}
+                  >
+                    {`A${lvl}`}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>
