@@ -8,13 +8,6 @@
   max-height: 50vh;
 }
 
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
-
-.form-group label,
 .substats-section label {
   font-size: 0.9rem;
   color: var(--color-text-secondary);
