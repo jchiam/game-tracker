@@ -101,15 +101,6 @@
   background: rgba(212, 175, 55, 0.05);
 }
 
-.modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--spacing-md);
-  padding: var(--spacing-md) var(--spacing-lg);
-  border-top: 1px solid var(--color-border);
-  background: rgba(0, 0, 0, 0.2);
-}
-
 .secondary-action.danger {
   border-color: rgba(255, 77, 79, 0.5);
   color: #ff4d4f;

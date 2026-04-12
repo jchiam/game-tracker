@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import type { HsrParty, HsrPartyMember } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
 import { addToast } from '@/utils/toast';
+import './Modal.css';
 import './PartyEditorModal.css';
 
 interface PartyEditorModalProps {

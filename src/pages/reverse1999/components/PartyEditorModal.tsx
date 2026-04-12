@@ -3,6 +3,7 @@ import type { R1999Party, R1999PartyMember } from '@/types';
 import type { Arcanist } from '@/data/reverse1999/arcanists';
 import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
 import { addToast } from '@/utils/toast';
+import './Modal.css';
 import './PartyEditorModal.css';
 
 interface PartyEditorModalProps {
