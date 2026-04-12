@@ -61,7 +61,12 @@ describe('AddArcanistModal', () => {
         dbId: 'db-1',
         isFavorited: false,
         level: 40,
-        insightLevel: 2 as const,
+        portraitLevel: 2,
+        resonanceLevel: 5,
+        euphoriaStage: 0,
+        psychubeId: null,
+        psychubeLevel: 1,
+        psychubeAmplification: 1,
       },
     ] as R1999TrackedArcanist[];
     render(
