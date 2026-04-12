@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet, EquippedRelic } from '@/data/honkai-star-rail/relics';
 import './Modal.css';
@@ -26,6 +26,14 @@ export function RelicEditorModal({
   onClose,
 }: RelicEditorModalProps) {
   const [activeTab, setActiveTab] = useState<'equip' | 'preferences'>('equip');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
   const currentRelic = char.relics[slot] || emptyRelic;
   const currentPrefs = char.buildPreferences || {
     mainStats: { body: [], feet: [], sphere: [], rope: [] },

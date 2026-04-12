@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { HsrParty, HsrPartyMember } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
 import { addToast } from '@/utils/toast';
@@ -22,6 +22,21 @@ export function PartyEditorModal({
   const [members, setMembers] = useState<HsrPartyMember[]>(party?.members || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (activeSlot !== null) {
+          setActiveSlot(null);
+          setSearchTerm('');
+        } else {
+          onClose();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [activeSlot, onClose]);
 
   const filteredCharacters = useMemo(() => {
     return availableCharacters.filter(
@@ -75,6 +90,7 @@ export function PartyEditorModal({
               type="text"
               name="party-name"
               placeholder="e.g. Memory of Chaos 12-1"
+              autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
             />

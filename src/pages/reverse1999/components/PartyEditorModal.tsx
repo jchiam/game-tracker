@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { R1999Party, R1999PartyMember } from '@/types';
 import type { Arcanist } from '@/data/reverse1999/arcanists';
 import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
@@ -23,6 +23,21 @@ export function PartyEditorModal({
   const [members, setMembers] = useState<R1999PartyMember[]>(party?.members || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (activeSlot !== null) {
+          setActiveSlot(null);
+          setSearchTerm('');
+        } else {
+          onClose();
+        }
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [activeSlot, onClose]);
 
   const filteredArcanists = useMemo(() => {
     return availableArcanists.filter(
@@ -76,6 +91,7 @@ export function PartyEditorModal({
               type="text"
               name="lineup-name"
               placeholder="e.g. Limbo of Ruin 3-3"
+              autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
             />

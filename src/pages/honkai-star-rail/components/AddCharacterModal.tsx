@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Character } from '@/data/honkai-star-rail/characters';
 import type { HsrTrackedCharacter } from '@/types';
 import './Modal.css';
@@ -18,6 +18,14 @@ export function AddCharacterModal({
   onClose,
 }: AddCharacterModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const filteredAvailableCharacters = availableCharacters
     .filter(

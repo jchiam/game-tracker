@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { Arcanist } from '@/data/reverse1999/arcanists';
 import type { R1999TrackedArcanist } from '@/types';
 import { getAvatarUrl } from '@/lib/imagekit';
@@ -19,6 +19,14 @@ export function AddArcanistModal({
   onClose,
 }: AddArcanistModalProps) {
   const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const filteredAvailable = availableArcanists
     .filter(
