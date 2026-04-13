@@ -6,6 +6,7 @@
   --color-bg-surface-hover: rgba(40, 40, 55, 0.8);
   --color-text-primary: #f0f0f5;
   --color-text-secondary: #a0a0b5;
+  --color-text-dim: rgba(160, 160, 181, 0.5);
   --color-primary: #d4af37; /* HSR Gold */
   --color-primary-glow: rgba(212, 175, 55, 0.4);
   --color-accent: #8b5cf6; /* Stellar Jade/Purple accent */
