@@ -35,10 +35,10 @@ jobs:
       - name: Lint codebase
         run: npm run lint
 
-      # Set repo variable VITE_SUPABASE_URL (Actions → Variables) to prod Supabase API URL; if unset, verify skips.
+      # Repository secret or variable VITE_SUPABASE_URL (prod Supabase API URL). Both unset → verify skips.
       - name: Verify CSP connect-src matches Supabase URL
         env:
-          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
         run: npm run verify:csp
 
       - name: Run unit tests
