@@ -5,6 +5,7 @@ import {
   loadParties,
   saveParty as apiSaveParty,
   deleteParty as apiDeleteParty,
+  toggleFavoriteParty as apiToggleFavorite,
 } from '@/services/reverse1999/partyService';
 
 export function useParties(session: Session | null) {
@@ -55,11 +56,17 @@ export function useParties(session: Session | null) {
     return success;
   };
 
+  const toggleFavoriteParty = (partyId: string, value: boolean) => {
+    setParties((prev) => prev.map((p) => (p.id === partyId ? { ...p, isFavorited: value } : p)));
+    apiToggleFavorite(partyId, value);
+  };
+
   return {
     parties,
     isLoading,
     saveParty,
     deleteParty,
+    toggleFavoriteParty,
     refreshParties: async () => {
       if (session?.user) {
         const data = await loadParties(session.user.id);

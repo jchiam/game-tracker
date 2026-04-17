@@ -58,6 +58,8 @@ export interface R1999Party {
   profileId: string;
   name: string;
   notes: string | null;
+  tier: string | null;
+  isFavorited: boolean;
   members: R1999PartyMember[];
   createdAt: string;
 }

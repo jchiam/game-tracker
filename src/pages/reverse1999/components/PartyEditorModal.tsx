@@ -20,6 +20,7 @@ export function PartyEditorModal({
   onClose,
 }: PartyEditorModalProps) {
   const [name, setName] = useState(party?.name || '');
+  const [tier, setTier] = useState<string | null>(party?.tier ?? null);
   const [notes, setNotes] = useState(party?.notes || '');
   const [members, setMembers] = useState<R1999PartyMember[]>(party?.members || []);
   const [searchTerm, setSearchTerm] = useState('');
@@ -55,6 +56,7 @@ export function PartyEditorModal({
     onSave({
       id: party?.id,
       name,
+      tier,
       notes,
       members,
     });
@@ -95,6 +97,22 @@ export function PartyEditorModal({
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
+        </div>
+
+        <div className="form-group">
+          <label>Tier</label>
+          <div className="tier-selector">
+            {(['S+', 'S', 'A', 'B'] as const).map((t) => (
+              <button
+                key={t}
+                className={`tier-btn tier-${t.replace('+', 'plus')} ${tier === t ? 'active' : ''}`}
+                onClick={() => setTier(tier === t ? null : t)}
+                type="button"
+              >
+                {t}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="form-group">

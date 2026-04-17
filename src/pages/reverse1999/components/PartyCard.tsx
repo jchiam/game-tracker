@@ -8,14 +8,27 @@ interface PartyCardProps {
   availableArcanists: Arcanist[];
   onEdit: () => void;
   onDelete: () => void;
+  onToggleFavorite: (value: boolean) => void;
 }
 
-export function PartyCard({ party, availableArcanists, onEdit, onDelete }: PartyCardProps) {
+export function PartyCard({ party, availableArcanists, onEdit, onDelete, onToggleFavorite }: PartyCardProps) {
   return (
     <div className="party-card">
+      {party.tier && (
+        <div className={`party-tier-banner tier-banner-${party.tier.replace('+', 'plus')}`}>
+          {party.tier}
+        </div>
+      )}
       <div className="party-card-header">
         <h3 className="party-name">{party.name}</h3>
         <div className="party-actions">
+          <button
+            className={`icon-btn favorite-btn ${party.isFavorited ? 'active' : ''}`}
+            onClick={() => onToggleFavorite(!party.isFavorited)}
+            title={party.isFavorited ? 'Unfavourite' : 'Favourite'}
+          >
+            {party.isFavorited ? '★' : '☆'}
+          </button>
           <button className="icon-btn edit-btn" onClick={onEdit} title="Edit Lineup">
             ✎
           </button>

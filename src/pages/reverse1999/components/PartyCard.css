@@ -8,6 +8,8 @@
   gap: var(--spacing-md);
   transition: all var(--transition-normal);
   backdrop-filter: blur(8px);
+  overflow: hidden;
+  position: relative;
 }
 
 .party-card:hover {
@@ -15,6 +17,23 @@
   transform: translateY(-4px);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
+
+.party-tier-banner {
+  position: absolute;
+  top: 0;
+  right: 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 3px 12px 3px 16px;
+  border-bottom-left-radius: var(--radius-md);
+  clip-path: polygon(8px 0%, 100% 0%, 100% 100%, 0% 100%);
+}
+
+.tier-banner-Splus { color: #fff; background: #c04a1a; }
+.tier-banner-S     { color: #1a1a1a; background: #ffd700; }
+.tier-banner-A     { color: #fff; background: #3a7fbf; }
+.tier-banner-B     { color: #fff; background: #3a8f3a; }
 
 .party-card-header {
   display: flex;
@@ -48,6 +67,15 @@
 .icon-btn:hover {
   background: rgba(255, 255, 255, 0.05);
   color: #fff;
+}
+
+.favorite-btn.active {
+  color: #ffd700;
+}
+
+.favorite-btn:hover {
+  color: #ffd700;
+  background: rgba(255, 215, 0, 0.1);
 }
 
 .edit-btn:hover {

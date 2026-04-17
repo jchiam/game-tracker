@@ -14,6 +14,8 @@ export async function loadParties(userId: string): Promise<R1999Party[]> {
       profile_id,
       name,
       notes,
+      tier,
+      is_favorited,
       created_at,
       r1999_party_members (
         arcanist_id,
@@ -34,6 +36,8 @@ export async function loadParties(userId: string): Promise<R1999Party[]> {
     profileId: row.profile_id,
     name: row.name,
     notes: row.notes,
+    tier: row.tier,
+    isFavorited: !!row.is_favorited,
     createdAt: row.created_at,
     members: (row.r1999_party_members || [])
       .sort((a: any, b: any) => a.slot_index - b.slot_index)
@@ -54,6 +58,8 @@ export async function saveParty(
     profile_id: userId,
     name: party.name || 'New Lineup',
     notes: party.notes || '',
+    tier: party.tier ?? null,
+    is_favorited: party.isFavorited ?? false,
   };
 
   let partyId = party.id;
@@ -97,6 +103,19 @@ export async function saveParty(
   }
 
   return partyId || null;
+}
+
+export async function toggleFavoriteParty(partyId: string, value: boolean): Promise<boolean> {
+  if (!DB_ENABLED) return false;
+  const { error } = await supabase
+    .from('r1999_parties')
+    .update({ is_favorited: value })
+    .eq('id', partyId);
+  if (error) {
+    console.error('Error toggling R1999 party favourite:', error);
+    return false;
+  }
+  return true;
 }
 
 export async function deleteParty(partyId: string): Promise<boolean> {

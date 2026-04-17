@@ -36,7 +36,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     getFilteredRoster,
   } = useArcanists(session, isAuthLoading);
 
-  const { parties, saveParty, deleteParty } = useParties(session);
+  const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
   const [view, setView] = useState<'roster' | 'lineups'>('roster');
   const [searchTerm, setSearchTerm] = useState('');
@@ -165,6 +165,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
           availableArcanists={availableArcanists}
           onSaveParty={saveParty}
           onDeleteParty={deleteParty}
+          onToggleFavorite={toggleFavoriteParty}
           session={session}
         />
       )}

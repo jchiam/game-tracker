@@ -13,6 +13,7 @@ interface PartiesTabProps {
     party: Partial<R1999Party> & { members: R1999PartyMember[] },
   ) => Promise<string | null>;
   onDeleteParty: (id: string) => Promise<boolean>;
+  onToggleFavorite: (partyId: string, value: boolean) => void;
   session: Session | null;
 }
 
@@ -21,6 +22,7 @@ export function PartiesTab({
   availableArcanists,
   onSaveParty,
   onDeleteParty,
+  onToggleFavorite,
   session,
 }: PartiesTabProps) {
   const [editingParty, setEditingParty] = useState<R1999Party | null>(null);
@@ -49,15 +51,24 @@ export function PartiesTab({
             <p>No lineups configured yet. Build your first team!</p>
           </div>
         ) : (
-          parties.map((party) => (
-            <PartyCard
-              key={party.id}
-              party={party}
-              availableArcanists={availableArcanists}
-              onEdit={() => setEditingParty(party)}
-              onDelete={() => onDeleteParty(party.id)}
-            />
-          ))
+          [...parties]
+            .sort((a, b) => {
+              if (a.isFavorited !== b.isFavorited) return a.isFavorited ? -1 : 1;
+              const tierRank: Record<string, number> = { 'S+': 0, S: 1, A: 2, B: 3 };
+              const ra = a.tier ? (tierRank[a.tier] ?? 4) : 4;
+              const rb = b.tier ? (tierRank[b.tier] ?? 4) : 4;
+              return ra - rb;
+            })
+            .map((party) => (
+              <PartyCard
+                key={party.id}
+                party={party}
+                availableArcanists={availableArcanists}
+                onEdit={() => setEditingParty(party)}
+                onDelete={() => onDeleteParty(party.id)}
+                onToggleFavorite={(value) => onToggleFavorite(party.id, value)}
+              />
+            ))
         )}
       </div>
 

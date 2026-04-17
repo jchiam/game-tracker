@@ -106,6 +106,34 @@
   background: #ff4d4f;
 }
 
+.tier-selector {
+  display: flex;
+  gap: var(--spacing-sm);
+}
+
+.tier-btn {
+  flex: 1;
+  padding: 8px 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tier-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+}
+
+.tier-btn.tier-Splus.active { color: #ff6b35; border-color: #ff6b35; background: rgba(255, 107, 53, 0.15); }
+.tier-btn.tier-S.active     { color: #ffd700; border-color: #ffd700; background: rgba(255, 215,  0, 0.15); }
+.tier-btn.tier-A.active     { color: #7fbfff; border-color: #7fbfff; background: rgba(127, 191, 255, 0.15); }
+.tier-btn.tier-B.active     { color: #8be28b; border-color: #8be28b; background: rgba(139, 226, 139, 0.15); }
+
 .character-picker {
   margin-top: var(--spacing-md);
   background: rgba(0, 0, 0, 0.2);
