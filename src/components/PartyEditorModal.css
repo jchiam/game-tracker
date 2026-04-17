@@ -129,10 +129,26 @@
   color: #fff;
 }
 
-.tier-btn.tier-Splus.active { color: #ff6b35; border-color: #ff6b35; background: rgba(255, 107, 53, 0.15); }
-.tier-btn.tier-S.active     { color: #ffd700; border-color: #ffd700; background: rgba(255, 215,  0, 0.15); }
-.tier-btn.tier-A.active     { color: #7fbfff; border-color: #7fbfff; background: rgba(127, 191, 255, 0.15); }
-.tier-btn.tier-B.active     { color: #8be28b; border-color: #8be28b; background: rgba(139, 226, 139, 0.15); }
+.tier-btn.tier-Splus.active {
+  color: #ff6b35;
+  border-color: #ff6b35;
+  background: rgba(255, 107, 53, 0.15);
+}
+.tier-btn.tier-S.active {
+  color: #ffd700;
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.15);
+}
+.tier-btn.tier-A.active {
+  color: #7fbfff;
+  border-color: #7fbfff;
+  background: rgba(127, 191, 255, 0.15);
+}
+.tier-btn.tier-B.active {
+  color: #8be28b;
+  border-color: #8be28b;
+  background: rgba(139, 226, 139, 0.15);
+}
 
 .character-picker {
   margin-top: var(--spacing-md);

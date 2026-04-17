@@ -484,7 +484,12 @@ async function main() {
   const [
     kornblumeData,
     arcanistMap,
-    { entries: existingEntries, idMap: existingIds, damageMap: existingDamage, euphoriaMap: existingEuphoria },
+    {
+      entries: existingEntries,
+      idMap: existingIds,
+      damageMap: existingDamage,
+      euphoriaMap: existingEuphoria,
+    },
     existingPsychubes,
   ] = await Promise.all([
     fetchJSON(`${KORNBLUME_BASE}/data/arcanists.json`),
@@ -508,7 +513,9 @@ async function main() {
   console.log('  Fetching damage types and euphoria data from Fandom wiki...');
   const { damageMap: wikiDamage, euphoriaMap: wikiEuphoria } = await fetchWikiData(names);
   console.log(`  Got damage types for ${wikiDamage.size}/${names.length} arcanists`);
-  console.log(`  Got euphoria data for ${wikiEuphoria.size}/${names.length} arcanists (${[...wikiEuphoria.values()].filter(Boolean).length} have Euphoria)`);
+  console.log(
+    `  Got euphoria data for ${wikiEuphoria.size}/${names.length} arcanists (${[...wikiEuphoria.values()].filter(Boolean).length} have Euphoria)`,
+  );
 
   // These paths are used only to derive ImageKit folder/filename — images are not stored locally.
   const mugshotDir = resolve(ROOT, 'public/assets/reverse-1999/arcanists-mugshots');

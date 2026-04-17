@@ -30,10 +30,22 @@
   clip-path: polygon(8px 0%, 100% 0%, 100% 100%, 0% 100%);
 }
 
-.tier-banner-Splus { color: #fff; background: #c04a1a; }
-.tier-banner-S     { color: #1a1a1a; background: #ffd700; }
-.tier-banner-A     { color: #fff; background: #3a7fbf; }
-.tier-banner-B     { color: #fff; background: #3a8f3a; }
+.tier-banner-Splus {
+  color: #fff;
+  background: #c04a1a;
+}
+.tier-banner-S {
+  color: #1a1a1a;
+  background: #ffd700;
+}
+.tier-banner-A {
+  color: #fff;
+  background: #3a7fbf;
+}
+.tier-banner-B {
+  color: #fff;
+  background: #3a8f3a;
+}
 
 .party-card-header {
   display: flex;

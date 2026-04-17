@@ -11,7 +11,13 @@ interface PartyCardProps {
   onToggleFavorite: (value: boolean) => void;
 }
 
-export function PartyCard({ party, availableArcanists, onEdit, onDelete, onToggleFavorite }: PartyCardProps) {
+export function PartyCard({
+  party,
+  availableArcanists,
+  onEdit,
+  onDelete,
+  onToggleFavorite,
+}: PartyCardProps) {
   return (
     <div className="party-card">
       {party.tier && (
