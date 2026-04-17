@@ -15,6 +15,7 @@ const availableArcanists: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/an_an.webp',
+    hasEuphoria: false,
   },
   {
     id: 'vertin',
@@ -22,6 +23,7 @@ const availableArcanists: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Reality',
     imageUrl: '/vertin.webp',
+    hasEuphoria: false,
   },
   {
     id: 'regulus',
@@ -29,6 +31,7 @@ const availableArcanists: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Reality',
     imageUrl: '/regulus.webp',
+    hasEuphoria: false,
   },
 ];
 
@@ -38,6 +41,8 @@ function makeParty(overrides: Partial<R1999Party> = {}): R1999Party {
     profileId: 'user-1',
     name: 'My Lineup',
     notes: 'Some notes',
+    tier: null,
+    isFavorited: false,
     members: [],
     createdAt: new Date().toISOString(),
     ...overrides,

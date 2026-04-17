@@ -49,6 +49,7 @@ const mockArcanist = {
   afflatus: 'Star',
   damageType: 'Mental',
   imageUrl: '/assets/reverse-1999/arcanists-mugshots/37.webp',
+  hasEuphoria: false,
 };
 
 const mockArcanist2 = {
@@ -57,6 +58,7 @@ const mockArcanist2 = {
   afflatus: 'Intellect',
   damageType: 'Mental',
   imageUrl: '/assets/reverse-1999/arcanists-mugshots/6.webp',
+  hasEuphoria: false,
 };
 
 const mockSession: Session = {
@@ -92,6 +94,7 @@ function trackedArcanist(
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: `/assets/reverse-1999/arcanists-mugshots/${arcanistId}.webp`,
+    hasEuphoria: false,
     dbId: 'db-uuid',
     isFavorited: false,
     level: 1,

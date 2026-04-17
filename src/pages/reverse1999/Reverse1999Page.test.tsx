@@ -22,6 +22,7 @@ function makeArcanist(id: string, name: string): R1999TrackedArcanist {
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: `/assets/${id}.webp`,
+    hasEuphoria: false,
     isFavorited: false,
     level: 40,
     portraitLevel: 0,
@@ -60,6 +61,7 @@ describe('Reverse1999Page', () => {
       isLoading: false,
       saveParty: vi.fn().mockResolvedValue(null),
       deleteParty: vi.fn().mockResolvedValue(false),
+      toggleFavoriteParty: vi.fn(),
       refreshParties: vi.fn().mockResolvedValue(undefined),
     });
   });
@@ -317,6 +319,7 @@ describe('Reverse1999Page', () => {
           afflatus: 'Star',
           damageType: 'Mental',
           imageUrl: '/regulus.webp',
+          hasEuphoria: false,
         },
       ],
       addArcanist: vi.fn(),

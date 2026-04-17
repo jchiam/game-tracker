@@ -8,13 +8,21 @@ import type { R1999TrackedArcanist } from '@/types';
 // ImageKit not configured in tests — getAvatarUrl returns the path unchanged.
 
 const availableArcanists: Arcanist[] = [
-  { id: '37', name: '37', afflatus: 'Star', damageType: 'Mental', imageUrl: '/37.webp' },
+  {
+    id: '37',
+    name: '37',
+    afflatus: 'Star',
+    damageType: 'Mental',
+    imageUrl: '/37.webp',
+    hasEuphoria: false,
+  },
   {
     id: 'regulus',
     name: 'Regulus',
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/regulus.webp',
+    hasEuphoria: false,
   },
   {
     id: 'vertin',
@@ -22,6 +30,7 @@ const availableArcanists: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Reality',
     imageUrl: '/vertin.webp',
+    hasEuphoria: false,
   },
 ];
 

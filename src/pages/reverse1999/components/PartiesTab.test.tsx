@@ -13,6 +13,7 @@ const availableArcanists: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/an_an.webp',
+    hasEuphoria: false,
   },
 ];
 
@@ -22,6 +23,8 @@ function makeParty(overrides: Partial<R1999Party> = {}): R1999Party {
     profileId: 'user-1',
     name: 'Team Alpha',
     notes: null,
+    tier: null,
+    isFavorited: false,
     members: [],
     createdAt: new Date().toISOString(),
     ...overrides,
@@ -33,6 +36,7 @@ const defaultProps = {
   availableArcanists,
   onSaveParty: vi.fn().mockResolvedValue('party-1'),
   onDeleteParty: vi.fn().mockResolvedValue(true),
+  onToggleFavorite: vi.fn(),
 };
 
 describe('PartiesTab (R1999)', () => {

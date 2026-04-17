@@ -11,6 +11,7 @@ function makeArcanist(overrides: Partial<R1999TrackedArcanist> = {}): R1999Track
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/regulus.webp',
+    hasEuphoria: false,
     dbId: 'db-1',
     isFavorited: false,
     level: 40,

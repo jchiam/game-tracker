@@ -8,6 +8,7 @@ vi.mock('@/services/reverse1999/partyService', () => ({
   loadParties: vi.fn(),
   saveParty: vi.fn(),
   deleteParty: vi.fn(),
+  toggleFavoriteParty: vi.fn(),
 }));
 
 import * as partyService from '@/services/reverse1999/partyService';
@@ -43,6 +44,8 @@ function makeParty(id: string, name: string, overrides: Partial<R1999Party> = {}
     profileId: 'test-user-123',
     name,
     notes: null,
+    tier: null,
+    isFavorited: false,
     members: [],
     createdAt: new Date().toISOString(),
     ...overrides,

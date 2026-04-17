@@ -11,6 +11,7 @@ const availableArcanists: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/an_an.webp',
+    hasEuphoria: false,
   },
   {
     id: 'vertin',
@@ -18,6 +19,7 @@ const availableArcanists: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Reality',
     imageUrl: '/vertin.webp',
+    hasEuphoria: false,
   },
 ];
 
@@ -27,6 +29,8 @@ function makeParty(overrides: Partial<R1999Party> = {}): R1999Party {
     profileId: 'user-1',
     name: 'Test Lineup',
     notes: null,
+    tier: null,
+    isFavorited: false,
     members: [],
     createdAt: new Date().toISOString(),
     ...overrides,
@@ -41,6 +45,7 @@ describe('PartyCard (R1999)', () => {
         availableArcanists={availableArcanists}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
       />,
     );
     expect(screen.getByText('Test Lineup')).toBeInTheDocument();
@@ -53,6 +58,7 @@ describe('PartyCard (R1999)', () => {
         availableArcanists={availableArcanists}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
       />,
     );
     expect(screen.getAllByText('+')).toHaveLength(4);
@@ -71,6 +77,7 @@ describe('PartyCard (R1999)', () => {
         availableArcanists={availableArcanists}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
       />,
     );
     expect(screen.getByText('An-an Lee')).toBeInTheDocument();
@@ -85,6 +92,7 @@ describe('PartyCard (R1999)', () => {
         availableArcanists={availableArcanists}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
       />,
     );
     expect(screen.getByText('Great lineup for Limbo')).toBeInTheDocument();
@@ -97,6 +105,7 @@ describe('PartyCard (R1999)', () => {
         availableArcanists={availableArcanists}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
       />,
     );
     expect(screen.queryByRole('paragraph')).not.toBeInTheDocument();
@@ -110,6 +119,7 @@ describe('PartyCard (R1999)', () => {
         availableArcanists={availableArcanists}
         onEdit={onEdit}
         onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByTitle('Edit Lineup'));
@@ -124,6 +134,7 @@ describe('PartyCard (R1999)', () => {
         availableArcanists={availableArcanists}
         onEdit={vi.fn()}
         onDelete={onDelete}
+        onToggleFavorite={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByTitle('Delete Lineup'));
@@ -138,6 +149,7 @@ describe('PartyCard (R1999)', () => {
         availableArcanists={availableArcanists}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
       />,
     );
     expect(container.querySelector('.slot-avatar.afflatus-star')).toBeInTheDocument();
@@ -150,6 +162,7 @@ describe('PartyCard (R1999)', () => {
         availableArcanists={availableArcanists}
         onEdit={vi.fn()}
         onDelete={vi.fn()}
+        onToggleFavorite={vi.fn()}
       />,
     );
     expect(container.querySelectorAll('.slot-avatar.empty')).toHaveLength(4);
