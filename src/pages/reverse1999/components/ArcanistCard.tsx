@@ -1,4 +1,5 @@
 import type { R1999TrackedArcanist } from '@/types';
+import { ALL_ARCANISTS } from '@/data/reverse1999/arcanists';
 import { ALL_PSYCHUBES } from '@/data/reverse1999/psychubes';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { useState } from 'react';
@@ -79,6 +80,9 @@ export function ArcanistCard({
   const [imgLoading, setImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  const staticArcanist = ALL_ARCANISTS.find((a) => a.name === arcanist.name);
+  const hasEuphoria = staticArcanist?.hasEuphoria ?? false;
 
   const imageUrl = getMugshotUrl(arcanist.imageUrl);
   const selectedPsychube = arcanist.psychubeId
@@ -190,12 +194,14 @@ export function ArcanistCard({
             >
               R{arcanist.resonanceLevel}
             </span>
-            <span
-              className="stat-chip"
-              style={{ color: euphoriaPs.color, borderColor: euphoriaPs.borderColor }}
-            >
-              E{arcanist.euphoriaStage}
-            </span>
+            {hasEuphoria && (
+              <span
+                className="stat-chip"
+                style={{ color: euphoriaPs.color, borderColor: euphoriaPs.borderColor }}
+              >
+                E{arcanist.euphoriaStage}
+              </span>
+            )}
           </div>
           <div className="arcanist-static-psychube">
             {selectedPsychube ? (
@@ -305,41 +311,43 @@ export function ArcanistCard({
               />
             </div>
 
-            <div className="progress-section">
-              <div className="section-header">Euphoria</div>
-              <div className="euphoria-row">
-                {([0, 1, 2, 3, 4] as const).map((stage) => {
-                  const btnPs = getProgressStyle(stage, 0, 4);
-                  const isActive = arcanist.euphoriaStage === stage;
-                  const isPassed = stage < arcanist.euphoriaStage;
-                  return (
-                    <button
-                      key={stage}
-                      className={`euphoria-btn ${isActive ? 'active' : ''}`}
-                      onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
-                      style={
-                        isActive
-                          ? {
-                              color: btnPs.color,
-                              borderColor: btnPs.borderColor,
-                              background: btnPs.activeBg,
-                              boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
-                            }
-                          : isPassed
+            {hasEuphoria && (
+              <div className="progress-section">
+                <div className="section-header">Euphoria</div>
+                <div className="euphoria-row">
+                  {([0, 1, 2, 3, 4] as const).map((stage) => {
+                    const btnPs = getProgressStyle(stage, 0, 4);
+                    const isActive = arcanist.euphoriaStage === stage;
+                    const isPassed = stage < arcanist.euphoriaStage;
+                    return (
+                      <button
+                        key={stage}
+                        className={`euphoria-btn ${isActive ? 'active' : ''}`}
+                        onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
+                        style={
+                          isActive
                             ? {
                                 color: btnPs.color,
                                 borderColor: btnPs.borderColor,
-                                opacity: 0.35,
+                                background: btnPs.activeBg,
+                                boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
                               }
-                            : undefined
-                      }
-                    >
-                      E{stage}
-                    </button>
-                  );
-                })}
+                            : isPassed
+                              ? {
+                                  color: btnPs.color,
+                                  borderColor: btnPs.borderColor,
+                                  opacity: 0.35,
+                                }
+                              : undefined
+                        }
+                      >
+                        E{stage}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="progress-section">
               <div className="section-header">

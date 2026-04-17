@@ -153,18 +153,20 @@ async function loadExistingArcanists() {
     const entries = [];
     const idMap = new Map();
     const damageMap = new Map();
+    const euphoriaMap = new Map();
     const regex =
-      /id:\s*'([^']+)'[^}]*?name:\s*'([^']+)'[^}]*?afflatus:\s*'([^']+)'[^}]*?damageType:\s*'([^']+)'/gs;
+      /id:\s*'([^']+)'[^}]*?name:\s*'([^']+)'[^}]*?afflatus:\s*'([^']+)'[^}]*?damageType:\s*'([^']+)'[^}]*?hasEuphoria:\s*(true|false)/gs;
     let match;
     while ((match = regex.exec(content)) !== null) {
-      const [, id, name, afflatus, damageType] = match;
+      const [, id, name, afflatus, damageType, hasEuphoria] = match;
       entries.push({ id, name, afflatus, damageType });
       idMap.set(name, id);
       damageMap.set(name, damageType);
+      euphoriaMap.set(name, hasEuphoria === 'true');
     }
-    return { entries, idMap, damageMap };
+    return { entries, idMap, damageMap, euphoriaMap };
   } catch {
-    return { entries: [], idMap: new Map(), damageMap: new Map() };
+    return { entries: [], idMap: new Map(), damageMap: new Map(), euphoriaMap: new Map() };
   }
 }
 
@@ -247,9 +249,10 @@ function buildReverseMap(query) {
   return reverse;
 }
 
-// Batch-fetch damage types from Fandom wiki (up to 50 titles per request)
-async function fetchDamageTypes(names) {
+// Batch-fetch damage types and euphoria availability from Fandom wiki (up to 50 titles per request)
+async function fetchWikiData(names) {
   const damageMap = new Map();
+  const euphoriaMap = new Map();
   const BATCH_SIZE = 50;
 
   for (let i = 0; i < names.length; i += BATCH_SIZE) {
@@ -264,20 +267,19 @@ async function fetchDamageTypes(names) {
       for (const page of Object.values(pages)) {
         const wikitext =
           page.revisions?.[0]?.slots?.main?.['*'] ?? page.revisions?.[0]?.['*'] ?? '';
+        const name = reverseMap.get(page.title) ?? page.title;
         const dmgMatch = wikitext.match(/\|\s*damage\s*=\s*(\w+)/i);
-        if (dmgMatch) {
-          const name = reverseMap.get(page.title) ?? page.title;
-          damageMap.set(name, dmgMatch[1]);
-        }
+        if (dmgMatch) damageMap.set(name, dmgMatch[1]);
+        euphoriaMap.set(name, /\{\{EuphoriaStats/.test(wikitext));
       }
     } catch (e) {
       console.warn(
-        `  Warning: Could not fetch damage types for batch starting at index ${i}: ${e.message}`,
+        `  Warning: Could not fetch wiki data for batch starting at index ${i}: ${e.message}`,
       );
     }
   }
 
-  return damageMap;
+  return { damageMap, euphoriaMap };
 }
 
 function generateArcanistsTs(arcanists) {
@@ -288,6 +290,7 @@ function generateArcanistsTs(arcanists) {
     '// Auto-generated from kornblume, Reverse: 1999 Wiki, and CN ArcanistMap — do not edit manually.',
     '// Run `node scripts/update-r1999-data.mjs` or trigger the GitHub Actions workflow to update.',
     '// imageUrl resolves to the best available mugshot: CN headicon first, kornblume icon as fallback.',
+    '// hasEuphoria: set to true when the game releases Euphoria for this arcanist.',
     '',
     'export interface Arcanist {',
     '  id: string;',
@@ -295,6 +298,7 @@ function generateArcanistsTs(arcanists) {
     '  afflatus: string;',
     '  damageType: string;',
     '  imageUrl: string;',
+    '  hasEuphoria: boolean;',
     '}',
     '',
     'export const ALL_ARCANISTS: Arcanist[] = [',
@@ -308,6 +312,7 @@ function generateArcanistsTs(arcanists) {
       `    afflatus: '${a.afflatus}',`,
       `    damageType: '${a.damageType}',`,
       `    imageUrl: '${a.imageUrl}',`,
+      `    hasEuphoria: ${a.hasEuphoria},`,
       `  },`,
     ].join('\n');
   };
@@ -479,7 +484,7 @@ async function main() {
   const [
     kornblumeData,
     arcanistMap,
-    { entries: existingEntries, idMap: existingIds, damageMap: existingDamage },
+    { entries: existingEntries, idMap: existingIds, damageMap: existingDamage, euphoriaMap: existingEuphoria },
     existingPsychubes,
   ] = await Promise.all([
     fetchJSON(`${KORNBLUME_BASE}/data/arcanists.json`),
@@ -500,9 +505,10 @@ async function main() {
 
   const names = releasedRaw.map((c) => c.Name);
 
-  console.log('  Fetching damage types from Fandom wiki...');
-  const wikiDamage = await fetchDamageTypes(names);
+  console.log('  Fetching damage types and euphoria data from Fandom wiki...');
+  const { damageMap: wikiDamage, euphoriaMap: wikiEuphoria } = await fetchWikiData(names);
   console.log(`  Got damage types for ${wikiDamage.size}/${names.length} arcanists`);
+  console.log(`  Got euphoria data for ${wikiEuphoria.size}/${names.length} arcanists (${[...wikiEuphoria.values()].filter(Boolean).length} have Euphoria)`);
 
   // These paths are used only to derive ImageKit folder/filename — images are not stored locally.
   const mugshotDir = resolve(ROOT, 'public/assets/reverse-1999/arcanists-mugshots');
@@ -588,6 +594,7 @@ async function main() {
       damageType,
       rarity: c.Rarity,
       imageUrl,
+      hasEuphoria: wikiEuphoria.get(c.Name) ?? existingEuphoria.get(c.Name) ?? false,
     });
   }
 
