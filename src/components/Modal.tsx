@@ -20,10 +20,10 @@ export function Modal({ onClose, title, children, footer, className, onEscPress 
   }, [onClose, onEscPress]);
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onMouseDown={onClose}>
       <div
         className={`modal-content${className ? ` ${className}` : ''}`}
-        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
           <h2>{title}</h2>

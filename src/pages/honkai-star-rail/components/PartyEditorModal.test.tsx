@@ -284,7 +284,7 @@ describe('PartyEditorModal', () => {
         onClose={onClose}
       />,
     );
-    fireEvent.click(container.querySelector('.modal-overlay')!);
+    fireEvent.mouseDown(container.querySelector('.modal-overlay')!);
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
