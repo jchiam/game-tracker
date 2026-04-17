@@ -34,7 +34,7 @@ export const ALL_PSYCHUBES: Psychube[] = [
   },
   {
     id: 4,
-    name: "An Epic's End",
+    name: 'An Epic\'s End',
     rarity: 6,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/4.webp',
@@ -356,7 +356,7 @@ export const ALL_PSYCHUBES: Psychube[] = [
   },
   {
     id: 50,
-    name: "The Fighter's Best Wishes",
+    name: 'The Fighter\'s Best Wishes',
     rarity: 6,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/50.webp',
@@ -553,7 +553,7 @@ export const ALL_PSYCHUBES: Psychube[] = [
   },
   {
     id: 78,
-    name: "Let's Set Sail",
+    name: 'Let\'s Set Sail',
     rarity: 5,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/78.webp',
@@ -588,7 +588,7 @@ export const ALL_PSYCHUBES: Psychube[] = [
   },
   {
     id: 83,
-    name: "Parting's Quiet Lament",
+    name: 'Parting\'s Quiet Lament',
     rarity: 5,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/83.webp',
