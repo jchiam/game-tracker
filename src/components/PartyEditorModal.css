@@ -123,6 +123,31 @@
   gap: var(--spacing-md);
 }
 
+.picker-header input {
+  flex: 1;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-primary);
+  font-family: var(--font-family-base);
+  font-size: 1rem;
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+}
+
+.picker-header input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+.picker-header input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
+}
+
 .cancel-picker {
   background: transparent;
   border: 1px solid var(--color-border);
