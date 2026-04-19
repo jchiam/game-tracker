@@ -28,7 +28,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/6.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'a_knight',
@@ -260,7 +260,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/liang_yue.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'lilya',
@@ -436,7 +436,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/tooth_fairy.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'tuesday',
@@ -476,7 +476,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/willow.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'windsong',
