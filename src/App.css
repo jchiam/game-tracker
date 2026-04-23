@@ -16,14 +16,14 @@
 /* Shared action button variants */
 .secondary-action {
   background: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-ui-border);
   color: var(--color-text-secondary);
 }
 
 .secondary-action:hover {
-  border-color: #fff;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--color-text-primary);
+  color: var(--color-text-primary);
+  background: var(--color-ui-interactive-hover);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
 
@@ -48,59 +48,49 @@
 
 /* Element badge colours (shared across HSR views) */
 .element-badge {
-  font-size: 0.75rem;
+  font-size: var(--typography-font-size-xs);
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  padding: 4px 8px;
-  border-radius: var(--radius-sm);
+  padding: var(--spacing-2) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
   background: rgba(0, 0, 0, 0.3);
   font-weight: 600;
 }
 
 .element-lightning {
-  color: #d97afe;
+  color: var(--color-hsr-element-lightning);
   border: 1px solid rgba(217, 122, 254, 0.55);
 }
 .element-imaginary {
-  color: #f4d258;
+  color: var(--color-hsr-element-imaginary);
   border: 1px solid rgba(244, 210, 88, 0.3);
 }
 .element-fire {
-  color: #f84f36;
+  color: var(--color-hsr-element-fire);
   border: 1px solid rgba(248, 79, 54, 0.3);
 }
 .element-ice {
-  color: #47c7fd;
+  color: var(--color-hsr-element-ice);
   border: 1px solid rgba(71, 199, 253, 0.3);
 }
 .element-quantum {
-  color: #7864aa;
+  color: var(--color-hsr-element-quantum);
   border: 1px solid rgba(120, 100, 170, 0.4);
 }
 .element-wind {
-  color: #5bc89f;
+  color: var(--color-hsr-element-wind);
   border: 1px solid rgba(91, 200, 159, 0.3);
 }
 .element-physical {
-  color: #bcbcbc;
+  color: var(--color-hsr-element-physical);
   border: 1px solid rgba(188, 188, 188, 0.3);
 }
 .element-thunder {
-  color: #d97afe;
+  color: var(--color-hsr-element-thunder);
   border: 1px solid rgba(217, 122, 254, 0.55);
 }
 
-/* Keyframe used by page-level animations */
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* fade-in-up defined in src/styles/animations.css */
 
 @media (max-width: 768px) {
   .main-content {

@@ -1,29 +1,17 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&display=swap');
+@import './styles/tokens.css';
+@import './styles/animations.css';
 
+/* Backward-compat aliases — remove as CSS files are migrated to new token names */
 :root {
-  --color-bg-base: #0a0a0f;
-  --color-bg-surface: rgba(25, 25, 35, 0.7);
-  --color-bg-surface-hover: rgba(40, 40, 55, 0.8);
-  --color-text-primary: #f0f0f5;
-  --color-text-secondary: #a0a0b5;
-  --color-text-dim: rgba(160, 160, 181, 0.5);
-  --color-primary: #d4af37; /* HSR Gold */
-  --color-primary-glow: rgba(212, 175, 55, 0.4);
-  --color-accent: #8b5cf6; /* Stellar Jade/Purple accent */
-  --color-border: rgba(255, 255, 255, 0.1);
-
-  --font-family-base: 'Inter', system-ui, sans-serif;
-  --spacing-sm: 8px;
-  --spacing-md: 16px;
-  --spacing-lg: 24px;
-  --spacing-xl: 32px;
-
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 16px;
-
-  --transition-fast: 0.15s ease;
-  --transition-normal: 0.3s ease;
+  --color-primary: var(--color-brand-primary);
+  --color-primary-glow: var(--color-brand-primary-glow);
+  --color-accent: var(--color-brand-accent);
+  --color-border: var(--color-ui-border);
+  --font-family-base: var(--typography-font-family-base);
+  --radius-sm: var(--border-radius-sm);
+  --radius-md: var(--border-radius-md);
+  --radius-lg: var(--border-radius-lg);
 }
 
 body {
@@ -59,19 +47,19 @@ a {
 }
 
 a:hover {
-  color: #f3d473;
-  text-shadow: 0 0 8px var(--color-primary-glow);
+  color: var(--color-brand-primary);
+  text-shadow: 0 0 8px var(--color-brand-primary-glow);
 }
 
 button {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-ui-border);
   color: var(--color-text-primary);
-  padding: 10px 20px;
-  border-radius: var(--radius-md);
-  font-family: var(--font-family-base);
-  font-size: 1rem;
-  font-weight: 500;
+  padding: var(--spacing-5) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  font-family: var(--typography-font-family-base);
+  font-size: var(--typography-font-size-md);
+  font-weight: var(--typography-font-weight-medium);
   cursor: pointer;
   transition: all var(--transition-normal);
   backdrop-filter: blur(10px);
@@ -89,7 +77,7 @@ button::before {
   height: 100%;
   background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.1), transparent);
   transform: skewX(-20deg);
-  transition: all 0.5s ease;
+  transition: all var(--transition-slow);
 }
 
 button:hover::before {
@@ -97,16 +85,16 @@ button:hover::before {
 }
 
 button:hover {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 15px var(--color-primary-glow);
+  border-color: var(--color-brand-primary);
+  box-shadow: var(--shadow-glow-primary);
   transform: translateY(-2px);
 }
 
 /* Game Selection Cards */
 .game-card {
   background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-lg);
   overflow: hidden;
   transition: all var(--transition-normal);
   backdrop-filter: blur(8px);
@@ -127,10 +115,8 @@ button:hover {
 
 .game-card:hover {
   transform: translateY(-5px) scale(1.02);
-  border-color: var(--color-primary);
-  box-shadow:
-    0 10px 30px rgba(0, 0, 0, 0.5),
-    0 0 15px var(--color-primary-glow);
+  border-color: var(--color-brand-primary);
+  box-shadow: var(--shadow-card-hover);
 }
 
 .game-card::before {
@@ -167,7 +153,7 @@ button:hover {
   object-fit: contain;
   object-position: center bottom;
   z-index: 1;
-  transition: transform 0.5s ease;
+  transition: transform var(--transition-slow);
   opacity: 0.9;
   filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.8));
 }
@@ -210,13 +196,13 @@ button:hover {
 
 .requires-login-badge {
   background: rgba(40, 40, 55, 0.8);
-  border: 1px solid var(--color-primary);
-  color: var(--color-primary);
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  box-shadow: 0 0 10px var(--color-primary-glow) inset;
+  border: 1px solid var(--color-brand-primary);
+  color: var(--color-brand-primary);
+  padding: var(--spacing-2) var(--spacing-5);
+  border-radius: var(--border-radius-xl);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-semibold);
+  box-shadow: var(--shadow-inset-glow);
   backdrop-filter: blur(4px);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -241,39 +227,30 @@ button:hover {
 .game-name {
   font-size: 1.6rem;
   margin-bottom: 0;
-  color: #fff;
+  color: var(--color-text-primary);
   transition: color var(--transition-fast);
 }
 
 .game-card:hover .game-name {
-  color: var(--color-primary);
+  color: var(--color-brand-primary);
 }
 
 .game-tag-badge {
   background: rgba(255, 255, 255, 0.1);
   color: var(--color-text-secondary);
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  font-weight: 500;
+  padding: var(--spacing-1) var(--spacing-sm);
+  border-radius: var(--border-radius-sm);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-medium);
   letter-spacing: 0.05em;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--color-ui-border);
 }
 
 .game-description {
   color: var(--color-text-secondary);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: var(--typography-font-size-base);
+  line-height: var(--typography-line-height-relaxed);
   margin: 0;
 }
 
-@keyframes fade-in-up {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* fade-in-up defined in src/styles/animations.css */

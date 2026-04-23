@@ -7,8 +7,10 @@
     "node": ">=22.0.0"
   },
   "scripts": {
-    "dev": "vite",
+    "build:tokens": "style-dictionary build --config style-dictionary.config.mjs",
+    "dev": "concurrently \"style-dictionary build --watch --config style-dictionary.config.mjs\" \"vite\"",
     "build": "tsc -b && vite build",
+    "prebuild": "npm run build:tokens",
     "lint": "eslint .",
     "verify:csp": "node scripts/verify-csp-connect-src.mjs",
     "format": "prettier --write .",
@@ -42,6 +44,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/coverage-v8": "^4.1.3",
+    "concurrently": "^9.2.1",
     "eslint": "^9.39.4",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.5",
@@ -54,6 +57,7 @@
     "msw": "^2.13.2",
     "prettier": "^3.8.1",
     "sharp": "^0.34.5",
+    "style-dictionary": "^5.4.0",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.57.2",
     "vite": "^8.0.5",

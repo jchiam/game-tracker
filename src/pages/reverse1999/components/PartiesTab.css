@@ -10,8 +10,8 @@
 }
 
 .parties-header h2 {
-  font-size: 1.8rem;
-  color: #fff;
+  font-size: var(--typography-font-size-3xl);
+  color: var(--color-text-primary);
   margin: 0;
 }
 

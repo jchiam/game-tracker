@@ -1,0 +1,163 @@
+{
+  "$description": "Game Tracker design system — dark cosmic theme with gold/purple accents",
+  "color": {
+    "bg": {
+      "base": { "$value": "#0a0a0f", "$type": "color" },
+      "surface": { "$value": "rgba(25,25,35,0.7)", "$type": "color" },
+      "surfaceHover": { "$value": "rgba(40,40,55,0.8)", "$type": "color" },
+      "elevated": { "$value": "rgba(30,30,42,0.9)", "$type": "color" }
+    },
+    "text": {
+      "primary": { "$value": "#f0f0f5", "$type": "color" },
+      "secondary": { "$value": "#a0a0b5", "$type": "color" },
+      "dim": { "$value": "rgba(160,160,181,0.5)", "$type": "color" },
+      "onPrimary": { "$value": "#000000", "$type": "color" }
+    },
+    "brand": {
+      "primary": { "$value": "#d4af37", "$type": "color" },
+      "primaryRgb": { "$value": "212, 175, 55", "$type": "other" },
+      "primaryGlow": { "$value": "rgba(212,175,55,0.4)", "$type": "color" },
+      "primaryMuted": { "$value": "rgba(212,175,55,0.15)", "$type": "color" },
+      "accent": { "$value": "#8b5cf6", "$type": "color" }
+    },
+    "ui": {
+      "border": { "$value": "rgba(255,255,255,0.1)", "$type": "color" },
+      "borderStrong": { "$value": "rgba(255,255,255,0.2)", "$type": "color" },
+      "danger": { "$value": "#ff4d4f", "$type": "color" },
+      "dangerBg": { "$value": "rgba(255,77,79,0.1)", "$type": "color" },
+      "warning": { "$value": "#ff6b6b", "$type": "color" },
+      "interactiveHover": { "$value": "rgba(255,255,255,0.05)", "$type": "color" }
+    },
+    "toast": {
+      "errorBg": { "$value": "rgba(220,38,38,0.95)", "$type": "color" },
+      "errorBorder": { "$value": "rgba(248,113,113,0.5)", "$type": "color" },
+      "warningBg": { "$value": "rgba(217,119,6,0.95)", "$type": "color" },
+      "warningBorder": { "$value": "rgba(251,191,36,0.5)", "$type": "color" },
+      "successBg": { "$value": "rgba(22,163,74,0.95)", "$type": "color" },
+      "successBorder": { "$value": "rgba(74,222,128,0.5)", "$type": "color" },
+      "infoBg": { "$value": "rgba(30,58,138,0.95)", "$type": "color" },
+      "infoBorder": { "$value": "rgba(96,165,250,0.5)", "$type": "color" }
+    },
+    "hsr": {
+      "elementLightning": { "$value": "#d97afe", "$type": "color" },
+      "elementImaginary": { "$value": "#f4d258", "$type": "color" },
+      "elementFire": { "$value": "#f84f36", "$type": "color" },
+      "elementIce": { "$value": "#47c7fd", "$type": "color" },
+      "elementQuantum": { "$value": "#7864aa", "$type": "color" },
+      "elementWind": { "$value": "#5bc89f", "$type": "color" },
+      "elementPhysical": { "$value": "#bcbcbc", "$type": "color" },
+      "elementThunder": { "$value": "#d97afe", "$type": "color" },
+      "pathDestruction": { "$value": "#ff9090", "$type": "color" },
+      "pathTheHunt": { "$value": "#f5d68a", "$type": "color" },
+      "pathErudition": { "$value": "#7fe4d0", "$type": "color" },
+      "pathHarmony": { "$value": "#f0a8d8", "$type": "color" },
+      "pathNihility": { "$value": "#c9a8f8", "$type": "color" },
+      "pathPreservation": { "$value": "#8ab8f5", "$type": "color" },
+      "pathAbundance": { "$value": "#90e09a", "$type": "color" },
+      "pathRemembrance": { "$value": "#90e8f8", "$type": "color" },
+      "pathElation": { "$value": "#ffc875", "$type": "color" }
+    },
+    "r1999": {
+      "afflatusPlant": { "$value": "#90e09a", "$type": "color" },
+      "afflatusStar": { "$value": "#f5d68a", "$type": "color" },
+      "afflatusBeast": { "$value": "#f5b080", "$type": "color" },
+      "afflatusMineral": { "$value": "#a8c8f0", "$type": "color" },
+      "afflatusIntellect": { "$value": "#c9a8f8", "$type": "color" },
+      "afflatusSpirit": { "$value": "#90d0f0", "$type": "color" },
+      "damageMental": { "$value": "#c9a8f8", "$type": "color" },
+      "damageReality": { "$value": "#f5d68a", "$type": "color" }
+    },
+    "tier": {
+      "splus": { "$value": "#ff6b35", "$type": "color" },
+      "s": { "$value": "#ffd700", "$type": "color" },
+      "a": { "$value": "#7fbfff", "$type": "color" },
+      "b": { "$value": "#8be28b", "$type": "color" }
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "base": { "$value": "'Inter', system-ui, sans-serif", "$type": "fontFamily" }
+    },
+    "fontSize": {
+      "xs": { "$value": "0.7rem", "$type": "dimension" },
+      "sm": { "$value": "0.8rem", "$type": "dimension" },
+      "base": { "$value": "0.9rem", "$type": "dimension" },
+      "md": { "$value": "1rem", "$type": "dimension" },
+      "lg": { "$value": "1.1rem", "$type": "dimension" },
+      "xl": { "$value": "1.2rem", "$type": "dimension" },
+      "xl2": { "$value": "1.25rem", "$type": "dimension" },
+      "2xl": { "$value": "1.5rem", "$type": "dimension" },
+      "3xl": { "$value": "1.8rem", "$type": "dimension" },
+      "4xl": { "$value": "2.2rem", "$type": "dimension" },
+      "5xl": { "$value": "3rem", "$type": "dimension" },
+      "display": { "$value": "4rem", "$type": "dimension" }
+    },
+    "fontWeight": {
+      "normal": { "$value": 400, "$type": "fontWeight" },
+      "medium": { "$value": 500, "$type": "fontWeight" },
+      "semibold": { "$value": 600, "$type": "fontWeight" },
+      "bold": { "$value": 700, "$type": "fontWeight" },
+      "extrabold": { "$value": 800, "$type": "fontWeight" }
+    },
+    "lineHeight": {
+      "tight": { "$value": 1.3, "$type": "number" },
+      "base": { "$value": 1.4, "$type": "number" },
+      "relaxed": { "$value": 1.5, "$type": "number" },
+      "loose": { "$value": 1.6, "$type": "number" }
+    }
+  },
+  "spacing": {
+    "1": { "$value": "2px", "$type": "dimension" },
+    "2": { "$value": "4px", "$type": "dimension" },
+    "xs": { "$value": "4px", "$type": "dimension" },
+    "3": { "$value": "6px", "$type": "dimension" },
+    "sm": { "$value": "8px", "$type": "dimension" },
+    "5": { "$value": "10px", "$type": "dimension" },
+    "6": { "$value": "12px", "$type": "dimension" },
+    "md": { "$value": "16px", "$type": "dimension" },
+    "lg": { "$value": "24px", "$type": "dimension" },
+    "xl": { "$value": "32px", "$type": "dimension" },
+    "2xl": { "$value": "48px", "$type": "dimension" },
+    "3xl": { "$value": "64px", "$type": "dimension" }
+  },
+  "borderRadius": {
+    "xs": { "$value": "2px", "$type": "dimension" },
+    "sm": { "$value": "4px", "$type": "dimension" },
+    "md": { "$value": "8px", "$type": "dimension" },
+    "badge": { "$value": "10px", "$type": "dimension" },
+    "lg": { "$value": "16px", "$type": "dimension" },
+    "xl": { "$value": "20px", "$type": "dimension" },
+    "full": { "$value": "9999px", "$type": "dimension" }
+  },
+  "shadow": {
+    "sm": { "$value": "0 2px 8px rgba(0,0,0,0.3)", "$type": "shadow" },
+    "md": { "$value": "0 4px 12px rgba(0,0,0,0.3)", "$type": "shadow" },
+    "lg": { "$value": "0 10px 30px rgba(0,0,0,0.5)", "$type": "shadow" },
+    "xl": { "$value": "0 20px 50px rgba(0,0,0,0.5)", "$type": "shadow" },
+    "glowPrimary": { "$value": "0 0 15px rgba(212,175,55,0.4)", "$type": "shadow" },
+    "glowSm": { "$value": "0 0 8px rgba(212,175,55,0.4)", "$type": "shadow" },
+    "insetGlow": { "$value": "0 0 8px rgba(212,175,55,0.4) inset", "$type": "shadow" },
+    "modal": {
+      "$value": "0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(212,175,55,0.4)",
+      "$type": "shadow"
+    },
+    "cardHover": {
+      "$value": "0 10px 30px rgba(0,0,0,0.5), 0 0 15px rgba(212,175,55,0.4)",
+      "$type": "shadow"
+    }
+  },
+  "zIndex": {
+    "base": { "$value": 0, "$type": "number" },
+    "card": { "$value": 1, "$type": "number" },
+    "overlay": { "$value": 2, "$type": "number" },
+    "controls": { "$value": 3, "$type": "number" },
+    "sticky": { "$value": 100, "$type": "number" },
+    "modal": { "$value": 1000, "$type": "number" },
+    "toast": { "$value": 9999, "$type": "number" }
+  },
+  "transition": {
+    "fast": { "$value": "0.15s ease", "$type": "other" },
+    "normal": { "$value": "0.3s ease", "$type": "other" },
+    "slow": { "$value": "0.5s ease", "$type": "other" }
+  }
+}

@@ -11,7 +11,7 @@
   align-items: center;
   padding: var(--spacing-md);
   margin: var(--spacing-sm) 0;
-  border-radius: var(--radius-md);
+  border-radius: var(--border-radius-md);
   cursor: pointer;
   background: transparent;
   transition: all var(--transition-fast);
@@ -19,8 +19,8 @@
 }
 
 .modal-list-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: var(--color-border);
+  background: var(--color-ui-interactive-hover);
+  border-color: var(--color-ui-border);
 }
 
 .modal-list-info {
@@ -32,9 +32,9 @@
 .modal-list-img-wrapper {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
+  border-radius: var(--border-radius-full);
   overflow: hidden;
-  border: 2px solid var(--color-border);
+  border: 2px solid var(--color-ui-border);
   background: rgba(255, 255, 255, 0.05);
   flex-shrink: 0;
 }
@@ -48,13 +48,13 @@
 .modal-list-details {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: var(--spacing-2);
 }
 
 .modal-list-name {
-  color: #fff;
-  font-weight: 500;
-  font-size: 1.1rem;
+  color: var(--color-text-primary);
+  font-weight: var(--typography-font-weight-medium);
+  font-size: var(--typography-font-size-lg);
 }
 
 .modal-list-tags {
@@ -65,14 +65,14 @@
 
 .add-btn {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
+  border-radius: var(--border-radius-full);
   width: 32px;
   height: 32px;
   padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  font-size: 1.2rem;
+  font-size: var(--typography-font-size-xl);
   min-width: unset;
 }
 
@@ -81,14 +81,14 @@
 }
 
 .modal-list-item:hover .add-btn {
-  background: var(--color-primary);
+  background: var(--color-brand-primary);
   color: var(--color-bg-base);
   border-color: transparent;
-  box-shadow: 0 0 10px var(--color-primary-glow);
+  box-shadow: var(--shadow-glow-sm);
 }
 
 .no-results {
   text-align: center;
-  padding: 2rem;
+  padding: var(--spacing-2xl);
   color: var(--color-text-secondary);
 }

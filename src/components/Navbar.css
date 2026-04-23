@@ -6,10 +6,10 @@
   background: var(--color-bg-surface);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-ui-border);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: var(--z-index-sticky);
 }
 
 .nav-left {
@@ -28,8 +28,8 @@
 }
 
 .nav-brand {
-  font-size: 1.2rem;
-  font-weight: 600;
+  font-size: var(--typography-font-size-xl);
+  font-weight: var(--typography-font-weight-semibold);
   display: flex;
   align-items: center;
   letter-spacing: 0.05em;
@@ -39,7 +39,7 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: all var(--transition-normal);
   cursor: pointer;
 }
 
@@ -55,12 +55,12 @@
 .nav-auth {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: var(--spacing-md);
 }
 
 .user-email {
   color: var(--color-text-secondary);
-  font-size: 0.9rem;
+  font-size: var(--typography-font-size-base);
 }
 
 @media (max-width: 768px) {

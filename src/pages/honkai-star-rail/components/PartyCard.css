@@ -1,7 +1,7 @@
 .party-card {
   background: var(--color-bg-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-lg);
   padding: var(--spacing-lg);
   display: flex;
   flex-direction: column;
@@ -11,9 +11,9 @@
 }
 
 .party-card:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-brand-primary);
   transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--shadow-lg);
 }
 
 .party-card-header {
@@ -23,8 +23,8 @@
 }
 
 .party-name {
-  font-size: 1.25rem;
-  color: #fff;
+  font-size: var(--typography-font-size-xl2);
+  color: var(--color-text-primary);
   margin: 0;
 }
 
@@ -36,18 +36,18 @@
 .icon-btn {
   background: transparent;
   border: none;
-  font-size: 1.1rem;
+  font-size: var(--typography-font-size-lg);
   color: var(--color-text-dim);
   cursor: pointer;
-  padding: 4px;
-  border-radius: 4px;
+  padding: var(--spacing-2);
+  border-radius: var(--border-radius-sm);
   transition: all var(--transition-fast);
   line-height: 1;
 }
 
 .icon-btn:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .edit-btn:hover {
@@ -56,15 +56,15 @@
 }
 
 .delete-btn:hover {
-  color: #ff4d4f;
-  background: rgba(255, 77, 79, 0.1);
+  color: var(--color-ui-danger);
+  background: var(--color-ui-danger-bg);
 }
 
 .party-notes {
-  font-size: 0.9rem;
+  font-size: var(--typography-font-size-base);
   color: var(--color-text-secondary);
   margin: 0;
-  line-height: 1.4;
+  line-height: var(--typography-line-height-base);
   font-style: italic;
   display: -webkit-box;
   line-clamp: 2;
@@ -84,15 +84,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: var(--spacing-3);
 }
 
 .slot-avatar {
   width: 100%;
   aspect-ratio: 1;
-  border-radius: var(--radius-md);
+  border-radius: var(--border-radius-md);
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-ui-border);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,7 +111,7 @@
 }
 
 .char-name-small {
-  font-size: 0.7rem;
+  font-size: var(--typography-font-size-xs);
   color: var(--color-text-secondary);
   text-align: center;
   white-space: nowrap;
@@ -121,7 +121,7 @@
 }
 
 .empty-plus {
-  font-size: 1.5rem;
+  font-size: var(--typography-font-size-2xl);
   color: var(--color-text-dim);
   opacity: 0.5;
 }

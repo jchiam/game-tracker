@@ -24,8 +24,8 @@
 .builder-slot {
   aspect-ratio: 1;
   background: rgba(255, 255, 255, 0.03);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-lg);
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -37,25 +37,25 @@
 
 .builder-slot:hover {
   background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--color-ui-border-strong);
 }
 
 .builder-slot.active {
-  border-color: var(--color-primary);
-  box-shadow: 0 0 15px var(--color-primary-glow);
+  border-color: var(--color-brand-primary);
+  box-shadow: var(--shadow-glow-primary);
 }
 
 .slot-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: var(--spacing-2);
   color: var(--color-text-dim);
-  font-size: 0.8rem;
+  font-size: var(--typography-font-size-sm);
 }
 
 .slot-placeholder .plus {
-  font-size: 1.5rem;
+  font-size: var(--typography-font-size-2xl);
   opacity: 0.5;
 }
 
@@ -70,14 +70,14 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 8px 4px;
+  padding: var(--spacing-sm) var(--spacing-2);
   background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
   text-align: center;
 }
 
 .slot-name {
-  font-size: 0.75rem;
-  color: #fff;
+  font-size: var(--typography-font-size-xs);
+  color: var(--color-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -86,24 +86,24 @@
 
 .remove-member-btn {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: var(--spacing-2);
+  right: var(--spacing-2);
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: var(--border-radius-full);
   background: rgba(0, 0, 0, 0.5);
   border: none;
-  color: #fff;
-  font-size: 0.7rem;
+  color: var(--color-text-primary);
+  font-size: var(--typography-font-size-xs);
   cursor: pointer;
-  z-index: 10;
+  z-index: var(--z-index-controls);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .remove-member-btn:hover {
-  background: #ff4d4f;
+  background: var(--color-ui-danger);
 }
 
 .tier-selector {
@@ -113,53 +113,53 @@
 
 .tier-btn {
   flex: 1;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-md);
   color: var(--color-text-secondary);
-  font-size: 0.95rem;
-  font-weight: 600;
+  font-size: var(--typography-font-size-base);
+  font-weight: var(--typography-font-weight-semibold);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .tier-btn:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #fff;
+  color: var(--color-text-primary);
 }
 
 .tier-btn.tier-Splus.active {
-  color: #ff6b35;
-  border-color: #ff6b35;
+  color: var(--color-tier-splus);
+  border-color: var(--color-tier-splus);
   background: rgba(255, 107, 53, 0.15);
 }
 .tier-btn.tier-S.active {
-  color: #ffd700;
-  border-color: #ffd700;
+  color: var(--color-tier-s);
+  border-color: var(--color-tier-s);
   background: rgba(255, 215, 0, 0.15);
 }
 .tier-btn.tier-A.active {
-  color: #7fbfff;
-  border-color: #7fbfff;
+  color: var(--color-tier-a);
+  border-color: var(--color-tier-a);
   background: rgba(127, 191, 255, 0.15);
 }
 .tier-btn.tier-B.active {
-  color: #8be28b;
-  border-color: #8be28b;
+  color: var(--color-tier-b);
+  border-color: var(--color-tier-b);
   background: rgba(139, 226, 139, 0.15);
 }
 
 .character-picker {
   margin-top: var(--spacing-md);
   background: rgba(0, 0, 0, 0.2);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-md);
   padding: var(--spacing-md);
   display: flex;
   flex-direction: column;
   gap: var(--spacing-md);
-  animation: fade-in 0.2s ease-out;
+  animation: slide-in-down var(--duration-fast) ease-out;
 }
 
 .picker-header {
@@ -169,13 +169,13 @@
 
 .picker-header input {
   flex: 1;
-  padding: 10px 14px;
+  padding: var(--spacing-5) var(--spacing-6);
   background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-md);
   color: var(--color-text-primary);
-  font-family: var(--font-family-base);
-  font-size: 1rem;
+  font-family: var(--typography-font-family-base);
+  font-size: var(--typography-font-size-md);
   transition: all var(--transition-fast);
   box-sizing: border-box;
 }
@@ -187,17 +187,17 @@
 
 .picker-header input:focus {
   outline: none;
-  border-color: var(--color-primary);
+  border-color: var(--color-brand-primary);
   background: rgba(255, 255, 255, 0.08);
   box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
 }
 
 .cancel-picker {
   background: transparent;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-ui-border);
   color: var(--color-text-dim);
-  padding: 8px 16px;
-  border-radius: var(--radius-md);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-radius: var(--border-radius-md);
   cursor: pointer;
 }
 
@@ -207,48 +207,39 @@
   gap: var(--spacing-sm);
   max-height: 200px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: var(--spacing-2);
 }
 
 .picker-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px;
-  border-radius: var(--radius-md);
+  gap: var(--spacing-2);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius-md);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .picker-item:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-ui-interactive-hover);
 }
 
 .picker-item img {
   width: 60px;
   height: 60px;
-  border-radius: 50%;
+  border-radius: var(--border-radius-full);
   object-fit: cover;
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid var(--color-ui-border);
 }
 
 .picker-item span {
-  font-size: 0.75rem;
+  font-size: var(--typography-font-size-xs);
   text-align: center;
   color: var(--color-text-secondary);
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+/* slide-in-down defined in src/styles/animations.css */
 
 @media (max-width: 480px) {
   .team-slots {

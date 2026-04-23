@@ -1,22 +1,22 @@
 .saving-toast {
   position: fixed;
-  bottom: 1.5rem;
+  bottom: var(--spacing-lg);
   left: 50%;
   transform: translateX(-50%);
   z-index: 200;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.6rem 1.2rem;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-3) var(--spacing-6);
   background: var(--color-bg-surface);
-  border: 1px solid var(--color-primary);
-  border-radius: 999px;
-  color: var(--color-primary);
-  font-size: 0.9rem;
-  font-weight: 600;
+  border: 1px solid var(--color-brand-primary);
+  border-radius: var(--border-radius-full);
+  color: var(--color-brand-primary);
+  font-size: var(--typography-font-size-base);
+  font-weight: var(--typography-font-weight-semibold);
   box-shadow:
-    0 0 16px var(--color-primary-glow),
-    0 4px 12px rgba(0, 0, 0, 0.4);
+    0 0 16px var(--color-brand-primary-glow),
+    var(--shadow-md);
   pointer-events: none;
   white-space: nowrap;
 }
@@ -24,19 +24,9 @@
 .saving-toast-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
-  background: var(--color-primary);
-  animation: saving-toast-pulse 1.2s ease-in-out infinite;
+  border-radius: var(--border-radius-full);
+  background: var(--color-brand-primary);
+  animation: saving-toast-pulse var(--duration-pulse) ease-in-out infinite;
 }
 
-@keyframes saving-toast-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(0.85);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
+/* saving-toast-pulse defined in src/styles/animations.css */
