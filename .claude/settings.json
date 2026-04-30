@@ -1,0 +1,18 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "if": "Skill(caveman:caveman-commit)",
+            "command": "npm run format && npx eslint --fix .",
+            "statusMessage": "Auto-fixing lint and formatting...",
+            "timeout": 60
+          }
+        ]
+      }
+    ]
+  }
+}

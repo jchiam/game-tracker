@@ -33,4 +33,5 @@ playwright-report
 
 # AI
 .claude
+!.claude/settings.json
 .qwen
