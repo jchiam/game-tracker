@@ -152,6 +152,13 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/dr_ratio.webp',
   },
   {
+    id: 'evanescia',
+    name: 'Evanescia',
+    element: 'Physical',
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/characters/evanescia.webp',
+  },
+  {
     id: 'evernight',
     name: 'Evernight',
     element: 'Ice',
@@ -325,6 +332,13 @@ export const ALL_CHARACTERS: Character[] = [
     element: 'Quantum',
     path: 'Nihility',
     imageUrl: '/assets/honkai-star-rail/characters/silver_wolf.webp',
+  },
+  {
+    id: 'silver-wolf-lv-999',
+    name: 'Silver Wolf LV.999',
+    element: 'Imaginary',
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/characters/silver-wolf-lv-999.webp',
   },
   {
     id: 'sparkle',
