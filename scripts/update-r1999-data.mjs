@@ -338,10 +338,10 @@ async function loadExistingPsychubes() {
   try {
     const content = await readFile(filePath, 'utf-8');
     const entries = [];
-    const regex = /id:\s*(\d+),\s*name:\s*'([^']+)'/gs;
+    const regex = /name:\s*'([^']+)'/gs;
     let match;
     while ((match = regex.exec(content)) !== null) {
-      entries.push({ id: parseInt(match[1]), name: match[2] });
+      entries.push({ name: match[1] });
     }
     return entries;
   } catch {
@@ -360,7 +360,6 @@ function generatePsychubesTs(psychubes) {
     '// Run `node scripts/update-r1999-data.mjs` or trigger the GitHub Actions workflow to update.',
     '',
     'export interface Psychube {',
-    '  id: number;',
     '  name: string;',
     '  rarity: number;',
     '  tag: string; // Primary combat focus: None / ATK / Heal / Survival / Critical',
@@ -373,11 +372,10 @@ function generatePsychubesTs(psychubes) {
   const formatEntry = (p) => {
     return [
       '  {',
-      `    id: ${p.id},`,
       `    name: '${esc(p.name)}',`,
       `    rarity: ${p.rarity},`,
       `    tag: '${p.tag}',`,
-      `    imageUrl: '/assets/reverse-1999/psychubes/${p.id}.webp',`,
+      `    imageUrl: '/assets/reverse-1999/psychubes/${slugify(p.name)}.webp',`,
       '  },',
     ].join('\n');
   };
@@ -673,20 +671,10 @@ async function main() {
     `  Got image URLs for ${psychubeImageUrlMap.size}/${validPsychubeNames.length} psychubes`,
   );
 
-  // Build stable ID map: reuse existing IDs, assign new ones only for new entries.
-  // Prevents sort-position shifts from corrupting IDs when a new psychube is inserted alphabetically.
-  const existingNameToId = new Map(existingPsychubes.map((e) => [e.name, e.id]));
-  const maxExistingId =
-    existingPsychubes.length > 0 ? Math.max(...existingPsychubes.map((e) => e.id)) : 0;
-  let nextNewId = maxExistingId;
-  const stableIds = validPsychubeNames.map((name) =>
-    existingNameToId.has(name) ? existingNameToId.get(name) : ++nextNewId,
-  );
-
   // Pre-check ImageKit existence in parallel (one concurrent batch instead of 150 serial calls)
   console.log('  Checking ImageKit for existing psychube images...');
-  const localFiles = validPsychubeNames.map((_, idx) =>
-    resolve(ROOT, `public/assets/reverse-1999/psychubes/${stableIds[idx]}.webp`),
+  const localFiles = validPsychubeNames.map((name) =>
+    resolve(ROOT, `public/assets/reverse-1999/psychubes/${slugify(name)}.webp`),
   );
   const onKitResults = await Promise.all(
     localFiles.map((f) => (reuploadPsychubes ? Promise.resolve(false) : existsOnImageKit(f))),
@@ -704,8 +692,7 @@ async function main() {
   for (let idx = 0; idx < validPsychubeNames.length; idx++) {
     const name = validPsychubeNames[idx];
     const rarity = psychubeRarityMap.get(name);
-    const id = stableIds[idx];
-    const localPath = `/assets/reverse-1999/psychubes/${id}.webp`;
+    const localPath = `/assets/reverse-1999/psychubes/${slugify(name)}.webp`;
     const localFile = localFiles[idx];
 
     console.log(`  [${idx + 1}/${validPsychubeNames.length}] ${name}`);
@@ -729,7 +716,7 @@ async function main() {
       }
     }
 
-    psychubes.push({ id, name, rarity, tag: 'None', imageUrl: localPath });
+    psychubes.push({ name, rarity, tag: 'None', imageUrl: localPath });
   }
 
   const psychubePath = resolve(ROOT, 'src/data/reverse1999/psychubes.ts');
