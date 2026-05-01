@@ -18,7 +18,7 @@ function makeArcanist(overrides: Partial<R1999TrackedArcanist> = {}): R1999Track
     portraitLevel: 0,
     resonanceLevel: 0,
     euphoriaStage: 0,
-    psychubeId: null,
+    psychubeName: null,
     psychubeLevel: 1,
     psychubeAmplification: 1,
     ...overrides,
@@ -59,7 +59,7 @@ describe('ArcanistCard', () => {
 
   it('renders "—" when no psychube is equipped', () => {
     const { container } = render(
-      <ArcanistCard arcanist={makeArcanist({ psychubeId: null })} {...defaultProps} />,
+      <ArcanistCard arcanist={makeArcanist({ psychubeName: null })} {...defaultProps} />,
     );
     expect(container.querySelector('.no-psychube')).toBeInTheDocument();
   });

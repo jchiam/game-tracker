@@ -10,7 +10,7 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
   const { data: dbData, error } = await supabase
     .from('r1999_tracked_arcanists')
     .select(
-      'id, arcanist_id, level, portrait_level, resonance_level, is_favorited, euphoria_stage, psychube_id, psychube_level, psychube_amplification',
+      'id, arcanist_id, level, portrait_level, resonance_level, is_favorited, euphoria_stage, psychube_name, psychube_level, psychube_amplification',
     )
     .eq('profile_id', userId);
 
@@ -33,7 +33,7 @@ export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedA
         portraitLevel: row.portrait_level ?? 0,
         resonanceLevel: row.resonance_level ?? 0,
         euphoriaStage: row.euphoria_stage ?? 0,
-        psychubeId: row.psychube_id != null ? Number(row.psychube_id) : null,
+        psychubeName: row.psychube_name ?? null,
         psychubeLevel: row.psychube_level ?? 1,
         psychubeAmplification: row.psychube_amplification ?? 1,
       };
@@ -53,7 +53,7 @@ export async function insertArcanist(userId: string, arcanistId: string): Promis
       portrait_level: 0,
       resonance_level: 0,
       euphoria_stage: 0,
-      psychube_id: null,
+      psychube_name: null,
       psychube_level: 1,
       psychube_amplification: 1,
     })

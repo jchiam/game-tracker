@@ -101,7 +101,7 @@ function trackedArcanist(
     portraitLevel: 0,
     resonanceLevel: 0,
     euphoriaStage: 0,
-    psychubeId: null,
+    psychubeName: null,
     psychubeLevel: 1,
     psychubeAmplification: 1,
     ...overrides,
@@ -215,7 +215,7 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists[0].level).toBe(1);
       expect(result.current.trackedArcanists[0].portraitLevel).toBe(0);
       expect(result.current.trackedArcanists[0].resonanceLevel).toBe(0);
-      expect(result.current.trackedArcanists[0].psychubeId).toBeNull();
+      expect(result.current.trackedArcanists[0].psychubeName).toBeNull();
       expect(result.current.trackedArcanists[0].psychubeLevel).toBe(1);
       expect(result.current.trackedArcanists[0].euphoriaStage).toBe(0);
       expect(result.current.trackedArcanists[0].psychubeAmplification).toBe(1);
@@ -515,7 +515,7 @@ describe('useArcanists', () => {
       mockLoadArcanistsFromDB.mockResolvedValue([
         trackedArcanist('37', '37', {
           dbId: 'existing-db-id',
-          psychubeId: null,
+          psychubeName: null,
           psychubeLevel: 0,
         }),
       ]);
@@ -527,13 +527,13 @@ describe('useArcanists', () => {
       });
 
       await act(async () => {
-        result.current.updatePsychube('37', 28, 10);
+        result.current.updatePsychube('37', 'Hopscotch', 10);
       });
 
-      expect(result.current.trackedArcanists[0].psychubeId).toBe(28);
+      expect(result.current.trackedArcanists[0].psychubeName).toBe('Hopscotch');
       expect(result.current.trackedArcanists[0].psychubeLevel).toBe(10);
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
-        psychube_id: 28,
+        psychube_name: 'Hopscotch',
         psychube_level: 10,
       });
     });
@@ -542,7 +542,7 @@ describe('useArcanists', () => {
       mockLoadArcanistsFromDB.mockResolvedValue([
         trackedArcanist('37', '37', {
           dbId: 'existing-db-id',
-          psychubeId: 2,
+          psychubeName: 'Across the Acheron',
           psychubeLevel: 5,
         }),
       ]);
@@ -557,10 +557,10 @@ describe('useArcanists', () => {
         result.current.updatePsychube('37', null, 0);
       });
 
-      expect(result.current.trackedArcanists[0].psychubeId).toBeNull();
+      expect(result.current.trackedArcanists[0].psychubeName).toBeNull();
       expect(result.current.trackedArcanists[0].psychubeLevel).toBe(0);
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
-        psychube_id: null,
+        psychube_name: null,
         psychube_level: 0,
       });
     });

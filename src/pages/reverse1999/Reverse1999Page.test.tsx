@@ -28,7 +28,7 @@ function makeArcanist(id: string, name: string): R1999TrackedArcanist {
     portraitLevel: 0,
     resonanceLevel: 0,
     euphoriaStage: 0,
-    psychubeId: null,
+    psychubeName: null,
     psychubeLevel: 1,
     psychubeAmplification: 1,
   };

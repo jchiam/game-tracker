@@ -61,7 +61,7 @@ interface ArcanistCardProps {
   onUpdatePortrait: (id: string, portraitLevel: number) => void;
   onUpdateResonance: (id: string, resonanceLevel: number) => void;
   onUpdateEuphoriaStage: (id: string, stage: number) => void;
-  onUpdatePsychube: (id: string, psychubeId: number | null, psychubeLevel: number) => void;
+  onUpdatePsychube: (id: string, psychubeName: string | null, psychubeLevel: number) => void;
   onUpdatePsychubeAmplification: (id: string, level: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
 }
@@ -85,8 +85,8 @@ export function ArcanistCard({
   const hasEuphoria = staticArcanist?.hasEuphoria ?? false;
 
   const imageUrl = getMugshotUrl(arcanist.imageUrl);
-  const selectedPsychube = arcanist.psychubeId
-    ? (ALL_PSYCHUBES.find((p) => p.id === arcanist.psychubeId) ?? null)
+  const selectedPsychube = arcanist.psychubeName
+    ? (ALL_PSYCHUBES.find((p) => p.name === arcanist.psychubeName) ?? null)
     : null;
 
   // Progress color styles per dimension
@@ -95,13 +95,13 @@ export function ArcanistCard({
   const resonancePs = getProgressStyle(arcanist.resonanceLevel, 0, 15);
   const euphoriaPs = getProgressStyle(arcanist.euphoriaStage, 0, 4);
   // Psychube line: name always teal (100%), level/amp colored individually
-  const psychubeNamePs = arcanist.psychubeId
+  const psychubeNamePs = arcanist.psychubeName
     ? getProgressStyle(60, 1, 60)
     : getProgressStyle(0, 0, 1); // rust when unequipped
-  const psychubeLevelPs = arcanist.psychubeId
+  const psychubeLevelPs = arcanist.psychubeName
     ? getProgressStyle(arcanist.psychubeLevel, 1, 60)
     : getProgressStyle(arcanist.psychubeLevel, 1, 60); // always based on actual level
-  const psychubeAmpPs = arcanist.psychubeId
+  const psychubeAmpPs = arcanist.psychubeName
     ? getProgressStyle(arcanist.psychubeAmplification, 1, 5)
     : getProgressStyle(0, 0, 1); // rust when unequipped
 
@@ -357,18 +357,14 @@ export function ArcanistCard({
               <select
                 name={`psychube-${arcanist.id}`}
                 className="psychube-select"
-                value={arcanist.psychubeId ?? ''}
+                value={arcanist.psychubeName ?? ''}
                 onChange={(e) =>
-                  onUpdatePsychube(
-                    arcanist.id!,
-                    e.target.value ? Number(e.target.value) : null,
-                    arcanist.psychubeLevel,
-                  )
+                  onUpdatePsychube(arcanist.id!, e.target.value || null, arcanist.psychubeLevel)
                 }
               >
                 <option value="">No Psychube</option>
                 {ALL_PSYCHUBES.map((p) => (
-                  <option key={p.id} value={p.id}>
+                  <option key={p.name} value={p.name}>
                     {p.name} ({p.rarity}★)
                   </option>
                 ))}
@@ -380,7 +376,7 @@ export function ArcanistCard({
                 max="60"
                 value={arcanist.psychubeLevel}
                 onChange={(e) =>
-                  onUpdatePsychube(arcanist.id!, arcanist.psychubeId, parseInt(e.target.value))
+                  onUpdatePsychube(arcanist.id!, arcanist.psychubeName, parseInt(e.target.value))
                 }
                 className="psychube-slider"
                 style={

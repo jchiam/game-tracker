@@ -73,7 +73,7 @@ describe('AddArcanistModal', () => {
         portraitLevel: 2,
         resonanceLevel: 5,
         euphoriaStage: 0,
-        psychubeId: null,
+        psychubeName: null,
         psychubeLevel: 1,
         psychubeAmplification: 1,
       },

@@ -6,10 +6,10 @@
         "hooks": [
           {
             "type": "command",
-            "if": "Skill(caveman:caveman-commit)",
             "command": "npm run format && npx eslint --fix .",
-            "statusMessage": "Auto-fixing lint and formatting...",
-            "timeout": 60
+            "if": "Skill(caveman:caveman-commit)",
+            "timeout": 60,
+            "statusMessage": "Auto-fixing lint and formatting..."
           }
         ]
       }
