@@ -35,7 +35,7 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/all_honor_is_but_dust.webp',
   },
   {
-    name: 'An Epic\'s End',
+    name: "An Epic's End",
     rarity: 6,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/an_epic_s_end.webp',
@@ -311,7 +311,7 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/the_carat_of_a_heart.webp',
   },
   {
-    name: 'The Fighter\'s Best Wishes',
+    name: "The Fighter's Best Wishes",
     rarity: 6,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/the_fighter_s_best_wishes.webp',
@@ -486,7 +486,7 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/laughter_and_laughter.webp',
   },
   {
-    name: 'Let\'s Set Sail',
+    name: "Let's Set Sail",
     rarity: 5,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/let_s_set_sail.webp',
@@ -516,7 +516,7 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/one_with_the_flow.webp',
   },
   {
-    name: 'Parting\'s Quiet Lament',
+    name: "Parting's Quiet Lament",
     rarity: 5,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/parting_s_quiet_lament.webp',
@@ -576,7 +576,7 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/the_severed_and_the_rest.webp',
   },
   {
-    name: 'The Wind\'s Listener',
+    name: "The Wind's Listener",
     rarity: 5,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/the_wind_s_listener.webp',
