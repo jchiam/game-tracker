@@ -39,6 +39,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: true,
   },
   {
+    id: 'adler',
+    name: 'Adler',
+    afflatus: 'Intellect',
+    damageType: 'Unknown',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/adler.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'aleph',
     name: 'Aleph',
     afflatus: 'Intellect',
@@ -108,6 +116,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/charon.webp',
+    hasEuphoria: false,
+  },
+  {
+    id: 'cheng_heguang',
+    name: 'Cheng Heguang',
+    afflatus: 'Star',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/cheng_heguang.webp',
     hasEuphoria: false,
   },
   {
@@ -279,6 +295,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: false,
   },
   {
+    id: 'lorentz_butterfly',
+    name: 'Lorentz Butterfly',
+    afflatus: 'Intellect',
+    damageType: 'Mental',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/lorentz_butterfly.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'lucy',
     name: 'Lucy',
     afflatus: 'Intellect',
@@ -359,12 +383,28 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: false,
   },
   {
+    id: 'paper_heron',
+    name: 'Paper Heron',
+    afflatus: 'Plant',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/paper_heron.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'pickles',
     name: 'Pickles',
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/pickles.webp',
     hasEuphoria: true,
+  },
+  {
+    id: 'ramona',
+    name: 'Ramona',
+    afflatus: 'Plant',
+    damageType: 'Mental',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/ramona.webp',
+    hasEuphoria: false,
   },
   {
     id: 'recoleta',

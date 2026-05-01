@@ -33,11 +33,18 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/3.webp',
   },
   {
-    id: 4,
+    id: 112,
+    name: 'All Honor is but Dust',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/112.webp',
+  },
+  {
+    id: 113,
     name: "An Epic's End",
     rarity: 6,
     tag: 'None',
-    imageUrl: '/assets/reverse-1999/psychubes/4.webp',
+    imageUrl: '/assets/reverse-1999/psychubes/113.webp',
   },
   {
     id: 5,
@@ -355,11 +362,11 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/49.webp',
   },
   {
-    id: 50,
+    id: 114,
     name: "The Fighter's Best Wishes",
     rarity: 6,
     tag: 'None',
-    imageUrl: '/assets/reverse-1999/psychubes/50.webp',
+    imageUrl: '/assets/reverse-1999/psychubes/114.webp',
   },
   {
     id: 51,
@@ -416,6 +423,13 @@ export const ALL_PSYCHUBES: Psychube[] = [
     rarity: 6,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/58.webp',
+  },
+  {
+    id: 115,
+    name: 'Wayfarer of the Dao',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/115.webp',
   },
   // 5-Stars
   {
@@ -552,11 +566,11 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/77.webp',
   },
   {
-    id: 78,
+    id: 116,
     name: "Let's Set Sail",
     rarity: 5,
     tag: 'None',
-    imageUrl: '/assets/reverse-1999/psychubes/78.webp',
+    imageUrl: '/assets/reverse-1999/psychubes/116.webp',
   },
   {
     id: 79,
@@ -587,11 +601,11 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/82.webp',
   },
   {
-    id: 83,
+    id: 117,
     name: "Parting's Quiet Lament",
     rarity: 5,
     tag: 'None',
-    imageUrl: '/assets/reverse-1999/psychubes/83.webp',
+    imageUrl: '/assets/reverse-1999/psychubes/117.webp',
   },
   {
     id: 84,
@@ -655,6 +669,13 @@ export const ALL_PSYCHUBES: Psychube[] = [
     rarity: 5,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/92.webp',
+  },
+  {
+    id: 118,
+    name: "The Wind's Listener",
+    rarity: 5,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/118.webp',
   },
   {
     id: 93,
