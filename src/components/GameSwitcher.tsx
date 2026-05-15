@@ -17,6 +17,13 @@ const GAMES = [
     icon: '/assets/icons/r1999-icon.png',
     color: '#deb887',
   },
+  {
+    id: 'n2e',
+    name: 'Neverness to Everness',
+    path: '/neverness-to-everness',
+    icon: '/assets/icons/n2e-icon.webp',
+    color: '#7b2dff',
+  },
 ];
 
 export function GameSwitcher() {

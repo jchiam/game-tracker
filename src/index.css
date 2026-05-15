@@ -144,6 +144,10 @@ button:hover {
   background-image: url('https://www.prydwen.gg/static/fcd1174cd08e75db740f90e386055d72/31336/rv_meta.webp');
 }
 
+.game-card-header.bg-n2e-sel {
+  background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #0a0a1a 100%);
+}
+
 .game-character-image {
   position: absolute;
   top: 0;

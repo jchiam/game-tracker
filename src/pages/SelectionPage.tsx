@@ -21,6 +21,15 @@ const GAMES = [
     description: 'Track arcanists, psychubes, and wilderness materials.',
     tag: 'Bluepoch',
   },
+  {
+    id: 'neverness-to-everness',
+    name: 'Neverness to Everness',
+    path: '/neverness-to-everness',
+    bgClass: 'bg-n2e-sel',
+    imageUrl: '/assets/neverness-to-everness/selection-cover.png',
+    description: 'Track espers, awakenings, and team compositions.',
+    tag: 'Hotta Studio',
+  },
 ];
 
 interface SelectionPageProps {

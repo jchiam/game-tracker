@@ -12,6 +12,9 @@ const HsrPage = lazy(() =>
 const Reverse1999Page = lazy(() =>
   import('@/pages/reverse1999/Reverse1999Page').then((m) => ({ default: m.Reverse1999Page })),
 );
+const N2ePage = lazy(() =>
+  import('@/pages/neverness-to-everness/N2ePage').then((m) => ({ default: m.N2ePage })),
+);
 
 function App() {
   const { session, isAuthLoading, signInWithGoogle, signOut } = useAuth();
@@ -46,6 +49,16 @@ function App() {
             path="/reverse-1999"
             element={
               <Reverse1999Page
+                session={session}
+                isAuthLoading={isAuthLoading}
+                onSignIn={signInWithGoogle}
+              />
+            }
+          />
+          <Route
+            path="/neverness-to-everness"
+            element={
+              <N2ePage
                 session={session}
                 isAuthLoading={isAuthLoading}
                 onSignIn={signInWithGoogle}

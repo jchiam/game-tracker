@@ -31,7 +31,7 @@ describe('SelectionPage', () => {
       <SelectionPage session={null} isAuthLoading={false} signInWithGoogle={vi.fn()} />,
     );
     const badges = screen.getAllByText('Requires Login');
-    expect(badges.length).toBe(2);
+    expect(badges.length).toBe(3);
   });
 
   it('does not show "Requires Login" badge when session exists', () => {
