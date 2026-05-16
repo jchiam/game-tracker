@@ -1,30 +1,37 @@
-# game-tracker
+# Game Tracker
 
-Multi-game tracker web app for gacha game rosters, builds, and party lineups.
+Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Currently tracks **Honkai Star Rail**, **Reverse: 1999**, and **Neverness to Everness**.
 
-## Stack
+## Tech Stack
 
-- **Frontend**: React 19 + TypeScript (strict) + Vite
-- **Backend**: Supabase (PostgreSQL + Google OAuth)
-- **CDN**: ImageKit for arcanist/character images
-- **Deploy**: Vercel (SPA, CSP headers configured)
-- **Tests**: Vitest + React Testing Library (unit), Playwright (E2E)
+- **Frontend:** React 19 + TypeScript (strict) + Vite 8 + React Router 7
+- **Backend:** Supabase (PostgreSQL + Google OAuth + RLS)
+- **Images:** ImageKit CDN with on-the-fly transforms; local paths as fallback
+- **Styling:** CSS per component + Style Dictionary design tokens (`src/styles/design-tokens.json` → `tokens.css`)
+- **Testing:** Vitest + React Testing Library (unit), Playwright (e2e), MSW (API mocking)
+- **CI/CD:** GitHub Actions → Vercel (auto-deploy on main)
+- **Data updates:** Automated scripts (`scripts/update-*-data.mjs`) + weekly GitHub Actions workflows
 
-## Architecture
+## Commands
 
-Code is organised by game. Each game gets its own subdirectory in:
-
+```bash
+npm run dev          # Vite dev server on :5173 + Style Dictionary watch
+npm run build        # TypeScript check + Vite build (runs build:tokens first)
+npm run lint         # ESLint
+npm run format       # Prettier (write)
+npm run format:check # Prettier (check — used in CI)
+npm test             # Vitest unit tests
+npm run test:e2e     # Playwright e2e tests
+npm run verify:csp   # Verify CSP connect-src matches Supabase URL
 ```
-src/data/<game>/        # Static game data — AUTO-GENERATED, do not hand-edit
-src/hooks/<game>/       # Custom hooks (useTrackedArcanists, useParties, …)
-src/services/<game>/    # DB access layer (arcanistService.ts, partyService.ts)
-src/pages/<game>/       # Page component + components/ subdirectory
-```
 
-Shared code lives in `src/components/`, `src/lib/`, `src/utils/`, `src/types.ts`.
+Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`.
 
-**Data flow:** static `ALL_*` arrays merged at runtime with DB rows → hook state → components.  
-**Writes:** always go through the service layer; batch/debounce via `usePendingSaves` (1000 ms) — never bypass it for DB mutations.
+## Git
+
+- Always use `git -c commit.gpgsign=false` — GPG signing is not configured in this environment.
+- Conventional Commits style: `feat(r1999):`, `fix(hsr):`, `chore(n2e):`, `test:`, `refactor:`, `style:`.
+- Game-scoped commits use the short game ID: `hsr`, `r1999`, `n2e`.
 
 ## Code Conventions
 
@@ -33,59 +40,130 @@ Shared code lives in `src/components/`, `src/lib/`, `src/utils/`, `src/types.ts`
 - **Hooks**: `use` prefix, camelCase filename (`useParties.ts`)
 - **Services**: `<entity>Service.ts`, plain functional exports, no classes
 - **Files**: PascalCase for components/pages; camelCase for hooks, services, utils
-- **CSS**: one `.css` file per component, kebab-case class names, always use CSS variables from `src/index.css` — no hardcoded colour/spacing values
+- **CSS**: one `.css` file per component, kebab-case class names, always use CSS variables from design tokens — no hardcoded colour/spacing values
 - **Imports**: always use `@/` alias (never relative paths); use `import type` for type-only imports
 - **Types**: defined manually in `src/types.ts` — never run `supabase gen types`
 
-## Database / Migrations
+## Architecture — Per-Game Module Pattern
 
-- **Always** create a SQL file in `supabase/migrations/` for any schema change
-- Filename: `YYYYMMDDHHMMSS_<description>.sql` (UTC timestamp, sequential within a day)
-- RLS: R1999 tables enforce `auth.uid() = profile_id`; HSR tables are currently permissive — match existing pattern for the game you're working on
-- Never run `supabase gen types` — types are hand-authored
+Code is organised by game. Each game gets its own subdirectory. Shared code lives in `src/components/`, `src/lib/`, `src/utils/`, `src/types.ts`.
 
-## Testing
+**Data flow:** static `ALL_*` arrays merged at runtime with DB rows → hook state → components.
+**Writes:** always go through the service layer; batch/debounce via `usePendingSaves` (1000 ms) — never bypass it for DB mutations.
 
-- Tests colocated next to source: `Foo.tsx` → `Foo.test.tsx`
-- E2E tests in `tests/`
-- Use `vi.fn()` for mocks; `userEvent.setup()` for user interactions
-- Run `npm test` before marking any fix or feature complete
-- Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`
+### Directory Layout
 
-## Guard Rails
+For a game called `{game}` with primary entity `{Entity}` (e.g., "character", "arcanist"):
 
-- **Never** run `vercel deploy` or push to Vercel without explicit instruction
-- **Never** `git push` without explicit instruction
-- **Always** run `npm run lint && npm run format:check` before committing
-- **Never** hand-edit `src/data/**` — those files are generated by scripts in `scripts/`
-- **Never** commit `.env.local`
+```
+src/
+├── data/{game}/
+│   ├── {entities}.ts          # Static catalog: interface + ALL_{ENTITIES} array
+│   └── {equipment}.ts         # Optional: equippable items catalog
+├── services/{game}/
+│   ├── {entity}Service.ts     # Supabase CRUD for tracked entities
+│   ├── {entity}Service.test.ts
+│   ├── partyService.ts        # Supabase CRUD for parties/lineups
+│   └── partyService.test.ts
+├── hooks/{game}/
+│   ├── use{Entities}.ts       # React hook: load, add, remove, update, search/filter
+│   ├── use{Entities}.test.ts
+│   ├── useParties.ts          # React hook: party CRUD
+│   └── useParties.test.ts
+├── pages/{game}/
+│   ├── {Game}Page.tsx         # Main page: roster view + lineups view toggle
+│   ├── {Game}Page.css
+│   ├── {Game}Page.test.tsx
+│   └── components/
+│       ├── {Entity}Card.tsx       # Card component for tracked entity
+│       ├── {Entity}Card.css
+│       ├── {Entity}Card.test.tsx
+│       ├── Add{Entity}Modal.tsx   # Modal to pick entity from catalog
+│       ├── Add{Entity}Modal.test.tsx
+│       ├── PartyCard.tsx          # Card for a saved party
+│       ├── PartyCard.css
+│       ├── PartyCard.test.tsx
+│       ├── PartyEditorModal.tsx   # Modal to create/edit party
+│       ├── PartyEditorModal.test.tsx
+│       ├── PartiesTab.tsx         # Lineups tab container
+│       ├── PartiesTab.css
+│       └── PartiesTab.test.tsx
+scripts/
+│   └── update-{game}-data.mjs    # Fetches latest entity/equipment data from external sources
+supabase/migrations/
+│   └── YYYYMMDD000000_add_{game}_tables.sql
+.github/workflows/
+│   └── update-{game}-data.yml    # Weekly cron to run update script + auto-PR
+```
 
-## Adding a New Game
+### Layer Responsibilities
 
-Follow the existing HSR / R1999 pattern exactly:
+1. **Data layer** (`src/data/{game}/`): Static catalog arrays auto-generated by update scripts. Export an interface and a `const ALL_{ENTITIES}` array. Never edit manually — update the script instead.
 
-1. `src/data/<game>/` — static data modules (`ALL_<ENTITY>` arrays)
-2. `src/hooks/<game>/` — `useTracked<Entity>.ts`, `useParties.ts`
-3. `src/services/<game>/` — `<entity>Service.ts`, `partyService.ts`
-4. `src/pages/<game>/` — page component + `components/` subdirectory
-5. `supabase/migrations/` — new tables + RLS policies
-6. `src/App.tsx` — add lazy-loaded route
-7. `src/pages/SelectionPage.tsx` — add game card
+2. **Service layer** (`src/services/{game}/`): Thin Supabase CRUD. Each function checks `DB_ENABLED` and returns early if Supabase is not configured. Functions: `load{Entities}FromDB`, `insert{Entity}`, `delete{Entity}`, `update{Entity}`. Party service: `loadParties`, `saveParty`, `deleteParty`.
+
+3. **Hook layer** (`src/hooks/{game}/`): React state management. Loads from DB on session change. Optimistic updates with rollback on error. Uses `usePendingSaves` for debounced saves. Exposes `getFilteredRoster` (Fuse.js search) and individual field update functions.
+
+4. **Page layer** (`src/pages/{game}/`): Composes hooks + components. Two views: "Roster" (entity cards grid) and "Lineups" (party tab). Handles auth gating, loading/error states, search, sort.
+
+5. **Update script** (`scripts/update-{game}-data.mjs`): Fetches from external APIs (wikis, GitHub repos), downloads images, uploads to ImageKit, regenerates `src/data/{game}/*.ts` files. Idempotent — skips already-uploaded assets unless `--reupload-*` flags passed. Has a matching `.github/workflows/update-{game}-data.yml` that runs weekly + manual dispatch, auto-creates a PR with changes.
+
+### Wiring a New Game Into the App
+
+After creating the per-game module, connect it in these files:
+
+1. **`src/types.ts`** — Add `{Game}Tracked{Entity}` and `{Game}Party`/`{Game}PartyMember` interfaces.
+2. **`src/App.tsx`** — Add lazy-loaded route: `const {Game}Page = lazy(() => import(...))` + `<Route path="/{game-slug}" .../>`.
+3. **`src/components/GameSwitcher.tsx`** — Add entry to `GAMES` array (id, name, path, icon, color).
+4. **`src/pages/SelectionPage.tsx`** — Add entry to `GAMES` array (id, name, path, bgClass, imageUrl, description, tag).
+5. **`src/index.css`** — Add `.game-card-header.bg-{game}-sel` background style.
+6. **`vercel.json`** — If new external image domain needed, add to CSP `img-src`.
+7. **`.env.template`** — Add any new env vars.
 
 Reference implementation: Reverse: 1999 (`src/hooks/reverse1999/useArcanists.ts`, `src/services/reverse1999/arcanistService.ts`, `src/pages/reverse1999/Reverse1999Page.tsx`).
 
-## Dev Commands
+### Database Conventions
 
-```
-npm run dev           # Vite dev server on :5173
-npm run build         # tsc -b && vite build
-npm test              # Vitest (single run)
-npm run test:e2e      # Playwright E2E
-npm run lint          # ESLint
-npm run format        # Prettier (write)
-npm run format:check  # Prettier (check — used in CI)
-npm run verify:csp    # Validate CSP headers match env vars
-```
+- Table names: `{game_prefix}_tracked_{entities}`, `{game_prefix}_parties`, `{game_prefix}_party_members`.
+- All tables use UUID primary keys (`gen_random_uuid()`).
+- `profile_id TEXT NOT NULL REFERENCES user_profiles(id) ON DELETE CASCADE`.
+- Unique constraint on `(profile_id, {entity}_id)` for tracked entity tables.
+- Party members: `slot_index INTEGER NOT NULL` with game-appropriate CHECK constraint + `UNIQUE(party_id, slot_index)`.
+- Enable RLS on all tables. Use user-scoped policies (`profile_id = auth.uid()::text`).
+- Index `profile_id` on main tables, `party_id` on member tables.
+- Migration filename: `YYYYMMDD000000_add_{game}_tables.sql`. Incremental schema changes get separate timestamped migrations.
+- Never run `supabase gen types` — types are hand-authored in `src/types.ts`.
+
+### Image Pipeline
+
+- Static entity catalogs reference local asset paths: `/assets/{game}/{entity-type}/{id}.webp`.
+- Update scripts download images and upload to ImageKit. Images are NOT stored in the repo.
+- `src/lib/imagekit.ts` provides `getMugshotUrl()`, `getAvatarUrl()`, etc. to resolve local paths → ImageKit CDN URLs with transforms.
+- Add new transform functions to `imagekit.ts` as needed for game-specific image treatments.
+
+### Testing Conventions
+
+- Tests colocated next to source: `Foo.tsx` → `Foo.test.tsx`. E2e tests in `tests/`.
+- Service tests: mock `@/lib/supabase` via `vi.doMock`. Test both DB-disabled (returns empty/null) and DB-enabled (correct table queries, error handling) paths.
+- Hook tests: use `@testing-library/react` `renderHook` with MSW or mocked services.
+- Component tests: use `@testing-library/react` `render` with mock data fixtures.
+- Use `vi.fn()` for mocks; `userEvent.setup()` for user interactions.
+- Use `src/test/mocks/supabase.ts` helpers (`createMockSession`, `createMockUser`) for auth fixtures.
+- Run `npm test` before marking any fix or feature complete.
+
+## Shared Components
+
+Reuse these existing shared components — don't recreate them:
+
+- `AuthGate` — shown when user is not logged in
+- `LoadErrorState` — retry button for failed DB loads
+- `SavingToast` — shows when pendingSaveCount > 0
+- `Modal` — base modal with overlay, close button, keyboard handling
+- `AddEntityModal.css` — shared modal styles for entity-picker modals
+- `ConfirmCheckbox` — checkbox with confirmation dialog
+- `GameSwitcher` — dropdown to switch between games (auto-hides on selection page)
+- `usePendingSaves` — debounced save queue hook (shared across all games)
+- `useAuth` — Google OAuth via Supabase
 
 ## Key Files
 
@@ -97,3 +175,13 @@ npm run verify:csp    # Validate CSP headers match env vars
 | `src/hooks/usePendingSaves.ts` | Debounced DB write queue — reuse for all mutations            |
 | `supabase/migrations/`         | Full schema history                                           |
 | `.env.template`                | Required env var names (`VITE_SUPABASE_*`, `VITE_IMAGEKIT_*`) |
+
+## Guard Rails
+
+- **Never** run `vercel deploy` or push to Vercel without explicit instruction.
+- **Never** `git push` without explicit instruction.
+- **Always** run `npm run lint && npm run format:check` before committing.
+- **Never** hand-edit `src/data/**` — those files are generated by scripts in `scripts/`.
+- **Never** commit `.env.local`.
+- Don't add new external domains without updating CSP in `vercel.json` and running `npm run verify:csp`.
+- Don't skip RLS on new Supabase tables.
