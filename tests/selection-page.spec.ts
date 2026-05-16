@@ -12,17 +12,19 @@ test.describe('Selection Page UI and Behavior', () => {
     await expect(brand).toHaveAttribute('href', '/');
   });
 
-  test('should display both game cards', async ({ page }) => {
+  test('should display all three game cards', async ({ page }) => {
     const hsrCard = page.locator('.game-card', { hasText: 'Honkai Star Rail' });
     const r1999Card = page.locator('.game-card', { hasText: 'Reverse: 1999' });
+    const n2eCard = page.locator('.game-card', { hasText: 'Neverness to Everness' });
 
     await expect(hsrCard).toBeVisible();
     await expect(r1999Card).toBeVisible();
+    await expect(n2eCard).toBeVisible();
   });
 
   test('should show "Requires Login" badge on game cards', async ({ page }) => {
     const loginBadges = page.locator('.requires-login-badge');
-    await expect(loginBadges).toHaveCount(2);
+    await expect(loginBadges).toHaveCount(3);
     await expect(loginBadges.first()).toContainText('Requires Login');
   });
 
@@ -36,16 +38,20 @@ test.describe('Selection Page UI and Behavior', () => {
 
   test('should show character images in cards', async ({ page }) => {
     const images = page.locator('.game-character-image');
-    await expect(images).toHaveCount(2);
+    await expect(images).toHaveCount(3);
 
-    // Check if images have loaded paths
     const hsrImage = images.nth(0);
     const r1999Image = images.nth(1);
+    const n2eImage = images.nth(2);
 
     await expect(hsrImage).toHaveAttribute(
       'src',
       /\/assets\/honkai-star-rail\/selection-cover\.png/,
     );
     await expect(r1999Image).toHaveAttribute('src', /\/assets\/reverse-1999\/selection-cover\.jpg/);
+    await expect(n2eImage).toHaveAttribute(
+      'src',
+      /\/assets\/neverness-to-everness\/selection-cover\.png/,
+    );
   });
 });
