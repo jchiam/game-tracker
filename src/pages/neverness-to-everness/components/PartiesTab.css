@@ -1,0 +1,28 @@
+.n2e-parties-tab {
+  padding-bottom: var(--spacing-xl);
+}
+
+.n2e-parties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.n2e-parties-header h2 {
+  font-size: var(--typography-font-size-3xl);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.n2e-parties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+@media (max-width: 480px) {
+  .n2e-parties-grid {
+    grid-template-columns: 1fr;
+  }
+}
