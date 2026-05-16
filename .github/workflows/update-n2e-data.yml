@@ -1,0 +1,60 @@
+name: Update N2E
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Every Sunday at 00:00 UTC
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run update script
+        env:
+          IMAGEKIT_PRIVATE_KEY: ${{ secrets.IMAGEKIT_PRIVATE_KEY }}
+          IMAGEKIT_PUBLIC_KEY: ${{ secrets.IMAGEKIT_PUBLIC_KEY }}
+          IMAGEKIT_URL_ENDPOINT: ${{ secrets.IMAGEKIT_URL_ENDPOINT }}
+        run: node scripts/update-n2e-data.mjs
+
+      - name: Format generated files
+        run: npm run format
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Create PR
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_BODY: |
+            Automated weekly update of N2E character data and image assets from:
+            - [Neverness to Everness Wiki](https://neverness-to-everness.fandom.com) — character list, attributes, images
+        run: |
+          BRANCH="chore/update-n2e-data-$(date -u +%Y%m%d)"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "chore: update Neverness to Everness character data"
+          git push origin "$BRANCH"
+          gh pr create \
+            --title "chore: update Neverness to Everness character data" \
+            --body "$PR_BODY" \
+            --base main \
+            --head "$BRANCH"

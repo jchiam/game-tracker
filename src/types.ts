@@ -1,6 +1,7 @@
 import { type Character } from '@/data/honkai-star-rail/characters';
 import { type EquippedRelic } from '@/data/honkai-star-rail/relics';
 import { type Arcanist } from '@/data/reverse1999/arcanists';
+import { type N2ECharacter } from '@/data/neverness-to-everness/characters';
 
 export interface HsrTrackedCharacter extends Character {
   dbId?: string;
@@ -66,5 +67,41 @@ export interface R1999Party {
 
 export interface R1999PartyMember {
   arcanistId: string;
+  slotIndex: number; // 0–3
+}
+
+export interface N2ETrackedCharacter extends N2ECharacter {
+  dbId?: string;
+  isFavorited: boolean;
+  level: number;
+  awakening: boolean[]; // 6 individual toggle slots
+  resonanceCount: number; // 0–6
+  arcId: string | null;
+  arcLevel: number;
+  arcTier: number; // 1–5 (T1–T5)
+  cartridgeRarity: string | null; // 'B' | 'A' | 'S'
+  cartridgeLevel: number; // 0–20
+  cartridgeMainStat: string | null;
+  cartridgeSubStats: string[]; // up to 4 stat type strings
+  cartridgePreferences: {
+    mainStats: { stat: string; operator: string | null; orderIndex: number }[];
+    subStats: { stat: string; operator: string | null; orderIndex: number }[];
+    comments?: string;
+  };
+}
+
+export interface N2EParty {
+  id: string;
+  profileId: string;
+  name: string;
+  notes: string | null;
+  tier: string | null;
+  isFavorited: boolean;
+  members: N2EPartyMember[];
+  createdAt: string;
+}
+
+export interface N2EPartyMember {
+  characterId: string;
   slotIndex: number; // 0–3
 }
