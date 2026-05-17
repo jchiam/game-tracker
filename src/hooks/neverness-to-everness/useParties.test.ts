@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
+import type { Session } from '@supabase/supabase-js';
 import { createMockSession } from '@/test/mocks/supabase';
 
 describe('useParties', () => {
@@ -19,7 +20,7 @@ describe('useParties', () => {
     vi.restoreAllMocks();
   });
 
-  async function setup(session = mockSession) {
+  async function setup(session: Session | null = mockSession) {
     const { useParties } = await import('@/hooks/neverness-to-everness/useParties');
     const hook = renderHook(() => useParties(session));
     await waitFor(() => {

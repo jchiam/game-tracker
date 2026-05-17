@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
+import type { Session } from '@supabase/supabase-js';
 import { createMockSession } from '@/test/mocks/supabase';
 
 describe('useCharacters', () => {
@@ -23,7 +24,7 @@ describe('useCharacters', () => {
     vi.restoreAllMocks();
   });
 
-  async function setup(session = mockSession) {
+  async function setup(session: Session | null = mockSession) {
     const { useCharacters } = await import('@/hooks/neverness-to-everness/useCharacters');
     const { ALL_CHARACTERS } = await import('@/data/neverness-to-everness/characters');
     const hook = renderHook(() => useCharacters(session, false));
