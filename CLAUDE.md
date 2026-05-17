@@ -77,18 +77,23 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 
 ### L3 — Shared Components
 
-| Component         | CSS                   | Purpose                                                |
-| ----------------- | --------------------- | ------------------------------------------------------ |
-| `Modal`           | `Modal.css`           | Base modal + tabs + preference chains + build-comments |
-| `AuthGate`        | —                     | Sign-in prompt                                         |
-| `LoadErrorState`  | —                     | Retry prompt                                           |
-| `ConfirmCheckbox` | `ConfirmCheckbox.css` | Checkbox with confirmation                             |
-| `GameSwitcher`    | `GameSwitcher.css`    | Game dropdown                                          |
-| `Navbar`          | `Navbar.css`          | Top nav                                                |
-| `SavingToast`     | `SavingToast.css`     | Save indicator                                         |
-| `ToastContainer`  | `ToastContainer.css`  | Notification system                                    |
+| Component         | CSS                   | Purpose                                                            |
+| ----------------- | --------------------- | ------------------------------------------------------------------ |
+| `Modal`           | `Modal.css`           | Base modal + tabs + preference chains + build-comments             |
+| `ProgressSection` | uses `card.css`       | `.progress-section` + `.section-header` + `.section-value` wrapper |
+| `GameBadge`       | uses game CSS         | Badge with `{variant}-badge {variant}-{modifier}` classes          |
+| `StatChip`        | uses `controls.css`   | Compact stat display chip (`.stat-chip`)                           |
+| `AuthGate`        | —                     | Sign-in prompt                                                     |
+| `LoadErrorState`  | —                     | Retry prompt                                                       |
+| `ConfirmCheckbox` | `ConfirmCheckbox.css` | Checkbox with confirmation                                         |
+| `GameSwitcher`    | `GameSwitcher.css`    | Game dropdown                                                      |
+| `Navbar`          | `Navbar.css`          | Top nav                                                            |
+| `SavingToast`     | `SavingToast.css`     | Save indicator                                                     |
+| `ToastContainer`  | `ToastContainer.css`  | Notification system                                                |
 
 Shared modal CSS: `AddEntityModal.css` (list patterns), `PartyEditorModal.css` (team builder).
+
+**Use shared components for consistency.** All game cards must use `ProgressSection` for stat sections, `GameBadge` for type/element/afflatus badges, and `StatChip` for compact stat displays. Don't re-implement these patterns with raw `<div>`/`<span>` elements.
 
 ### L4 — Game Components
 
