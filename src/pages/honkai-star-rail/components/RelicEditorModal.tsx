@@ -209,9 +209,9 @@ export function RelicEditorModal({
                   style={{
                     padding: '10px 14px',
                     background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid var(--color-border)',
-                    borderRadius: 'var(--radius-md)',
-                    color: 'var(--color-primary)',
+                    border: '1px solid var(--color-ui-border)',
+                    borderRadius: 'var(--border-radius-md)',
+                    color: 'var(--color-brand-primary)',
                   }}
                 >
                   {slot === 'head' ? 'HP' : 'ATK'} (Fixed)

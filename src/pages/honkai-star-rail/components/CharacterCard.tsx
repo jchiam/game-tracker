@@ -105,7 +105,7 @@ export function CharacterCard({
             onChange={(e) => onUpdateLevel(char.id, parseInt(e.target.value))}
             className="level-slider"
             style={{
-              background: `linear-gradient(to right, var(--color-primary) ${(char.level / 80) * 100}%, rgba(255,255,255,0.1) ${(char.level / 80) * 100}%)`,
+              background: `linear-gradient(to right, var(--color-brand-primary) ${(char.level / 80) * 100}%, rgba(255,255,255,0.1) ${(char.level / 80) * 100}%)`,
             }}
           />
         </div>

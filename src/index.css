@@ -2,21 +2,9 @@
 @import './styles/tokens.css';
 @import './styles/animations.css';
 
-/* Backward-compat aliases — remove as CSS files are migrated to new token names */
-:root {
-  --color-primary: var(--color-brand-primary);
-  --color-primary-glow: var(--color-brand-primary-glow);
-  --color-accent: var(--color-brand-accent);
-  --color-border: var(--color-ui-border);
-  --font-family-base: var(--typography-font-family-base);
-  --radius-sm: var(--border-radius-sm);
-  --radius-md: var(--border-radius-md);
-  --radius-lg: var(--border-radius-lg);
-}
-
 body {
   margin: 0;
-  font-family: var(--font-family-base);
+  font-family: var(--typography-font-family-base);
   background-color: var(--color-bg-base);
   color: var(--color-text-primary);
   background-image:
@@ -41,7 +29,7 @@ h4 {
 }
 
 a {
-  color: var(--color-primary);
+  color: var(--color-brand-primary);
   text-decoration: none;
   transition: color var(--transition-fast);
 }

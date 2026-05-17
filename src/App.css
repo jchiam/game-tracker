@@ -34,16 +34,16 @@
 }
 
 .primary-action {
-  background: linear-gradient(135deg, var(--color-primary), #b8960c);
-  border: 1px solid var(--color-primary);
+  background: linear-gradient(135deg, var(--color-brand-primary), #b8960c);
+  border: 1px solid var(--color-brand-primary);
   color: #000;
   font-weight: 600;
 }
 
 .primary-action:hover {
-  box-shadow: 0 0 20px var(--color-primary-glow);
+  box-shadow: 0 0 20px var(--color-brand-primary-glow);
   transform: translateY(-2px);
-  border-color: var(--color-primary);
+  border-color: var(--color-brand-primary);
 }
 
 /* Element badge colours (shared across HSR views) */
