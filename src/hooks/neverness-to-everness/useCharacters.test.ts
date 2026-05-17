@@ -323,12 +323,8 @@ describe('useCharacters', () => {
     const { useCharacters } = await import('@/hooks/neverness-to-everness/useCharacters');
     const { result } = renderHook(() => useCharacters(mockSession, false));
 
-    await waitFor(
-      () => {
-        expect(result.current.isLoadError).toBe(true);
-      },
-      { timeout: 3000 },
-    );
+    await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+    expect(result.current.isLoadError).toBe(true);
   });
 
   it('retryLoad clears error and reloads', async () => {
@@ -352,12 +348,8 @@ describe('useCharacters', () => {
     const { useCharacters } = await import('@/hooks/neverness-to-everness/useCharacters');
     const { result } = renderHook(() => useCharacters(mockSession, false));
 
-    await waitFor(
-      () => {
-        expect(result.current.isLoadError).toBe(true);
-      },
-      { timeout: 3000 },
-    );
+    await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+    expect(result.current.isLoadError).toBe(true);
 
     await act(async () => {
       result.current.retryLoad();
