@@ -44,17 +44,63 @@ Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`.
 - **Imports**: always use `@/` alias (never relative paths); use `import type` for type-only imports
 - **Types**: defined manually in `src/types.ts` — never run `supabase gen types`
 
-## Design System Rules
+## Design System
 
-Design tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/tokens.css` via Style Dictionary (`npm run build:tokens`). Never edit `tokens.css` directly.
+The design system is organised in 4 layers. Higher layers build on lower ones.
 
-- **Token-first CSS** — All color, spacing, radius, shadow, transition, duration, and z-index values MUST reference tokens. Never hardcode hex colours, `rgba()` for text colours, `px` spacing, or timing values. If a needed token doesn't exist, add it to `design-tokens.json` first, run `npm run build:tokens`, then reference it.
-- **Game-specific colours** — Live under `color.{gameId}` in `design-tokens.json` (e.g., `color.hsr`, `color.r1999`, `color.n2e`). Always add new game colours as tokens, never as hardcoded values in CSS files.
-- **Duration vs Transition tokens** — Use `--duration-*` tokens for `animation` durations (e.g., `animation: fade-in var(--duration-fast) ease-out`). Use `--transition-*` tokens for CSS `transition` properties (e.g., `transition: all var(--transition-fast)`). Duration tokens carry only the time value; transition tokens include easing.
-- **Canonical token names only** — Use the full canonical name (e.g., `--color-brand-primary` not `--color-primary`, `--border-radius-md` not `--radius-md`). No backward-compat aliases.
-- **Shared modal patterns** — Tab system (`.modal-tabs`, `.tab-btn`), preference chains (`.pref-chain`, `.pref-item`), danger buttons (`.secondary-action.danger`), and `.build-comments-textarea` live in `src/components/Modal.css`. Game-specific equipment editor modals only add their body wrapper class + game-unique form elements (e.g., level slider, game-specific substat grid).
-- **Known gap: rgba() badge backgrounds** — Badge `background` and `border-color` use `rgba(base, opacity)` because tokens can't express "same hue at X% opacity" yet. The text `color:` property must still use a token. Document new badge colours as tokens even if the rgba() derivations remain inline.
-- **New equipment editor modals** — Follow the RelicEditorModal / CartridgeEditorModal pattern. Reuse shared class names from `Modal.css`. Only create a game-specific CSS file for the body wrapper and game-unique elements.
+```
+L1  Design Tokens     src/styles/design-tokens.json → tokens.css
+L2  Shared Styles     src/styles/card.css, controls.css, animations.css
+L3  Shared Components src/components/ (Modal, GameSwitcher, AuthGate, …)
+L4  Game Components   src/pages/{game}/components/ (game-unique only)
+```
+
+### L1 — Design Tokens
+
+Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/tokens.css` via Style Dictionary (`npm run build:tokens`). Never edit `tokens.css` directly.
+
+- **Token-first CSS** — All color, spacing, radius, shadow, transition, duration, and z-index values MUST reference tokens. If a needed token doesn't exist, add it to `design-tokens.json` first, run `npm run build:tokens`, then reference it.
+- **Game-specific colours** — Live under `color.{gameId}` in `design-tokens.json` (e.g., `color.hsr`, `color.r1999`, `color.n2e`).
+- **Duration vs Transition tokens** — `--duration-*` for `animation` durations, `--transition-*` for CSS `transition` properties. Duration = time only; transition = time + easing.
+- **Canonical names only** — `--color-brand-primary` not `--color-primary`, `--border-radius-md` not `--radius-md`.
+- **Known gap: rgba() badge backgrounds** — Badge `background` and `border-color` use `rgba(base, opacity)` because tokens can't express "same hue at X% opacity" yet. The text `color:` must still use a token.
+
+### L2 — Shared Styles
+
+| File                        | Contents                                                                                                                                                |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/styles/card.css`       | `.game-card` wrapper, header, overlay, controls, body, name, `.favorite-btn`, `.remove-btn`, `.edit-toggle-btn`, `.progress-section`, `.section-header` |
+| `src/styles/controls.css`   | `.level-slider`, `.spinner-dot`, `.stat-chip`, `.toggle-btn`, `.game-select`, `.game-card-image` loading states                                         |
+| `src/styles/animations.css` | All shared `@keyframes`                                                                                                                                 |
+
+**Card class names are canonical** — all games use `.game-card`, `.game-card-header`, `.game-card-image`, `.game-card-overlay`, `.game-card-controls`, `.game-card-body`, `.game-card-name`. Game-specific CSS files only add overrides (padding, hover transforms) and game-unique rules. Never re-declare a rule already in `card.css` or `controls.css`.
+
+### L3 — Shared Components
+
+| Component         | CSS                   | Purpose                                                |
+| ----------------- | --------------------- | ------------------------------------------------------ |
+| `Modal`           | `Modal.css`           | Base modal + tabs + preference chains + build-comments |
+| `AuthGate`        | —                     | Sign-in prompt                                         |
+| `LoadErrorState`  | —                     | Retry prompt                                           |
+| `ConfirmCheckbox` | `ConfirmCheckbox.css` | Checkbox with confirmation                             |
+| `GameSwitcher`    | `GameSwitcher.css`    | Game dropdown                                          |
+| `Navbar`          | `Navbar.css`          | Top nav                                                |
+| `SavingToast`     | `SavingToast.css`     | Save indicator                                         |
+| `ToastContainer`  | `ToastContainer.css`  | Notification system                                    |
+
+Shared modal CSS: `AddEntityModal.css` (list patterns), `PartyEditorModal.css` (team builder).
+
+### L4 — Game Components
+
+Only game-unique UI belongs here. Game card CSS files contain:
+
+- Card body padding/gap overrides
+- Game-specific badge color classes (esper, path, afflatus)
+- Game-specific equipment UI (relic grid, psychube section, cartridge slot)
+- Game-specific score/tier badges
+- Game-specific button rows and sliders beyond `.level-slider`
+
+**Adding a new game card:** Use canonical `.game-card-*` class names. Import game-specific CSS for overrides only. Check `card.css` and `controls.css` before declaring any new rule — it may already exist.
 
 ## Architecture — Per-Game Module Pattern
 
@@ -157,11 +203,59 @@ Reference implementation: Reverse: 1999 (`src/hooks/reverse1999/useArcanists.ts`
 
 - Tests colocated next to source: `Foo.tsx` → `Foo.test.tsx`. E2e tests in `tests/`.
 - Service tests: mock `@/lib/supabase` via `vi.doMock`. Test both DB-disabled (returns empty/null) and DB-enabled (correct table queries, error handling) paths.
-- Hook tests: use `@testing-library/react` `renderHook` with MSW or mocked services.
 - Component tests: use `@testing-library/react` `render` with mock data fixtures.
 - Use `vi.fn()` for mocks; `userEvent.setup()` for user interactions.
 - Use `src/test/mocks/supabase.ts` helpers (`createMockSession`, `createMockUser`) for auth fixtures.
 - Run `npm test` before marking any fix or feature complete.
+
+#### Hook tests — hoisted mock pattern (IMPORTANT)
+
+Hook tests **must** use hoisted `vi.mock()` at module level with static imports — **never** `vi.doMock()` + `vi.resetModules()` + dynamic `import()`. The dynamic approach creates a fresh module graph per test, which means React, the hook, and `renderHook` may run in different instances — causing flaky state update races on slow CI runners.
+
+**Correct pattern** (see `src/hooks/honkai-star-rail/useCharacters.test.ts`):
+
+```typescript
+// Hoisted mocks — run before any imports
+vi.mock('@/services/{game}/{entity}Service', () => ({
+  loadFromDB: vi.fn(),
+  insert: vi.fn(),
+  // ...
+}));
+vi.mock('@/hooks/usePendingSaves', () => ({
+  usePendingSaves: () => ({
+    pendingSaveCount: 0,
+    queueUpdate: vi.fn((_k, updates, flush) => flush(updates)),
+    queueAction: vi.fn((_k, action) => action()),
+  }),
+}));
+vi.mock('@/utils/toast', () => ({ addToast: vi.fn() }));
+
+// Static imports — same module instance throughout
+import { useMyHook } from '@/hooks/{game}/useMyHook';
+import * as service from '@/services/{game}/{entity}Service';
+const mockLoad = vi.mocked(service.loadFromDB);
+
+// Per-test reconfiguration via mock references
+beforeEach(() => {
+  vi.clearAllMocks();
+  mockLoad.mockResolvedValue([]);
+});
+```
+
+**Why `usePendingSaves` must be mocked**: it installs a `beforeunload` listener and uses `setTimeout` internally. Mocking it with a synchronous `queueUpdate` that calls `flushFn` immediately makes tests deterministic.
+
+**Error-path tests**: use `mockRejectedValue` on the shared mock reference, spy on `console.error` to suppress expected noise:
+
+```typescript
+it('sets error on DB failure', async () => {
+  const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+  mockLoad.mockRejectedValue(new Error('DB down'));
+  const { result } = renderHook(() => useMyHook(session, false));
+  await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+  expect(result.current.isLoadError).toBe(true);
+  spy.mockRestore();
+});
+```
 
 ## Shared Components
 

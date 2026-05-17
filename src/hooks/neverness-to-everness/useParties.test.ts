@@ -1,27 +1,46 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import type { Session } from '@supabase/supabase-js';
 import { createMockSession } from '@/test/mocks/supabase';
 
+vi.mock('@/services/neverness-to-everness/partyService', () => ({
+  loadParties: vi.fn(),
+  saveParty: vi.fn(),
+  deleteParty: vi.fn(),
+  toggleFavoriteParty: vi.fn(),
+}));
+
+import { useParties } from '@/hooks/neverness-to-everness/useParties';
+import * as partyService from '@/services/neverness-to-everness/partyService';
+
+const mockLoadParties = vi.mocked(partyService.loadParties);
+const mockSaveParty = vi.mocked(partyService.saveParty);
+const mockDeleteParty = vi.mocked(partyService.deleteParty);
+const mockToggleFavoriteParty = vi.mocked(partyService.toggleFavoriteParty);
+
+const mockSession = createMockSession();
+
+const sampleParty = {
+  id: 'party-1',
+  profileId: 'test-user-123',
+  name: 'My Team',
+  notes: null as string | null,
+  tier: null as string | null,
+  isFavorited: false,
+  members: [] as { characterId: string; slotIndex: number }[],
+  createdAt: new Date().toISOString(),
+};
+
 describe('useParties', () => {
-  const mockSession = createMockSession();
-
-  beforeEach(async () => {
-    vi.resetModules();
-    vi.doMock('@/services/neverness-to-everness/partyService', () => ({
-      loadParties: vi.fn().mockResolvedValue([]),
-      saveParty: vi.fn().mockResolvedValue('new-party-id'),
-      deleteParty: vi.fn().mockResolvedValue(true),
-      toggleFavoriteParty: vi.fn().mockResolvedValue(undefined),
-    }));
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockLoadParties.mockResolvedValue([]);
+    mockSaveParty.mockResolvedValue('new-party-id');
+    mockDeleteParty.mockResolvedValue(true);
+    mockToggleFavoriteParty.mockResolvedValue(undefined);
   });
 
   async function setup(session: Session | null = mockSession) {
-    const { useParties } = await import('@/hooks/neverness-to-everness/useParties');
     const hook = renderHook(() => useParties(session));
     await waitFor(() => {
       expect(hook.result.current.isLoading).toBe(false);
@@ -40,19 +59,7 @@ describe('useParties', () => {
   });
 
   it('saveParty calls service and reloads parties', async () => {
-    const service = await import('@/services/neverness-to-everness/partyService');
-    vi.mocked(service.loadParties).mockResolvedValue([
-      {
-        id: 'new-party-id',
-        profileId: 'user-1',
-        name: 'My Team',
-        notes: null,
-        tier: null,
-        isFavorited: false,
-        members: [],
-        createdAt: new Date().toISOString(),
-      },
-    ]);
+    mockLoadParties.mockResolvedValueOnce([]).mockResolvedValueOnce([{ ...sampleParty }]);
 
     const { result } = await setup();
 
@@ -60,7 +67,7 @@ describe('useParties', () => {
       await result.current.saveParty({ name: 'My Team', members: [] });
     });
 
-    expect(service.saveParty).toHaveBeenCalled();
+    expect(mockSaveParty).toHaveBeenCalled();
     expect(result.current.parties).toHaveLength(1);
     expect(result.current.parties[0].name).toBe('My Team');
   });
@@ -77,21 +84,8 @@ describe('useParties', () => {
   });
 
   it('deleteParty removes party from state', async () => {
-    const service = await import('@/services/neverness-to-everness/partyService');
-    vi.mocked(service.loadParties).mockResolvedValue([
-      {
-        id: 'party-1',
-        profileId: 'user-1',
-        name: 'My Team',
-        notes: null,
-        tier: null,
-        isFavorited: false,
-        members: [],
-        createdAt: new Date().toISOString(),
-      },
-    ]);
+    mockLoadParties.mockResolvedValue([{ ...sampleParty }]);
 
-    const { useParties } = await import('@/hooks/neverness-to-everness/useParties');
     const { result } = renderHook(() => useParties(mockSession));
 
     await waitFor(() => {
@@ -117,21 +111,8 @@ describe('useParties', () => {
   });
 
   it('toggleFavoriteParty updates local state', async () => {
-    const service = await import('@/services/neverness-to-everness/partyService');
-    vi.mocked(service.loadParties).mockResolvedValue([
-      {
-        id: 'party-1',
-        profileId: 'user-1',
-        name: 'My Team',
-        notes: null,
-        tier: null,
-        isFavorited: false,
-        members: [],
-        createdAt: new Date().toISOString(),
-      },
-    ]);
+    mockLoadParties.mockResolvedValue([{ ...sampleParty }]);
 
-    const { useParties } = await import('@/hooks/neverness-to-everness/useParties');
     const { result } = renderHook(() => useParties(mockSession));
 
     await waitFor(() => {
@@ -143,26 +124,13 @@ describe('useParties', () => {
     });
 
     expect(result.current.parties[0].isFavorited).toBe(true);
-    expect(service.toggleFavoriteParty).toHaveBeenCalledWith('party-1', true);
+    expect(mockToggleFavoriteParty).toHaveBeenCalledWith('party-1', true);
   });
 
   it('deleteParty keeps state when service returns false', async () => {
-    const service = await import('@/services/neverness-to-everness/partyService');
-    vi.mocked(service.loadParties).mockResolvedValue([
-      {
-        id: 'party-1',
-        profileId: 'user-1',
-        name: 'My Team',
-        notes: null,
-        tier: null,
-        isFavorited: false,
-        members: [],
-        createdAt: new Date().toISOString(),
-      },
-    ]);
-    vi.mocked(service.deleteParty).mockResolvedValue(false);
+    mockLoadParties.mockResolvedValue([{ ...sampleParty }]);
+    mockDeleteParty.mockResolvedValue(false);
 
-    const { useParties } = await import('@/hooks/neverness-to-everness/useParties');
     const { result } = renderHook(() => useParties(mockSession));
 
     await waitFor(() => {

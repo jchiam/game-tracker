@@ -1,45 +1,70 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import type { Session } from '@supabase/supabase-js';
 import { createMockSession } from '@/test/mocks/supabase';
 
+vi.mock('@/services/neverness-to-everness/characterService', () => ({
+  loadCharactersFromDB: vi.fn(),
+  insertCharacter: vi.fn(),
+  deleteCharacter: vi.fn(),
+  updateCharacter: vi.fn(),
+  saveCartridgePreferences: vi.fn(),
+}));
+
+vi.mock('@/hooks/usePendingSaves', () => ({
+  usePendingSaves: (_delay?: number, _onFlushError?: unknown) => ({
+    pendingSaveCount: 0,
+    queueUpdate: vi.fn(
+      (
+        _key: string,
+        updates: Record<string, any>,
+        flushFn: (p: Record<string, any>) => Promise<void>,
+      ) => flushFn(updates),
+    ),
+    queueAction: vi.fn((_key: string, action: () => Promise<void>) => action()),
+  }),
+}));
+
+vi.mock('@/utils/toast', () => ({
+  addToast: vi.fn(),
+}));
+
+import { useCharacters } from '@/hooks/neverness-to-everness/useCharacters';
+import { ALL_CHARACTERS } from '@/data/neverness-to-everness/characters';
+import * as characterService from '@/services/neverness-to-everness/characterService';
+import * as toastUtils from '@/utils/toast';
+
+const mockLoadCharactersFromDB = vi.mocked(characterService.loadCharactersFromDB);
+const mockInsertCharacter = vi.mocked(characterService.insertCharacter);
+const mockDeleteCharacter = vi.mocked(characterService.deleteCharacter);
+const mockAddToast = vi.mocked(toastUtils.addToast);
+
+const mockSession = createMockSession();
+const firstChar = ALL_CHARACTERS[0];
+const secondChar = ALL_CHARACTERS[1];
+
 describe('useCharacters', () => {
-  const mockSession = createMockSession();
-
-  beforeEach(async () => {
-    vi.resetModules();
-    vi.doMock('@/services/neverness-to-everness/characterService', () => ({
-      loadCharactersFromDB: vi.fn().mockResolvedValue([]),
-      insertCharacter: vi.fn().mockResolvedValue('new-id'),
-      deleteCharacter: vi.fn().mockResolvedValue(undefined),
-      updateCharacter: vi.fn().mockResolvedValue(undefined),
-      saveCartridgePreferences: vi.fn().mockResolvedValue(undefined),
-    }));
-    vi.doMock('@/utils/toast', () => ({
-      addToast: vi.fn(),
-    }));
-  });
-
-  afterEach(() => {
-    vi.restoreAllMocks();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mockLoadCharactersFromDB.mockResolvedValue([]);
+    mockInsertCharacter.mockResolvedValue('new-db-id');
+    mockDeleteCharacter.mockResolvedValue(undefined);
   });
 
   async function setup(session: Session | null = mockSession) {
-    const { useCharacters } = await import('@/hooks/neverness-to-everness/useCharacters');
-    const { ALL_CHARACTERS } = await import('@/data/neverness-to-everness/characters');
     const hook = renderHook(() => useCharacters(session, false));
     await waitFor(() => {
       expect(hook.result.current.isInitialLoad).toBe(false);
     });
-    return { ...hook, ALL_CHARACTERS };
+    return hook;
   }
 
   async function setupWithChar() {
-    const ctx = await setup();
+    const hook = await setup();
     await act(async () => {
-      await ctx.result.current.addCharacter(ctx.ALL_CHARACTERS[0]);
+      await hook.result.current.addCharacter(firstChar);
     });
-    return ctx;
+    return hook;
   }
 
   it('starts with empty tracked characters', async () => {
@@ -60,9 +85,9 @@ describe('useCharacters', () => {
   });
 
   it('addCharacter adds to local state', async () => {
-    const { result, ALL_CHARACTERS } = await setupWithChar();
+    const { result } = await setupWithChar();
     expect(result.current.trackedCharacters).toHaveLength(1);
-    expect(result.current.trackedCharacters[0].id).toBe(ALL_CHARACTERS[0].id);
+    expect(result.current.trackedCharacters[0].id).toBe(firstChar.id);
     expect(result.current.trackedCharacters[0].level).toBe(1);
     expect(result.current.trackedCharacters[0].awakening).toEqual([
       false,
@@ -76,38 +101,34 @@ describe('useCharacters', () => {
 
   it('addCharacter shows warning toast when no session', async () => {
     const { result } = await setup(null);
-    const { addToast } = await import('@/utils/toast');
 
     await act(async () => {
-      const { ALL_CHARACTERS } = await import('@/data/neverness-to-everness/characters');
-      await result.current.addCharacter(ALL_CHARACTERS[0]);
+      await result.current.addCharacter(firstChar);
     });
 
-    expect(addToast).toHaveBeenCalledWith('Please log in to add characters.', 'warning');
+    expect(mockAddToast).toHaveBeenCalledWith('Please log in to add characters.', 'warning');
     expect(result.current.trackedCharacters).toEqual([]);
   });
 
   it('addCharacter prevents duplicate inserts', async () => {
-    const { result, ALL_CHARACTERS } = await setupWithChar();
-    const service = await import('@/services/neverness-to-everness/characterService');
+    const { result } = await setupWithChar();
 
-    vi.mocked(service.insertCharacter).mockClear();
+    mockInsertCharacter.mockClear();
     await act(async () => {
-      await result.current.addCharacter(ALL_CHARACTERS[0]);
+      await result.current.addCharacter(firstChar);
     });
 
     expect(result.current.trackedCharacters).toHaveLength(1);
-    expect(service.insertCharacter).not.toHaveBeenCalled();
+    expect(mockInsertCharacter).not.toHaveBeenCalled();
   });
 
   it('addCharacter reverts state on insert failure', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const service = await import('@/services/neverness-to-everness/characterService');
-    vi.mocked(service.insertCharacter).mockRejectedValueOnce(new Error('DB error'));
+    mockInsertCharacter.mockRejectedValueOnce(new Error('DB error'));
 
-    const { result, ALL_CHARACTERS } = await setup();
+    const { result } = await setup();
     await act(async () => {
-      await result.current.addCharacter(ALL_CHARACTERS[0]);
+      await result.current.addCharacter(firstChar);
     });
 
     expect(result.current.trackedCharacters).toEqual([]);
@@ -127,20 +148,18 @@ describe('useCharacters', () => {
 
   it('removeCharacter reverts on DB error', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const service = await import('@/services/neverness-to-everness/characterService');
+    mockInsertCharacter.mockResolvedValueOnce('db-1');
 
-    const { result, ALL_CHARACTERS } = await setup();
-    vi.mocked(service.insertCharacter).mockResolvedValueOnce('db-1');
-
+    const { result } = await setup();
     await act(async () => {
-      await result.current.addCharacter(ALL_CHARACTERS[0]);
+      await result.current.addCharacter(firstChar);
     });
 
-    vi.mocked(service.deleteCharacter).mockRejectedValueOnce(new Error('delete fail'));
+    mockDeleteCharacter.mockRejectedValueOnce(new Error('delete fail'));
     const fakeEvent = { stopPropagation: vi.fn() } as unknown as React.MouseEvent;
 
     await act(async () => {
-      await result.current.removeCharacter(ALL_CHARACTERS[0].id, fakeEvent);
+      await result.current.removeCharacter(firstChar.id, fakeEvent);
     });
 
     expect(result.current.trackedCharacters).toHaveLength(1);
@@ -149,20 +168,15 @@ describe('useCharacters', () => {
 
   it('updateCharacterLevel updates state and clamps', async () => {
     const { result } = await setupWithChar();
+    const id = result.current.trackedCharacters[0].id;
 
-    act(() => {
-      result.current.updateCharacterLevel(result.current.trackedCharacters[0].id, 95);
-    });
+    act(() => result.current.updateCharacterLevel(id, 95));
     expect(result.current.trackedCharacters[0].level).toBe(90);
 
-    act(() => {
-      result.current.updateCharacterLevel(result.current.trackedCharacters[0].id, 0);
-    });
+    act(() => result.current.updateCharacterLevel(id, 0));
     expect(result.current.trackedCharacters[0].level).toBe(1);
 
-    act(() => {
-      result.current.updateCharacterLevel(result.current.trackedCharacters[0].id, 45);
-    });
+    act(() => result.current.updateCharacterLevel(id, 45));
     expect(result.current.trackedCharacters[0].level).toBe(45);
   });
 
@@ -170,14 +184,10 @@ describe('useCharacters', () => {
     const { result } = await setupWithChar();
     const id = result.current.trackedCharacters[0].id;
 
-    act(() => {
-      result.current.toggleAwakeningSlot(id, 2);
-    });
+    act(() => result.current.toggleAwakeningSlot(id, 2));
     expect(result.current.trackedCharacters[0].awakening[2]).toBe(true);
 
-    act(() => {
-      result.current.toggleAwakeningSlot(id, 2);
-    });
+    act(() => result.current.toggleAwakeningSlot(id, 2));
     expect(result.current.trackedCharacters[0].awakening[2]).toBe(false);
   });
 
@@ -185,19 +195,13 @@ describe('useCharacters', () => {
     const { result } = await setupWithChar();
     const id = result.current.trackedCharacters[0].id;
 
-    act(() => {
-      result.current.updateResonanceCount(id, 4);
-    });
+    act(() => result.current.updateResonanceCount(id, 4));
     expect(result.current.trackedCharacters[0].resonanceCount).toBe(4);
 
-    act(() => {
-      result.current.updateResonanceCount(id, 10);
-    });
+    act(() => result.current.updateResonanceCount(id, 10));
     expect(result.current.trackedCharacters[0].resonanceCount).toBe(6);
 
-    act(() => {
-      result.current.updateResonanceCount(id, -1);
-    });
+    act(() => result.current.updateResonanceCount(id, -1));
     expect(result.current.trackedCharacters[0].resonanceCount).toBe(0);
   });
 
@@ -205,9 +209,7 @@ describe('useCharacters', () => {
     const { result } = await setupWithChar();
     const id = result.current.trackedCharacters[0].id;
 
-    act(() => {
-      result.current.updateArc(id, 'arc-1', 40, 3);
-    });
+    act(() => result.current.updateArc(id, 'arc-1', 40, 3));
     expect(result.current.trackedCharacters[0].arcId).toBe('arc-1');
     expect(result.current.trackedCharacters[0].arcLevel).toBe(40);
     expect(result.current.trackedCharacters[0].arcTier).toBe(3);
@@ -217,9 +219,7 @@ describe('useCharacters', () => {
     const { result } = await setupWithChar();
     const id = result.current.trackedCharacters[0].id;
 
-    act(() => {
-      result.current.updateCartridge(id, 'S', 15, 'ATK %', ['CRIT Rate %', 'CRIT DMG %']);
-    });
+    act(() => result.current.updateCartridge(id, 'S', 15, 'ATK %', ['CRIT Rate %', 'CRIT DMG %']));
     const char = result.current.trackedCharacters[0];
     expect(char.cartridgeRarity).toBe('S');
     expect(char.cartridgeLevel).toBe(15);
@@ -231,14 +231,10 @@ describe('useCharacters', () => {
     const { result } = await setupWithChar();
     const id = result.current.trackedCharacters[0].id;
 
-    act(() => {
-      result.current.toggleFavoriteCharacter(id, true);
-    });
+    act(() => result.current.toggleFavoriteCharacter(id, true));
     expect(result.current.trackedCharacters[0].isFavorited).toBe(true);
 
-    act(() => {
-      result.current.toggleFavoriteCharacter(id, false);
-    });
+    act(() => result.current.toggleFavoriteCharacter(id, false));
     expect(result.current.trackedCharacters[0].isFavorited).toBe(false);
   });
 
@@ -259,13 +255,13 @@ describe('useCharacters', () => {
   });
 
   it('getFilteredRoster returns alphabetical sort by default', async () => {
-    const { result, ALL_CHARACTERS } = await setup();
+    const { result } = await setup();
 
     await act(async () => {
-      await result.current.addCharacter(ALL_CHARACTERS[1]);
+      await result.current.addCharacter(secondChar);
     });
     await act(async () => {
-      await result.current.addCharacter(ALL_CHARACTERS[0]);
+      await result.current.addCharacter(firstChar);
     });
 
     const sorted = result.current.getFilteredRoster('', 'ALPHA');
@@ -275,36 +271,34 @@ describe('useCharacters', () => {
   });
 
   it('getFilteredRoster sorts favorites first', async () => {
-    const { result, ALL_CHARACTERS } = await setup();
+    const { result } = await setup();
 
     await act(async () => {
-      await result.current.addCharacter(ALL_CHARACTERS[0]);
+      await result.current.addCharacter(firstChar);
     });
     await act(async () => {
-      await result.current.addCharacter(ALL_CHARACTERS[1]);
+      await result.current.addCharacter(secondChar);
     });
 
-    act(() => {
-      result.current.toggleFavoriteCharacter(ALL_CHARACTERS[1].id, true);
-    });
+    act(() => result.current.toggleFavoriteCharacter(secondChar.id, true));
 
     const sorted = result.current.getFilteredRoster('', 'ALPHA');
-    expect(sorted[0].id).toBe(ALL_CHARACTERS[1].id);
+    expect(sorted[0].id).toBe(secondChar.id);
   });
 
   it('getFilteredRoster LEVEL sort orders by level descending', async () => {
-    const { result, ALL_CHARACTERS } = await setup();
+    const { result } = await setup();
 
     await act(async () => {
-      await result.current.addCharacter(ALL_CHARACTERS[0]);
+      await result.current.addCharacter(firstChar);
     });
     await act(async () => {
-      await result.current.addCharacter(ALL_CHARACTERS[1]);
+      await result.current.addCharacter(secondChar);
     });
 
     act(() => {
-      result.current.updateCharacterLevel(ALL_CHARACTERS[0].id, 80);
-      result.current.updateCharacterLevel(ALL_CHARACTERS[1].id, 30);
+      result.current.updateCharacterLevel(firstChar.id, 80);
+      result.current.updateCharacterLevel(secondChar.id, 30);
     });
 
     const sorted = result.current.getFilteredRoster('', 'LEVEL');
@@ -313,57 +307,25 @@ describe('useCharacters', () => {
 
   it('isLoadError is set on DB failure', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.resetModules();
-    vi.doMock('@/services/neverness-to-everness/characterService', () => ({
-      loadCharactersFromDB: vi.fn().mockRejectedValue(new Error('DB down')),
-      insertCharacter: vi.fn(),
-      deleteCharacter: vi.fn(),
-      updateCharacter: vi.fn(),
-      saveCartridgePreferences: vi.fn(),
-    }));
-    vi.doMock('@/utils/toast', () => ({
-      addToast: vi.fn(),
-    }));
+    mockLoadCharactersFromDB.mockRejectedValue(new Error('DB down'));
 
-    const { useCharacters } = await import('@/hooks/neverness-to-everness/useCharacters');
     const { result } = renderHook(() => useCharacters(mockSession, false));
 
-    await waitFor(() => {
-      expect(result.current.isLoadError).toBe(true);
-      expect(result.current.isInitialLoad).toBe(false);
-    });
+    await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+    expect(result.current.isLoadError).toBe(true);
     spy.mockRestore();
   });
 
   it('retryLoad clears error and reloads', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    vi.resetModules();
-    let callCount = 0;
-    vi.doMock('@/services/neverness-to-everness/characterService', () => ({
-      loadCharactersFromDB: vi.fn().mockImplementation(() => {
-        callCount++;
-        if (callCount === 1) return Promise.reject(new Error('DB down'));
-        return Promise.resolve([]);
-      }),
-      insertCharacter: vi.fn(),
-      deleteCharacter: vi.fn(),
-      updateCharacter: vi.fn(),
-      saveCartridgePreferences: vi.fn(),
-    }));
-    vi.doMock('@/utils/toast', () => ({
-      addToast: vi.fn(),
-    }));
+    mockLoadCharactersFromDB.mockRejectedValueOnce(new Error('DB down')).mockResolvedValueOnce([]);
 
-    const { useCharacters } = await import('@/hooks/neverness-to-everness/useCharacters');
     const { result } = renderHook(() => useCharacters(mockSession, false));
 
-    await waitFor(() => {
-      expect(result.current.isLoadError).toBe(true);
-    });
+    await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+    expect(result.current.isLoadError).toBe(true);
 
-    await act(async () => {
-      result.current.retryLoad();
-    });
+    act(() => result.current.retryLoad());
 
     await waitFor(() => {
       expect(result.current.isLoadError).toBe(false);
