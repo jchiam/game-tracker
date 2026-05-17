@@ -55,7 +55,30 @@
       "pathPreservation": { "$value": "#8ab8f5", "$type": "color" },
       "pathAbundance": { "$value": "#90e09a", "$type": "color" },
       "pathRemembrance": { "$value": "#90e8f8", "$type": "color" },
-      "pathElation": { "$value": "#ffc875", "$type": "color" }
+      "pathElation": { "$value": "#ffc875", "$type": "color" },
+      "scoreTierA": { "$value": "#9370db", "$type": "color" },
+      "scoreTierAText": { "$value": "#e6e6fa", "$type": "color" }
+    },
+    "n2e": {
+      "esperAnima": { "$value": "#f5b080", "$type": "color" },
+      "esperChaos": { "$value": "#c9a8f8", "$type": "color" },
+      "esperCosmos": { "$value": "#90d0f0", "$type": "color" },
+      "esperIncantation": { "$value": "#f5d68a", "$type": "color" },
+      "esperLakshana": { "$value": "#90e09a", "$type": "color" },
+      "esperPsyche": { "$value": "#f0a0b8", "$type": "color" },
+      "arcGas": { "$value": "#80d8b0", "$type": "color" },
+      "arcLiquid": { "$value": "#80b0e8", "$type": "color" },
+      "arcPlasma": { "$value": "#f09070", "$type": "color" },
+      "arcSolid": { "$value": "#d0c8a0", "$type": "color" },
+      "arcSynthesis": { "$value": "#d0a8e0", "$type": "color" },
+      "scoreGradeS": { "$value": "#40c8a0", "$type": "color" },
+      "scoreGradeA": { "$value": "#d4af37", "$type": "color" },
+      "scoreGradeB": { "$value": "#c88040", "$type": "color" },
+      "scoreGradeC": { "$value": "#b48c64", "$type": "color" },
+      "scoreGradeD": { "$value": "#8a6050", "$type": "color" },
+      "rarityS": { "$value": "#d4af37", "$type": "color" },
+      "rarityA": { "$value": "#c9a8f8", "$type": "color" },
+      "rarityB": { "$value": "#90d0f0", "$type": "color" }
     },
     "r1999": {
       "afflatusPlant": { "$value": "#90e09a", "$type": "color" },
@@ -159,5 +182,11 @@
     "fast": { "$value": "0.15s ease", "$type": "other" },
     "normal": { "$value": "0.3s ease", "$type": "other" },
     "slow": { "$value": "0.5s ease", "$type": "other" }
+  },
+  "duration": {
+    "fast": { "$value": "0.15s", "$type": "other" },
+    "normal": { "$value": "0.3s", "$type": "other" },
+    "slow": { "$value": "0.5s", "$type": "other" },
+    "pulse": { "$value": "1.5s", "$type": "other" }
   }
 }

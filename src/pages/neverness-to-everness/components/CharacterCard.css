@@ -232,59 +232,59 @@
 .esper-badge.esper-anima {
   background: rgba(200, 120, 60, 0.25);
   border-color: rgba(200, 120, 60, 0.6);
-  color: #f5b080;
+  color: var(--color-n2e-esper-anima);
 }
 .esper-badge.esper-chaos {
   background: rgba(147, 112, 219, 0.25);
   border-color: rgba(147, 112, 219, 0.6);
-  color: #c9a8f8;
+  color: var(--color-n2e-esper-chaos);
 }
 .esper-badge.esper-cosmos {
   background: rgba(100, 180, 220, 0.25);
   border-color: rgba(100, 180, 220, 0.6);
-  color: #90d0f0;
+  color: var(--color-n2e-esper-cosmos);
 }
 .esper-badge.esper-incantation {
   background: rgba(212, 175, 55, 0.25);
   border-color: rgba(212, 175, 55, 0.6);
-  color: #f5d68a;
+  color: var(--color-n2e-esper-incantation);
 }
 .esper-badge.esper-lakshana {
   background: rgba(70, 170, 80, 0.25);
   border-color: rgba(70, 170, 80, 0.6);
-  color: #90e09a;
+  color: var(--color-n2e-esper-lakshana);
 }
 .esper-badge.esper-psyche {
   background: rgba(220, 80, 120, 0.25);
   border-color: rgba(220, 80, 120, 0.6);
-  color: #f0a0b8;
+  color: var(--color-n2e-esper-psyche);
 }
 
 /* Arc type badges */
 .arc-badge.arc-gas {
   background: rgba(100, 200, 160, 0.2);
   border-color: rgba(100, 200, 160, 0.5);
-  color: #80d8b0;
+  color: var(--color-n2e-arc-gas);
 }
 .arc-badge.arc-liquid {
   background: rgba(80, 140, 220, 0.2);
   border-color: rgba(80, 140, 220, 0.5);
-  color: #80b0e8;
+  color: var(--color-n2e-arc-liquid);
 }
 .arc-badge.arc-plasma {
   background: rgba(220, 100, 60, 0.2);
   border-color: rgba(220, 100, 60, 0.5);
-  color: #f09070;
+  color: var(--color-n2e-arc-plasma);
 }
 .arc-badge.arc-solid {
   background: rgba(180, 160, 120, 0.2);
   border-color: rgba(180, 160, 120, 0.5);
-  color: #d0c8a0;
+  color: var(--color-n2e-arc-solid);
 }
 .arc-badge.arc-synthesis {
   background: rgba(180, 120, 200, 0.2);
   border-color: rgba(180, 120, 200, 0.5);
-  color: #d0a8e0;
+  color: var(--color-n2e-arc-synthesis);
 }
 
 /* ─── Awakening row (button toggles) ──────────────────────────── */
@@ -421,19 +421,19 @@
 .cartridge-rarity-badge.rarity-s {
   background: rgba(212, 175, 55, 0.2);
   border-color: rgba(212, 175, 55, 0.5);
-  color: #d4af37;
+  color: var(--color-n2e-rarity-s);
 }
 
 .cartridge-rarity-badge.rarity-a {
   background: rgba(147, 112, 219, 0.2);
   border-color: rgba(147, 112, 219, 0.5);
-  color: #c9a8f8;
+  color: var(--color-n2e-rarity-a);
 }
 
 .cartridge-rarity-badge.rarity-b {
   background: rgba(100, 180, 220, 0.2);
   border-color: rgba(100, 180, 220, 0.5);
-  color: #90d0f0;
+  color: var(--color-n2e-rarity-b);
 }
 
 .cartridge-slot-stat {
@@ -741,31 +741,31 @@
 .cartridge-score-badge.grade-s {
   background: rgba(64, 200, 160, 0.15);
   border-color: rgba(64, 200, 160, 0.5);
-  color: #40c8a0;
+  color: var(--color-n2e-score-grade-s);
 }
 
 .cartridge-score-badge.grade-a {
   background: rgba(212, 175, 55, 0.15);
   border-color: rgba(212, 175, 55, 0.5);
-  color: #d4af37;
+  color: var(--color-n2e-score-grade-a);
 }
 
 .cartridge-score-badge.grade-b {
   background: rgba(200, 128, 64, 0.15);
   border-color: rgba(200, 128, 64, 0.5);
-  color: #c88040;
+  color: var(--color-n2e-score-grade-b);
 }
 
 .cartridge-score-badge.grade-c {
   background: rgba(180, 140, 100, 0.15);
   border-color: rgba(180, 140, 100, 0.5);
-  color: #b48c64;
+  color: var(--color-n2e-score-grade-c);
 }
 
 .cartridge-score-badge.grade-d {
   background: rgba(138, 96, 80, 0.15);
   border-color: rgba(138, 96, 80, 0.5);
-  color: #8a6050;
+  color: var(--color-n2e-score-grade-d);
 }
 
 .target-build-chain {

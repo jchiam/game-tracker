@@ -49,6 +49,27 @@
   --color-hsr-path-abundance: #90e09a;
   --color-hsr-path-remembrance: #90e8f8;
   --color-hsr-path-elation: #ffc875;
+  --color-hsr-score-tier-a: #9370db;
+  --color-hsr-score-tier-a-text: #e6e6fa;
+  --color-n2e-esper-anima: #f5b080;
+  --color-n2e-esper-chaos: #c9a8f8;
+  --color-n2e-esper-cosmos: #90d0f0;
+  --color-n2e-esper-incantation: #f5d68a;
+  --color-n2e-esper-lakshana: #90e09a;
+  --color-n2e-esper-psyche: #f0a0b8;
+  --color-n2e-arc-gas: #80d8b0;
+  --color-n2e-arc-liquid: #80b0e8;
+  --color-n2e-arc-plasma: #f09070;
+  --color-n2e-arc-solid: #d0c8a0;
+  --color-n2e-arc-synthesis: #d0a8e0;
+  --color-n2e-score-grade-s: #40c8a0;
+  --color-n2e-score-grade-a: #d4af37;
+  --color-n2e-score-grade-b: #c88040;
+  --color-n2e-score-grade-c: #b48c64;
+  --color-n2e-score-grade-d: #8a6050;
+  --color-n2e-rarity-s: #d4af37;
+  --color-n2e-rarity-a: #c9a8f8;
+  --color-n2e-rarity-b: #90d0f0;
   --color-r1999-afflatus-plant: #90e09a;
   --color-r1999-afflatus-star: #f5d68a;
   --color-r1999-afflatus-beast: #f5b080;
@@ -121,4 +142,8 @@
   --transition-fast: 0.15s ease;
   --transition-normal: 0.3s ease;
   --transition-slow: 0.5s ease;
+  --duration-fast: 0.15s;
+  --duration-normal: 0.3s;
+  --duration-slow: 0.5s;
+  --duration-pulse: 1.5s;
 }
