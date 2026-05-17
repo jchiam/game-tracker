@@ -44,6 +44,18 @@ Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`.
 - **Imports**: always use `@/` alias (never relative paths); use `import type` for type-only imports
 - **Types**: defined manually in `src/types.ts` — never run `supabase gen types`
 
+## Design System Rules
+
+Design tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/tokens.css` via Style Dictionary (`npm run build:tokens`). Never edit `tokens.css` directly.
+
+- **Token-first CSS** — All color, spacing, radius, shadow, transition, duration, and z-index values MUST reference tokens. Never hardcode hex colours, `rgba()` for text colours, `px` spacing, or timing values. If a needed token doesn't exist, add it to `design-tokens.json` first, run `npm run build:tokens`, then reference it.
+- **Game-specific colours** — Live under `color.{gameId}` in `design-tokens.json` (e.g., `color.hsr`, `color.r1999`, `color.n2e`). Always add new game colours as tokens, never as hardcoded values in CSS files.
+- **Duration vs Transition tokens** — Use `--duration-*` tokens for `animation` durations (e.g., `animation: fade-in var(--duration-fast) ease-out`). Use `--transition-*` tokens for CSS `transition` properties (e.g., `transition: all var(--transition-fast)`). Duration tokens carry only the time value; transition tokens include easing.
+- **Canonical token names only** — Use the full canonical name (e.g., `--color-brand-primary` not `--color-primary`, `--border-radius-md` not `--radius-md`). No backward-compat aliases.
+- **Shared modal patterns** — Tab system (`.modal-tabs`, `.tab-btn`), preference chains (`.pref-chain`, `.pref-item`), danger buttons (`.secondary-action.danger`), and `.build-comments-textarea` live in `src/components/Modal.css`. Game-specific equipment editor modals only add their body wrapper class + game-unique form elements (e.g., level slider, game-specific substat grid).
+- **Known gap: rgba() badge backgrounds** — Badge `background` and `border-color` use `rgba(base, opacity)` because tokens can't express "same hue at X% opacity" yet. The text `color:` property must still use a token. Document new badge colours as tokens even if the rgba() derivations remain inline.
+- **New equipment editor modals** — Follow the RelicEditorModal / CartridgeEditorModal pattern. Reuse shared class names from `Modal.css`. Only create a game-specific CSS file for the body wrapper and game-unique elements.
+
 ## Architecture — Per-Game Module Pattern
 
 Code is organised by game. Each game gets its own subdirectory. Shared code lives in `src/components/`, `src/lib/`, `src/utils/`, `src/types.ts`.
