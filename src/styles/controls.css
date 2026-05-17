@@ -1,0 +1,157 @@
+/* ─── Shared control styles ──────────────────────────────────────── */
+
+/* Level slider (used by all 3 games) */
+.level-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  outline: none;
+  margin: var(--spacing-sm) 0;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) inset;
+}
+
+.level-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--border-radius-full);
+  background: var(--slider-fill-color, var(--color-brand-primary));
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--slider-fill-glow, var(--color-brand-primary-glow));
+  transition: transform var(--transition-fast);
+}
+
+.level-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* ─── Image loading states (R1999 + N2E) ─────────────────────────── */
+
+.game-card-image.loading {
+  opacity: 0;
+}
+
+.game-card-image.loaded {
+  opacity: 0.9;
+  transition: opacity 0.3s ease-in;
+}
+
+.game-card-image-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.game-card-image-spinner {
+  position: absolute;
+  display: flex;
+  gap: var(--spacing-3);
+  align-items: center;
+  z-index: 1;
+  opacity: 0.6;
+}
+
+/* ─── Spinner dots ───────────────────────────────────────────────── */
+
+.spinner-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--border-radius-full);
+  background: var(--color-brand-primary);
+  animation: spinner-bounce 1.2s ease-in-out infinite;
+}
+
+.spinner-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.spinner-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* ─── Stat chip ──────────────────────────────────────────────────── */
+
+.stat-chip {
+  font-size: 0.75rem;
+  font-weight: var(--typography-font-weight-semibold);
+  color: var(--color-text-secondary);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-sm);
+  padding: 2px 8px;
+  letter-spacing: 0.03em;
+}
+
+/* ─── Toggle button base (portrait, euphoria, awakening, etc.) ──── */
+
+.toggle-btn {
+  flex: 1;
+  padding: var(--spacing-3);
+  font-size: var(--typography-font-size-sm);
+  font-weight: var(--typography-font-weight-semibold);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-ui-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: unset;
+  text-align: center;
+}
+
+.toggle-btn::before {
+  display: none;
+}
+
+.toggle-btn:hover {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.toggle-btn.active {
+  background: var(--color-brand-primary-muted);
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+  box-shadow: var(--shadow-inset-glow);
+}
+
+/* ─── Custom select dropdown (R1999 + N2E) ───────────────────────── */
+
+.game-select {
+  width: 100%;
+  padding: var(--spacing-3) var(--spacing-5);
+  font-size: 0.85rem;
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color var(--transition-fast);
+  box-sizing: border-box;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a0a0b5' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 30px;
+}
+
+.game-select option {
+  background: var(--color-bg-surface);
+  color: var(--color-text-primary);
+}
+
+.game-select:focus {
+  border-color: var(--color-brand-primary);
+}

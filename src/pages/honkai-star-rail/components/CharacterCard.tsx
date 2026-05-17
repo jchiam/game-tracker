@@ -1,6 +1,8 @@
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet } from '@/data/honkai-star-rail/relics';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
+import { GameBadge } from '@/components/GameBadge';
+import { ProgressSection } from '@/components/ProgressSection';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import './CharacterCard.css';
 
@@ -37,20 +39,20 @@ export function CharacterCard({
   else if (score >= 50) tierClass = 'tier-a';
 
   return (
-    <div className="character-card">
-      <div className="card-header">
+    <div className="game-card">
+      <div className="game-card-header">
         <img
           src={char.imageUrl}
           alt={char.name}
-          className="character-image"
+          className="game-card-image"
           onError={(e) => {
             const target = e.target as HTMLImageElement;
             target.src = `https://ui-avatars.com/api/?name=${char.name.replace(' ', '+')}&background=1a1a1a&color=fff&size=250`;
           }}
         />
-        <div className="card-header-overlay"></div>
-        <div className="card-overlay-controls">
-          <div className="card-overlay-top">
+        <div className="game-card-overlay"></div>
+        <div className="game-card-controls">
+          <div className="game-card-controls-top">
             <button
               className={`favorite-btn ${char.isFavorited ? 'active' : ''}`}
               onClick={(e) => {
@@ -69,15 +71,19 @@ export function CharacterCard({
               ✕
             </button>
           </div>
-          <div className="card-overlay-bottom">
-            <div className="card-overlay-badges">
-              <span className={`element-badge element-${char.element.toLowerCase()}`}>
-                {char.element}
-              </span>
+          <div className="game-card-controls-bottom">
+            <div className="game-card-badges">
+              <GameBadge
+                label={char.element}
+                variant="element"
+                modifier={char.element.toLowerCase()}
+              />
               {char.path && (
-                <span className={`path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}>
-                  {char.path}
-                </span>
+                <GameBadge
+                  label={char.path}
+                  variant="path"
+                  modifier={char.path.toLowerCase().replace(/\s+/g, '-')}
+                />
               )}
             </div>
             {showScore && (
@@ -88,14 +94,10 @@ export function CharacterCard({
           </div>
         </div>
       </div>
-      <div className="card-body">
-        <h3 className="character-name">{char.name}</h3>
+      <div className="game-card-body">
+        <h3 className="game-card-name">{char.name}</h3>
 
-        <div className="progress-section">
-          <div className="section-header">
-            <span>Level</span>
-            <span className="section-value">{char.level} / 80</span>
-          </div>
+        <ProgressSection label="Level" value={`${char.level} / 80`}>
           <input
             type="range"
             name={`level-${char.id}`}
@@ -108,19 +110,17 @@ export function CharacterCard({
               background: `linear-gradient(to right, var(--color-brand-primary) ${(char.level / 80) * 100}%, rgba(255,255,255,0.1) ${(char.level / 80) * 100}%)`,
             }}
           />
-        </div>
+        </ProgressSection>
 
-        <div className="progress-section">
-          <div className="section-header">Traces</div>
+        <ProgressSection label="Traces">
           <ConfirmCheckbox
             checked={char.tracesAttained}
             onChange={(val) => onToggleTraces(char.id, val)}
             label="All Traces Attained"
           />
-        </div>
+        </ProgressSection>
 
-        <div className="progress-section">
-          <div className="section-header">Relic Sets</div>
+        <ProgressSection label="Relic Sets">
           <div className="relics-grid">
             {(['head', 'hands', 'body', 'feet', 'sphere', 'rope'] as const).map((relic) => {
               const equipped = char.relics[relic];
@@ -169,7 +169,7 @@ export function CharacterCard({
               );
             })}
           </div>
-        </div>
+        </ProgressSection>
 
         {char.buildPreferences &&
           (char.buildPreferences.subStats.length > 0 ||
@@ -178,9 +178,7 @@ export function CharacterCard({
                 char.buildPreferences?.mainStats[s as keyof typeof char.buildPreferences.mainStats]
                   ?.length > 0,
             )) && (
-            <div className="progress-section build-prefs-display">
-              <div className="section-header">Target Build</div>
-
+            <ProgressSection label="Target Build" className="build-prefs-display">
               <div className="prefs-display-grid">
                 {(['body', 'feet', 'sphere', 'rope'] as const).map((slot) => {
                   const prefs = char.buildPreferences?.mainStats[slot];
@@ -230,7 +228,7 @@ export function CharacterCard({
                   </div>
                 )}
               </div>
-            </div>
+            </ProgressSection>
           )}
       </div>
     </div>

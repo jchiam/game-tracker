@@ -13,9 +13,9 @@ test.describe('Selection Page UI and Behavior', () => {
   });
 
   test('should display all three game cards', async ({ page }) => {
-    const hsrCard = page.locator('.game-card', { hasText: 'Honkai Star Rail' });
-    const r1999Card = page.locator('.game-card', { hasText: 'Reverse: 1999' });
-    const n2eCard = page.locator('.game-card', { hasText: 'Neverness to Everness' });
+    const hsrCard = page.locator('.selection-card', { hasText: 'Honkai Star Rail' });
+    const r1999Card = page.locator('.selection-card', { hasText: 'Reverse: 1999' });
+    const n2eCard = page.locator('.selection-card', { hasText: 'Neverness to Everness' });
 
     await expect(hsrCard).toBeVisible();
     await expect(r1999Card).toBeVisible();

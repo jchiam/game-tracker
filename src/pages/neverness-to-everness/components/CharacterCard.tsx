@@ -1,7 +1,10 @@
 import type { N2ETrackedCharacter } from '@/types';
 import { ALL_ARCS } from '@/data/neverness-to-everness/arcs';
 import { calculateCartridgeScore, getScoreGrade } from '@/utils/cartridgeScoring';
+import { GameBadge } from '@/components/GameBadge';
 import { getMugshotUrl } from '@/lib/imagekit';
+import { ProgressSection } from '@/components/ProgressSection';
+import { StatChip } from '@/components/StatChip';
 import { useState } from 'react';
 import { CartridgeEditorModal } from './CartridgeEditorModal';
 import './CharacterCard.css';
@@ -121,11 +124,11 @@ export function CharacterCard({
 
   return (
     <>
-      <div className={`character-card ${isEditing ? 'is-editing' : ''}`}>
-        <div className="character-card-header">
-          <div className="character-image-wrapper">
+      <div className={`game-card ${isEditing ? 'is-editing' : ''}`}>
+        <div className="game-card-header">
+          <div className="game-card-image-wrapper">
             {imgLoading && !imgError && (
-              <div className="character-image-spinner">
+              <div className="game-card-image-spinner">
                 <div className="spinner-dot" />
                 <div className="spinner-dot" />
                 <div className="spinner-dot" />
@@ -134,7 +137,7 @@ export function CharacterCard({
             <img
               src={imageUrl}
               alt={character.name}
-              className={`character-image ${imgLoading ? 'loading' : 'loaded'}`}
+              className={`game-card-image ${imgLoading ? 'loading' : 'loaded'}`}
               onLoad={() => setImgLoading(false)}
               onError={(e) => {
                 setImgLoading(false);
@@ -144,9 +147,9 @@ export function CharacterCard({
               }}
             />
           </div>
-          <div className="character-card-header-overlay"></div>
-          <div className="character-card-overlay-controls">
-            <div className="character-overlay-top">
+          <div className="game-card-overlay"></div>
+          <div className="game-card-controls">
+            <div className="game-card-controls-top">
               <button
                 className={`favorite-btn ${character.isFavorited ? 'active' : ''}`}
                 onClick={(e) => {
@@ -165,14 +168,18 @@ export function CharacterCard({
                 ✕
               </button>
             </div>
-            <div className="character-overlay-bottom">
-              <div className="character-overlay-badges">
-                <span className={`esper-badge esper-${character.esperType.toLowerCase()}`}>
-                  {character.esperType}
-                </span>
-                <span className={`arc-badge arc-${character.arcType.toLowerCase()}`}>
-                  {character.arcType}
-                </span>
+            <div className="game-card-controls-bottom">
+              <div className="game-card-badges">
+                <GameBadge
+                  label={character.esperType}
+                  variant="esper"
+                  modifier={character.esperType.toLowerCase()}
+                />
+                <GameBadge
+                  label={character.arcType}
+                  variant="arc"
+                  modifier={character.arcType.toLowerCase()}
+                />
               </div>
               <div className="character-overlay-right">
                 {showCartridgeScore && (
@@ -192,30 +199,24 @@ export function CharacterCard({
           </div>
         </div>
 
-        <div className={`character-card-body ${isEditing ? 'is-editing' : ''}`}>
-          <h3 className="character-name">{character.name}</h3>
+        <div className={`game-card-body ${isEditing ? 'is-editing' : ''}`}>
+          <h3 className="game-card-name">{character.name}</h3>
 
           {/* Static summary -- visible in static mode, collapses when editing */}
           <div className="character-static-summary">
             <div className="character-static-stats">
-              <span
-                className="stat-chip"
+              <StatChip
+                label={`Lv ${character.level}`}
                 style={{ color: levelPs.color, borderColor: levelPs.borderColor }}
-              >
-                Lv {character.level}
-              </span>
-              <span
-                className="stat-chip"
+              />
+              <StatChip
+                label={`A ${awakeningCount}/6`}
                 style={{ color: awakeningPs.color, borderColor: awakeningPs.borderColor }}
-              >
-                A {awakeningCount}/6
-              </span>
-              <span
-                className="stat-chip"
+              />
+              <StatChip
+                label={`R${character.resonanceCount}`}
                 style={{ color: resonancePs.color, borderColor: resonancePs.borderColor }}
-              >
-                R{character.resonanceCount}
-              </span>
+              />
             </div>
             <div className="character-static-equip">
               {selectedArc ? (
@@ -328,11 +329,7 @@ export function CharacterCard({
           <div className="character-edit-body" aria-hidden={!isEditing}>
             <div className="character-edit-body-inner">
               {/* ── Level ─────────────────────────────────────────── */}
-              <div className="progress-section">
-                <div className="section-header">
-                  <span>Level</span>
-                  <span className="section-value">{character.level} / 90</span>
-                </div>
+              <ProgressSection label="Level" value={`${character.level} / 90`}>
                 <input
                   type="range"
                   name={`level-${character.id}`}
@@ -349,14 +346,10 @@ export function CharacterCard({
                     } as React.CSSProperties
                   }
                 />
-              </div>
+              </ProgressSection>
 
               {/* ── Awakening ─────────────────────────────────────── */}
-              <div className="progress-section">
-                <div className="section-header">
-                  <span>Awakening</span>
-                  <span className="section-value">{awakeningCount} / 6</span>
-                </div>
+              <ProgressSection label="Awakening" value={`${awakeningCount} / 6`}>
                 <div className="awakening-row">
                   {([0, 1, 2, 3, 4, 5] as const).map((idx) => {
                     const isActive = character.awakening[idx];
@@ -383,14 +376,10 @@ export function CharacterCard({
                     );
                   })}
                 </div>
-              </div>
+              </ProgressSection>
 
               {/* ── Resonance ─────────────────────────────────────── */}
-              <div className="progress-section">
-                <div className="section-header">
-                  <span>Resonance</span>
-                  <span className="section-value">{character.resonanceCount} / 6</span>
-                </div>
+              <ProgressSection label="Resonance" value={`${character.resonanceCount} / 6`}>
                 <input
                   type="range"
                   name={`resonance-${character.id}`}
@@ -407,14 +396,10 @@ export function CharacterCard({
                     } as React.CSSProperties
                   }
                 />
-              </div>
+              </ProgressSection>
 
               {/* ── Arc ───────────────────────────────────────────── */}
-              <div className="progress-section">
-                <div className="section-header">
-                  <span>Arc</span>
-                  <span className="section-value">{character.arcLevel} / 80</span>
-                </div>
+              <ProgressSection label="Arc" value={`${character.arcLevel} / 80`}>
                 <select
                   name={`arc-${character.id}`}
                   className="character-select"
@@ -494,7 +479,7 @@ export function CharacterCard({
                     );
                   })}
                 </div>
-              </div>
+              </ProgressSection>
             </div>
           </div>
         </div>

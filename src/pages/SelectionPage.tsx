@@ -68,8 +68,12 @@ export function SelectionPage({ session, isAuthLoading, signInWithGoogle }: Sele
 
       <section className="selection-grid">
         {GAMES.map((game) => (
-          <button key={game.id} onClick={() => handleGameSelect(game.path)} className="game-card">
-            <div className={`game-card-header ${game.bgClass}`}>
+          <button
+            key={game.id}
+            onClick={() => handleGameSelect(game.path)}
+            className="selection-card"
+          >
+            <div className={`selection-card-header ${game.bgClass}`}>
               <img
                 src={game.imageUrl}
                 alt={game.name}
@@ -79,16 +83,16 @@ export function SelectionPage({ session, isAuthLoading, signInWithGoogle }: Sele
                   target.src = `https://ui-avatars.com/api/?name=${game.name.replace(' ', '+')}&background=1a1a1a&color=fff&size=250`;
                 }}
               />
-              <div className="game-card-overlay"></div>
+              <div className="selection-card-overlay"></div>
 
               {!session && (
-                <div className="game-card-badges">
+                <div className="selection-card-badges">
                   <span className="requires-login-badge">Requires Login</span>
                 </div>
               )}
             </div>
 
-            <div className="game-card-body">
+            <div className="selection-card-body">
               <div className="game-title-row">
                 <h2 className="game-name">{game.name}</h2>
                 <span className="game-tag-badge">{game.tag}</span>

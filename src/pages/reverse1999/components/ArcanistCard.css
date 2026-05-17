@@ -1,165 +1,13 @@
-.arcanist-card {
-  background: var(--color-bg-surface);
-  border: 1px solid var(--color-ui-border);
-  border-radius: var(--border-radius-lg);
-  overflow: hidden;
-  transition: all var(--transition-normal);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  display: flex;
-  flex-direction: column;
-  animation: fade-in-up 0.5s ease-out backwards;
-}
-
-.arcanist-card:nth-child(1) {
-  animation-delay: 0.1s;
-}
-.arcanist-card:nth-child(2) {
-  animation-delay: 0.2s;
-}
-.arcanist-card:nth-child(3) {
-  animation-delay: 0.3s;
-}
-.arcanist-card:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-.arcanist-card:hover {
-  border-color: var(--color-brand-primary);
-  box-shadow: var(--shadow-card-hover);
-}
-
-.arcanist-card-header {
-  height: 250px;
-  position: relative;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: var(--spacing-md);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.1), transparent);
-  overflow: hidden;
-  /* Isolate on its own compositing layer so body layout changes
-     do not cause subpixel shifts in the absolutely-positioned overlay */
-  transform: translateZ(0);
-}
-
-.arcanist-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center top;
-  z-index: 0;
-  transition: transform var(--transition-normal);
-  opacity: 0.9;
-}
-
-.arcanist-image.loading {
-  opacity: 0;
-}
-
-.arcanist-image.loaded {
-  opacity: 0.9;
-  transition: opacity 0.3s ease-in;
-}
-
-.arcanist-image-wrapper {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.arcanist-image-spinner {
-  position: absolute;
-  display: flex;
-  gap: var(--spacing-3);
-  align-items: center;
-  z-index: 1;
-  opacity: 0.6;
-}
-
-.spinner-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: var(--border-radius-full);
-  background: var(--color-brand-primary);
-  animation: spinner-bounce 1.2s ease-in-out infinite;
-}
-
-.spinner-dot:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.spinner-dot:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.arcanist-card:hover .arcanist-image {
-  opacity: 1;
-}
-
-.arcanist-card-header-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.4) 0%,
-    transparent 40%,
-    rgba(20, 20, 30, 0.9) 100%
-  );
-  z-index: 1;
-}
-
-.arcanist-card-overlay-controls {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: var(--spacing-sm);
-  pointer-events: none;
-}
-
-.arcanist-card-overlay-controls > * {
-  pointer-events: auto;
-}
-
-.arcanist-overlay-top,
-.arcanist-overlay-bottom {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-}
-
-.arcanist-overlay-badges {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-2);
-}
+/* ─── R1999 ArcanistCard — game-specific overrides ─────────────────── */
 
 /* ─── Card body ────────────────────────────────────────────────── */
 
-.arcanist-card-body {
-  display: flex;
-  flex-direction: column;
+.game-card-body {
   padding: var(--spacing-md) var(--spacing-md) 0;
 }
 
 /* Name sits above both sections — always visible */
-.arcanist-card-body > .arcanist-name {
+.game-card-body > .game-card-name {
   margin-bottom: var(--spacing-3);
 }
 
@@ -178,7 +26,7 @@
   overflow: hidden;
 }
 
-.arcanist-card-body.is-editing .arcanist-static-summary {
+.game-card-body.is-editing .arcanist-static-summary {
   max-height: 0;
   opacity: 0;
   padding-top: 0;
@@ -190,17 +38,6 @@
   display: flex;
   gap: var(--spacing-sm);
   flex-wrap: wrap;
-}
-
-.stat-chip {
-  font-size: 0.75rem;
-  font-weight: var(--typography-font-weight-semibold);
-  color: var(--color-text-secondary);
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-ui-border);
-  border-radius: var(--border-radius-sm);
-  padding: 2px 8px;
-  letter-spacing: 0.03em;
 }
 
 .arcanist-static-psychube {
@@ -223,7 +60,7 @@
   transition: max-height 0.4s ease;
 }
 
-.arcanist-card-body.is-editing .arcanist-edit-body {
+.game-card-body.is-editing .arcanist-edit-body {
   /* Large enough for all five progress sections */
   max-height: 700px;
 }
@@ -235,157 +72,8 @@
   padding-bottom: var(--spacing-lg);
 }
 
-/* ─── Shared name style ─────────────────────────────────────────── */
+/* ─── R1999-specific slider thumbs (level-slider base in controls.css) */
 
-.arcanist-name {
-  font-size: var(--typography-font-size-2xl);
-  margin-bottom: 0;
-  color: var(--color-text-primary);
-}
-
-/* ─── Header overlay buttons ────────────────────────────────────── */
-
-.remove-btn {
-  background: transparent;
-  border: none;
-  color: var(--color-text-secondary);
-  font-size: var(--typography-font-size-md);
-  line-height: 1;
-  padding: 0;
-  width: 28px;
-  height: 28px;
-  min-width: unset;
-  border-radius: var(--border-radius-full);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.remove-btn:hover {
-  color: var(--color-ui-danger);
-  transform: none;
-  box-shadow: none;
-  border-color: transparent;
-}
-
-.remove-btn::before {
-  display: none;
-}
-
-.favorite-btn {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid var(--color-ui-border);
-  border-radius: var(--border-radius-full);
-  width: 32px;
-  height: 32px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-primary);
-  font-size: var(--typography-font-size-xl);
-  z-index: 10;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(4px);
-  padding: 0;
-  min-width: unset;
-  line-height: 1;
-}
-
-.favorite-btn::before {
-  display: none;
-}
-
-.favorite-btn:hover {
-  transform: scale(1.1);
-  background: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-
-.favorite-btn.active {
-  color: var(--color-brand-primary);
-  border-color: var(--color-brand-primary);
-  background: var(--color-brand-primary-muted);
-  text-shadow: 0 0 8px var(--color-brand-primary-glow);
-  box-shadow: var(--shadow-inset-glow);
-}
-
-.edit-toggle-btn {
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: var(--border-radius-full);
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-text-secondary);
-  font-size: var(--typography-font-size-base);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  backdrop-filter: blur(4px);
-  padding: 0;
-  min-width: unset;
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.edit-toggle-btn::before {
-  display: none;
-}
-
-.edit-toggle-btn:hover {
-  border-color: var(--color-brand-primary);
-  color: var(--color-brand-primary);
-  transform: none;
-  box-shadow: none;
-}
-
-.edit-toggle-btn.active {
-  border-color: var(--color-brand-primary);
-  color: var(--color-brand-primary);
-  background: var(--color-brand-primary-muted);
-}
-
-/* ─── Progress sections (inside edit body) ──────────────────────── */
-
-.progress-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-  background: rgba(0, 0, 0, 0.15);
-  padding: var(--spacing-md);
-  border-radius: var(--border-radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-}
-
-.section-header {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  display: flex;
-  justify-content: space-between;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: var(--typography-font-weight-semibold);
-  margin-bottom: var(--spacing-2);
-}
-
-.section-value {
-  color: var(--color-text-primary);
-}
-
-.level-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  border-radius: 2px;
-  outline: none;
-  margin: var(--spacing-sm) 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) inset;
-}
-
-.level-slider::-webkit-slider-thumb,
 .resonance-slider::-webkit-slider-thumb,
 .psychube-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -399,7 +87,6 @@
   transition: transform var(--transition-fast);
 }
 
-.level-slider::-webkit-slider-thumb:hover,
 .resonance-slider::-webkit-slider-thumb:hover,
 .psychube-slider::-webkit-slider-thumb:hover {
   transform: scale(1.2);
@@ -553,16 +240,6 @@
   align-items: center;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-2);
-}
-
-.section-sublabel {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: var(--typography-font-weight-semibold);
-  white-space: nowrap;
-  flex-shrink: 0;
 }
 
 .amplify-btn {

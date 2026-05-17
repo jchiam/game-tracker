@@ -73,7 +73,7 @@ describe('ArcanistCard', () => {
     const { container } = render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
     openEditMode();
     expect(screen.getByTitle('Done editing')).toBeInTheDocument();
-    expect(container.querySelector('.arcanist-card-body.is-editing')).toBeInTheDocument();
+    expect(container.querySelector('.game-card-body.is-editing')).toBeInTheDocument();
   });
 
   it('renders the current level value in edit body', () => {
@@ -165,20 +165,20 @@ describe('ArcanistCard', () => {
 
   it('shows the loading spinner before the image loads', () => {
     const { container } = render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
-    expect(container.querySelector('.arcanist-image-spinner')).toBeInTheDocument();
+    expect(container.querySelector('.game-card-image-spinner')).toBeInTheDocument();
   });
 
   it('hides the loading spinner after the image loads successfully', () => {
     const { container } = render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
     fireEvent.load(screen.getByAltText('Regulus'));
-    expect(container.querySelector('.arcanist-image-spinner')).not.toBeInTheDocument();
+    expect(container.querySelector('.game-card-image-spinner')).not.toBeInTheDocument();
   });
 
   it('hides the loading spinner and falls back to ui-avatars when the image fails to load', () => {
     const { container } = render(<ArcanistCard arcanist={makeArcanist()} {...defaultProps} />);
     const img = screen.getByAltText('Regulus');
     fireEvent.error(img);
-    expect(container.querySelector('.arcanist-image-spinner')).not.toBeInTheDocument();
+    expect(container.querySelector('.game-card-image-spinner')).not.toBeInTheDocument();
     expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
   });
 });

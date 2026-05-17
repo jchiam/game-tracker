@@ -1,6 +1,9 @@
 import type { R1999TrackedArcanist } from '@/types';
 import { ALL_ARCANISTS } from '@/data/reverse1999/arcanists';
 import { ALL_PSYCHUBES } from '@/data/reverse1999/psychubes';
+import { GameBadge } from '@/components/GameBadge';
+import { ProgressSection } from '@/components/ProgressSection';
+import { StatChip } from '@/components/StatChip';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { useState } from 'react';
 import './ArcanistCard.css';
@@ -106,11 +109,11 @@ export function ArcanistCard({
     : getProgressStyle(0, 0, 1); // rust when unequipped
 
   return (
-    <div className={`arcanist-card ${isEditing ? 'is-editing' : ''}`}>
-      <div className="arcanist-card-header">
-        <div className="arcanist-image-wrapper">
+    <div className={`game-card ${isEditing ? 'is-editing' : ''}`}>
+      <div className="game-card-header">
+        <div className="game-card-image-wrapper">
           {imgLoading && !imgError && (
-            <div className="arcanist-image-spinner">
+            <div className="game-card-image-spinner">
               <div className="spinner-dot" />
               <div className="spinner-dot" />
               <div className="spinner-dot" />
@@ -119,7 +122,7 @@ export function ArcanistCard({
           <img
             src={imageUrl}
             alt={arcanist.name}
-            className={`arcanist-image ${imgLoading ? 'loading' : 'loaded'}`}
+            className={`game-card-image ${imgLoading ? 'loading' : 'loaded'}`}
             onLoad={() => setImgLoading(false)}
             onError={(e) => {
               setImgLoading(false);
@@ -129,9 +132,9 @@ export function ArcanistCard({
             }}
           />
         </div>
-        <div className="arcanist-card-header-overlay"></div>
-        <div className="arcanist-card-overlay-controls">
-          <div className="arcanist-overlay-top">
+        <div className="game-card-overlay"></div>
+        <div className="game-card-controls">
+          <div className="game-card-controls-top">
             <button
               className={`favorite-btn ${arcanist.isFavorited ? 'active' : ''}`}
               onClick={(e) => {
@@ -150,14 +153,18 @@ export function ArcanistCard({
               ✕
             </button>
           </div>
-          <div className="arcanist-overlay-bottom">
-            <div className="arcanist-overlay-badges">
-              <span className={`afflatus-badge afflatus-${arcanist.afflatus.toLowerCase()}`}>
-                {arcanist.afflatus}
-              </span>
-              <span className={`damage-badge damage-${arcanist.damageType.toLowerCase()}`}>
-                {arcanist.damageType}
-              </span>
+          <div className="game-card-controls-bottom">
+            <div className="game-card-badges">
+              <GameBadge
+                label={arcanist.afflatus}
+                variant="afflatus"
+                modifier={arcanist.afflatus.toLowerCase()}
+              />
+              <GameBadge
+                label={arcanist.damageType}
+                variant="damage"
+                modifier={arcanist.damageType.toLowerCase()}
+              />
             </div>
             <button
               className={`edit-toggle-btn ${isEditing ? 'active' : ''}`}
@@ -170,37 +177,29 @@ export function ArcanistCard({
         </div>
       </div>
 
-      <div className={`arcanist-card-body ${isEditing ? 'is-editing' : ''}`}>
-        <h3 className="arcanist-name">{arcanist.name}</h3>
+      <div className={`game-card-body ${isEditing ? 'is-editing' : ''}`}>
+        <h3 className="game-card-name">{arcanist.name}</h3>
 
         {/* Static summary — visible in static mode, collapses when editing */}
         <div className="arcanist-static-summary">
           <div className="arcanist-static-stats">
-            <span
-              className="stat-chip"
+            <StatChip
+              label={`Lv ${arcanist.level}`}
               style={{ color: levelPs.color, borderColor: levelPs.borderColor }}
-            >
-              Lv {arcanist.level}
-            </span>
-            <span
-              className="stat-chip"
+            />
+            <StatChip
+              label={`P${arcanist.portraitLevel}`}
               style={{ color: portraitPs.color, borderColor: portraitPs.borderColor }}
-            >
-              P{arcanist.portraitLevel}
-            </span>
-            <span
-              className="stat-chip"
+            />
+            <StatChip
+              label={`R${arcanist.resonanceLevel}`}
               style={{ color: resonancePs.color, borderColor: resonancePs.borderColor }}
-            >
-              R{arcanist.resonanceLevel}
-            </span>
+            />
             {hasEuphoria && (
-              <span
-                className="stat-chip"
+              <StatChip
+                label={`E${arcanist.euphoriaStage}`}
                 style={{ color: euphoriaPs.color, borderColor: euphoriaPs.borderColor }}
-              >
-                E{arcanist.euphoriaStage}
-              </span>
+              />
             )}
           </div>
           <div className="arcanist-static-psychube">
@@ -225,11 +224,7 @@ export function ArcanistCard({
         {/* Edit body — always in DOM, expands when editing */}
         <div className="arcanist-edit-body" aria-hidden={!isEditing}>
           <div className="arcanist-edit-body-inner">
-            <div className="progress-section">
-              <div className="section-header">
-                <span>Level</span>
-                <span className="section-value">{arcanist.level} / 60</span>
-              </div>
+            <ProgressSection label="Level" value={`${arcanist.level} / 60`}>
               <input
                 type="range"
                 name={`level-${arcanist.id}`}
@@ -246,13 +241,9 @@ export function ArcanistCard({
                   } as React.CSSProperties
                 }
               />
-            </div>
+            </ProgressSection>
 
-            <div className="progress-section">
-              <div className="section-header">
-                <span>Portrait Level</span>
-                <span className="section-value">{arcanist.portraitLevel} / 5</span>
-              </div>
+            <ProgressSection label="Portrait Level" value={`${arcanist.portraitLevel} / 5`}>
               <div className="portrait-row">
                 {([0, 1, 2, 3, 4, 5] as const).map((level) => {
                   const btnPs = getProgressStyle(level, 0, 5);
@@ -286,13 +277,9 @@ export function ArcanistCard({
                   );
                 })}
               </div>
-            </div>
+            </ProgressSection>
 
-            <div className="progress-section">
-              <div className="section-header">
-                <span>Resonance Level</span>
-                <span className="section-value">{arcanist.resonanceLevel} / 15</span>
-              </div>
+            <ProgressSection label="Resonance Level" value={`${arcanist.resonanceLevel} / 15`}>
               <input
                 type="range"
                 name={`resonance-${arcanist.id}`}
@@ -309,11 +296,10 @@ export function ArcanistCard({
                   } as React.CSSProperties
                 }
               />
-            </div>
+            </ProgressSection>
 
             {hasEuphoria && (
-              <div className="progress-section">
-                <div className="section-header">Euphoria</div>
+              <ProgressSection label="Euphoria">
                 <div className="euphoria-row">
                   {([0, 1, 2, 3, 4] as const).map((stage) => {
                     const btnPs = getProgressStyle(stage, 0, 4);
@@ -346,14 +332,10 @@ export function ArcanistCard({
                     );
                   })}
                 </div>
-              </div>
+              </ProgressSection>
             )}
 
-            <div className="progress-section">
-              <div className="section-header">
-                <span>Psychube</span>
-                <span className="section-value">{arcanist.psychubeLevel} / 60</span>
-              </div>
+            <ProgressSection label="Psychube" value={`${arcanist.psychubeLevel} / 60`}>
               <select
                 name={`psychube-${arcanist.id}`}
                 className="psychube-select"
@@ -421,7 +403,7 @@ export function ArcanistCard({
                   );
                 })}
               </div>
-            </div>
+            </ProgressSection>
           </div>
         </div>
       </div>

@@ -157,11 +157,11 @@ describe('CharacterCard', () => {
 
   it('toggles edit body when edit button is clicked', () => {
     const { container } = render(<CharacterCard character={makeChar()} {...defaultProps} />);
-    expect(container.querySelector('.character-card.is-editing')).not.toBeInTheDocument();
+    expect(container.querySelector('.game-card.is-editing')).not.toBeInTheDocument();
     fireEvent.click(screen.getByTitle('Edit'));
-    expect(container.querySelector('.character-card.is-editing')).toBeInTheDocument();
+    expect(container.querySelector('.game-card.is-editing')).toBeInTheDocument();
     fireEvent.click(screen.getByTitle('Done editing'));
-    expect(container.querySelector('.character-card.is-editing')).not.toBeInTheDocument();
+    expect(container.querySelector('.game-card.is-editing')).not.toBeInTheDocument();
   });
 
   // --- Level slider ---
