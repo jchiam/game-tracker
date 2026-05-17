@@ -101,6 +101,7 @@ describe('useCharacters', () => {
   });
 
   it('addCharacter reverts state on insert failure', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const service = await import('@/services/neverness-to-everness/characterService');
     vi.mocked(service.insertCharacter).mockRejectedValueOnce(new Error('DB error'));
 
@@ -110,6 +111,7 @@ describe('useCharacters', () => {
     });
 
     expect(result.current.trackedCharacters).toEqual([]);
+    spy.mockRestore();
   });
 
   it('removeCharacter removes from local state', async () => {
@@ -124,6 +126,7 @@ describe('useCharacters', () => {
   });
 
   it('removeCharacter reverts on DB error', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     const service = await import('@/services/neverness-to-everness/characterService');
 
     const { result, ALL_CHARACTERS } = await setup();
@@ -141,6 +144,7 @@ describe('useCharacters', () => {
     });
 
     expect(result.current.trackedCharacters).toHaveLength(1);
+    spy.mockRestore();
   });
 
   it('updateCharacterLevel updates state and clamps', async () => {
@@ -308,6 +312,7 @@ describe('useCharacters', () => {
   });
 
   it('isLoadError is set on DB failure', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.resetModules();
     vi.doMock('@/services/neverness-to-everness/characterService', () => ({
       loadCharactersFromDB: vi.fn().mockRejectedValue(new Error('DB down')),
@@ -325,9 +330,11 @@ describe('useCharacters', () => {
 
     await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
     expect(result.current.isLoadError).toBe(true);
+    spy.mockRestore();
   });
 
   it('retryLoad clears error and reloads', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.resetModules();
     let callCount = 0;
     vi.doMock('@/services/neverness-to-everness/characterService', () => ({
@@ -359,5 +366,6 @@ describe('useCharacters', () => {
       expect(result.current.isLoadError).toBe(false);
       expect(result.current.isInitialLoad).toBe(false);
     });
+    spy.mockRestore();
   });
 });
