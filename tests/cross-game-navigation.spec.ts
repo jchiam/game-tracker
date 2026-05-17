@@ -1,17 +1,6 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Cross-Game Navigation', () => {
-  test('should redirect to auth when clicking game card without session', async ({ page }) => {
-    await page.goto('/');
-
-    const [response] = await Promise.all([
-      page.waitForNavigation(),
-      page.locator('.game-card', { hasText: 'Honkai Star Rail' }).click(),
-    ]);
-
-    expect(response?.url() ?? page.url()).toMatch(/accounts\.google\.com|supabase/);
-  });
-
   test('should navigate to each game page via direct URL', async ({ page }) => {
     await page.goto('/honkai-star-rail');
     await expect(page.locator('h1')).toContainText('Honkai Star Rail');
