@@ -1,21 +1,25 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Cross-Game Navigation', () => {
-  test('should navigate to each game from selection page via card click', async ({ page }) => {
+  test('should redirect to auth when clicking game card without session', async ({ page }) => {
     await page.goto('/');
 
-    await page.locator('.game-card', { hasText: 'Honkai Star Rail' }).click();
-    await expect(page).toHaveURL(/\/honkai-star-rail/);
+    const [response] = await Promise.all([
+      page.waitForNavigation(),
+      page.locator('.game-card', { hasText: 'Honkai Star Rail' }).click(),
+    ]);
+
+    expect(response?.url() ?? page.url()).toMatch(/accounts\.google\.com|supabase/);
+  });
+
+  test('should navigate to each game page via direct URL', async ({ page }) => {
+    await page.goto('/honkai-star-rail');
     await expect(page.locator('h1')).toContainText('Honkai Star Rail');
 
-    await page.goto('/');
-    await page.locator('.game-card', { hasText: 'Reverse: 1999' }).click();
-    await expect(page).toHaveURL(/\/reverse-1999/);
+    await page.goto('/reverse-1999');
     await expect(page.locator('h1')).toContainText('Reverse: 1999');
 
-    await page.goto('/');
-    await page.locator('.game-card', { hasText: 'Neverness to Everness' }).click();
-    await expect(page).toHaveURL(/\/neverness-to-everness/);
+    await page.goto('/neverness-to-everness');
     await expect(page.locator('h1')).toContainText('Neverness to Everness');
   });
 
@@ -36,16 +40,5 @@ test.describe('Cross-Game Navigation', () => {
     await page.click('.switcher-trigger');
     await page.click('.dropdown-item:has-text("Honkai Star Rail")');
     await expect(page).toHaveURL(/\/honkai-star-rail/);
-  });
-
-  test('should show correct game-specific titles on each page', async ({ page }) => {
-    await page.goto('/honkai-star-rail');
-    await expect(page.locator('h1')).toContainText('Honkai Star Rail');
-
-    await page.goto('/reverse-1999');
-    await expect(page.locator('h1')).toContainText('Reverse: 1999');
-
-    await page.goto('/neverness-to-everness');
-    await expect(page.locator('h1')).toContainText('Neverness to Everness');
   });
 });
