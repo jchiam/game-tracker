@@ -1,4 +1,4 @@
-/* Cartridge Editor Modal Styles */
+/* N2E Cartridge Editor — game-specific styles only (shared rules in Modal.css) */
 .cartridge-editor-body {
   padding: var(--spacing-lg);
   display: flex;
@@ -7,8 +7,6 @@
   overflow-y: auto;
   max-height: 50vh;
 }
-
-/* ─── Equip Tab: Form Groups ──────────────────────────────────────── */
 
 .cartridge-editor-body .form-group {
   display: flex;
@@ -48,7 +46,7 @@
   color: var(--color-text-primary);
 }
 
-/* ─── Equip Tab: Level Slider ─────────────────────────────────────── */
+/* ─── Level Slider ───────────────────────────────────────────────── */
 
 .level-slider-row {
   display: flex;
@@ -90,7 +88,7 @@
   text-align: right;
 }
 
-/* ─── Equip Tab: Sub Stats ────────────────────────────────────────── */
+/* ─── Sub Stats ──────────────────────────────────────────────────── */
 
 .cartridge-editor-body .substats-section {
   display: flex;
@@ -152,181 +150,6 @@
   border-color: var(--color-brand-primary);
   color: var(--color-brand-primary);
   background: rgba(212, 175, 55, 0.05);
-}
-
-/* ─── Danger Button (Un-equip) ────────────────────────────────────── */
-
-.secondary-action.danger {
-  border-color: rgba(255, 77, 79, 0.5);
-  color: var(--color-ui-danger);
-}
-
-.secondary-action.danger:hover {
-  background: var(--color-ui-danger);
-  color: var(--color-text-primary);
-  border-color: var(--color-ui-danger);
-  box-shadow: 0 0 10px rgba(255, 77, 79, 0.3);
-}
-
-/* ─── Tabs ────────────────────────────────────────────────────────── */
-
-.modal-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--color-ui-border);
-  margin-bottom: var(--spacing-md);
-  padding: 0 var(--spacing-md);
-}
-
-.tab-btn {
-  background: none;
-  border: none;
-  padding: var(--spacing-sm) var(--spacing-md);
-  color: var(--color-text-dim);
-  font-size: 0.95rem;
-  font-weight: var(--typography-font-weight-medium);
-  cursor: pointer;
-  border-bottom: 2px solid transparent;
-  transition: all var(--transition-fast);
-  margin-bottom: -1px;
-}
-
-.tab-btn:hover {
-  color: var(--color-text-primary);
-}
-
-.tab-btn.active {
-  color: var(--color-brand-primary);
-  border-bottom-color: var(--color-brand-primary);
-}
-
-/* ─── Preferences Tab ─────────────────────────────────────────────── */
-
-.preferences-tab {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
-  padding: 0 var(--spacing-md);
-}
-
-.cartridge-editor-body .tab-description {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  margin: 0;
-  line-height: var(--typography-line-height-base);
-}
-
-.cartridge-editor-body .pref-section h3 {
-  font-size: var(--typography-font-size-base);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-ui-border);
-  padding-bottom: var(--spacing-3);
-  margin-bottom: var(--spacing-6);
-}
-
-.cartridge-editor-body .pref-chain {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--spacing-sm);
-  align-items: center;
-  margin-bottom: var(--spacing-6);
-}
-
-.cartridge-editor-body .pref-item {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--color-ui-border);
-  padding: var(--spacing-3) var(--spacing-6);
-  border-radius: var(--border-radius-md);
-  transition: var(--transition-fast);
-}
-
-.cartridge-editor-body .pref-item:hover {
-  border-color: var(--color-ui-border-strong);
-}
-
-.cartridge-editor-body .pref-item select {
-  background: transparent;
-  border: none;
-  color: var(--color-text-primary);
-  font-size: var(--typography-font-size-base);
-  padding: 0;
-  outline: none;
-  cursor: pointer;
-}
-
-.cartridge-editor-body .pref-item select option {
-  background: var(--color-bg-base);
-  color: var(--color-text-primary);
-}
-
-.cartridge-editor-body .pref-item select.operator-select {
-  color: var(--color-brand-primary);
-  font-weight: var(--typography-font-weight-bold);
-}
-
-.cartridge-editor-body .remove-pref-btn {
-  background: none;
-  border: none;
-  color: var(--color-text-dim);
-  cursor: pointer;
-  font-size: var(--typography-font-size-sm);
-  padding: 0 var(--spacing-2);
-  line-height: 1;
-  transition: color var(--transition-fast);
-  min-width: unset;
-}
-
-.cartridge-editor-body .remove-pref-btn::before {
-  display: none;
-}
-
-.cartridge-editor-body .remove-pref-btn:hover {
-  color: var(--color-ui-danger);
-  transform: none;
-  box-shadow: none;
-}
-
-.cartridge-editor-body .add-pref-btn {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px dashed var(--color-ui-border);
-  color: var(--color-text-secondary);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--border-radius-sm);
-  cursor: pointer;
-  width: 100%;
-  font-size: var(--typography-font-size-base);
-  transition: all var(--transition-fast);
-}
-
-.cartridge-editor-body .add-pref-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-ui-border-strong);
-  color: var(--color-text-primary);
-}
-
-.cartridge-editor-body .build-comments-textarea {
-  width: 100%;
-  min-height: 80px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-ui-border);
-  border-radius: var(--border-radius-md);
-  color: var(--color-text-primary);
-  padding: 10px 14px;
-  font-family: inherit;
-  font-size: var(--typography-font-size-base);
-  resize: vertical;
-  transition: all var(--transition-fast);
-  box-sizing: border-box;
-}
-
-.cartridge-editor-body .build-comments-textarea:focus {
-  outline: none;
-  border-color: var(--color-brand-primary);
-  background: rgba(255, 255, 255, 0.08);
 }
 
 @media (max-width: 600px) {
