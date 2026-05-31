@@ -39,14 +39,6 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: true,
   },
   {
-    id: 'adler',
-    name: 'Adler',
-    afflatus: 'Intellect',
-    damageType: 'Unknown',
-    imageUrl: '/assets/reverse-1999/arcanists-mugshots/adler.webp',
-    hasEuphoria: false,
-  },
-  {
     id: 'aleph',
     name: 'Aleph',
     afflatus: 'Intellect',
