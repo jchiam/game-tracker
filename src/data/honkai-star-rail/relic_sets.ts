@@ -14,6 +14,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     icon: '/assets/honkai-star-rail/relics/321.png',
   },
   {
+    id: '131',
+    name: 'As Navigator Isee Sees It',
+    icon: '/assets/honkai-star-rail/relics/131.png',
+  },
+  {
     id: '109',
     name: 'Band of Sizzling Thunder',
     icon: '/assets/honkai-star-rail/relics/109.png',
@@ -47,6 +52,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     id: '326',
     name: 'City of Converging Stars',
     icon: '/assets/honkai-star-rail/relics/326.png',
+  },
+  {
+    id: '132',
+    name: 'Divine-Querying Master Smith',
+    icon: '/assets/honkai-star-rail/relics/132.png',
   },
   {
     id: '130',
