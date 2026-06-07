@@ -159,6 +159,13 @@ export const ALL_ARCS: N2EArc[] = [
     imageUrl: '/assets/neverness-to-everness/arcs/fork_worldrain.webp',
   },
   {
+    id: 'fork_GoldWool',
+    name: "What's Desired",
+    rarity: 'S',
+    arcType: 'Synthesis',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_GoldWool.webp',
+  },
+  {
     id: 'fork_Nakupeda',
     name: 'Your Happiness is Priceless',
     rarity: 'S',
