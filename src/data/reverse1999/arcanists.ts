@@ -460,7 +460,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/spathodea.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'tooth_fairy',
@@ -476,7 +476,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/tuesday.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'ulrich',
