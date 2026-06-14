@@ -170,7 +170,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     if (char?.dbId) queueAction(`${char.dbId}-${slot}-delete`, () => deleteRelic(char.dbId!, slot));
   };
 
-  const saveBuildPreferences = async (
+  const saveBuildPreferences = (
     charId: string,
     newPreferences: HsrTrackedCharacter['buildPreferences'],
   ) => {
@@ -178,7 +178,10 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       prev.map((c) => (c.id === charId ? { ...c, buildPreferences: newPreferences } : c)),
     );
     const char = trackedCharactersRef.current.find((c) => c.id === charId);
-    if (char?.dbId) await saveBuildPrefs(char.dbId, newPreferences);
+    if (char?.dbId) {
+      const dbId = char.dbId;
+      queueAction(`${dbId}-buildprefs`, () => saveBuildPrefs(dbId, newPreferences));
+    }
   };
 
   const getFilteredRoster = useCallback(
