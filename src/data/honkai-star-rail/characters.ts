@@ -278,6 +278,13 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/luocha.webp',
   },
   {
+    id: 'mortenax-blade',
+    name: 'Mortenax Blade',
+    element: 'Fire',
+    path: 'Nihility',
+    imageUrl: '/assets/honkai-star-rail/characters/mortenax-blade.webp',
+  },
+  {
     id: 'mydei',
     name: 'Mydei',
     element: 'Imaginary',
