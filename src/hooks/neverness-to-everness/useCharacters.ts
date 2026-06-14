@@ -1,6 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
 import { type Session } from '@supabase/supabase-js';
-import Fuse from 'fuse.js';
 import { ALL_CHARACTERS, type N2ECharacter } from '@/data/neverness-to-everness/characters';
 import type { N2ETrackedCharacter } from '@/types';
 import {
@@ -10,109 +8,52 @@ import {
   updateCharacter,
   saveCartridgePreferences as apiSaveCartridgePrefs,
 } from '@/services/neverness-to-everness/characterService';
-import { usePendingSaves } from '@/hooks/usePendingSaves';
-import { addToast } from '@/utils/toast';
+import { useRoster } from '@/hooks/useRoster';
 
 const DEFAULT_AWAKENING = [false, false, false, false, false, false];
 
+function createTrackedCharacter(character: N2ECharacter): N2ETrackedCharacter {
+  return {
+    ...character,
+    isFavorited: false,
+    level: 1,
+    awakening: [...DEFAULT_AWAKENING],
+    resonanceCount: 0,
+    arcId: null,
+    arcLevel: 1,
+    arcTier: 1,
+    cartridgeRarity: null,
+    cartridgeLevel: 0,
+    cartridgeMainStat: null,
+    cartridgeSubStats: [],
+    cartridgePreferences: { mainStats: [], subStats: [], comments: '' },
+  };
+}
+
 export function useCharacters(session: Session | null, isAuthLoading: boolean) {
-  const [availableCharacters] = useState<N2ECharacter[]>(ALL_CHARACTERS);
-  const [trackedCharacters, setTrackedCharacters] = useState<N2ETrackedCharacter[]>([]);
-  const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [isLoadError, setIsLoadError] = useState(false);
-  const [retryCount, setRetryCount] = useState(0);
-
-  const pendingInserts = useRef<Set<string>>(new Set());
-  const trackedCharactersRef = useRef<N2ETrackedCharacter[]>([]);
-  trackedCharactersRef.current = trackedCharacters;
-
-  const { pendingSaveCount, queueUpdate } = usePendingSaves(1000, () =>
-    addToast('Failed to save changes. Please try again.', 'error'),
-  );
-
-  useEffect(() => {
-    if (isAuthLoading) return;
-    if (!session?.user) {
-      setTrackedCharacters([]);
-      setIsInitialLoad(false);
-      return;
-    }
-    let isMounted = true;
-    (async () => {
-      try {
-        const roster = await loadCharactersFromDB(session.user.id);
-        if (isMounted) {
-          setTrackedCharacters(roster);
-          setIsLoadError(false);
-        }
-      } catch (e) {
-        console.error(e);
-        if (isMounted) setIsLoadError(true);
-      } finally {
-        if (isMounted) setIsInitialLoad(false);
-      }
-    })();
-    return () => {
-      isMounted = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id, isAuthLoading, retryCount]);
-
-  const addCharacter = async (character: N2ECharacter) => {
-    if (!session) {
-      addToast('Please log in to add characters.', 'warning');
-      return;
-    }
-    if (trackedCharactersRef.current.some((c) => c.id === character.id)) return;
-    if (pendingInserts.current.has(character.id)) return;
-
-    pendingInserts.current.add(character.id);
-    const newChar: N2ETrackedCharacter = {
-      ...character,
-      isFavorited: false,
-      level: 1,
-      awakening: [...DEFAULT_AWAKENING],
-      resonanceCount: 0,
-      arcId: null,
-      arcLevel: 1,
-      arcTier: 1,
-      cartridgeRarity: null,
-      cartridgeLevel: 0,
-      cartridgeMainStat: null,
-      cartridgeSubStats: [],
-      cartridgePreferences: { mainStats: [], subStats: [], comments: '' },
-    };
-    setTrackedCharacters((prev) => [...prev, newChar]);
-    try {
-      const dbId = await insertCharacter(session.user.id, character.id);
-      if (dbId)
-        setTrackedCharacters((prev) =>
-          prev.map((c) => (c.id === character.id ? { ...c, dbId } : c)),
-        );
-    } catch (e) {
-      console.error(e);
-      setTrackedCharacters((prev) => prev.filter((c) => c.id !== character.id));
-      addToast('Failed to add character. Please try again.', 'error');
-    } finally {
-      pendingInserts.current.delete(character.id);
-    }
-  };
-
-  const removeCharacter = async (id: string, e: React.MouseEvent) => {
-    e.stopPropagation();
-    const toRemove = trackedCharactersRef.current.find((c) => c.id === id);
-    const snapshot = trackedCharactersRef.current;
-    setTrackedCharacters((prev) => prev.filter((c) => c.id !== id));
-    if (toRemove?.dbId) {
-      try {
-        await deleteCharacter(toRemove.dbId);
-      } catch (err) {
-        console.error(err);
-        setTrackedCharacters(snapshot);
-        addToast('Failed to remove character. Please try again.', 'error');
-      }
-    }
-  };
+  const {
+    availableEntities: availableCharacters,
+    trackedEntities: trackedCharacters,
+    setTrackedEntities: setTrackedCharacters,
+    trackedRef: trackedCharactersRef,
+    isInitialLoad,
+    isLoadError,
+    retryLoad,
+    pendingSaveCount,
+    queueUpdate,
+    addEntity: addCharacter,
+    removeEntity: removeCharacter,
+    filterRoster,
+  } = useRoster<N2ECharacter, N2ETrackedCharacter>(session, isAuthLoading, {
+    allEntities: ALL_CHARACTERS,
+    loadFromDB: loadCharactersFromDB,
+    insertEntity: insertCharacter,
+    deleteEntity: deleteCharacter,
+    createTracked: createTrackedCharacter,
+    nounSingular: 'character',
+    nounPlural: 'characters',
+    fuseKeys: ['name', 'esperType', 'arcType', 'roles'],
+  });
 
   const updateCharacterLevel = (id: string, level: number) => {
     const validLevel = Math.min(90, Math.max(1, level));
@@ -220,34 +161,8 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     if (char?.dbId) await apiSaveCartridgePrefs(char.dbId, newPrefs);
   };
 
-  const getFilteredRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') => {
-      let result = trackedCharacters;
-      if (searchTerm.trim()) {
-        const fuse = new Fuse(trackedCharacters, {
-          keys: ['name', 'esperType', 'arcType', 'roles'],
-          threshold: 0.3,
-        });
-        result = fuse.search(searchTerm).map((r) => r.item);
-      }
-      return [...result].sort((a, b) => {
-        if (a.isFavorited && !b.isFavorited) return -1;
-        if (!a.isFavorited && b.isFavorited) return 1;
-        if (sortBy === 'LEVEL') {
-          const diff = b.level - a.level;
-          if (diff !== 0) return diff;
-        }
-        return a.name.localeCompare(b.name);
-      });
-    },
-    [trackedCharacters],
-  );
-
-  const retryLoad = () => {
-    setIsLoadError(false);
-    setIsInitialLoad(true);
-    setRetryCount((n) => n + 1);
-  };
+  const getFilteredRoster = (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
+    filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined);
 
   return {
     availableCharacters,
