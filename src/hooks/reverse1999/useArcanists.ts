@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import { ALL_ARCANISTS, type Arcanist } from '@/data/reverse1999/arcanists';
 import type { R1999ArcanistPatch, R1999TrackedArcanist } from '@/types';
@@ -129,8 +130,11 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       );
   };
 
-  const getFilteredRoster = (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
-    filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined);
+  const getFilteredRoster = useCallback(
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
+      filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined),
+    [filterRoster],
+  );
 
   return {
     availableArcanists,

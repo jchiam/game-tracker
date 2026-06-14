@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import { ALL_CHARACTERS, type N2ECharacter } from '@/data/neverness-to-everness/characters';
 import type { N2ECharacterPatch, N2ETrackedCharacter } from '@/types';
@@ -169,8 +170,11 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     }
   };
 
-  const getFilteredRoster = (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
-    filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined);
+  const getFilteredRoster = useCallback(
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
+      filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined),
+    [filterRoster],
+  );
 
   return {
     availableCharacters,

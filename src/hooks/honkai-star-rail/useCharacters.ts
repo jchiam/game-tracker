@@ -3,7 +3,7 @@ import { ALL_CHARACTERS, type Character } from '@/data/honkai-star-rail/characte
 import { type EquippedRelic, type RelicSet } from '@/data/honkai-star-rail/relics';
 import { ALL_RELIC_SETS } from '@/data/honkai-star-rail/relic_sets';
 import type { HsrCharacterPatch, HsrTrackedCharacter } from '@/types';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import {
   loadCharactersFromDB,
   insertCharacter,
@@ -131,12 +131,14 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     }
   };
 
-  const getFilteredRoster = (
-    searchTerm: string,
-    sortBy: 'SCORE' | 'ALPHA',
-    scoreFor: (c: HsrTrackedCharacter) => number,
-  ) =>
-    filterRoster(searchTerm, sortBy === 'SCORE' ? (a, b) => scoreFor(b) - scoreFor(a) : undefined);
+  const getFilteredRoster = useCallback(
+    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', scoreFor: (c: HsrTrackedCharacter) => number) =>
+      filterRoster(
+        searchTerm,
+        sortBy === 'SCORE' ? (a, b) => scoreFor(b) - scoreFor(a) : undefined,
+      ),
+    [filterRoster],
+  );
 
   return {
     availableCharacters,
