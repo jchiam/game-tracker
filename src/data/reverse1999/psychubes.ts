@@ -119,6 +119,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/dawn_is_coming.webp',
   },
   {
+    name: 'Drown Out the Hustle',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/drown_out_the_hustle.webp',
+  },
+  {
     name: 'EHF Polarization',
     rarity: 6,
     tag: 'None',
@@ -323,6 +329,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/the_final_roll.webp',
   },
   {
+    name: 'The Fluttering Moment',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/the_fluttering_moment.webp',
+  },
+  {
     name: 'The Third Commitment',
     rarity: 6,
     tag: 'None',
@@ -490,6 +502,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     rarity: 5,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/let_s_set_sail.webp',
+  },
+  {
+    name: 'Luck Be a Lady',
+    rarity: 5,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/luck_be_a_lady.webp',
   },
   {
     name: 'Melodies Old and New',
