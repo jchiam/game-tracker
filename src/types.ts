@@ -28,6 +28,13 @@ export interface HsrTrackedCharacter extends Character {
   };
 }
 
+/** Typed partial update for an HSR tracked character row (camelCase keys). */
+export interface HsrCharacterPatch {
+  level?: number;
+  tracesAttained?: boolean;
+  isFavorited?: boolean;
+}
+
 export interface HsrParty {
   id: string;
   profileId: string;
@@ -52,6 +59,18 @@ export interface R1999TrackedArcanist extends Arcanist {
   psychubeName: string | null; // name of equipped Psychube — stable key (from psychubes.ts)
   psychubeLevel: number; // 1–60
   psychubeAmplification: number; // 1–5 (A1–A5)
+}
+
+/** Typed partial update for an R1999 tracked arcanist row (camelCase keys). */
+export interface R1999ArcanistPatch {
+  level?: number;
+  portraitLevel?: number;
+  resonanceLevel?: number;
+  euphoriaStage?: number;
+  psychubeName?: string | null;
+  psychubeLevel?: number;
+  psychubeAmplification?: number;
+  isFavorited?: boolean;
 }
 
 export interface R1999Party {
@@ -88,6 +107,21 @@ export interface N2ETrackedCharacter extends N2ECharacter {
     subStats: { stat: string; operator: string | null; orderIndex: number }[];
     comments?: string;
   };
+}
+
+/** Typed partial update for an N2E tracked character row (camelCase keys). */
+export interface N2ECharacterPatch {
+  level?: number;
+  awakening?: boolean[];
+  resonanceCount?: number;
+  arcId?: string | null;
+  arcLevel?: number;
+  arcTier?: number;
+  cartridgeRarity?: string | null;
+  cartridgeLevel?: number;
+  cartridgeMainStat?: string | null;
+  cartridgeSubStats?: string[];
+  isFavorited?: boolean;
 }
 
 export interface N2EParty {

@@ -2,7 +2,7 @@ import { type Session } from '@supabase/supabase-js';
 import { ALL_CHARACTERS, type Character } from '@/data/honkai-star-rail/characters';
 import { type EquippedRelic, type RelicSet } from '@/data/honkai-star-rail/relics';
 import { ALL_RELIC_SETS } from '@/data/honkai-star-rail/relic_sets';
-import type { HsrTrackedCharacter } from '@/types';
+import type { HsrCharacterPatch, HsrTrackedCharacter } from '@/types';
 import { useState } from 'react';
 import {
   loadCharactersFromDB,
@@ -63,7 +63,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     );
     const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
-      queueUpdate(char.dbId, { level: validLevel }, (p) => updateCharacter(char.dbId!, p));
+      queueUpdate(char.dbId, { level: validLevel } satisfies HsrCharacterPatch, (p) =>
+        updateCharacter(char.dbId!, p),
+      );
   };
 
   const toggleCharacterTraces = (id: string, value: boolean) => {
@@ -72,7 +74,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     );
     const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
-      queueUpdate(char.dbId, { traces_attained: value }, (p) => updateCharacter(char.dbId!, p));
+      queueUpdate(char.dbId, { tracesAttained: value } satisfies HsrCharacterPatch, (p) =>
+        updateCharacter(char.dbId!, p),
+      );
   };
 
   const toggleFavoriteCharacter = (id: string, value: boolean) => {
@@ -81,7 +85,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     );
     const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
-      queueUpdate(char.dbId, { is_favorited: value }, (p) => updateCharacter(char.dbId!, p));
+      queueUpdate(char.dbId, { isFavorited: value } satisfies HsrCharacterPatch, (p) =>
+        updateCharacter(char.dbId!, p),
+      );
   };
 
   const saveRelicData = async (

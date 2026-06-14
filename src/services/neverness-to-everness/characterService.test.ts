@@ -180,19 +180,25 @@ describe('characterService', () => {
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });
 
-    it('updateCharacter calls update with provided updates', async () => {
+    it('updateCharacter maps a camelCase patch to snake_case columns', async () => {
       const builder = createBuilder({ data: null, error: null });
       mockFrom.mockReturnValue(builder);
 
       await service.updateCharacter('db-uuid-1', {
         level: 40,
-        awakening_slots: [true, true, true, false, false, false],
+        awakening: [true, true, true, false, false, false],
+        arcId: 'arc-1',
+        cartridgeSubStats: ['ATK%', 'CRIT DMG'],
+        isFavorited: true,
       });
 
       expect(mockFrom).toHaveBeenCalledWith('n2e_tracked_characters');
       expect(builder.update).toHaveBeenCalledWith({
         level: 40,
         awakening_slots: [true, true, true, false, false, false],
+        arc_id: 'arc-1',
+        cartridge_sub_stats: ['ATK%', 'CRIT DMG'],
+        is_favorited: true,
       });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });

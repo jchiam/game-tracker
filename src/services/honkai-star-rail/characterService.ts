@@ -1,11 +1,18 @@
 import { supabase } from '@/lib/supabase';
 import type { EquippedRelic } from '@/data/honkai-star-rail/relics';
-import type { HsrTrackedCharacter } from '@/types';
+import type { HsrCharacterPatch, HsrTrackedCharacter } from '@/types';
 import { ALL_CHARACTERS } from '@/data/honkai-star-rail/characters';
 
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
+
+/** Maps each camelCase patch key to its DB column. Schema stays service-private. */
+const CHARACTER_COLUMNS: Record<keyof HsrCharacterPatch, string> = {
+  level: 'level',
+  tracesAttained: 'traces_attained',
+  isFavorited: 'is_favorited',
+};
 
 // Load all tracked characters for a user from DB and rebuild HsrTrackedCharacter objects
 export async function loadCharactersFromDB(userId: string): Promise<HsrTrackedCharacter[]> {
@@ -116,9 +123,13 @@ export async function deleteCharacter(dbId: string): Promise<void> {
   }
 }
 
-export async function updateCharacter(dbId: string, updates: Record<string, any>): Promise<void> {
+export async function updateCharacter(dbId: string, patch: HsrCharacterPatch): Promise<void> {
   if (!DB_ENABLED) return;
-  const { error } = await supabase.from('hsr_tracked_characters').update(updates).eq('id', dbId);
+  const row: Record<string, unknown> = {};
+  for (const key of Object.keys(patch) as (keyof HsrCharacterPatch)[]) {
+    row[CHARACTER_COLUMNS[key]] = patch[key];
+  }
+  const { error } = await supabase.from('hsr_tracked_characters').update(row).eq('id', dbId);
   if (error) {
     console.error('DB Update Failed:', error);
     throw error;

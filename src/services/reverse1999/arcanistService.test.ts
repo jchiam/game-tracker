@@ -162,14 +162,26 @@ describe('arcanistService', () => {
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });
 
-    it('updateArcanist calls update on the correct table with provided updates', async () => {
+    it('updateArcanist maps a camelCase patch to snake_case columns', async () => {
       const builder = createBuilder({ data: null, error: null });
       mockFrom.mockReturnValue(builder);
 
-      await service.updateArcanist('db-uuid-1', { level: 40, euphoria_stage: 2 });
+      await service.updateArcanist('db-uuid-1', {
+        level: 40,
+        euphoriaStage: 2,
+        portraitLevel: 3,
+        psychubeName: 'Hopscotch',
+        isFavorited: true,
+      });
 
       expect(mockFrom).toHaveBeenCalledWith('r1999_tracked_arcanists');
-      expect(builder.update).toHaveBeenCalledWith({ level: 40, euphoria_stage: 2 });
+      expect(builder.update).toHaveBeenCalledWith({
+        level: 40,
+        euphoria_stage: 2,
+        portrait_level: 3,
+        psychube_name: 'Hopscotch',
+        is_favorited: true,
+      });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });
   });

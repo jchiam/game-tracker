@@ -1,6 +1,6 @@
 import { type Session } from '@supabase/supabase-js';
 import { ALL_CHARACTERS, type N2ECharacter } from '@/data/neverness-to-everness/characters';
-import type { N2ETrackedCharacter } from '@/types';
+import type { N2ECharacterPatch, N2ETrackedCharacter } from '@/types';
 import {
   loadCharactersFromDB,
   insertCharacter,
@@ -63,7 +63,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     );
     const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
-      queueUpdate(char.dbId, { level: validLevel }, (p) => updateCharacter(char.dbId!, p));
+      queueUpdate(char.dbId, { level: validLevel } satisfies N2ECharacterPatch, (p) =>
+        updateCharacter(char.dbId!, p),
+      );
   };
 
   const toggleAwakeningSlot = (id: string, slotIndex: number) => {
@@ -79,7 +81,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     if (char?.dbId) {
       const newAwakening = [...char.awakening];
       newAwakening[slotIndex] = !newAwakening[slotIndex];
-      queueUpdate(char.dbId, { awakening_slots: newAwakening }, (p) =>
+      queueUpdate(char.dbId, { awakening: newAwakening } satisfies N2ECharacterPatch, (p) =>
         updateCharacter(char.dbId!, p),
       );
     }
@@ -92,7 +94,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     );
     const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
-      queueUpdate(char.dbId, { resonance_count: validCount }, (p) =>
+      queueUpdate(char.dbId, { resonanceCount: validCount } satisfies N2ECharacterPatch, (p) =>
         updateCharacter(char.dbId!, p),
       );
   };
@@ -103,7 +105,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     );
     const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
-      queueUpdate(char.dbId, { arc_id: arcId, arc_level: arcLevel, arc_tier: arcTier }, (p) =>
+      queueUpdate(char.dbId, { arcId, arcLevel, arcTier } satisfies N2ECharacterPatch, (p) =>
         updateCharacter(char.dbId!, p),
       );
   };
@@ -133,11 +135,11 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       queueUpdate(
         char.dbId,
         {
-          cartridge_rarity: rarity,
-          cartridge_level: level,
-          cartridge_main_stat: mainStat,
-          cartridge_sub_stats: subStats,
-        },
+          cartridgeRarity: rarity,
+          cartridgeLevel: level,
+          cartridgeMainStat: mainStat,
+          cartridgeSubStats: subStats,
+        } satisfies N2ECharacterPatch,
         (p) => updateCharacter(char.dbId!, p),
       );
   };
@@ -148,7 +150,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     );
     const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
-      queueUpdate(char.dbId, { is_favorited: value }, (p) => updateCharacter(char.dbId!, p));
+      queueUpdate(char.dbId, { isFavorited: value } satisfies N2ECharacterPatch, (p) =>
+        updateCharacter(char.dbId!, p),
+      );
   };
 
   const saveCartridgePreferences = (

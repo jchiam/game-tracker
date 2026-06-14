@@ -1,8 +1,20 @@
 import { supabase } from '@/lib/supabase';
-import type { R1999TrackedArcanist } from '@/types';
+import type { R1999ArcanistPatch, R1999TrackedArcanist } from '@/types';
 import { ALL_ARCANISTS } from '@/data/reverse1999/arcanists';
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
+
+/** Maps each camelCase patch key to its DB column. Schema stays service-private. */
+const ARCANIST_COLUMNS: Record<keyof R1999ArcanistPatch, string> = {
+  level: 'level',
+  portraitLevel: 'portrait_level',
+  resonanceLevel: 'resonance_level',
+  euphoriaStage: 'euphoria_stage',
+  psychubeName: 'psychube_name',
+  psychubeLevel: 'psychube_level',
+  psychubeAmplification: 'psychube_amplification',
+  isFavorited: 'is_favorited',
+};
 
 export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedArcanist[]> {
   if (!DB_ENABLED || !import.meta.env.VITE_SUPABASE_ANON_KEY) return [];
@@ -75,9 +87,13 @@ export async function deleteArcanist(dbId: string): Promise<void> {
   }
 }
 
-export async function updateArcanist(dbId: string, updates: Record<string, any>): Promise<void> {
+export async function updateArcanist(dbId: string, patch: R1999ArcanistPatch): Promise<void> {
   if (!DB_ENABLED) return;
-  const { error } = await supabase.from('r1999_tracked_arcanists').update(updates).eq('id', dbId);
+  const row: Record<string, unknown> = {};
+  for (const key of Object.keys(patch) as (keyof R1999ArcanistPatch)[]) {
+    row[ARCANIST_COLUMNS[key]] = patch[key];
+  }
+  const { error } = await supabase.from('r1999_tracked_arcanists').update(row).eq('id', dbId);
   if (error) {
     console.error('DB Update Failed:', error);
     throw error;

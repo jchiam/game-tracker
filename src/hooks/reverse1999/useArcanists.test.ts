@@ -437,7 +437,7 @@ describe('useArcanists', () => {
 
       expect(result.current.trackedArcanists[0].portraitLevel).toBe(3);
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
-        portrait_level: 3,
+        portraitLevel: 3,
       });
     });
 
@@ -458,7 +458,7 @@ describe('useArcanists', () => {
 
       expect(result.current.trackedArcanists[0].portraitLevel).toBe(0);
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
-        portrait_level: 0,
+        portraitLevel: 0,
       });
     });
   });
@@ -481,7 +481,7 @@ describe('useArcanists', () => {
 
       expect(result.current.trackedArcanists[0].resonanceLevel).toBe(10);
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
-        resonance_level: 10,
+        resonanceLevel: 10,
       });
     });
 
@@ -533,8 +533,8 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists[0].psychubeName).toBe('Hopscotch');
       expect(result.current.trackedArcanists[0].psychubeLevel).toBe(10);
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
-        psychube_name: 'Hopscotch',
-        psychube_level: 10,
+        psychubeName: 'Hopscotch',
+        psychubeLevel: 10,
       });
     });
 
@@ -560,8 +560,8 @@ describe('useArcanists', () => {
       expect(result.current.trackedArcanists[0].psychubeName).toBeNull();
       expect(result.current.trackedArcanists[0].psychubeLevel).toBe(0);
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
-        psychube_name: null,
-        psychube_level: 0,
+        psychubeName: null,
+        psychubeLevel: 0,
       });
     });
   });
@@ -584,7 +584,7 @@ describe('useArcanists', () => {
 
       expect(result.current.trackedArcanists[0].isFavorited).toBe(true);
       expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
-        is_favorited: true,
+        isFavorited: true,
       });
     });
   });

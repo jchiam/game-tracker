@@ -245,14 +245,22 @@ describe('characterService', () => {
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });
 
-    it('updateCharacter calls update on the correct table with provided updates', async () => {
+    it('updateCharacter maps a camelCase patch to snake_case columns', async () => {
       const builder = createBuilder({ data: null, error: null });
       mockFrom.mockReturnValue(builder);
 
-      await service.updateCharacter('db-uuid-1', { level: 80, is_favorited: true });
+      await service.updateCharacter('db-uuid-1', {
+        level: 80,
+        tracesAttained: true,
+        isFavorited: true,
+      });
 
       expect(mockFrom).toHaveBeenCalledWith('hsr_tracked_characters');
-      expect(builder.update).toHaveBeenCalledWith({ level: 80, is_favorited: true });
+      expect(builder.update).toHaveBeenCalledWith({
+        level: 80,
+        traces_attained: true,
+        is_favorited: true,
+      });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });
 

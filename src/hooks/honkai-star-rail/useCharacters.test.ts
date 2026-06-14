@@ -401,7 +401,7 @@ describe('useCharacters', () => {
       });
 
       expect(result.current.trackedCharacters[0].tracesAttained).toBe(true);
-      expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { traces_attained: true });
+      expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { tracesAttained: true });
     });
   });
 
@@ -419,7 +419,7 @@ describe('useCharacters', () => {
       });
 
       expect(result.current.trackedCharacters[0].isFavorited).toBe(true);
-      expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { is_favorited: true });
+      expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { isFavorited: true });
     });
   });
 

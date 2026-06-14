@@ -1,6 +1,6 @@
 import { type Session } from '@supabase/supabase-js';
 import { ALL_ARCANISTS, type Arcanist } from '@/data/reverse1999/arcanists';
-import type { R1999TrackedArcanist } from '@/types';
+import type { R1999ArcanistPatch, R1999TrackedArcanist } from '@/types';
 import {
   loadArcanistsFromDB,
   insertArcanist,
@@ -53,14 +53,16 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     setTrackedArcanists((prev) => prev.map((a) => (a.id === id ? { ...a, level: validLevel } : a)));
     const arcanist = trackedRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
-      queueUpdate(arcanist.dbId, { level: validLevel }, (p) => updateArcanist(arcanist.dbId!, p));
+      queueUpdate(arcanist.dbId, { level: validLevel } satisfies R1999ArcanistPatch, (p) =>
+        updateArcanist(arcanist.dbId!, p),
+      );
   };
 
   const updatePortraitLevel = (id: string, portraitLevel: number) => {
     setTrackedArcanists((prev) => prev.map((a) => (a.id === id ? { ...a, portraitLevel } : a)));
     const arcanist = trackedRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
-      queueUpdate(arcanist.dbId, { portrait_level: portraitLevel }, (p) =>
+      queueUpdate(arcanist.dbId, { portraitLevel } satisfies R1999ArcanistPatch, (p) =>
         updateArcanist(arcanist.dbId!, p),
       );
   };
@@ -72,7 +74,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     );
     const arcanist = trackedRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
-      queueUpdate(arcanist.dbId, { resonance_level: validLevel }, (p) =>
+      queueUpdate(arcanist.dbId, { resonanceLevel: validLevel } satisfies R1999ArcanistPatch, (p) =>
         updateArcanist(arcanist.dbId!, p),
       );
   };
@@ -85,7 +87,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     if (arcanist?.dbId)
       queueUpdate(
         arcanist.dbId,
-        { psychube_name: psychubeName, psychube_level: psychubeLevel },
+        { psychubeName, psychubeLevel } satisfies R1999ArcanistPatch,
         (p) => updateArcanist(arcanist.dbId!, p),
       );
   };
@@ -97,7 +99,7 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     );
     const arcanist = trackedRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
-      queueUpdate(arcanist.dbId, { euphoria_stage: validStage }, (p) =>
+      queueUpdate(arcanist.dbId, { euphoriaStage: validStage } satisfies R1999ArcanistPatch, (p) =>
         updateArcanist(arcanist.dbId!, p),
       );
   };
@@ -109,8 +111,10 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     );
     const arcanist = trackedRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
-      queueUpdate(arcanist.dbId, { psychube_amplification: validLevel }, (p) =>
-        updateArcanist(arcanist.dbId!, p),
+      queueUpdate(
+        arcanist.dbId,
+        { psychubeAmplification: validLevel } satisfies R1999ArcanistPatch,
+        (p) => updateArcanist(arcanist.dbId!, p),
       );
   };
 
@@ -120,7 +124,9 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     );
     const arcanist = trackedRef.current.find((a) => a.id === id);
     if (arcanist?.dbId)
-      queueUpdate(arcanist.dbId, { is_favorited: value }, (p) => updateArcanist(arcanist.dbId!, p));
+      queueUpdate(arcanist.dbId, { isFavorited: value } satisfies R1999ArcanistPatch, (p) =>
+        updateArcanist(arcanist.dbId!, p),
+      );
   };
 
   const getFilteredRoster = (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>

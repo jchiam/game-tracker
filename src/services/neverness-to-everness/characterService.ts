@@ -1,8 +1,23 @@
 import { supabase } from '@/lib/supabase';
-import type { N2ETrackedCharacter } from '@/types';
+import type { N2ECharacterPatch, N2ETrackedCharacter } from '@/types';
 import { ALL_CHARACTERS } from '@/data/neverness-to-everness/characters';
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
+
+/** Maps each camelCase patch key to its DB column. Schema stays service-private. */
+const CHARACTER_COLUMNS: Record<keyof N2ECharacterPatch, string> = {
+  level: 'level',
+  awakening: 'awakening_slots',
+  resonanceCount: 'resonance_count',
+  arcId: 'arc_id',
+  arcLevel: 'arc_level',
+  arcTier: 'arc_tier',
+  cartridgeRarity: 'cartridge_rarity',
+  cartridgeLevel: 'cartridge_level',
+  cartridgeMainStat: 'cartridge_main_stat',
+  cartridgeSubStats: 'cartridge_sub_stats',
+  isFavorited: 'is_favorited',
+};
 
 export async function loadCharactersFromDB(userId: string): Promise<N2ETrackedCharacter[]> {
   if (!DB_ENABLED || !import.meta.env.VITE_SUPABASE_ANON_KEY) return [];
@@ -105,9 +120,13 @@ export async function deleteCharacter(dbId: string): Promise<void> {
   }
 }
 
-export async function updateCharacter(dbId: string, updates: Record<string, any>): Promise<void> {
+export async function updateCharacter(dbId: string, patch: N2ECharacterPatch): Promise<void> {
   if (!DB_ENABLED) return;
-  const { error } = await supabase.from('n2e_tracked_characters').update(updates).eq('id', dbId);
+  const row: Record<string, unknown> = {};
+  for (const key of Object.keys(patch) as (keyof N2ECharacterPatch)[]) {
+    row[CHARACTER_COLUMNS[key]] = patch[key];
+  }
+  const { error } = await supabase.from('n2e_tracked_characters').update(row).eq('id', dbId);
   if (error) {
     console.error('DB Update Failed:', error);
     throw error;
