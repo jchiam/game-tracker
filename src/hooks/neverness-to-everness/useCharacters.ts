@@ -41,6 +41,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     retryLoad,
     pendingSaveCount,
     queueUpdate,
+    queueAction,
     addEntity: addCharacter,
     removeEntity: removeCharacter,
     filterRoster,
@@ -150,7 +151,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       queueUpdate(char.dbId, { is_favorited: value }, (p) => updateCharacter(char.dbId!, p));
   };
 
-  const saveCartridgePreferences = async (
+  const saveCartridgePreferences = (
     id: string,
     newPrefs: N2ETrackedCharacter['cartridgePreferences'],
   ) => {
@@ -158,7 +159,10 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       prev.map((c) => (c.id === id ? { ...c, cartridgePreferences: newPrefs } : c)),
     );
     const char = trackedCharactersRef.current.find((c) => c.id === id);
-    if (char?.dbId) await apiSaveCartridgePrefs(char.dbId, newPrefs);
+    if (char?.dbId) {
+      const dbId = char.dbId;
+      queueAction(`${dbId}-cartprefs`, () => apiSaveCartridgePrefs(dbId, newPrefs));
+    }
   };
 
   const getFilteredRoster = (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
