@@ -6,6 +6,7 @@ import {
   CARTRIDGE_RARITIES,
 } from '@/data/neverness-to-everness/cartridge-stats';
 import { Modal } from '@/components/Modal';
+import { PreferenceChain } from '@/components/PreferenceChain';
 import './CartridgeEditorModal.css';
 
 interface CartridgeEditorModalProps {
@@ -72,31 +73,6 @@ export function CartridgeEditorModal({
     arr.splice(idx, 1);
     if (arr.length > 0) arr[arr.length - 1].operator = null;
     newPrefs.mainStats = arr;
-    onSavePreferences(newPrefs);
-  };
-
-  const addSubStatPref = () => {
-    const newPrefs = { ...currentPrefs };
-    const arr = [...newPrefs.subStats];
-    if (arr.length > 0) arr[arr.length - 1].operator = '>';
-    arr.push({ stat: CARTRIDGE_SUB_STATS[0], operator: null, orderIndex: arr.length });
-    newPrefs.subStats = arr;
-    onSavePreferences(newPrefs);
-  };
-
-  const updateSubStatPref = (idx: number, updates: Partial<(typeof currentPrefs.subStats)[0]>) => {
-    const newPrefs = { ...currentPrefs };
-    newPrefs.subStats = [...newPrefs.subStats];
-    newPrefs.subStats[idx] = { ...newPrefs.subStats[idx], ...updates };
-    onSavePreferences(newPrefs);
-  };
-
-  const removeSubStatPref = (idx: number) => {
-    const newPrefs = { ...currentPrefs };
-    const arr = [...newPrefs.subStats];
-    arr.splice(idx, 1);
-    if (arr.length > 0) arr[arr.length - 1].operator = null;
-    newPrefs.subStats = arr;
     onSavePreferences(newPrefs);
   };
 
@@ -304,42 +280,12 @@ export function CartridgeEditorModal({
 
             <div className="pref-section">
               <h3>Sub Stat Priority</h3>
-              <div className="pref-chain">
-                {currentPrefs.subStats.map((pref, idx) => (
-                  <div key={idx} className="pref-item">
-                    <select
-                      name={`pref-sub-stat-${idx}`}
-                      value={pref.stat}
-                      onChange={(e) => updateSubStatPref(idx, { stat: e.target.value })}
-                    >
-                      {CARTRIDGE_SUB_STATS.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                    {idx < currentPrefs.subStats.length - 1 ? (
-                      <select
-                        name={`pref-sub-stat-operator-${idx}`}
-                        className="operator-select"
-                        value={pref.operator || '>'}
-                        onChange={(e) => updateSubStatPref(idx, { operator: e.target.value })}
-                      >
-                        <option value=">">&gt;</option>
-                        <option value=">=">&ge;</option>
-                        <option value="OR">OR</option>
-                      </select>
-                    ) : (
-                      <button className="remove-pref-btn" onClick={() => removeSubStatPref(idx)}>
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button className="add-pref-btn" onClick={addSubStatPref}>
-                + Add Priority
-              </button>
+              <PreferenceChain
+                values={currentPrefs.subStats}
+                options={CARTRIDGE_SUB_STATS}
+                namePrefix="pref-sub-stat"
+                onChange={(subStats) => onSavePreferences({ ...currentPrefs, subStats })}
+              />
             </div>
 
             <div className="pref-section">

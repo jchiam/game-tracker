@@ -3,6 +3,13 @@ import { type EquippedRelic } from '@/data/honkai-star-rail/relics';
 import { type Arcanist } from '@/data/reverse1999/arcanists';
 import { type N2ECharacter } from '@/data/neverness-to-everness/characters';
 
+/** One entry in a build/cartridge stat-preference priority chain. */
+export interface StatPreference {
+  stat: string;
+  operator: string | null;
+  orderIndex: number;
+}
+
 export interface HsrTrackedCharacter extends Character {
   dbId?: string;
   isFavorited: boolean;
@@ -18,12 +25,12 @@ export interface HsrTrackedCharacter extends Character {
   };
   buildPreferences: {
     mainStats: {
-      body: { stat: string; operator: string | null; orderIndex: number }[];
-      feet: { stat: string; operator: string | null; orderIndex: number }[];
-      sphere: { stat: string; operator: string | null; orderIndex: number }[];
-      rope: { stat: string; operator: string | null; orderIndex: number }[];
+      body: StatPreference[];
+      feet: StatPreference[];
+      sphere: StatPreference[];
+      rope: StatPreference[];
     };
-    subStats: { stat: string; operator: string | null; orderIndex: number }[];
+    subStats: StatPreference[];
     comments?: string;
   };
 }
@@ -103,8 +110,8 @@ export interface N2ETrackedCharacter extends N2ECharacter {
   cartridgeMainStat: string | null;
   cartridgeSubStats: string[]; // up to 4 stat type strings
   cartridgePreferences: {
-    mainStats: { stat: string; operator: string | null; orderIndex: number }[];
-    subStats: { stat: string; operator: string | null; orderIndex: number }[];
+    mainStats: StatPreference[];
+    subStats: StatPreference[];
     comments?: string;
   };
 }

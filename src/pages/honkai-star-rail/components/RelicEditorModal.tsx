@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet, EquippedRelic } from '@/data/honkai-star-rail/relics';
 import { Modal } from '@/components/Modal';
+import { PreferenceChain } from '@/components/PreferenceChain';
 import './RelicEditorModal.css';
 
 interface RelicEditorModalProps {
@@ -116,29 +117,6 @@ export function RelicEditorModal({
     newPrefs.mainStats[slot].splice(idx, 1);
     if (newPrefs.mainStats[slot].length > 0)
       newPrefs.mainStats[slot][newPrefs.mainStats[slot].length - 1].operator = null;
-    onUpdateBuildPreferences(newPrefs);
-  };
-
-  const addSubStatPref = () => {
-    const newPrefs = { ...currentPrefs };
-    const arr = [...newPrefs.subStats];
-    if (arr.length > 0) arr[arr.length - 1].operator = '>';
-    arr.push({ stat: allSubStats[0], operator: null, orderIndex: arr.length });
-    newPrefs.subStats = arr;
-    onUpdateBuildPreferences(newPrefs);
-  };
-
-  const updateSubStatPref = (idx: number, updates: Partial<(typeof currentPrefs.subStats)[0]>) => {
-    const newPrefs = { ...currentPrefs };
-    newPrefs.subStats[idx] = { ...newPrefs.subStats[idx], ...updates };
-    onUpdateBuildPreferences(newPrefs);
-  };
-
-  const removeSubStatPref = (idx: number) => {
-    const newPrefs = { ...currentPrefs };
-    newPrefs.subStats.splice(idx, 1);
-    if (newPrefs.subStats.length > 0)
-      newPrefs.subStats[newPrefs.subStats.length - 1].operator = null;
     onUpdateBuildPreferences(newPrefs);
   };
 
@@ -354,42 +332,12 @@ export function RelicEditorModal({
 
             <div className="pref-section">
               <h3>Preferred Substats (Global)</h3>
-              <div className="pref-chain">
-                {currentPrefs.subStats.map((pref, idx) => (
-                  <div key={idx} className="pref-item">
-                    <select
-                      name={`pref-sub-stat-${idx}`}
-                      value={pref.stat}
-                      onChange={(e) => updateSubStatPref(idx, { stat: e.target.value })}
-                    >
-                      {allSubStats.map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                    </select>
-                    {idx < currentPrefs.subStats.length - 1 ? (
-                      <select
-                        name={`pref-sub-stat-operator-${idx}`}
-                        className="operator-select"
-                        value={pref.operator || '>'}
-                        onChange={(e) => updateSubStatPref(idx, { operator: e.target.value })}
-                      >
-                        <option value=">">&gt;</option>
-                        <option value=">=">&ge;</option>
-                        <option value="OR">OR</option>
-                      </select>
-                    ) : (
-                      <button className="remove-pref-btn" onClick={() => removeSubStatPref(idx)}>
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <button className="add-pref-btn" onClick={addSubStatPref}>
-                + Add Priority
-              </button>
+              <PreferenceChain
+                values={currentPrefs.subStats}
+                options={allSubStats}
+                namePrefix="pref-sub-stat"
+                onChange={(subStats) => onUpdateBuildPreferences({ ...currentPrefs, subStats })}
+              />
             </div>
 
             <div className="pref-section">
