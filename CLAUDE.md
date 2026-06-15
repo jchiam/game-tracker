@@ -266,6 +266,8 @@ it('sets error on DB failure', async () => {
 
 - **Non-atomic preference saves.** `saveBuildPrefs` (HSR) and `saveCartridgePreferences` (N2E) persist a variable-length set of preference rows by **deleting all existing rows then re-inserting** — across separate Supabase calls with no transaction. A failure after the delete but before the insert completes leaves the preference rows **half-wiped in the DB**; the loss only surfaces on next reload (local optimistic state retains them until then). Mitigated, not fixed: writes route through `usePendingSaves`, so a failure raises an error toast and the user can retry. A proper fix needs a plpgsql function (atomic delete+insert) called via `supabase.rpc` with `SECURITY INVOKER` to preserve RLS — deferred because it would be the first RPC in the codebase and its atomicity guarantee can't be proven by the mocked unit tests (needs a local-Supabase integration test).
 
+- **Duplicated party UI (r1999 ↔ n2e).** `PartyCard`, `PartiesTab`, and `PartyEditorModal` are near-identical between Reverse 1999 and Neverness to Everness — n2e is r1999 plus an `n2e-` CSS class prefix and `esperType`-for-`afflatus`. HSR's party UI is a genuine outlier (no tier, no favorite, direct `imageUrl`) and should stay separate. Consolidating the r1999/n2e pair would first need the three `*PartyMember` types unified to one generic `{ entityId, slotIndex }` (domain-only — DB columns stay `arcanist_id`/`character_id`, mapped in the service) and the `n2e-` CSS unprefixed/merged. Deferred: it's a 2-game dedup whose CSS unification can't be visually verified without an authenticated session (party views are gated behind sign-in).
+
 ## Shared Components
 
 Reuse these existing shared components — don't recreate them:
