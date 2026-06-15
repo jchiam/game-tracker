@@ -48,7 +48,7 @@ export function useParties<TParty extends { id: string }, TMember>(
       isMounted = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user]);
+  }, [session?.user?.id]);
 
   const saveParty = async (party: Partial<TParty> & { members: TMember[] }) => {
     if (!session?.user) return null;
