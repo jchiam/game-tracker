@@ -41,9 +41,9 @@ describe('partyService', () => {
       expect(await deleteParty('party-1')).toBe(false);
     });
 
-    it('toggleFavoriteParty resolves without error', async () => {
+    it('toggleFavoriteParty returns false when DB is disabled', async () => {
       const { toggleFavoriteParty } = await import('@/services/neverness-to-everness/partyService');
-      await expect(toggleFavoriteParty('party-1', true)).resolves.toBeUndefined();
+      await expect(toggleFavoriteParty('party-1', true)).resolves.toBe(false);
     });
   });
 

@@ -117,11 +117,15 @@ export async function deleteParty(partyId: string): Promise<boolean> {
   return true;
 }
 
-export async function toggleFavoriteParty(partyId: string, value: boolean): Promise<void> {
-  if (!DB_ENABLED) return;
+export async function toggleFavoriteParty(partyId: string, value: boolean): Promise<boolean> {
+  if (!DB_ENABLED) return false;
   const { error } = await supabase
     .from('n2e_parties')
     .update({ is_favorited: value })
     .eq('id', partyId);
-  if (error) console.error('Toggle favorite failed:', error);
+  if (error) {
+    console.error('Toggle favorite failed:', error);
+    return false;
+  }
+  return true;
 }

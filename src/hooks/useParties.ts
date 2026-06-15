@@ -1,4 +1,11 @@
-import { useState, useEffect } from 'react';
+import {
+  useState,
+  useEffect,
+  useRef,
+  type Dispatch,
+  type MutableRefObject,
+  type SetStateAction,
+} from 'react';
 import { type Session } from '@supabase/supabase-js';
 
 export interface PartyConfig<TParty, TMember> {
@@ -23,6 +30,10 @@ export function useParties<TParty extends { id: string }, TMember>(
   const { loadParties, saveParty: apiSaveParty, deleteParty: apiDeleteParty } = config;
   const [parties, setParties] = useState<TParty[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  // Always holds the latest parties — read for rollback snapshots without
+  // capturing state inside an (impure) updater.
+  const partiesRef = useRef<TParty[]>([]);
+  partiesRef.current = parties;
 
   useEffect(() => {
     if (!session?.user) {
@@ -76,5 +87,25 @@ export function useParties<TParty extends { id: string }, TMember>(
     }
   };
 
-  return { parties, setParties, isLoading, saveParty, deleteParty, refreshParties };
+  return { parties, setParties, partiesRef, isLoading, saveParty, deleteParty, refreshParties };
+}
+
+/**
+ * Builds an optimistic favorite-toggle for the games that support it. Applies
+ * the change locally, persists it, and reverts to the pre-toggle snapshot if
+ * the write reports failure — keeping local state from silently diverging.
+ * Snapshots from a ref so the capture survives React's dev-mode double-invoke
+ * of state updaters.
+ */
+export function makeFavoriteToggle<TParty extends { id: string; isFavorited: boolean }>(
+  setParties: Dispatch<SetStateAction<TParty[]>>,
+  partiesRef: MutableRefObject<TParty[]>,
+  persist: (partyId: string, value: boolean) => Promise<boolean>,
+) {
+  return async (partyId: string, value: boolean) => {
+    const snapshot = partiesRef.current;
+    setParties((prev) => prev.map((p) => (p.id === partyId ? { ...p, isFavorited: value } : p)));
+    const ok = await persist(partyId, value);
+    if (!ok) setParties(snapshot);
+  };
 }

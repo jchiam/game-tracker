@@ -37,7 +37,7 @@ describe('useParties', () => {
     mockLoadParties.mockResolvedValue([]);
     mockSaveParty.mockResolvedValue('new-party-id');
     mockDeleteParty.mockResolvedValue(true);
-    mockToggleFavoriteParty.mockResolvedValue(undefined);
+    mockToggleFavoriteParty.mockResolvedValue(true);
   });
 
   async function setup(session: Session | null = mockSession) {
@@ -119,12 +119,29 @@ describe('useParties', () => {
       expect(result.current.parties).toHaveLength(1);
     });
 
-    act(() => {
-      result.current.toggleFavoriteParty('party-1', true);
+    await act(async () => {
+      await result.current.toggleFavoriteParty('party-1', true);
     });
 
     expect(result.current.parties[0].isFavorited).toBe(true);
     expect(mockToggleFavoriteParty).toHaveBeenCalledWith('party-1', true);
+  });
+
+  it('toggleFavoriteParty reverts local state when the write fails', async () => {
+    mockLoadParties.mockResolvedValue([{ ...sampleParty }]);
+    mockToggleFavoriteParty.mockResolvedValue(false);
+
+    const { result } = renderHook(() => useParties(mockSession));
+
+    await waitFor(() => {
+      expect(result.current.parties).toHaveLength(1);
+    });
+
+    await act(async () => {
+      await result.current.toggleFavoriteParty('party-1', true);
+    });
+
+    expect(result.current.parties[0].isFavorited).toBe(false);
   });
 
   it('deleteParty keeps state when service returns false', async () => {
