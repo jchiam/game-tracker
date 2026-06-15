@@ -262,6 +262,10 @@ it('sets error on DB failure', async () => {
 });
 ```
 
+### Known Limitations
+
+- **Non-atomic preference saves.** `saveBuildPrefs` (HSR) and `saveCartridgePreferences` (N2E) persist a variable-length set of preference rows by **deleting all existing rows then re-inserting** — across separate Supabase calls with no transaction. A failure after the delete but before the insert completes leaves the preference rows **half-wiped in the DB**; the loss only surfaces on next reload (local optimistic state retains them until then). Mitigated, not fixed: writes route through `usePendingSaves`, so a failure raises an error toast and the user can retry. A proper fix needs a plpgsql function (atomic delete+insert) called via `supabase.rpc` with `SECURITY INVOKER` to preserve RLS — deferred because it would be the first RPC in the codebase and its atomicity guarantee can't be proven by the mocked unit tests (needs a local-Supabase integration test).
+
 ## Shared Components
 
 Reuse these existing shared components — don't recreate them:
