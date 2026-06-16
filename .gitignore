@@ -39,3 +39,6 @@ storybook-static
 .claude
 !.claude/settings.json
 .qwen
+.agent
+!.agent/settings.json
+
