@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { PartiesTab } from '@/pages/neverness-to-everness/components/PartiesTab';
 import type { N2EParty } from '@/types';
 import type { N2ECharacter } from '@/data/neverness-to-everness/characters';
@@ -99,5 +99,65 @@ describe('PartiesTab', () => {
     const names = screen.getAllByRole('heading', { level: 3 });
     expect(names[0]).toHaveTextContent('S Team');
     expect(names[1]).toHaveTextContent('B Team');
+  });
+
+  it('calls onToggleFavorite when favorite button on a card is clicked', () => {
+    const onToggleFavorite = vi.fn();
+    render(
+      <PartiesTab
+        {...defaultProps}
+        parties={[makeParty('p1', 'Alpha', { isFavorited: false })]}
+        onToggleFavorite={onToggleFavorite}
+      />,
+    );
+    fireEvent.click(screen.getByTitle('Favourite'));
+    expect(onToggleFavorite).toHaveBeenCalledWith('p1', true);
+  });
+
+  it('calls onDeleteParty when delete button on a card is clicked', () => {
+    const onDeleteParty = vi.fn().mockResolvedValue(true);
+    render(
+      <PartiesTab
+        {...defaultProps}
+        parties={[makeParty('p1', 'Alpha')]}
+        onDeleteParty={onDeleteParty}
+      />,
+    );
+    fireEvent.click(screen.getByTitle('Delete Lineup'));
+    expect(onDeleteParty).toHaveBeenCalledWith('p1');
+  });
+
+  it('calls onSaveParty and closes modal when editing party is saved', async () => {
+    const onSaveParty = vi.fn().mockResolvedValue('p1');
+    render(
+      <PartiesTab
+        {...defaultProps}
+        parties={[makeParty('p1', 'Alpha')]}
+        onSaveParty={onSaveParty}
+      />,
+    );
+    
+    // Open edit modal
+    fireEvent.click(screen.getByTitle('Edit Lineup'));
+    expect(screen.getByText(/edit lineup/i)).toBeInTheDocument();
+    
+    // Save lineup
+    fireEvent.click(screen.getByText('Save Lineup'));
+    await waitFor(() => {
+      expect(onSaveParty).toHaveBeenCalled();
+      expect(screen.queryByText(/edit lineup/i)).not.toBeInTheDocument();
+    });
+  });
+
+  it('closes modal when cancel/close is clicked inside edit modal', () => {
+    render(<PartiesTab {...defaultProps} parties={[makeParty('p1', 'Alpha')]} />);
+    
+    // Open edit modal
+    fireEvent.click(screen.getByTitle('Edit Lineup'));
+    expect(screen.getByText(/edit lineup/i)).toBeInTheDocument();
+    
+    // Close lineup
+    fireEvent.click(screen.getByText('Cancel'));
+    expect(screen.queryByText(/edit lineup/i)).not.toBeInTheDocument();
   });
 });

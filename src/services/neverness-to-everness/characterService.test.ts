@@ -128,6 +128,38 @@ describe('characterService', () => {
       expect(result[0].name).toBe('Baicang');
     });
 
+    it('loadCharactersFromDB maps cartridge preference main and sub stats correctly', async () => {
+      const dbRow = {
+        id: 'db-uuid-1',
+        character_id: 'baicang',
+        level: 45,
+        n2e_cartridge_preference_main_stats: [
+          { stat: 'HP', operator_to_next: '<', order_index: 1 },
+          { stat: 'ATK', operator_to_next: '>', order_index: 0 },
+        ],
+        n2e_cartridge_preference_sub_stats: [
+          { stat: 'CRIT DMG', operator_to_next: null, order_index: 1 },
+          { stat: 'CRIT Rate', operator_to_next: '>', order_index: 0 },
+        ],
+        cartridge_comments: 'Target CRIT/ATK',
+      };
+
+      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+      const result = await service.loadCharactersFromDB('user-1');
+
+      expect(result).toHaveLength(1);
+      expect(result[0].cartridgePreferences.mainStats).toEqual([
+        { stat: 'ATK', operator: '>', orderIndex: 0 },
+        { stat: 'HP', operator: '<', orderIndex: 1 },
+      ]);
+      expect(result[0].cartridgePreferences.subStats).toEqual([
+        { stat: 'CRIT Rate', operator: '>', orderIndex: 0 },
+        { stat: 'CRIT DMG', operator: null, orderIndex: 1 },
+      ]);
+      expect(result[0].cartridgePreferences.comments).toBe('Target CRIT/ATK');
+    });
+
     it('loadCharactersFromDB skips rows with unknown character_id', async () => {
       const dbRows = [
         {
@@ -201,6 +233,139 @@ describe('characterService', () => {
         is_favorited: true,
       });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
+    });
+
+    it('deleteCharacter throws on DB error', async () => {
+      const builder = createBuilder({ data: null, error: { message: 'Delete failed' } });
+      mockFrom.mockReturnValue(builder);
+
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await expect(service.deleteCharacter('db-uuid-1')).rejects.toEqual({
+        message: 'Delete failed',
+      });
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('updateCharacter throws on DB error', async () => {
+      const builder = createBuilder({ data: null, error: { message: 'Update failed' } });
+      mockFrom.mockReturnValue(builder);
+
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await expect(service.updateCharacter('db-uuid-1', { level: 50 })).rejects.toEqual({
+        message: 'Update failed',
+      });
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('saveCartridgePreferences deletes old preferences and updates comments', async () => {
+      const builder = createBuilder({ data: null, error: null });
+      mockFrom.mockReturnValue(builder);
+
+      await service.saveCartridgePreferences('db-uuid-1', {
+        mainStats: [],
+        subStats: [],
+        comments: 'New comments',
+      });
+
+      expect(mockFrom).toHaveBeenCalledWith('n2e_cartridge_preference_main_stats');
+      expect(mockFrom).toHaveBeenCalledWith('n2e_cartridge_preference_sub_stats');
+      expect(mockFrom).toHaveBeenCalledWith('n2e_tracked_characters');
+      expect(builder.delete).toHaveBeenCalled();
+      expect(builder.update).toHaveBeenCalledWith({ cartridge_comments: 'New comments' });
+    });
+
+    it('saveCartridgePreferences inserts main stat preferences when present', async () => {
+      const mainBuilder = createBuilder({ data: null, error: null });
+      const otherBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'n2e_cartridge_preference_main_stats') return mainBuilder;
+        return otherBuilder;
+      });
+
+      await service.saveCartridgePreferences('db-uuid-1', {
+        mainStats: [{ stat: 'ATK', operator: '>', orderIndex: 0 }],
+        subStats: [],
+        comments: '',
+      });
+
+      expect(mainBuilder.insert).toHaveBeenCalledWith([
+        {
+          tracked_character_id: 'db-uuid-1',
+          stat: 'ATK',
+          operator_to_next: '>',
+          order_index: 0,
+        },
+      ]);
+    });
+
+    it('saveCartridgePreferences inserts sub stat preferences when present', async () => {
+      const subBuilder = createBuilder({ data: null, error: null });
+      const otherBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'n2e_cartridge_preference_sub_stats') return subBuilder;
+        return otherBuilder;
+      });
+
+      await service.saveCartridgePreferences('db-uuid-1', {
+        mainStats: [],
+        subStats: [{ stat: 'CRIT DMG', operator: '>', orderIndex: 0 }],
+        comments: '',
+      });
+
+      expect(subBuilder.insert).toHaveBeenCalledWith([
+        {
+          tracked_character_id: 'db-uuid-1',
+          stat: 'CRIT DMG',
+          operator_to_next: '>',
+          order_index: 0,
+        },
+      ]);
+    });
+
+    it('saveCartridgePreferences throws on main stats insert failure', async () => {
+      const mainBuilder = createBuilder({ data: null, error: { message: 'Insert main failed' } });
+      const otherBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'n2e_cartridge_preference_main_stats') return mainBuilder;
+        return otherBuilder;
+      });
+
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await expect(
+        service.saveCartridgePreferences('db-uuid-1', {
+          mainStats: [{ stat: 'ATK', operator: null, orderIndex: 0 }],
+          subStats: [],
+          comments: '',
+        }),
+      ).rejects.toEqual({ message: 'Insert main failed' });
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
+    });
+
+    it('saveCartridgePreferences throws on sub stats insert failure', async () => {
+      const subBuilder = createBuilder({ data: null, error: { message: 'Insert sub failed' } });
+      const otherBuilder = createBuilder({ data: null, error: null });
+
+      mockFrom.mockImplementation((table: string) => {
+        if (table === 'n2e_cartridge_preference_sub_stats') return subBuilder;
+        return otherBuilder;
+      });
+
+      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await expect(
+        service.saveCartridgePreferences('db-uuid-1', {
+          mainStats: [],
+          subStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+          comments: '',
+        }),
+      ).rejects.toEqual({ message: 'Insert sub failed' });
+      expect(spy).toHaveBeenCalled();
+      spy.mockRestore();
     });
   });
 });

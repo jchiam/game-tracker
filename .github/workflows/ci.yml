@@ -29,6 +29,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate OpenSpec specs and changes
+        run: npx openspec validate --all --json
+
       - name: Check formatting
         run: npm run format:check
 

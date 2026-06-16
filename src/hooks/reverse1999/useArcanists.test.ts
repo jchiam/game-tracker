@@ -566,6 +566,100 @@ describe('useArcanists', () => {
     });
   });
 
+  describe('updateEuphoriaStage', () => {
+    it('updates euphoria stage in local state and queues DB update', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'existing-db-id', euphoriaStage: 0 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updateEuphoriaStage('37', 3);
+      });
+
+      expect(result.current.trackedArcanists[0].euphoriaStage).toBe(3);
+      expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
+        euphoriaStage: 3,
+      });
+    });
+
+    it('clamps euphoria stage to valid range (0-4)', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'existing-db-id', euphoriaStage: 2 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updateEuphoriaStage('37', -1);
+      });
+
+      expect(result.current.trackedArcanists[0].euphoriaStage).toBe(0);
+
+      await act(async () => {
+        result.current.updateEuphoriaStage('37', 10);
+      });
+
+      expect(result.current.trackedArcanists[0].euphoriaStage).toBe(4);
+    });
+  });
+
+  describe('updatePsychubeAmplification', () => {
+    it('updates psychube amplification in local state and queues DB update', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'existing-db-id', psychubeAmplification: 1 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updatePsychubeAmplification('37', 3);
+      });
+
+      expect(result.current.trackedArcanists[0].psychubeAmplification).toBe(3);
+      expect(mockUpdateArcanist).toHaveBeenCalledWith('existing-db-id', {
+        psychubeAmplification: 3,
+      });
+    });
+
+    it('clamps psychube amplification to valid range (1-5)', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'existing-db-id', psychubeAmplification: 3 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      await act(async () => {
+        result.current.updatePsychubeAmplification('37', 0);
+      });
+
+      expect(result.current.trackedArcanists[0].psychubeAmplification).toBe(1);
+
+      await act(async () => {
+        result.current.updatePsychubeAmplification('37', 10);
+      });
+
+      expect(result.current.trackedArcanists[0].psychubeAmplification).toBe(5);
+    });
+  });
+
   describe('toggleFavoriteArcanist', () => {
     it('toggles favorite in local state and queues DB update', async () => {
       mockLoadArcanistsFromDB.mockResolvedValue([
