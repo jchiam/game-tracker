@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, type Mock } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import {
   useRoster,
@@ -69,16 +69,18 @@ const mockSession: Session = {
 } as Session;
 
 describe('useRoster', () => {
-  let mockLoadFromDB: ReturnType<typeof vi.fn>;
-  let mockInsertEntity: ReturnType<typeof vi.fn>;
-  let mockDeleteEntity: ReturnType<typeof vi.fn>;
+  let mockLoadFromDB: Mock<(userId: string) => Promise<TestTracked[]>>;
+  let mockInsertEntity: Mock<(userId: string, entityId: string) => Promise<string | null>>;
+  let mockDeleteEntity: Mock<(dbId: string) => Promise<void>>;
   let config: RosterConfig<TestBase, TestTracked>;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    mockLoadFromDB = vi.fn().mockResolvedValue([]);
-    mockInsertEntity = vi.fn().mockResolvedValue('generated-db-id');
-    mockDeleteEntity = vi.fn().mockResolvedValue(undefined);
+    mockLoadFromDB = vi.fn<(userId: string) => Promise<TestTracked[]>>().mockResolvedValue([]);
+    mockInsertEntity = vi
+      .fn<(userId: string, entityId: string) => Promise<string | null>>()
+      .mockResolvedValue('generated-db-id');
+    mockDeleteEntity = vi.fn<(dbId: string) => Promise<void>>().mockResolvedValue(undefined);
 
     config = {
       allEntities: [
