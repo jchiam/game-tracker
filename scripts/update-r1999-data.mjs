@@ -135,7 +135,7 @@ async function fetchJSON(url) {
 
 // Escape single quotes so they're safe inside single-quoted JS string literals.
 function esc(str) {
-  return str.replace(/'/g, "\\'");
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 function slugify(name) {
