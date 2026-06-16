@@ -3,6 +3,7 @@
 N2E (Neverness to Everness) character tracking already fully implemented. This change documents existing behaviour — no code modifications needed. Mirrors the approach used for `hsr-character-detail` / `hsr-relic-scoring` and `r1999-arcanist-detail`.
 
 Key source files:
+
 - `src/hooks/neverness-to-everness/useCharacters.ts` — hook with all field update logic
 - `src/utils/cartridgeScoring.ts` — scoring algorithm
 - `src/types.ts` — `N2ETrackedCharacter` interface
@@ -10,11 +11,13 @@ Key source files:
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Document all per-character tracked fields with their ranges and defaults
 - Document cartridge scoring algorithm with exact weights, match rules, and grade thresholds
 - Maintain structural consistency with existing HSR/R1999 specs
 
 **Non-Goals:**
+
 - Changing any existing behaviour
 - Speccing the N2E data catalog or update script
 - Speccing UI layout or visual design

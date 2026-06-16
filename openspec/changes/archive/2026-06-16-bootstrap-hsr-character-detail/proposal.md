@@ -12,6 +12,7 @@ No application code is changed. This is documentation only.
 ## Capabilities
 
 ### New Capabilities
+
 - `hsr-character-detail`: HSR-specific tracked character fields — level (1–80), traces toggle, 6 relic slots (head/hands/body/feet/sphere/rope), build preferences (main stat chains for body/feet/sphere/rope, sub-stat chain, comments), stat preference chain structure
 - `hsr-relic-scoring`: Relic score calculation — per-slot main stat match (fixed for head/hands, preference-matched for others), sub-stat match with partial scoring, weighted combination across 6 slots into 0–100 score
 

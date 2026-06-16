@@ -5,11 +5,13 @@ This change introduces no code modifications. It bootstraps canonical main specs
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Capture all tracked field constraints (valid ranges, defaults, update debounce path)
 - Capture the full relic scoring algorithm as testable WHEN/THEN scenarios
 - Document the stat partial-match rules that are game-knowledge, not general logic
 
 **Non-Goals:**
+
 - Changing any application code
 - Speccing the relic editor UI (component behaviour) — that belongs in a future design system spec
 - Speccing HSR party detail (covered by the shared `parties` spec already)

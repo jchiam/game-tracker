@@ -11,6 +11,7 @@ No application code is changed. This is documentation only.
 ## Capabilities
 
 ### New Capabilities
+
 - `r1999-arcanist-detail`: Reverse: 1999 per-arcanist tracked fields — level (1–60), portrait level (0–5 max varies by rarity), resonance level (0–15), euphoria stage (0–4), psychube (name + level + amplification), favorite toggle, sort-by-level secondary comparator
 
 ### Modified Capabilities

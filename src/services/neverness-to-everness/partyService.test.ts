@@ -254,7 +254,10 @@ describe('partyService', () => {
 
     it('saveParty throws on member insert error during update', async () => {
       const partyBuilder = createBuilder({ data: null, error: null });
-      const memberBuilder = createBuilder({ data: null, error: { message: 'Member insert failed' } });
+      const memberBuilder = createBuilder({
+        data: null,
+        error: { message: 'Member insert failed' },
+      });
 
       mockFrom.mockImplementation((table: string) => {
         if (table === 'n2e_parties') return partyBuilder;
@@ -275,7 +278,10 @@ describe('partyService', () => {
 
     it('saveParty throws on member insert error', async () => {
       const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-      const memberBuilder = createBuilder({ data: null, error: { message: 'Member insert failed' } });
+      const memberBuilder = createBuilder({
+        data: null,
+        error: { message: 'Member insert failed' },
+      });
 
       mockFrom.mockImplementation((table: string) => {
         if (table === 'n2e_parties') return partyBuilder;

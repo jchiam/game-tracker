@@ -136,11 +136,11 @@ describe('PartiesTab', () => {
         onSaveParty={onSaveParty}
       />,
     );
-    
+
     // Open edit modal
     fireEvent.click(screen.getByTitle('Edit Lineup'));
     expect(screen.getByText(/edit lineup/i)).toBeInTheDocument();
-    
+
     // Save lineup
     fireEvent.click(screen.getByText('Save Lineup'));
     await waitFor(() => {
@@ -151,11 +151,11 @@ describe('PartiesTab', () => {
 
   it('closes modal when cancel/close is clicked inside edit modal', () => {
     render(<PartiesTab {...defaultProps} parties={[makeParty('p1', 'Alpha')]} />);
-    
+
     // Open edit modal
     fireEvent.click(screen.getByTitle('Edit Lineup'));
     expect(screen.getByText(/edit lineup/i)).toBeInTheDocument();
-    
+
     // Close lineup
     fireEvent.click(screen.getByText('Cancel'));
     expect(screen.queryByText(/edit lineup/i)).not.toBeInTheDocument();

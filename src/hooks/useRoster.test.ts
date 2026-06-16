@@ -1,6 +1,11 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
-import { useRoster, type RosterBase, type RosterTracked, type RosterConfig } from '@/hooks/useRoster';
+import {
+  useRoster,
+  type RosterBase,
+  type RosterTracked,
+  type RosterConfig,
+} from '@/hooks/useRoster';
 import type { Session } from '@supabase/supabase-js';
 import * as toastUtils from '@/utils/toast';
 
@@ -118,10 +123,9 @@ describe('useRoster', () => {
     });
 
     it('clears state when session is null', async () => {
-      const { result, rerender } = renderHook(
-        ({ session }) => useRoster(session, false, config),
-        { initialProps: { session: mockSession as Session | null } },
-      );
+      const { result, rerender } = renderHook(({ session }) => useRoster(session, false, config), {
+        initialProps: { session: mockSession as Session | null },
+      });
 
       await waitFor(() => {
         expect(result.current.isInitialLoad).toBe(false);
@@ -375,9 +379,12 @@ describe('useRoster', () => {
       });
 
       // Sort by extraValue descending
-      const sorted = result.current.filterRoster('', (a, b) => (b.extraValue ?? 0) - (a.extraValue ?? 0));
+      const sorted = result.current.filterRoster(
+        '',
+        (a, b) => (b.extraValue ?? 0) - (a.extraValue ?? 0),
+      );
       expect(sorted[0].name).toBe('Alpha'); // 20
-      expect(sorted[1].name).toBe('Beta');  // 10
+      expect(sorted[1].name).toBe('Beta'); // 10
     });
   });
 });

@@ -5,11 +5,13 @@ This change introduces no code modifications. It bootstraps canonical main specs
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Capture `useRoster` behaviour as a testable spec: load, add, remove, search, sort
 - Capture `useParties` behaviour as a testable spec: CRUD, slots, optimistic delete, reload-after-save
 - Document game-specific party extensions (tier, favorite) as additive constraints on the shared spec
 
 **Non-Goals:**
+
 - Changing any application code
 - Speccing game-specific entity detail (relic scoring, cartridge prefs, etc.) — those are proposals 3–5
 - Speccing the DB schema or migration conventions — those are in CLAUDE.md

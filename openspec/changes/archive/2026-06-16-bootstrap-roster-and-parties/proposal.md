@@ -12,6 +12,7 @@ No application code is changed. This is documentation only.
 ## Capabilities
 
 ### New Capabilities
+
 - `roster`: Shared entity tracking lifecycle used by all game hooks via `useRoster`. Covers DB load, optimistic add/remove, in-flight insert dedup, Fuse.js search, and favorited-first sort.
 - `parties`: Shared party lineup management used by all game hooks via `useParties`. Covers CRUD, slot constraints, reload-after-save, optimistic delete, and game-specific extensions (tier, favorite toggle).
 

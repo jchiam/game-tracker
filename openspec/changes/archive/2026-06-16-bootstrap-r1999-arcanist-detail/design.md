@@ -5,11 +5,13 @@ This change introduces no code modifications. It bootstraps a canonical main spe
 ## Goals / Non-Goals
 
 **Goals:**
+
 - Capture all tracked field constraints (valid ranges, rarity-dependent maxes, defaults)
 - Document the psychube equipment model (name key + level + amplification)
 - Document the level-based sort as the game-specific secondary comparator
 
 **Non-Goals:**
+
 - Changing any application code
 - Speccing party detail (already covered by shared `parties` spec with tier + favorite extensions)
 - Speccing the psychube editor UI
