@@ -25,7 +25,7 @@ npm run test:e2e     # Playwright e2e tests
 npm run verify:csp   # Verify CSP connect-src matches Supabase URL
 ```
 
-Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`.
+Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`, `test:e2e`.
 
 ## Git
 
