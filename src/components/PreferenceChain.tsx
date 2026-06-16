@@ -1,4 +1,5 @@
 import type { StatPreference } from '@/types';
+import './PreferenceChain.css';
 
 interface PreferenceChainProps {
   values: StatPreference[];
