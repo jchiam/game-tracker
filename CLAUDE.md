@@ -27,7 +27,7 @@ npm run storybook    # Storybook dev server on :6006
 npm run build:storybook # Build static Storybook
 ```
 
-Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`.
+Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`, `test:e2e`.
 
 ## Git
 
