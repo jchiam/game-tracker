@@ -4,3 +4,4 @@ node_modules
 package-lock.json
 public
 src/styles/tokens.css
+storybook-static

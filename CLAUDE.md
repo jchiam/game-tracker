@@ -23,9 +23,11 @@ npm run format:check # Prettier (check — used in CI)
 npm test             # Vitest unit tests
 npm run test:e2e     # Playwright e2e tests
 npm run verify:csp   # Verify CSP connect-src matches Supabase URL
+npm run storybook    # Storybook dev server on :6006
+npm run build:storybook # Build static Storybook
 ```
 
-Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`, `test:e2e`.
+Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`.
 
 ## Git
 
@@ -106,6 +108,15 @@ Only game-unique UI belongs here. Game card CSS files contain:
 - Game-specific button rows and sliders beyond `.level-slider`
 
 **Adding a new game card:** Use canonical `.game-card-*` class names. Import game-specific CSS for overrides only. Check `card.css` and `controls.css` before declaring any new rule — it may already exist.
+
+### Storybook
+
+Storybook documents L1–L3 of the design system. Run `npm run storybook` to browse.
+
+- **Stories colocated next to source** — `Foo.stories.tsx` lives next to `Foo.tsx`. Token/style stories live in `src/styles/`.
+- **Every design system change must update Storybook** — new token → update `DesignTokens.stories.tsx`; new shared style → update `CardPatterns` or `ControlPatterns` stories; new shared component → create a `.stories.tsx` with all variants.
+- **Use Controls addon** — all component props should be interactive via Storybook Controls. Use `fn()` from `@storybook/test` for action callbacks.
+- **Don't create stories for L4 game components** — game-specific components change too frequently and require complex mock data.
 
 ## Architecture — Per-Game Module Pattern
 
@@ -265,8 +276,6 @@ it('sets error on DB failure', async () => {
 ### Known Limitations
 
 - **Non-atomic preference saves.** `saveBuildPrefs` (HSR) and `saveCartridgePreferences` (N2E) persist a variable-length set of preference rows by **deleting all existing rows then re-inserting** — across separate Supabase calls with no transaction. A failure after the delete but before the insert completes leaves the preference rows **half-wiped in the DB**; the loss only surfaces on next reload (local optimistic state retains them until then). Mitigated, not fixed: writes route through `usePendingSaves`, so a failure raises an error toast and the user can retry. A proper fix needs a plpgsql function (atomic delete+insert) called via `supabase.rpc` with `SECURITY INVOKER` to preserve RLS — deferred because it would be the first RPC in the codebase and its atomicity guarantee can't be proven by the mocked unit tests (needs a local-Supabase integration test).
-
-- **Duplicated party UI (r1999 ↔ n2e).** `PartyCard`, `PartiesTab`, and `PartyEditorModal` are near-identical between Reverse 1999 and Neverness to Everness — n2e is r1999 plus an `n2e-` CSS class prefix and `esperType`-for-`afflatus`. HSR's party UI is a genuine outlier (no tier, no favorite, direct `imageUrl`) and should stay separate. Consolidating the r1999/n2e pair would first need the three `*PartyMember` types unified to one generic `{ entityId, slotIndex }` (domain-only — DB columns stay `arcanist_id`/`character_id`, mapped in the service) and the `n2e-` CSS unprefixed/merged. Deferred: it's a 2-game dedup whose CSS unification can't be visually verified without an authenticated session (party views are gated behind sign-in).
 
 ## Shared Components
 
