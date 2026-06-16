@@ -119,7 +119,7 @@ async function fetchGraphQL(query) {
 }
 
 function esc(str) {
-  return str.replace(/'/g, "\\'");
+  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
 function slugify(name) {
