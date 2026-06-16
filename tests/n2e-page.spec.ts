@@ -12,9 +12,7 @@ test.describe('Neverness to Everness Page', () => {
 
   test('should show AuthGate when not logged in', async ({ page }) => {
     // Scope to the page body — the navbar also has a "Sign In with Google" button.
-    const signInBtn = page
-      .getByRole('main')
-      .getByRole('button', { name: /sign in with google/i });
+    const signInBtn = page.getByRole('main').getByRole('button', { name: /sign in with google/i });
     await expect(signInBtn).toBeVisible();
   });
 
