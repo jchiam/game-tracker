@@ -5,6 +5,9 @@ const meta = {
   title: 'Components/StatChip',
   component: StatChip,
   tags: ['autodocs'],
+  args: {
+    label: 'Lv 1',
+  },
 } satisfies Meta<typeof StatChip>;
 
 export default meta;

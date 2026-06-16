@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { fn } from '@storybook/test';
+import { fn } from 'storybook/test';
 import { useState } from 'react';
 import { PreferenceChain } from './PreferenceChain';
 import type { StatPreference } from '@/types';
@@ -8,6 +8,12 @@ const meta = {
   title: 'Components/PreferenceChain',
   component: PreferenceChain,
   tags: ['autodocs'],
+  args: {
+    values: [],
+    options: [],
+    onChange: () => {},
+    namePrefix: 'story-pref',
+  },
 } satisfies Meta<typeof PreferenceChain>;
 
 export default meta;

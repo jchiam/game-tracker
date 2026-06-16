@@ -9,6 +9,11 @@ const meta = {
   title: 'Components/GameBadge',
   component: GameBadge,
   tags: ['autodocs'],
+  args: {
+    label: 'Fire',
+    variant: 'element',
+    modifier: 'fire',
+  },
 } satisfies Meta<typeof GameBadge>;
 
 export default meta;

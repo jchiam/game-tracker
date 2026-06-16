@@ -1,10 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import type { ComponentProps } from 'react';
 import { ProgressSection } from './ProgressSection';
 
 const meta = {
   title: 'Components/ProgressSection',
   component: ProgressSection,
   tags: ['autodocs'],
+  args: {
+    label: 'Default Label',
+    children: null,
+  },
 } satisfies Meta<typeof ProgressSection>;
 
 export default meta;
@@ -15,7 +20,7 @@ export const WithValue: Story = {
     label: 'Level',
     value: '42 / 80',
   },
-  render: (args) => (
+  render: (args: ComponentProps<typeof ProgressSection>) => (
     <ProgressSection {...args}>
       <input type="range" min={1} max={80} defaultValue={42} style={{ width: '100%' }} />
     </ProgressSection>
@@ -26,7 +31,7 @@ export const WithoutValue: Story = {
   args: {
     label: 'Traces',
   },
-  render: (args) => (
+  render: (args: ComponentProps<typeof ProgressSection>) => (
     <ProgressSection {...args}>
       <label style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
         <input type="checkbox" defaultChecked />
@@ -41,7 +46,7 @@ export const WithClassName: Story = {
     label: 'Target Build',
     className: 'build-prefs-display',
   },
-  render: (args) => (
+  render: (args: ComponentProps<typeof ProgressSection>) => (
     <ProgressSection {...args}>
       <span>Speed boots with ATK% substats</span>
     </ProgressSection>
