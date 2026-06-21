@@ -10,9 +10,12 @@ test.describe('Cross-Game Navigation', () => {
 
     await page.goto('/neverness-to-everness');
     await expect(page.locator('h1')).toContainText('Neverness to Everness');
+
+    await page.goto('/arknights-endfield');
+    await expect(page.locator('h1')).toContainText('Arknights: Endfield');
   });
 
-  test('should switch between all three games via game switcher', async ({ page }) => {
+  test('should switch between all four games via game switcher', async ({ page }) => {
     await page.goto('/honkai-star-rail');
     await expect(page.locator('h1')).toContainText('Honkai Star Rail');
 
@@ -25,6 +28,11 @@ test.describe('Cross-Game Navigation', () => {
     await page.click('.dropdown-item:has-text("Neverness to Everness")');
     await expect(page).toHaveURL(/\/neverness-to-everness/);
     await expect(page.locator('h1')).toContainText('Neverness to Everness');
+
+    await page.click('.switcher-trigger');
+    await page.click('.dropdown-item:has-text("Arknights: Endfield")');
+    await expect(page).toHaveURL(/\/arknights-endfield/);
+    await expect(page.locator('h1')).toContainText('Arknights: Endfield');
 
     await page.click('.switcher-trigger');
     await page.click('.dropdown-item:has-text("Honkai Star Rail")');
