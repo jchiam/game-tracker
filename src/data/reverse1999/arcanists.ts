@@ -143,6 +143,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: true,
   },
   {
+    id: 'everecho',
+    name: 'Everecho',
+    afflatus: 'Mineral',
+    damageType: 'Unknown',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/everecho.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'ezio_auditore',
     name: 'Ezio Auditore',
     afflatus: 'Star',
