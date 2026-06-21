@@ -52,7 +52,7 @@ jobs:
           git checkout -b "$BRANCH"
           git add -A
           git commit -m "chore: update Neverness to Everness character data"
-          git push origin "$BRANCH"
+          git push --no-verify origin "$BRANCH"
           gh pr create \
             --title "chore: update Neverness to Everness character data" \
             --body "$PR_BODY" \

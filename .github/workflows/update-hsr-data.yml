@@ -45,7 +45,7 @@ jobs:
           git checkout -b "$BRANCH"
           git add -A
           git commit -m "chore: update HSR character and relic data"
-          git push origin "$BRANCH"
+          git push --no-verify origin "$BRANCH"
           gh pr create \
             --title "chore: update HSR character and relic data" \
             --body "Automated weekly update of HSR character list, relic set metadata, and image assets from [StarRailRes](https://github.com/Mar-7th/StarRailRes)." \

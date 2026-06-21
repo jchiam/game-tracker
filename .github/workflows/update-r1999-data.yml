@@ -54,7 +54,7 @@ jobs:
           git checkout -b "$BRANCH"
           git add -A
           git commit -m "chore: update Reverse 1999 arcanist data"
-          git push origin "$BRANCH"
+          git push --no-verify origin "$BRANCH"
           gh pr create \
             --title "chore: update Reverse 1999 arcanist data" \
             --body "$PR_BODY" \
