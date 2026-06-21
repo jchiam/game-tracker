@@ -105,7 +105,7 @@ The system SHALL support sorting the R1999 roster by arcanist level (descending)
 #### Scenario: Sort by alpha selected
 
 - **WHEN** user selects alphabetical sort
-- **THEN** standard favorited-first + alpha sort from the roster spec is applied with no level comparator
+- **THEN** standard favorited-first + alpha sort from the shared-roster spec is applied with no level comparator
 
 ### Requirement: R1999 roster search keys
 

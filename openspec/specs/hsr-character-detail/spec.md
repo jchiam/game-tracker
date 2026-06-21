@@ -63,7 +63,7 @@ The system SHALL track ordered stat preference chains for the four variable main
 #### Scenario: Main stat preference saved
 
 - **WHEN** user saves build preferences with main stat chains for body, feet, sphere, or rope
-- **THEN** each chain is an ordered array of `StatPreference` entries persisted via non-atomic delete-then-reinsert (see save-behaviour spec)
+- **THEN** each chain is an ordered array of `StatPreference` entries persisted via non-atomic delete-then-reinsert (see shared-save-behaviour spec)
 
 #### Scenario: Empty main stat chain
 
@@ -119,4 +119,4 @@ The system SHALL support sorting the HSR roster by calculated relic score (desce
 #### Scenario: Sort by alpha selected
 
 - **WHEN** user selects alphabetical sort
-- **THEN** standard favorited-first + alpha sort from the roster spec is applied with no score comparator
+- **THEN** standard favorited-first + alpha sort from the shared-roster spec is applied with no score comparator

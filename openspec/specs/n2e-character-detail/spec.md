@@ -111,7 +111,7 @@ The system SHALL track an equipped cartridge per character with four fields: rar
 
 ### Requirement: Cartridge preferences
 
-The system SHALL track cartridge stat preferences per character with three fields: main stats chain (ordered array of StatPreference), sub stats chain (ordered array of StatPreference), and comments (string or empty). Preferences are persisted via non-atomic delete-then-reinsert (see save-behaviour spec known limitation).
+The system SHALL track cartridge stat preferences per character with three fields: main stats chain (ordered array of StatPreference), sub stats chain (ordered array of StatPreference), and comments (string or empty). Preferences are persisted via non-atomic delete-then-reinsert (see shared-save-behaviour spec known limitation).
 
 #### Scenario: Cartridge preferences saved
 
@@ -149,7 +149,7 @@ The system SHALL support sorting the N2E roster by character level (descending) 
 #### Scenario: Sort by alpha selected
 
 - **WHEN** user selects alphabetical sort
-- **THEN** standard favorited-first + alpha sort from the roster spec is applied with no level comparator
+- **THEN** standard favorited-first + alpha sort from the shared-roster spec is applied with no level comparator
 
 ### Requirement: N2E roster search keys
 
