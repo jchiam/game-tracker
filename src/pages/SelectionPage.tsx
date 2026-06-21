@@ -35,7 +35,7 @@ const GAMES = [
     name: 'Arknights: Endfield',
     path: '/arknights-endfield',
     bgClass: 'bg-endfield-sel',
-    imageUrl: '/assets/arknights-endfield/selection-cover.webp',
+    imageUrl: '/assets/arknights-endfield/selection-cover.png',
     description: 'Track operators, levels, and squad compositions.',
     tag: 'Hypergryph',
   },
