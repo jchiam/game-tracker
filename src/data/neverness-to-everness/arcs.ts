@@ -179,13 +179,6 @@ export const ALL_ARCS: N2EArc[] = [
     arcType: 'Liquid',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_BlackBook.webp',
   },
-  {
-    id: 'fork_GoldWool',
-    name: '众人追寻之物',
-    rarity: 'S',
-    arcType: 'Synthesis',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_GoldWool.webp',
-  },
   // A-Rank
   {
     id: 'fork_koinobori',
@@ -209,11 +202,25 @@ export const ALL_ARCS: N2EArc[] = [
     imageUrl: '/assets/neverness-to-everness/arcs/fork_PaperPlane.webp',
   },
   {
+    id: 'fork_bopu',
+    name: 'Cosmos Daze, Wild Reverie',
+    rarity: 'A',
+    arcType: 'Gas',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_bopu.webp',
+  },
+  {
     id: 'fork_yaodao',
     name: 'Drawn Blade',
     rarity: 'A',
     arcType: 'Plasma',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_yaodao.webp',
+  },
+  {
+    id: 'fork_spider',
+    name: 'Failing You, Heavy in My Heart',
+    rarity: 'A',
+    arcType: 'Gas',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_spider.webp',
   },
   {
     id: 'fork_lingganzhongjiezhe',
@@ -251,6 +258,13 @@ export const ALL_ARCS: N2EArc[] = [
     imageUrl: '/assets/neverness-to-everness/arcs/fork_wuhuakuang.webp',
   },
   {
+    id: 'fork_BitterCake',
+    name: 'The Good, The Bad, The Bitter',
+    rarity: 'A',
+    arcType: 'Synthesis',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_BitterCake.webp',
+  },
+  {
     id: 'fork_tuansanlang',
     name: 'The Great Thief',
     rarity: 'A',
@@ -277,27 +291,6 @@ export const ALL_ARCS: N2EArc[] = [
     rarity: 'A',
     arcType: 'Gas',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_Kite.webp',
-  },
-  {
-    id: 'fork_bopu',
-    name: '光波眩晕，迷走狂欢',
-    rarity: 'A',
-    arcType: 'Gas',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_bopu.webp',
-  },
-  {
-    id: 'fork_spider',
-    name: '挂你在心口难开',
-    rarity: 'A',
-    arcType: 'Gas',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_spider.webp',
-  },
-  {
-    id: 'fork_BitterCake',
-    name: '良药苦口',
-    rarity: 'A',
-    arcType: 'Synthesis',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_BitterCake.webp',
   },
   // B-Rank
   {
