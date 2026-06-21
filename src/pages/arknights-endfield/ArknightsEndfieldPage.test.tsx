@@ -234,9 +234,7 @@ describe('ArknightsEndfieldPage', () => {
     renderWithProviders(
       <ArknightsEndfieldPage session={null} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    expect(
-      screen.getByRole('heading', { name: /arknights: endfield/i }),
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /arknights: endfield/i })).toBeInTheDocument();
   });
 
   it('does not show search or sort controls when no operators are tracked', () => {
