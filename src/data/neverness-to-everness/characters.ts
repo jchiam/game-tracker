@@ -23,6 +23,15 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     imageUrl: '/assets/neverness-to-everness/characters/baicang.webp',
   },
   {
+    id: 'chaos',
+    name: 'Chaos',
+    rarity: 'S',
+    esperType: 'Lakshana',
+    arcType: 'Condensate',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/chaos.webp',
+  },
+  {
     id: 'chiz',
     name: 'Chiz',
     rarity: 'S',
