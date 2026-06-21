@@ -1,0 +1,16 @@
+.endfield-parties-tab {
+  padding: var(--spacing-lg);
+}
+
+.endfield-parties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+}
+
+.endfield-parties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: var(--spacing-md);
+}

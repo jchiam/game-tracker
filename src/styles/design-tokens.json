@@ -80,6 +80,24 @@
       "rarityA": { "$value": "#c9a8f8", "$type": "color" },
       "rarityB": { "$value": "#90d0f0", "$type": "color" }
     },
+    "endfield": {
+      "elementPhysical": { "$value": "#bcbcbc", "$type": "color" },
+      "elementCryo": { "$value": "#47c7fd", "$type": "color" },
+      "elementElectric": { "$value": "#d97afe", "$type": "color" },
+      "elementHeat": { "$value": "#f84f36", "$type": "color" },
+      "elementNature": { "$value": "#5bc89f", "$type": "color" },
+      "classCaster": { "$value": "#c9a8f8", "$type": "color" },
+      "classDefender": { "$value": "#8ab8f5", "$type": "color" },
+      "classGuard": { "$value": "#ff9090", "$type": "color" },
+      "classStriker": { "$value": "#f5d68a", "$type": "color" },
+      "classSupporter": { "$value": "#90e09a", "$type": "color" },
+      "classVanguard": { "$value": "#f5b080", "$type": "color" },
+      "weaponSword": { "$value": "#f0a8d8", "$type": "color" },
+      "weaponGreatsword": { "$value": "#f5b080", "$type": "color" },
+      "weaponPolearm": { "$value": "#90d0f0", "$type": "color" },
+      "weaponHandcannon": { "$value": "#f5d68a", "$type": "color" },
+      "weaponArtsUnit": { "$value": "#c9a8f8", "$type": "color" }
+    },
     "r1999": {
       "afflatusPlant": { "$value": "#90e09a", "$type": "color" },
       "afflatusStar": { "$value": "#f5d68a", "$type": "color" },

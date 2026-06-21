@@ -138,6 +138,10 @@ button:hover {
   background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #0a0a1a 100%);
 }
 
+.selection-card-header.bg-endfield-sel {
+  background: linear-gradient(135deg, #0a1a2e 0%, #1b2d4e 50%, #0a0a1a 100%);
+}
+
 .game-character-image {
   position: absolute;
   top: 0;

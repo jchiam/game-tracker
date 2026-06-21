@@ -15,6 +15,11 @@ const Reverse1999Page = lazy(() =>
 const N2ePage = lazy(() =>
   import('@/pages/neverness-to-everness/N2ePage').then((m) => ({ default: m.N2ePage })),
 );
+const ArknightsEndfieldPage = lazy(() =>
+  import('@/pages/arknights-endfield/ArknightsEndfieldPage').then((m) => ({
+    default: m.ArknightsEndfieldPage,
+  })),
+);
 
 function App() {
   const { session, isAuthLoading, signInWithGoogle, signOut } = useAuth();
@@ -59,6 +64,16 @@ function App() {
             path="/neverness-to-everness"
             element={
               <N2ePage
+                session={session}
+                isAuthLoading={isAuthLoading}
+                onSignIn={signInWithGoogle}
+              />
+            }
+          />
+          <Route
+            path="/arknights-endfield"
+            element={
+              <ArknightsEndfieldPage
                 session={session}
                 isAuthLoading={isAuthLoading}
                 onSignIn={signInWithGoogle}

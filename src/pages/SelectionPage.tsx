@@ -30,6 +30,15 @@ const GAMES = [
     description: 'Track espers, awakenings, and team compositions.',
     tag: 'Hotta Studio',
   },
+  {
+    id: 'arknights-endfield',
+    name: 'Arknights: Endfield',
+    path: '/arknights-endfield',
+    bgClass: 'bg-endfield-sel',
+    imageUrl: '/assets/arknights-endfield/selection-cover.webp',
+    description: 'Track operators, levels, and squad compositions.',
+    tag: 'Hypergryph',
+  },
 ];
 
 interface SelectionPageProps {

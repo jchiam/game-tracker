@@ -1,0 +1,185 @@
+.operator-static-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.operator-static-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.rarity-indicator {
+  font-size: var(--typography-font-size-xs);
+  letter-spacing: -1px;
+}
+
+.rarity-indicator.rarity-6 {
+  color: var(--color-brand-primary);
+}
+
+.rarity-indicator.rarity-5 {
+  color: var(--color-endfield-class-striker);
+}
+
+.rarity-indicator.rarity-4 {
+  color: var(--color-text-secondary);
+}
+
+.potential-row {
+  display: flex;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
+}
+
+.potential-btn {
+  padding: var(--spacing-2) var(--spacing-sm);
+  font-size: var(--typography-font-size-xs);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-ui-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.potential-btn:hover {
+  border-color: var(--color-brand-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.potential-btn::before {
+  display: none;
+}
+
+.potential-btn.active {
+  color: var(--color-brand-primary);
+  border-color: rgba(212, 175, 55, 0.5);
+  background: rgba(212, 175, 55, 0.12);
+}
+
+/* Badge colors for Endfield class */
+.endfield-class-badge {
+  padding: var(--spacing-1) var(--spacing-sm);
+  border-radius: var(--border-radius-badge);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-medium);
+  border: 1px solid;
+}
+
+.endfield-class-caster {
+  color: var(--color-endfield-class-caster);
+  background: rgba(201, 168, 248, 0.15);
+  border-color: rgba(201, 168, 248, 0.3);
+}
+
+.endfield-class-defender {
+  color: var(--color-endfield-class-defender);
+  background: rgba(138, 184, 245, 0.15);
+  border-color: rgba(138, 184, 245, 0.3);
+}
+
+.endfield-class-guard {
+  color: var(--color-endfield-class-guard);
+  background: rgba(255, 144, 144, 0.15);
+  border-color: rgba(255, 144, 144, 0.3);
+}
+
+.endfield-class-striker {
+  color: var(--color-endfield-class-striker);
+  background: rgba(245, 214, 138, 0.15);
+  border-color: rgba(245, 214, 138, 0.3);
+}
+
+.endfield-class-supporter {
+  color: var(--color-endfield-class-supporter);
+  background: rgba(144, 224, 154, 0.15);
+  border-color: rgba(144, 224, 154, 0.3);
+}
+
+.endfield-class-vanguard {
+  color: var(--color-endfield-class-vanguard);
+  background: rgba(245, 176, 128, 0.15);
+  border-color: rgba(245, 176, 128, 0.3);
+}
+
+/* Badge colors for Endfield element */
+.endfield-element-badge {
+  padding: var(--spacing-1) var(--spacing-sm);
+  border-radius: var(--border-radius-badge);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-medium);
+  border: 1px solid;
+}
+
+.endfield-element-physical {
+  color: var(--color-endfield-element-physical);
+  background: rgba(188, 188, 188, 0.15);
+  border-color: rgba(188, 188, 188, 0.3);
+}
+
+.endfield-element-cryo {
+  color: var(--color-endfield-element-cryo);
+  background: rgba(71, 199, 253, 0.15);
+  border-color: rgba(71, 199, 253, 0.3);
+}
+
+.endfield-element-electric {
+  color: var(--color-endfield-element-electric);
+  background: rgba(217, 122, 254, 0.15);
+  border-color: rgba(217, 122, 254, 0.3);
+}
+
+.endfield-element-heat {
+  color: var(--color-endfield-element-heat);
+  background: rgba(248, 79, 54, 0.15);
+  border-color: rgba(248, 79, 54, 0.3);
+}
+
+.endfield-element-nature {
+  color: var(--color-endfield-element-nature);
+  background: rgba(91, 200, 159, 0.15);
+  border-color: rgba(91, 200, 159, 0.3);
+}
+
+/* Badge colors for Endfield weapon */
+.endfield-weapon-badge {
+  padding: var(--spacing-1) var(--spacing-sm);
+  border-radius: var(--border-radius-badge);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-medium);
+  border: 1px solid;
+}
+
+.endfield-weapon-sword {
+  color: var(--color-endfield-weapon-sword);
+  background: rgba(240, 168, 216, 0.15);
+  border-color: rgba(240, 168, 216, 0.3);
+}
+
+.endfield-weapon-greatsword {
+  color: var(--color-endfield-weapon-greatsword);
+  background: rgba(245, 176, 128, 0.15);
+  border-color: rgba(245, 176, 128, 0.3);
+}
+
+.endfield-weapon-polearm {
+  color: var(--color-endfield-weapon-polearm);
+  background: rgba(144, 208, 240, 0.15);
+  border-color: rgba(144, 208, 240, 0.3);
+}
+
+.endfield-weapon-handcannon {
+  color: var(--color-endfield-weapon-handcannon);
+  background: rgba(245, 214, 138, 0.15);
+  border-color: rgba(245, 214, 138, 0.3);
+}
+
+.endfield-weapon-arts-unit {
+  color: var(--color-endfield-weapon-arts-unit);
+  background: rgba(201, 168, 248, 0.15);
+  border-color: rgba(201, 168, 248, 0.3);
+}

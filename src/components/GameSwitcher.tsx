@@ -24,6 +24,13 @@ const GAMES = [
     icon: '/assets/icons/n2e-icon.webp',
     color: '#7b2dff',
   },
+  {
+    id: 'endfield',
+    name: 'Arknights: Endfield',
+    path: '/arknights-endfield',
+    icon: '/assets/icons/endfield-icon.webp',
+    color: '#47c7fd',
+  },
 ];
 
 export function GameSwitcher() {
