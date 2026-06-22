@@ -21,14 +21,14 @@ const GAMES = [
     id: 'n2e',
     name: 'Neverness to Everness',
     path: '/neverness-to-everness',
-    icon: '/assets/icons/n2e-icon.webp',
+    icon: '/assets/icons/n2e-icon.png',
     color: '#7b2dff',
   },
   {
     id: 'endfield',
     name: 'Arknights: Endfield',
     path: '/arknights-endfield',
-    icon: '/assets/icons/endfield-icon.webp',
+    icon: '/assets/icons/endfield-icon.png',
     color: '#47c7fd',
   },
 ];
