@@ -3,15 +3,35 @@ import type { N2ETrackedCharacter } from '@/types';
 import {
   CARTRIDGE_MAIN_STATS,
   CARTRIDGE_SUB_STATS,
-  CARTRIDGE_RARITIES,
 } from '@/data/neverness-to-everness/cartridge-stats';
+import { ALL_CARTRIDGES } from '@/data/neverness-to-everness/cartridges';
 import { Modal } from '@/components/Modal';
 import { PreferenceChain } from '@/components/PreferenceChain';
 import './CartridgeEditorModal.css';
 
+// Deduplicated sorted list of cartridge names
+const CARTRIDGE_NAMES = [...new Set(ALL_CARTRIDGES.map((c) => c.name))].sort();
+const CARTRIDGE_RARITIES = ['B', 'A', 'S'] as const;
+
+function cartridgeIdFromNameAndRarity(name: string, rarity: string): string | null {
+  const entry = ALL_CARTRIDGES.find((c) => c.name === name && c.rarity === rarity);
+  return entry?.id ?? null;
+}
+
+function nameFromCartridgeId(cartridgeId: string | null): string {
+  if (!cartridgeId) return '';
+  return ALL_CARTRIDGES.find((c) => c.id === cartridgeId)?.name ?? '';
+}
+
+function rarityFromCartridgeId(cartridgeId: string | null): string {
+  if (!cartridgeId) return '';
+  return ALL_CARTRIDGES.find((c) => c.id === cartridgeId)?.rarity ?? '';
+}
+
 interface CartridgeEditorModalProps {
   character: N2ETrackedCharacter;
   onSaveCartridge: (
+    cartridgeId: string | null,
     rarity: string | null,
     level: number,
     mainStat: string | null,
@@ -29,24 +49,76 @@ export function CartridgeEditorModal({
 }: CartridgeEditorModalProps) {
   const [activeTab, setActiveTab] = useState<'equip' | 'preferences'>('equip');
 
+  const currentCartridgeId = character.cartridgeId;
   const currentRarity = character.cartridgeRarity;
   const currentLevel = character.cartridgeLevel;
   const currentMainStat = character.cartridgeMainStat;
   const currentSubStats = character.cartridgeSubStats;
 
-  const currentPrefs = character.cartridgePreferences || {
+  const currentPrefs = character.cartridgePreferences ?? {
+    cartridgeId: null,
     mainStats: [],
     subStats: [],
     comments: '',
   };
 
+  // Local state for two-step picker — keeps name visible while rarity not yet chosen.
+  // Initialized from character data so reopening the modal shows the current selection.
+  const [equipName, setEquipName] = useState(() => nameFromCartridgeId(currentCartridgeId) || '');
+  const [equipRarity, setEquipRarity] = useState(
+    () => rarityFromCartridgeId(currentCartridgeId) || currentRarity || '',
+  );
+  const [prefName, setPrefName] = useState(() =>
+    nameFromCartridgeId(currentPrefs.cartridgeId ?? null),
+  );
+
   // ─── Equip tab helpers ──────────────────────────────────────────
 
+  const handleNameChange = (name: string) => {
+    setEquipName(name);
+    if (!name) {
+      setEquipRarity('');
+      onSaveCartridge(null, null, currentLevel, currentMainStat, currentSubStats);
+      return;
+    }
+    if (equipRarity) {
+      const newId = cartridgeIdFromNameAndRarity(name, equipRarity);
+      onSaveCartridge(
+        newId,
+        newId ? equipRarity : null,
+        currentLevel,
+        currentMainStat,
+        currentSubStats,
+      );
+    }
+    // No rarity yet — name is staged in local state; don't persist until rarity is chosen
+  };
+
+  const handleRarityChange = (rarity: string) => {
+    setEquipRarity(rarity);
+    if (!equipName) return;
+    const newId = cartridgeIdFromNameAndRarity(equipName, rarity);
+    onSaveCartridge(newId, rarity, currentLevel, currentMainStat, currentSubStats);
+  };
+
   const handleUnequip = () => {
-    onSaveCartridge(null, 0, null, []);
+    setEquipName('');
+    setEquipRarity('');
+    onSaveCartridge(null, null, 0, null, []);
   };
 
   // ─── Preferences tab helpers ────────────────────────────────────
+
+  const handlePrefNameChange = (name: string) => {
+    setPrefName(name);
+    if (!name) {
+      onSavePreferences({ ...currentPrefs, cartridgeId: null });
+      return;
+    }
+    // Always target S rarity
+    const newId = cartridgeIdFromNameAndRarity(name, 'S');
+    onSavePreferences({ ...currentPrefs, cartridgeId: newId });
+  };
 
   const addMainStatPref = () => {
     const newPrefs = { ...currentPrefs };
@@ -113,26 +185,35 @@ export function CartridgeEditorModal({
         {activeTab === 'equip' ? (
           <>
             <div className="form-group">
-              <label>Rarity</label>
+              <label>Cartridge</label>
               <select
-                name="cartridge-rarity"
-                value={currentRarity || ''}
-                onChange={(e) =>
-                  onSaveCartridge(
-                    e.target.value || null,
-                    currentLevel,
-                    currentMainStat,
-                    currentSubStats,
-                  )
-                }
+                name="cartridge-name"
+                value={equipName}
+                onChange={(e) => handleNameChange(e.target.value)}
               >
-                <option value="">-- No Rarity --</option>
-                {CARTRIDGE_RARITIES.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
+                <option value="">-- No Cartridge --</option>
+                {CARTRIDGE_NAMES.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
                   </option>
                 ))}
               </select>
+            </div>
+
+            <div className="form-group">
+              <label>Rarity</label>
+              <div className="rarity-btn-row">
+                {CARTRIDGE_RARITIES.map((r) => (
+                  <button
+                    key={r}
+                    className={`rarity-btn rarity-${r.toLowerCase()} ${equipRarity === r ? 'active' : ''}`}
+                    onClick={() => handleRarityChange(r)}
+                    disabled={!equipName}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <div className="form-group">
@@ -142,6 +223,7 @@ export function CartridgeEditorModal({
                 value={currentMainStat || ''}
                 onChange={(e) =>
                   onSaveCartridge(
+                    currentCartridgeId,
                     currentRarity,
                     currentLevel,
                     e.target.value || null,
@@ -169,6 +251,7 @@ export function CartridgeEditorModal({
                   value={currentLevel}
                   onChange={(e) =>
                     onSaveCartridge(
+                      currentCartridgeId,
                       currentRarity,
                       parseInt(e.target.value),
                       currentMainStat,
@@ -194,7 +277,13 @@ export function CartridgeEditorModal({
                     onChange={(e) => {
                       const newSubs = [...currentSubStats];
                       newSubs[idx] = e.target.value;
-                      onSaveCartridge(currentRarity, currentLevel, currentMainStat, newSubs);
+                      onSaveCartridge(
+                        currentCartridgeId,
+                        currentRarity,
+                        currentLevel,
+                        currentMainStat,
+                        newSubs,
+                      );
                     }}
                   >
                     <option value="">- Stat -</option>
@@ -208,7 +297,13 @@ export function CartridgeEditorModal({
                     className="remove-substat"
                     onClick={() => {
                       const newSubs = currentSubStats.filter((_, i) => i !== idx);
-                      onSaveCartridge(currentRarity, currentLevel, currentMainStat, newSubs);
+                      onSaveCartridge(
+                        currentCartridgeId,
+                        currentRarity,
+                        currentLevel,
+                        currentMainStat,
+                        newSubs,
+                      );
                     }}
                   >
                     ✕
@@ -221,10 +316,13 @@ export function CartridgeEditorModal({
                   className="add-substat-btn"
                   onClick={() => {
                     const defaultStat = CARTRIDGE_SUB_STATS[0];
-                    onSaveCartridge(currentRarity, currentLevel, currentMainStat, [
-                      ...currentSubStats,
-                      defaultStat,
-                    ]);
+                    onSaveCartridge(
+                      currentCartridgeId,
+                      currentRarity,
+                      currentLevel,
+                      currentMainStat,
+                      [...currentSubStats, defaultStat],
+                    );
                   }}
                 >
                   + Add Sub Stat
@@ -235,8 +333,26 @@ export function CartridgeEditorModal({
         ) : (
           <div className="preferences-tab">
             <p className="tab-description">
-              Define the ideal cartridge stats for {character.name}.
+              Define the ideal cartridge build for {character.name}.
             </p>
+
+            <div className="pref-section">
+              <h3>Target Cartridge</h3>
+              <div className="form-group">
+                <select
+                  name="pref-cartridge-name"
+                  value={prefName}
+                  onChange={(e) => handlePrefNameChange(e.target.value)}
+                >
+                  <option value="">-- No Preference --</option>
+                  {CARTRIDGE_NAMES.map((n) => (
+                    <option key={n} value={n}>
+                      {n}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
 
             <div className="pref-section">
               <h3>Main Stat Priority</h3>

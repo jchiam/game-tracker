@@ -103,6 +103,8 @@ describe('characterService', () => {
         arc_id: 1,
         arc_level: 30,
         arc_tier: 2,
+        cartridge_id: 'Cosmos_orange',
+        cartridge_preference_id: null,
         cartridge_rarity: 'S',
         cartridge_level: 15,
         cartridge_main_stat: 'CRIT Rate',
@@ -122,6 +124,7 @@ describe('characterService', () => {
       expect(result[0].resonanceCount).toBe(3);
       expect(result[0].arcId).toBe(1);
       expect(result[0].arcTier).toBe(2);
+      expect(result[0].cartridgeId).toBe('Cosmos_orange');
       expect(result[0].cartridgeRarity).toBe('S');
       expect(result[0].cartridgeSubStats).toEqual(['ATK%', 'CRIT DMG', 'HP%', 'DEF%']);
       expect(result[0].isFavorited).toBe(true);
@@ -264,6 +267,7 @@ describe('characterService', () => {
       mockFrom.mockReturnValue(builder);
 
       await service.saveCartridgePreferences('db-uuid-1', {
+        cartridgeId: null,
         mainStats: [],
         subStats: [],
         comments: 'New comments',
@@ -273,7 +277,10 @@ describe('characterService', () => {
       expect(mockFrom).toHaveBeenCalledWith('n2e_cartridge_preference_sub_stats');
       expect(mockFrom).toHaveBeenCalledWith('n2e_tracked_characters');
       expect(builder.delete).toHaveBeenCalled();
-      expect(builder.update).toHaveBeenCalledWith({ cartridge_comments: 'New comments' });
+      expect(builder.update).toHaveBeenCalledWith({
+        cartridge_comments: 'New comments',
+        cartridge_preference_id: null,
+      });
     });
 
     it('saveCartridgePreferences inserts main stat preferences when present', async () => {
@@ -286,6 +293,7 @@ describe('characterService', () => {
       });
 
       await service.saveCartridgePreferences('db-uuid-1', {
+        cartridgeId: null,
         mainStats: [{ stat: 'ATK', operator: '>', orderIndex: 0 }],
         subStats: [],
         comments: '',
@@ -311,6 +319,7 @@ describe('characterService', () => {
       });
 
       await service.saveCartridgePreferences('db-uuid-1', {
+        cartridgeId: null,
         mainStats: [],
         subStats: [{ stat: 'CRIT DMG', operator: '>', orderIndex: 0 }],
         comments: '',
@@ -338,6 +347,7 @@ describe('characterService', () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
       await expect(
         service.saveCartridgePreferences('db-uuid-1', {
+          cartridgeId: null,
           mainStats: [{ stat: 'ATK', operator: null, orderIndex: 0 }],
           subStats: [],
           comments: '',
@@ -359,6 +369,7 @@ describe('characterService', () => {
       const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
       await expect(
         service.saveCartridgePreferences('db-uuid-1', {
+          cartridgeId: null,
           mainStats: [],
           subStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
           comments: '',

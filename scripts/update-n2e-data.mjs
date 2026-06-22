@@ -172,6 +172,22 @@ async function loadExistingArcs() {
   }
 }
 
+async function loadExistingCartridges() {
+  const filePath = resolve(ROOT, 'src/data/neverness-to-everness/cartridges.ts');
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    const entries = [];
+    const regex = /id:\s*'([^']+)'[^}]*?name:\s*'([^']+)'/gs;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      entries.push({ id: match[1], name: match[2] });
+    }
+    return entries;
+  } catch {
+    return [];
+  }
+}
+
 // ─── ImageKit ──────────────────────────────────────────────────────
 
 function toImageKitLocation(localAssetPath) {
@@ -354,6 +370,50 @@ function generateArcsTs(arcs) {
   return lines.join('\n');
 }
 
+const QUALITY_TO_RARITY = { orange: 'S', purple: 'A', blue: 'B' };
+
+function generateCartridgesTs(cartridges) {
+  const sRank = cartridges.filter((c) => c.rarity === 'S');
+  const aRank = cartridges.filter((c) => c.rarity === 'A');
+  const bRank = cartridges.filter((c) => c.rarity === 'B');
+
+  const lines = [
+    '// Auto-generated from everness.info GraphQL API — do not edit manually.',
+    '// Run `node scripts/update-n2e-data.mjs` or trigger the GitHub Actions workflow to update.',
+    '',
+    'export interface N2ECartridge {',
+    '  id: string;',
+    '  name: string;',
+    '  rarity: string;',
+    '}',
+    '',
+    'export const ALL_CARTRIDGES: N2ECartridge[] = [',
+  ];
+
+  const formatEntry = (c) =>
+    [
+      '  {',
+      `    id: '${c.id}',`,
+      `    name: '${esc(c.name)}',`,
+      `    rarity: '${c.rarity}',`,
+      '  },',
+    ].join('\n');
+
+  const addGroup = (label, items) => {
+    if (items.length > 0) {
+      lines.push(`  // ${label}`);
+      lines.push(...items.map(formatEntry));
+    }
+  };
+
+  addGroup('S-Rank', sRank);
+  addGroup('A-Rank', aRank);
+  addGroup('B-Rank', bRank);
+
+  lines.push('];', '');
+  return lines.join('\n');
+}
+
 function generateCartridgeStatsTs(mainStats, subStats) {
   const lines = [
     '// Auto-generated from everness.info GraphQL API — do not edit manually.',
@@ -385,10 +445,12 @@ async function main() {
   const [
     esperData,
     arcData,
+    shardData,
     mainStatData,
     subStatData,
     { entries: existingChars, idMap: existingIds },
     existingArcs,
+    existingCartridges,
   ] = await Promise.all([
     fetchGraphQL(`{
       espers {
@@ -402,14 +464,17 @@ async function main() {
         id name quality type_id icon
       }
     }`),
+    fetchGraphQL(`{ shards { id name quality type_id } }`),
     fetchGraphQL(`{ mainStatCore { name } }`),
     fetchGraphQL(`{ subStats { name } }`),
     loadExistingCharacters(),
     loadExistingArcs(),
+    loadExistingCartridges(),
   ]);
 
   const rawEspers = esperData.espers;
   const rawArcs = arcData.arcs;
+  const rawShards = shardData.shards;
   const mainStats = mainStatData.mainStatCore.map((s) => s.name);
   const subStats = subStatData.subStats.map((s) => s.name);
   console.log(
@@ -526,6 +591,24 @@ async function main() {
     arcs.push({ id: a.id, name: a.name, rarity, arcType, imageUrl });
   }
 
+  // ── Process Cartridges ───────────────────────────────────────────
+
+  const rawCartridgeCores = rawShards.filter((s) => s.type_id === 'core');
+  rawCartridgeCores.sort((a, b) => {
+    const qa = { orange: 0, purple: 1, blue: 2 }[a.quality] ?? 3;
+    const qb = { orange: 0, purple: 1, blue: 2 }[b.quality] ?? 3;
+    if (qa !== qb) return qa - qb;
+    return a.name.localeCompare(b.name);
+  });
+
+  const cartridges = rawCartridgeCores.map((s) => ({
+    id: s.id,
+    name: s.name,
+    rarity: QUALITY_TO_RARITY[s.quality] ?? 'B',
+  }));
+
+  console.log(`\nProcessing ${cartridges.length} cartridges...`);
+
   // ── Write generated files ────────────────────────────────────────
 
   const charPath = resolve(ROOT, 'src/data/neverness-to-everness/characters.ts');
@@ -533,6 +616,9 @@ async function main() {
 
   const arcPath = resolve(ROOT, 'src/data/neverness-to-everness/arcs.ts');
   await writeFile(arcPath, generateArcsTs(arcs), 'utf-8');
+
+  const cartridgesPath = resolve(ROOT, 'src/data/neverness-to-everness/cartridges.ts');
+  await writeFile(cartridgesPath, generateCartridgesTs(cartridges), 'utf-8');
 
   const statsPath = resolve(ROOT, 'src/data/neverness-to-everness/cartridge-stats.ts');
   await writeFile(statsPath, generateCartridgeStatsTs(mainStats, subStats), 'utf-8');
@@ -568,6 +654,18 @@ async function main() {
   console.log(`  Arcs: ${arcs.length} total (${arcDiff}) — ${arcImageCount} images uploaded`);
   for (const a of arcsAdded) console.log(`    + ${a.name} [${a.rarity} ${a.arcType}]`);
   for (const a of arcsRemoved) console.log(`    - ${a.name} (removed from source)`);
+
+  const existingCartridgeIds = new Set(existingCartridges.map((e) => e.id));
+  const newCartridgeIds = new Set(cartridges.map((c) => c.id));
+  const cartridgesAdded = cartridges.filter((c) => !existingCartridgeIds.has(c.id));
+  const cartridgesRemoved = existingCartridges.filter((e) => !newCartridgeIds.has(e.id));
+  const cartridgeDiff =
+    cartridgesAdded.length || cartridgesRemoved.length
+      ? `+${cartridgesAdded.length} added, -${cartridgesRemoved.length} removed`
+      : 'no changes';
+  console.log(`  Cartridges: ${cartridges.length} total (${cartridgeDiff})`);
+  for (const c of cartridgesAdded) console.log(`    + ${c.name} [${c.rarity}]`);
+  for (const c of cartridgesRemoved) console.log(`    - ${c.name} (removed from source)`);
 
   if (missingImages.length > 0) {
     console.warn(`\n  Warning: ${missingImages.length} character(s) with missing avatar images:`);

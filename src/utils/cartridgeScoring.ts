@@ -1,7 +1,30 @@
 import type { N2ETrackedCharacter } from '../types';
 
-export const MAIN_STAT_WEIGHT = 0.4;
-export const SUB_STAT_WEIGHT = 0.6;
+export const CARTRIDGE_ID_WEIGHT = 0.35;
+export const MAIN_STAT_WEIGHT = 0.3;
+export const SUB_STAT_WEIGHT = 0.35;
+
+const RARITY_ORDER: Record<string, number> = { B: 0, A: 1, S: 2 };
+const RARITY_PENALTIES = [1.0, 0.6, 0.3]; // index = rarity delta (0, 1, 2)
+
+function extractBase(cartridgeId: string): string {
+  return cartridgeId.replace(/_(?:blue|purple|orange)$/, '');
+}
+
+function extractRarity(cartridgeId: string): string {
+  if (cartridgeId.endsWith('_orange')) return 'S';
+  if (cartridgeId.endsWith('_purple')) return 'A';
+  return 'B';
+}
+
+export function getCartridgeIdMatchScore(preferredId: string, equippedId: string): number {
+  if (extractBase(preferredId) !== extractBase(equippedId)) return 0.0;
+  const prefRarityOrder = RARITY_ORDER[extractRarity(preferredId)] ?? 0;
+  const equippedRarityOrder = RARITY_ORDER[extractRarity(equippedId)] ?? 0;
+  const delta = prefRarityOrder - equippedRarityOrder;
+  if (delta <= 0) return 1.0;
+  return RARITY_PENALTIES[delta] ?? 0.0;
+}
 
 export function getStatMatchScore(preferredStat: string, equippedStat: string): number {
   if (preferredStat === equippedStat) return 1.0;
@@ -24,9 +47,25 @@ export function getStatMatchScore(preferredStat: string, equippedStat: string): 
 }
 
 export function calculateCartridgeScore(character: N2ETrackedCharacter): number {
-  const { cartridgePreferences: prefs, cartridgeMainStat, cartridgeSubStats } = character;
-  if (!prefs || (prefs.mainStats.length === 0 && prefs.subStats.length === 0)) return -1;
-  if (!cartridgeMainStat && cartridgeSubStats.length === 0) return -1;
+  const {
+    cartridgePreferences: prefs,
+    cartridgeId,
+    cartridgeMainStat,
+    cartridgeSubStats,
+  } = character;
+
+  const hasPrefs =
+    prefs && (prefs.cartridgeId != null || prefs.mainStats.length > 0 || prefs.subStats.length > 0);
+  if (!hasPrefs) return -1;
+
+  const hasEquipped =
+    cartridgeId != null || cartridgeMainStat != null || cartridgeSubStats.length > 0;
+  if (!hasEquipped) return -1;
+
+  let idScore = 0;
+  if (prefs.cartridgeId && cartridgeId) {
+    idScore = getCartridgeIdMatchScore(prefs.cartridgeId, cartridgeId);
+  }
 
   let mainScore = 0;
   if (cartridgeMainStat && prefs.mainStats.length > 0) {
@@ -54,7 +93,11 @@ export function calculateCartridgeScore(character: N2ETrackedCharacter): number 
 
   return Math.min(
     100,
-    Math.max(0, (mainScore * MAIN_STAT_WEIGHT + subScore * SUB_STAT_WEIGHT) * 100),
+    Math.max(
+      0,
+      (idScore * CARTRIDGE_ID_WEIGHT + mainScore * MAIN_STAT_WEIGHT + subScore * SUB_STAT_WEIGHT) *
+        100,
+    ),
   );
 }
 

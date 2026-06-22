@@ -16,6 +16,7 @@ import { useCharacters } from '@/hooks/neverness-to-everness/useCharacters';
 import { useParties } from '@/hooks/neverness-to-everness/useParties';
 
 const emptyPrefs: N2ETrackedCharacter['cartridgePreferences'] = {
+  cartridgeId: null,
   mainStats: [],
   subStats: [],
   comments: '',
@@ -37,6 +38,7 @@ function makeChar(id: string, name: string): N2ETrackedCharacter {
     arcId: null,
     arcLevel: 1,
     arcTier: 1,
+    cartridgeId: null,
     cartridgeRarity: null,
     cartridgeLevel: 0,
     cartridgeMainStat: null,

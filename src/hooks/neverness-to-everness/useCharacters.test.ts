@@ -219,8 +219,14 @@ describe('useCharacters', () => {
     const { result } = await setupWithChar();
     const id = result.current.trackedCharacters[0].id;
 
-    act(() => result.current.updateCartridge(id, 'S', 15, 'ATK %', ['CRIT Rate %', 'CRIT DMG %']));
+    act(() =>
+      result.current.updateCartridge(id, 'Cosmos_orange', 'S', 15, 'ATK %', [
+        'CRIT Rate %',
+        'CRIT DMG %',
+      ]),
+    );
     const char = result.current.trackedCharacters[0];
+    expect(char.cartridgeId).toBe('Cosmos_orange');
     expect(char.cartridgeRarity).toBe('S');
     expect(char.cartridgeLevel).toBe(15);
     expect(char.cartridgeMainStat).toBe('ATK %');
@@ -242,6 +248,7 @@ describe('useCharacters', () => {
     const { result } = await setupWithChar();
     const id = result.current.trackedCharacters[0].id;
     const prefs = {
+      cartridgeId: null,
       mainStats: [{ stat: 'ATK %', operator: null, orderIndex: 0 }],
       subStats: [],
       comments: 'Test',

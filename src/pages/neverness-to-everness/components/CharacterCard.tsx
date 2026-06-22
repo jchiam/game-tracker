@@ -1,5 +1,6 @@
 import type { N2ETrackedCharacter } from '@/types';
 import { ALL_ARCS } from '@/data/neverness-to-everness/arcs';
+import { ALL_CARTRIDGES } from '@/data/neverness-to-everness/cartridges';
 import { calculateCartridgeScore, getScoreGrade } from '@/utils/cartridgeScoring';
 import { GameBadge } from '@/components/GameBadge';
 import { getMugshotUrl } from '@/lib/imagekit';
@@ -67,6 +68,7 @@ interface CharacterCardProps {
   onUpdateArc: (id: string, arcId: string | null, arcLevel: number, arcTier: number) => void;
   onUpdateCartridge: (
     id: string,
+    cartridgeId: string | null,
     rarity: string | null,
     level: number,
     mainStat: string | null,
@@ -105,7 +107,8 @@ export function CharacterCard({
   // Cartridge score
   const hasCartridgePrefs =
     character.cartridgePreferences &&
-    (character.cartridgePreferences.mainStats.length > 0 ||
+    (character.cartridgePreferences.cartridgeId != null ||
+      character.cartridgePreferences.mainStats.length > 0 ||
       character.cartridgePreferences.subStats.length > 0);
   const cartridgeScore = hasCartridgePrefs ? calculateCartridgeScore(character) : -1;
   const scoreGrade = cartridgeScore >= 0 ? getScoreGrade(cartridgeScore) : '';
@@ -120,7 +123,11 @@ export function CharacterCard({
     : getProgressStyle(0, 0, 1); // rust when unequipped
   const arcLevelPs = getProgressStyle(character.arcLevel, 1, 80);
 
-  const isCartridgeEquipped = !!character.cartridgeMainStat || !!character.cartridgeRarity;
+  const isCartridgeEquipped =
+    !!character.cartridgeId || !!character.cartridgeMainStat || !!character.cartridgeRarity;
+  const equippedCartridgeName = character.cartridgeId
+    ? (ALL_CARTRIDGES.find((c) => c.id === character.cartridgeId)?.name ?? null)
+    : null;
 
   return (
     <>
@@ -250,7 +257,7 @@ export function CharacterCard({
                 onClick={() => setIsCartridgeEditorOpen(true)}
                 title={
                   isCartridgeEquipped
-                    ? `${character.cartridgeRarity || ''} ${character.cartridgeMainStat || 'Equipped'} Lv${character.cartridgeLevel}`
+                    ? `${character.cartridgeRarity || ''} ${equippedCartridgeName || character.cartridgeMainStat || 'Equipped'} Lv${character.cartridgeLevel}`
                     : 'Click to equip cartridge'
                 }
               >
@@ -264,7 +271,7 @@ export function CharacterCard({
                       </span>
                     )}
                     <span className="cartridge-slot-stat">
-                      {character.cartridgeMainStat || 'No main stat'}
+                      {equippedCartridgeName || character.cartridgeMainStat || 'No name'}
                     </span>
                     <span className="cartridge-slot-level">Lv{character.cartridgeLevel}</span>
                     {character.cartridgeSubStats.length > 0 && (
@@ -286,6 +293,25 @@ export function CharacterCard({
                 <div className="target-build-header">
                   <span className="target-build-label">Target Build</span>
                 </div>
+                {character.cartridgePreferences.cartridgeId && (
+                  <div className="target-build-chain">
+                    <span className="target-build-chain-label">Set</span>
+                    <span className="pref-stat-badge">
+                      {ALL_CARTRIDGES.find(
+                        (c) => c.id === character.cartridgePreferences.cartridgeId,
+                      )?.name ?? character.cartridgePreferences.cartridgeId}
+                    </span>
+                    <span
+                      className={`cartridge-rarity-badge rarity-${(ALL_CARTRIDGES.find((c) => c.id === character.cartridgePreferences.cartridgeId)?.rarity ?? '').toLowerCase()}`}
+                    >
+                      {
+                        ALL_CARTRIDGES.find(
+                          (c) => c.id === character.cartridgePreferences.cartridgeId,
+                        )?.rarity
+                      }
+                    </span>
+                  </div>
+                )}
                 {character.cartridgePreferences.mainStats.length > 0 && (
                   <div className="target-build-chain">
                     <span className="target-build-chain-label">Main</span>
@@ -488,8 +514,8 @@ export function CharacterCard({
       {isCartridgeEditorOpen && (
         <CartridgeEditorModal
           character={character}
-          onSaveCartridge={(rarity, level, mainStat, subStats) =>
-            onUpdateCartridge(character.id!, rarity, level, mainStat, subStats)
+          onSaveCartridge={(cartridgeId, rarity, level, mainStat, subStats) =>
+            onUpdateCartridge(character.id!, cartridgeId, rarity, level, mainStat, subStats)
           }
           onSavePreferences={(prefs) => onSaveCartridgePreferences(character.id!, prefs)}
           onClose={() => setIsCartridgeEditorOpen(false)}

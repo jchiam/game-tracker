@@ -1,6 +1,6 @@
 ## Purpose
 
-Neverness to Everness per-character tracked fields. Covers level (1–90), awakening (6 boolean slots), resonance count (0–6), arc equipment (id + level + tier), cartridge equipment (rarity + level + main stat + sub stats), cartridge stat preferences (main/sub chains + comments), favorite toggle, level-based sort, and search keys.
+Neverness to Everness per-character tracked fields. Covers level (1–90), awakening (6 boolean slots), resonance count (0–6), arc equipment (id + level + tier), cartridge equipment (cartridgeId + rarity + level + main stat + sub stats), cartridge build preferences (target cartridgeId + main/sub chains + comments), favorite toggle, level-based sort, and search keys.
 
 ## Requirements
 
@@ -82,17 +82,22 @@ The system SHALL track an equipped arc per character with three fields: arc ID (
 
 ### Requirement: Cartridge equipment
 
-The system SHALL track an equipped cartridge per character with four fields: rarity (B, A, or S, or null), level (integer 0–20), main stat (string or null), and sub stats (array of strings, max 4). Defaults on add: rarity null, level 0, main stat null, sub stats empty array.
+The system SHALL track an equipped cartridge per character with five fields: cartridge ID (string or null, references a named entry from `ALL_CARTRIDGES`), rarity (B, A, or S, or null), level (integer 0–20), main stat (string or null), and sub stats (array of strings, max 4). Defaults on add: all fields null/0/empty.
 
-#### Scenario: Cartridge rarity set
+#### Scenario: Cartridge named set selected
 
-- **WHEN** user selects a cartridge rarity (B, A, or S)
-- **THEN** `cartridgeRarity` is updated in local state and queued for DB write
+- **WHEN** user selects a named cartridge set by name (e.g. "Lost Radiance")
+- **THEN** the name picker updates UI state; a rarity must also be selected to form a valid `cartridgeId`
+
+#### Scenario: Cartridge rarity selected
+
+- **WHEN** user selects a rarity (B, A, or S) after selecting a set name
+- **THEN** `cartridgeId` is set to the combined `{base}_{quality}` ID (e.g. `"Cosmos_orange"` for Lost Radiance S), `cartridgeRarity` is updated, and both are queued for DB write
 
 #### Scenario: Cartridge cleared
 
-- **WHEN** user clears the cartridge
-- **THEN** `cartridgeRarity` is set to null
+- **WHEN** user un-equips the cartridge
+- **THEN** `cartridgeId` is set to null, `cartridgeRarity` is set to null, `cartridgeMainStat` is set to null, `cartridgeSubStats` is set to empty array, and `cartridgeLevel` is set to 0
 
 #### Scenario: Cartridge level updated
 
@@ -111,7 +116,17 @@ The system SHALL track an equipped cartridge per character with four fields: rar
 
 ### Requirement: Cartridge preferences
 
-The system SHALL track cartridge stat preferences per character with three fields: main stats chain (ordered array of StatPreference), sub stats chain (ordered array of StatPreference), and comments (string or empty). Preferences are persisted via non-atomic delete-then-reinsert (see shared-save-behaviour spec known limitation).
+The system SHALL track cartridge build preferences per character with four fields: target cartridge ID (string or null, a single named set preference), main stats chain (ordered array of StatPreference), sub stats chain (ordered array of StatPreference), and comments (string or empty). Preferences are persisted via non-atomic delete-then-reinsert (see shared-save-behaviour spec known limitation).
+
+#### Scenario: Target cartridge set preference saved
+
+- **WHEN** user selects a preferred named cartridge set by name in the preferences tab
+- **THEN** `cartridgePreferences.cartridgeId` is immediately set to the S-rarity ID for that set (e.g. selecting "Lost Radiance" saves `"LostRadiance_orange"`) and persisted; no rarity picker is shown because preferences always target S tier
+
+#### Scenario: Target cartridge preference cleared
+
+- **WHEN** user clears the cartridge preference picker
+- **THEN** `cartridgePreferences.cartridgeId` is set to null
 
 #### Scenario: Cartridge preferences saved
 
@@ -121,7 +136,7 @@ The system SHALL track cartridge stat preferences per character with three field
 #### Scenario: Empty preferences
 
 - **WHEN** no cartridge preferences are set for a character
-- **THEN** main stats and sub stats chains are empty arrays; cartridge score returns -1
+- **THEN** main stats and sub stats chains are empty arrays, cartridgeId is null; cartridge score returns -1
 
 #### Scenario: Preference comments saved
 

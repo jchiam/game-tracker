@@ -12,6 +12,7 @@ const CHARACTER_COLUMNS: Record<keyof N2ECharacterPatch, string> = {
   arcId: 'arc_id',
   arcLevel: 'arc_level',
   arcTier: 'arc_tier',
+  cartridgeId: 'cartridge_id',
   cartridgeRarity: 'cartridge_rarity',
   cartridgeLevel: 'cartridge_level',
   cartridgeMainStat: 'cartridge_main_stat',
@@ -26,7 +27,7 @@ export async function loadCharactersFromDB(userId: string): Promise<N2ETrackedCh
     .from('n2e_tracked_characters')
     .select(
       `id, character_id, level, awakening_slots, resonance_count, arc_id, arc_level, arc_tier,
-      cartridge_rarity, cartridge_level, cartridge_main_stat, cartridge_sub_stats, cartridge_comments, is_favorited,
+      cartridge_id, cartridge_preference_id, cartridge_rarity, cartridge_level, cartridge_main_stat, cartridge_sub_stats, cartridge_comments, is_favorited,
       n2e_cartridge_preference_main_stats ( id, stat, operator_to_next, order_index ),
       n2e_cartridge_preference_sub_stats ( id, stat, operator_to_next, order_index )`,
     )
@@ -57,11 +58,13 @@ export async function loadCharactersFromDB(userId: string): Promise<N2ETrackedCh
         arcId: row.arc_id ?? null,
         arcLevel: row.arc_level ?? 1,
         arcTier: row.arc_tier ?? 1,
+        cartridgeId: row.cartridge_id ?? null,
         cartridgeRarity: row.cartridge_rarity ?? null,
         cartridgeLevel: row.cartridge_level ?? 0,
         cartridgeMainStat: row.cartridge_main_stat ?? null,
         cartridgeSubStats: row.cartridge_sub_stats ?? [],
         cartridgePreferences: {
+          cartridgeId: row.cartridge_preference_id ?? null,
           mainStats: rawMainPrefs
             .sort((a: any, b: any) => a.order_index - b.order_index)
             .map((p: any) => ({
@@ -97,6 +100,8 @@ export async function insertCharacter(userId: string, characterId: string): Prom
       arc_id: null,
       arc_level: 1,
       arc_tier: 1,
+      cartridge_id: null,
+      cartridge_preference_id: null,
       cartridge_rarity: null,
       cartridge_level: 0,
       cartridge_main_stat: null,
@@ -150,7 +155,10 @@ export async function saveCartridgePreferences(
 
   await supabase
     .from('n2e_tracked_characters')
-    .update({ cartridge_comments: prefs.comments })
+    .update({
+      cartridge_comments: prefs.comments,
+      cartridge_preference_id: prefs.cartridgeId ?? null,
+    })
     .eq('id', dbId);
 
   const mainInserts = prefs.mainStats.map((pref, idx) => ({

@@ -106,11 +106,13 @@ export interface N2ETrackedCharacter extends N2ECharacter {
   arcId: string | null;
   arcLevel: number;
   arcTier: number; // 1–5 (T1–T5)
+  cartridgeId: string | null; // e.g. 'Cosmos_orange'
   cartridgeRarity: string | null; // 'B' | 'A' | 'S'
   cartridgeLevel: number; // 0–20
   cartridgeMainStat: string | null;
   cartridgeSubStats: string[]; // up to 4 stat type strings
   cartridgePreferences: {
+    cartridgeId: string | null;
     mainStats: StatPreference[];
     subStats: StatPreference[];
     comments?: string;
@@ -125,6 +127,7 @@ export interface N2ECharacterPatch {
   arcId?: string | null;
   arcLevel?: number;
   arcTier?: number;
+  cartridgeId?: string | null;
   cartridgeRarity?: string | null;
   cartridgeLevel?: number;
   cartridgeMainStat?: string | null;

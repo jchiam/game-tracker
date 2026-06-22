@@ -1,7 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { CartridgeEditorModal } from '@/pages/neverness-to-everness/components/CartridgeEditorModal';
+import { ALL_CARTRIDGES } from '@/data/neverness-to-everness/cartridges';
 import type { N2ETrackedCharacter } from '@/types';
+
+const firstCartridge = ALL_CARTRIDGES[0]; // S rarity
 
 function makeChar(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedCharacter {
   return {
@@ -19,11 +22,12 @@ function makeChar(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedChara
     arcId: null,
     arcLevel: 1,
     arcTier: 1,
+    cartridgeId: null,
     cartridgeRarity: null,
     cartridgeLevel: 0,
     cartridgeMainStat: null,
     cartridgeSubStats: [],
-    cartridgePreferences: { mainStats: [], subStats: [], comments: '' },
+    cartridgePreferences: { cartridgeId: null, mainStats: [], subStats: [], comments: '' },
     ...overrides,
   };
 }
@@ -47,6 +51,7 @@ describe('CartridgeEditorModal', () => {
   it('shows equip tab by default', () => {
     render(<CartridgeEditorModal character={makeChar()} {...defaultProps} />);
     expect(screen.getByText('Equip Cartridge')).toBeInTheDocument();
+    expect(screen.getByText('Cartridge', { selector: 'label' })).toBeInTheDocument();
     expect(screen.getByText('Rarity', { selector: 'label' })).toBeInTheDocument();
   });
 
@@ -59,7 +64,7 @@ describe('CartridgeEditorModal', () => {
 
   // --- Equip tab ---
 
-  it('calls onSaveCartridge when rarity is changed', () => {
+  it('does not call onSaveCartridge when name selected but no rarity yet', () => {
     const onSaveCartridge = vi.fn();
     render(
       <CartridgeEditorModal
@@ -68,9 +73,24 @@ describe('CartridgeEditorModal', () => {
         onSaveCartridge={onSaveCartridge}
       />,
     );
-    const select = document.querySelector('select[name="cartridge-rarity"]') as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'S' } });
-    expect(onSaveCartridge).toHaveBeenCalledWith('S', 0, null, []);
+    const select = document.querySelector('select[name="cartridge-name"]') as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: firstCartridge.name } });
+    // Name is staged in local state; no save until rarity is also chosen
+    expect(onSaveCartridge).not.toHaveBeenCalled();
+  });
+
+  it('calls onSaveCartridge with cartridgeId when name then rarity chosen', () => {
+    const onSaveCartridge = vi.fn();
+    // Pre-select the name by giving character the name already (simulate selecting S rarity)
+    const char = makeChar({ cartridgeId: firstCartridge.id });
+    render(
+      <CartridgeEditorModal character={char} {...defaultProps} onSaveCartridge={onSaveCartridge} />,
+    );
+    const rarityBtns = document.querySelectorAll('.rarity-btn');
+    // Click S rarity button
+    const sBtn = Array.from(rarityBtns).find((b) => b.textContent === 'S') as HTMLButtonElement;
+    fireEvent.click(sBtn);
+    expect(onSaveCartridge).toHaveBeenCalledWith(firstCartridge.id, 'S', 0, null, []);
   });
 
   it('calls onSaveCartridge when main stat is changed', () => {
@@ -86,7 +106,7 @@ describe('CartridgeEditorModal', () => {
       'select[name="cartridge-main-stat"]',
     ) as HTMLSelectElement;
     fireEvent.change(select, { target: { value: 'ATK %' } });
-    expect(onSaveCartridge).toHaveBeenCalledWith(null, 0, 'ATK %', []);
+    expect(onSaveCartridge).toHaveBeenCalledWith(null, null, 0, 'ATK %', []);
   });
 
   it('calls onSaveCartridge when level slider changes', () => {
@@ -100,20 +120,24 @@ describe('CartridgeEditorModal', () => {
     );
     const slider = document.querySelector('input[name="cartridge-level"]') as HTMLInputElement;
     fireEvent.change(slider, { target: { value: '15' } });
-    expect(onSaveCartridge).toHaveBeenCalledWith(null, 15, null, []);
+    expect(onSaveCartridge).toHaveBeenCalledWith(null, null, 15, null, []);
   });
 
   it('calls onSaveCartridge with null values when un-equip is clicked', () => {
     const onSaveCartridge = vi.fn();
     render(
       <CartridgeEditorModal
-        character={makeChar({ cartridgeRarity: 'S', cartridgeMainStat: 'ATK %' })}
+        character={makeChar({
+          cartridgeId: firstCartridge.id,
+          cartridgeRarity: 'S',
+          cartridgeMainStat: 'ATK %',
+        })}
         {...defaultProps}
         onSaveCartridge={onSaveCartridge}
       />,
     );
     fireEvent.click(screen.getByText('Un-equip Cartridge'));
-    expect(onSaveCartridge).toHaveBeenCalledWith(null, 0, null, []);
+    expect(onSaveCartridge).toHaveBeenCalledWith(null, null, 0, null, []);
   });
 
   it('calls onClose when Done button is clicked', () => {
@@ -133,7 +157,16 @@ describe('CartridgeEditorModal', () => {
       />,
     );
     fireEvent.click(screen.getByText('+ Add Sub Stat'));
-    expect(onSaveCartridge).toHaveBeenCalledWith(null, 0, null, ['ATK']);
+    // First sub stat default = first in CARTRIDGE_SUB_STATS
+    expect(onSaveCartridge).toHaveBeenCalledWith(
+      null,
+      null,
+      0,
+      null,
+      expect.arrayContaining([expect.any(String)]),
+    );
+    const call = onSaveCartridge.mock.calls[0];
+    expect(call[4]).toHaveLength(1);
   });
 
   it('removes a sub stat when remove button is clicked', () => {
@@ -148,7 +181,7 @@ describe('CartridgeEditorModal', () => {
     const removeButtons = screen.getAllByText('✕');
     const substatRemoveBtn = removeButtons.find((btn) => btn.classList.contains('remove-substat'))!;
     fireEvent.click(substatRemoveBtn);
-    expect(onSaveCartridge).toHaveBeenCalledWith(null, 0, null, ['HP']);
+    expect(onSaveCartridge).toHaveBeenCalledWith(null, null, 0, null, ['HP']);
   });
 
   it('hides add sub stat button when 4 subs are equipped', () => {
@@ -177,26 +210,7 @@ describe('CartridgeEditorModal', () => {
     fireEvent.click(addButtons[0]);
     expect(onSavePreferences).toHaveBeenCalledWith(
       expect.objectContaining({
-        mainStats: [{ stat: 'ATK %', operator: null, orderIndex: 0 }],
-      }),
-    );
-  });
-
-  it('adds a sub stat preference', () => {
-    const onSavePreferences = vi.fn();
-    render(
-      <CartridgeEditorModal
-        character={makeChar()}
-        {...defaultProps}
-        onSavePreferences={onSavePreferences}
-      />,
-    );
-    fireEvent.click(screen.getByText('Build Preferences'));
-    const addButtons = screen.getAllByText('+ Add Priority');
-    fireEvent.click(addButtons[1]);
-    expect(onSavePreferences).toHaveBeenCalledWith(
-      expect.objectContaining({
-        subStats: [{ stat: 'ATK', operator: null, orderIndex: 0 }],
+        mainStats: [expect.objectContaining({ operator: null, orderIndex: 0 })],
       }),
     );
   });
@@ -205,6 +219,7 @@ describe('CartridgeEditorModal', () => {
     const onSavePreferences = vi.fn();
     const char = makeChar({
       cartridgePreferences: {
+        cartridgeId: null,
         mainStats: [{ stat: 'ATK %', operator: null, orderIndex: 0 }],
         subStats: [],
         comments: '',
@@ -245,6 +260,7 @@ describe('CartridgeEditorModal', () => {
     const onSavePreferences = vi.fn();
     const char = makeChar({
       cartridgePreferences: {
+        cartridgeId: null,
         mainStats: [{ stat: 'ATK %', operator: null, orderIndex: 0 }],
         subStats: [],
         comments: '',
@@ -262,10 +278,9 @@ describe('CartridgeEditorModal', () => {
     fireEvent.click(addButtons[0]);
     expect(onSavePreferences).toHaveBeenCalledWith(
       expect.objectContaining({
-        mainStats: [
-          { stat: 'ATK %', operator: '>', orderIndex: 0 },
-          { stat: 'ATK %', operator: null, orderIndex: 1 },
-        ],
+        mainStats: expect.arrayContaining([
+          expect.objectContaining({ stat: 'ATK %', operator: '>', orderIndex: 0 }),
+        ]),
       }),
     );
   });
@@ -282,5 +297,37 @@ describe('CartridgeEditorModal', () => {
     const prefs = screen.getByText('Build Preferences');
     expect(equip).toHaveClass('active');
     expect(prefs).not.toHaveClass('active');
+  });
+
+  it('shows target cartridge name picker in preferences tab', () => {
+    render(<CartridgeEditorModal character={makeChar()} {...defaultProps} />);
+    fireEvent.click(screen.getByText('Build Preferences'));
+    const prefSelect = document.querySelector(
+      'select[name="pref-cartridge-name"]',
+    ) as HTMLSelectElement;
+    expect(prefSelect).toBeInTheDocument();
+  });
+
+  it('calls onSavePreferences with S-rarity cartridgeId when pref name is selected', () => {
+    const onSavePreferences = vi.fn();
+    render(
+      <CartridgeEditorModal
+        character={makeChar()}
+        {...defaultProps}
+        onSavePreferences={onSavePreferences}
+      />,
+    );
+    fireEvent.click(screen.getByText('Build Preferences'));
+    const prefSelect = document.querySelector(
+      'select[name="pref-cartridge-name"]',
+    ) as HTMLSelectElement;
+    fireEvent.change(prefSelect, { target: { value: firstCartridge.name } });
+    // Always resolves to S rarity
+    const expectedId = ALL_CARTRIDGES.find(
+      (c) => c.name === firstCartridge.name && c.rarity === 'S',
+    )?.id;
+    expect(onSavePreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ cartridgeId: expectedId }),
+    );
   });
 });

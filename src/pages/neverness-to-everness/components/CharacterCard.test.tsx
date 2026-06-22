@@ -21,6 +21,7 @@ vi.mock('@/data/neverness-to-everness/arcs', () => ({
 import { calculateCartridgeScore, getScoreGrade } from '@/utils/cartridgeScoring';
 
 const emptyPrefs: N2ETrackedCharacter['cartridgePreferences'] = {
+  cartridgeId: null,
   mainStats: [],
   subStats: [],
   comments: '',
@@ -43,6 +44,7 @@ function makeChar(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedChara
     arcId: null,
     arcLevel: 1,
     arcTier: 1,
+    cartridgeId: null,
     cartridgeRarity: null,
     cartridgeLevel: 0,
     cartridgeMainStat: null,
@@ -332,6 +334,7 @@ describe('CharacterCard', () => {
     vi.mocked(getScoreGrade).mockReturnValue('A');
     const char = makeChar({
       cartridgePreferences: {
+        cartridgeId: null,
         mainStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
         subStats: [],
       },
@@ -348,6 +351,7 @@ describe('CharacterCard', () => {
   it('shows target build when cartridge preferences are set', () => {
     const char = makeChar({
       cartridgePreferences: {
+        cartridgeId: null,
         mainStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
         subStats: [{ stat: 'CRIT Rate', operator: '>=', orderIndex: 0 }],
         comments: 'Prioritize crit',
@@ -362,6 +366,7 @@ describe('CharacterCard', () => {
   it('renders >= operator as ≥ in target build', () => {
     const char = makeChar({
       cartridgePreferences: {
+        cartridgeId: null,
         mainStats: [{ stat: 'ATK%', operator: '>=', orderIndex: 0 }],
         subStats: [],
       },

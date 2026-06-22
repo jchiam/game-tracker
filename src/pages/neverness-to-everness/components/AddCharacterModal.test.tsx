@@ -53,11 +53,12 @@ const trackedChar: N2ETrackedCharacter = {
   arcId: null,
   arcLevel: 1,
   arcTier: 1,
+  cartridgeId: null,
   cartridgeRarity: null,
   cartridgeLevel: 0,
   cartridgeMainStat: null,
   cartridgeSubStats: [],
-  cartridgePreferences: { mainStats: [], subStats: [] },
+  cartridgePreferences: { cartridgeId: null, mainStats: [], subStats: [] },
 };
 
 const defaultProps = {

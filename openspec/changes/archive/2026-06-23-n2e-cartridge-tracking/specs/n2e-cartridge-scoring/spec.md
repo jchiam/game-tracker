@@ -1,8 +1,4 @@
-## Purpose
-
-Cartridge evaluation algorithm for Neverness to Everness. Scores an equipped cartridge against a character's preferences across three terms: named set identity (cartridgeId × 0.35), main stat (× 0.30), and sub stats (× 0.35), producing a 0–100 score with game-specific partial match rules and letter grade thresholds.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Overall cartridge score range
 
@@ -102,7 +98,7 @@ The system SHALL score the main stat by finding the best match score among all p
 
 ### Requirement: Sub stat scoring
 
-The system SHALL score sub stats by summing the best match score for each equipped sub stat against all preferred sub stats, capped at 4 (maximum sub stats per cartridge), then normalising to a 0–1 fraction.
+The system SHALL score sub stats by summing the best match score for each equipped sub stat against all preferred sub stats, capped at 4, then normalising to a 0–1 fraction.
 
 #### Scenario: All sub stats match preferences
 

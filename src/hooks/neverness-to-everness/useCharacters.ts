@@ -23,11 +23,12 @@ function createTrackedCharacter(character: N2ECharacter): N2ETrackedCharacter {
     arcId: null,
     arcLevel: 1,
     arcTier: 1,
+    cartridgeId: null,
     cartridgeRarity: null,
     cartridgeLevel: 0,
     cartridgeMainStat: null,
     cartridgeSubStats: [],
-    cartridgePreferences: { mainStats: [], subStats: [], comments: '' },
+    cartridgePreferences: { cartridgeId: null, mainStats: [], subStats: [], comments: '' },
   };
 }
 
@@ -113,6 +114,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
 
   const updateCartridge = (
     id: string,
+    cartridgeId: string | null,
     rarity: string | null,
     level: number,
     mainStat: string | null,
@@ -123,6 +125,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
         c.id === id
           ? {
               ...c,
+              cartridgeId,
               cartridgeRarity: rarity,
               cartridgeLevel: level,
               cartridgeMainStat: mainStat,
@@ -136,6 +139,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       queueUpdate(
         char.dbId,
         {
+          cartridgeId,
           cartridgeRarity: rarity,
           cartridgeLevel: level,
           cartridgeMainStat: mainStat,
