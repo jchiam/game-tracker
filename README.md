@@ -9,7 +9,7 @@
 [![Update R1999 Data](https://github.com/jchiam/game-tracker/actions/workflows/update-r1999-data.yml/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/update-r1999-data.yml)
 [![Update N2E Data](https://github.com/jchiam/game-tracker/actions/workflows/update-n2e-data.yml/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/update-n2e-data.yml)
 
-A modern, fast, and beautifully designed web application to track my progress in various games. Currently supports **Honkai Star Rail**, **Reverse: 1999**, and **Neverness to Everness**.
+A modern, fast, and beautifully designed web application to track my progress in various games. Currently supports **Honkai: Star Rail**, **Reverse: 1999**, **Neverness to Everness**, and **Arknights: Endfield**.
 
 ## Tech Stack Choices
 
