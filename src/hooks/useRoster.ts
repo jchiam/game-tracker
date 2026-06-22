@@ -60,6 +60,7 @@ export function useRoster<TBase extends RosterBase, TTracked extends RosterTrack
   const pendingInserts = useRef<Set<string>>(new Set());
   // Ref always holds the latest trackedEntities to avoid stale closures in update functions
   const trackedRef = useRef<TTracked[]>([]);
+  // eslint-disable-next-line react-hooks/refs
   trackedRef.current = trackedEntities;
 
   const { pendingSaveCount, queueUpdate, queueAction } = usePendingSaves(1000, () =>
@@ -70,6 +71,7 @@ export function useRoster<TBase extends RosterBase, TTracked extends RosterTrack
   useEffect(() => {
     if (isAuthLoading) return;
     if (!session?.user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setTrackedEntities([]);
       setIsInitialLoad(false);
       return;

@@ -49,6 +49,7 @@ function Swatch({ variable }: SwatchProps) {
   const [value, setValue] = useState('');
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setValue(getVar(variable));
   }, [variable]);
 

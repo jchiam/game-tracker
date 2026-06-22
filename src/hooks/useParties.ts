@@ -33,10 +33,12 @@ export function useParties<TParty extends { id: string }, TMember>(
   // Always holds the latest parties — read for rollback snapshots without
   // capturing state inside an (impure) updater.
   const partiesRef = useRef<TParty[]>([]);
+  // eslint-disable-next-line react-hooks/refs
   partiesRef.current = parties;
 
   useEffect(() => {
     if (!session?.user) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setParties([]);
       setIsLoading(false);
       return;
