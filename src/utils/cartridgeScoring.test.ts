@@ -56,6 +56,10 @@ describe('getCartridgeIdMatchScore', () => {
   it('returns 0.0 for wrong set regardless of rarity', () => {
     expect(getCartridgeIdMatchScore('Cosmos_orange', 'Nature_blue')).toBe(0.0);
   });
+
+  it('returns 1.0 when equipped rarity equals preferred (S preferred, S equipped)', () => {
+    expect(getCartridgeIdMatchScore('Cosmos_orange', 'Cosmos_orange')).toBe(1.0);
+  });
 });
 
 function makeCharacter(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedCharacter {
@@ -94,6 +98,20 @@ describe('calculateCartridgeScore', () => {
       cartridgePreferences: {
         cartridgeId: null,
         mainStats: [{ stat: 'CRIT Rate %', operator: null, orderIndex: 0 }],
+        subStats: [],
+      },
+    });
+    expect(calculateCartridgeScore(char)).toBe(-1);
+  });
+
+  it('returns -1 when cartridgeId pref set but no cartridge equipped', () => {
+    const char = makeCharacter({
+      cartridgeId: null,
+      cartridgeMainStat: null,
+      cartridgeSubStats: [],
+      cartridgePreferences: {
+        cartridgeId: 'Cosmos_orange',
+        mainStats: [],
         subStats: [],
       },
     });
