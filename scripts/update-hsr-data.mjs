@@ -2,17 +2,56 @@
 // Fetches the latest data from StarRailRes and regenerates:
 //   - src/data/honkai-star-rail/characters.ts
 //   - src/data/honkai-star-rail/relic_sets.ts
-// Also downloads all character and relic images to public/assets/honkai-star-rail/.
+// Downloads character and relic images and uploads to ImageKit CDN:
+//   - character portraits  → ImageKit: /honkai_star_rail/characters
+//   - relic set icons      → ImageKit: /honkai_star_rail/relics
 //
-// Usage: node scripts/update-hsr-data.mjs
+// Usage:
+//   node scripts/update-hsr-data.mjs                    # only upload missing assets
+//   node scripts/update-hsr-data.mjs --reupload-all     # force reupload all assets
+//   node scripts/update-hsr-data.mjs --reupload-relics  # force reupload relic icons only
 
 import { readFile, writeFile, mkdir, access } from 'fs/promises';
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';
+import ImageKit, { toFile } from '@imagekit/nodejs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 const STAR_RAIL_RES_BASE = 'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master';
+
+try {
+  process.loadEnvFile(resolve(ROOT, '.env.local'));
+} catch {
+  // No .env.local — rely on environment variables already set (e.g. CI secrets)
+}
+
+const IMAGEKIT_PRIVATE_KEY =
+  process.env.IMAGEKIT_PRIVATE_KEY ?? process.env.VITE_IMAGEKIT_PRIVATE_KEY ?? '';
+const IMAGEKIT_PUBLIC_KEY =
+  process.env.IMAGEKIT_PUBLIC_KEY ?? process.env.VITE_IMAGEKIT_PUBLIC_KEY ?? '';
+const IMAGEKIT_URL_ENDPOINT =
+  process.env.IMAGEKIT_URL_ENDPOINT ?? process.env.VITE_IMAGEKIT_URL_ENDPOINT ?? '';
+
+const imagekitClient = IMAGEKIT_PRIVATE_KEY
+  ? new ImageKit({
+      privateKey: IMAGEKIT_PRIVATE_KEY,
+      publicKey: IMAGEKIT_PUBLIC_KEY,
+      urlEndpoint: IMAGEKIT_URL_ENDPOINT,
+    })
+  : null;
+
+if (imagekitClient) {
+  console.log('ImageKit uploads enabled');
+} else {
+  console.log('ImageKit uploads skipped (IMAGEKIT_PRIVATE_KEY not set)');
+}
+
+const args = new Set(process.argv.slice(2));
+const reuploadAll = args.has('--reupload-all');
+const reuploadRelics = reuploadAll || args.has('--reupload-relics');
+if (reuploadAll) console.log('Reupload mode: all assets');
+else if (reuploadRelics) console.log('Reupload mode: relics');
 
 async function fetchJSON(url) {
   const res = await fetch(url);
@@ -80,6 +119,63 @@ async function downloadBinary(url, destPath) {
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const buffer = Buffer.from(await res.arrayBuffer());
   await writeFile(destPath, buffer);
+  return buffer;
+}
+
+// ─── ImageKit ──────────────────────────────────────────────────────
+
+function toImageKitLocation(localAssetPath) {
+  const normalized = localAssetPath.replace(/\\/g, '/');
+  const assetsIdx = normalized.indexOf('/assets/');
+  if (assetsIdx === -1) return null;
+  const segments = normalized
+    .slice(assetsIdx)
+    .replace(/^\/assets/, '')
+    .split('/');
+  const mapped = segments.map((seg, i) =>
+    i < segments.length - 1 ? seg.replace(/[^a-zA-Z0-9]/g, '_') : seg,
+  );
+  return {
+    fileName: mapped[mapped.length - 1],
+    folder: '/' + mapped.slice(0, -1).filter(Boolean).join('/'),
+  };
+}
+
+async function existsOnImageKit(localAssetPath) {
+  if (!imagekitClient) return false;
+  const loc = toImageKitLocation(localAssetPath);
+  if (!loc) return false;
+  try {
+    const existing = await imagekitClient.assets.list({
+      path: loc.folder,
+      searchQuery: `name = "${loc.fileName}"`,
+      limit: 1,
+    });
+    return existing.length > 0;
+  } catch {
+    return false;
+  }
+}
+
+async function uploadToImageKit(buffer, localAssetPath, mimeType = 'image/webp') {
+  if (!imagekitClient) return;
+  const loc = toImageKitLocation(localAssetPath);
+  if (!loc) {
+    console.warn(`    ImageKit: could not derive asset path from ${localAssetPath}`);
+    return;
+  }
+  try {
+    const uploadable = await toFile(buffer, loc.fileName, { type: mimeType });
+    await imagekitClient.files.upload({
+      file: uploadable,
+      fileName: loc.fileName,
+      folder: loc.folder,
+      useUniqueFileName: false,
+    });
+    console.log(`    Uploaded to ImageKit: ${loc.folder}/${loc.fileName}`);
+  } catch (e) {
+    console.warn(`    ImageKit upload failed: ${e?.message ?? String(e)}`);
+  }
 }
 
 function generateCharactersTs(characters) {
@@ -218,10 +314,16 @@ async function main() {
     const imageUrl = `/assets/honkai-star-rail/characters/${id}.webp`;
     const imageLocalPath = resolve(charImgDir, `${id}.webp`);
 
-    if (!(await fileExists(imageLocalPath))) {
+    const onKit = !reuploadAll && (await existsOnImageKit(imageLocalPath));
+    if (onKit) {
+      console.log(`  [${characters.length + 1}] ${c.name} — already on ImageKit, skipping`);
+    } else {
       try {
-        await downloadBinary(`${STAR_RAIL_RES_BASE}/${c.icon}`, imageLocalPath);
+        const reason = reuploadAll ? 'reupload requested' : 'missing from ImageKit';
+        console.log(`  Downloading image for ${c.name} (${reason})...`);
+        const buffer = await downloadBinary(`${STAR_RAIL_RES_BASE}/${c.icon}`, imageLocalPath);
         charImgCount++;
+        await uploadToImageKit(buffer, imageLocalPath, 'image/webp');
       } catch (e) {
         console.warn(`  Warning: Could not download image for ${c.name}: ${e.message}`);
       }
@@ -255,10 +357,17 @@ async function main() {
     const iconUrl = `/assets/honkai-star-rail/relics/${id}.${ext}`;
     const iconLocalPath = resolve(relicImgDir, `${id}.${ext}`);
 
-    if (!(await fileExists(iconLocalPath))) {
+    const onKit = !reuploadRelics && (await existsOnImageKit(iconLocalPath));
+    if (onKit) {
+      console.log(`  Relic ${id} — already on ImageKit, skipping`);
+    } else {
       try {
-        await downloadBinary(`${STAR_RAIL_RES_BASE}/${i.icon}`, iconLocalPath);
+        const reason = reuploadRelics ? 'reupload requested' : 'missing from ImageKit';
+        console.log(`  Downloading relic icon ${id} (${reason})...`);
+        const mimeType = ext === 'png' ? 'image/png' : 'image/webp';
+        const buffer = await downloadBinary(`${STAR_RAIL_RES_BASE}/${i.icon}`, iconLocalPath);
         relicImgCount++;
+        await uploadToImageKit(buffer, iconLocalPath, mimeType);
       } catch (e) {
         console.warn(`  Warning: Could not download relic icon ${id}: ${e.message}`);
       }
@@ -300,14 +409,14 @@ async function main() {
 
   console.log('\nDone!');
   console.log(
-    `  Characters : ${characters.length} total (${charDiff}) — ${charImgCount} images downloaded`,
+    `  Characters : ${characters.length} total (${charDiff}) — ${charImgCount} images uploaded`,
   );
   for (const c of addedChars)
     console.log(`    + ${c.name} [${c.rarity}★ ${c.path} · ${c.element}]`);
   for (const c of removedChars) console.log(`    - ${c.name} [${c.path}] (removed from API)`);
 
   console.log(
-    `  Relic sets : ${relicSets.length} total (${relicDiff}) — ${relicImgCount} icons downloaded`,
+    `  Relic sets : ${relicSets.length} total (${relicDiff}) — ${relicImgCount} icons uploaded`,
   );
   for (const r of addedRelics) console.log(`    + ${r.name}`);
   for (const r of removedRelics) console.log(`    - ${r.name} (removed from API)`);

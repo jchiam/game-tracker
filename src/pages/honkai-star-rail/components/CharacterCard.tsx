@@ -3,6 +3,7 @@ import type { RelicSet } from '@/data/honkai-star-rail/relics';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
 import { ProgressSection } from '@/components/ProgressSection';
+import { getMugshotUrl, getRelicIconUrl } from '@/lib/imagekit';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import './CharacterCard.css';
 
@@ -42,7 +43,7 @@ export function CharacterCard({
     <div className="game-card">
       <div className="game-card-header">
         <img
-          src={char.imageUrl}
+          src={getMugshotUrl(char.imageUrl)}
           alt={char.name}
           className="game-card-image"
           onError={(e) => {
@@ -143,13 +144,9 @@ export function CharacterCard({
                             {relic === 'sphere' || relic === 'rope' ? '○' : '⬡'}
                           </span>
                         );
-                      const iconUrl =
-                        set.icon.startsWith('/') || set.icon.startsWith('http')
-                          ? set.icon
-                          : `https://raw.githubusercontent.com/Mar-7th/StarRailRes/master/${set.icon}`;
                       return (
                         <img
-                          src={iconUrl}
+                          src={getRelicIconUrl(set.icon)}
                           alt="Relic"
                           className="relic-set-icon"
                           onError={(e) => {

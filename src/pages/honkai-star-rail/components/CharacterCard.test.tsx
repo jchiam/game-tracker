@@ -245,6 +245,14 @@ describe('CharacterCard', () => {
 
   // --- Image error handling ---
 
+  it('resolves character portrait via ImageKit CDN', () => {
+    render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    expect(screen.getByAltText('Acheron')).toHaveAttribute(
+      'src',
+      expect.stringContaining('ik.imagekit.io'),
+    );
+  });
+
   it('falls back to ui-avatars when the character image fails to load', () => {
     render(<CharacterCard char={makeChar()} {...defaultProps} />);
     const img = screen.getByAltText('Acheron');
@@ -332,7 +340,7 @@ describe('CharacterCard', () => {
     expect(screen.getAllByText('○').length).toBeGreaterThan(0);
   });
 
-  it('constructs remote GitHub URL for relic icon when icon path is relative', () => {
+  it('resolves relic icon via ImageKit CDN when icon is a local asset path', () => {
     const char = makeChar({
       relics: { ...emptyRelics, head: { setId: '101', mainStat: 'HP', subStats: [] } },
     });
@@ -340,12 +348,14 @@ describe('CharacterCard', () => {
       <CharacterCard
         char={char}
         {...defaultProps}
-        availableRelicSets={[{ id: '101', name: 'Test Set', icon: 'icon/relic/101.png' }]}
+        availableRelicSets={[
+          { id: '101', name: 'Test Set', icon: '/assets/honkai-star-rail/relics/101.png' },
+        ]}
       />,
     );
     expect(screen.getByAltText('Relic')).toHaveAttribute(
       'src',
-      expect.stringContaining('raw.githubusercontent.com'),
+      expect.stringContaining('ik.imagekit.io'),
     );
   });
 

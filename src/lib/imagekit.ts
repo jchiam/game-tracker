@@ -42,3 +42,11 @@ export function getPsychubeUrl(localPath: string): string {
   if (!isImageKitEnabled) return localPath;
   return `${IMAGEKIT_URL_ENDPOINT}${toImageKitPath(localPath)}`;
 }
+
+// Returns a fully-formed ImageKit URL for an HSR relic set icon.
+// Relic icons are already square PNG artwork — no crop transform needed.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getRelicIconUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  return `${IMAGEKIT_URL_ENDPOINT}${toImageKitPath(localPath)}`;
+}
