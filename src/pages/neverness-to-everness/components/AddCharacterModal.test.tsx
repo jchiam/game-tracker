@@ -49,7 +49,6 @@ const trackedChar: N2ETrackedCharacter = {
   isFavorited: false,
   level: 1,
   awakening: [false, false, false, false, false, false],
-  resonanceCount: 0,
   arcId: null,
   arcLevel: 1,
   arcTier: 1,

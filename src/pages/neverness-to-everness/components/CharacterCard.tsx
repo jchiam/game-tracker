@@ -64,7 +64,6 @@ interface CharacterCardProps {
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
   onToggleAwakening: (id: string, slotIndex: number) => void;
-  onUpdateResonance: (id: string, count: number) => void;
   onUpdateArc: (id: string, arcId: string | null, arcLevel: number, arcTier: number) => void;
   onUpdateCartridge: (
     id: string,
@@ -86,7 +85,6 @@ export function CharacterCard({
   onRemove,
   onUpdateLevel,
   onToggleAwakening,
-  onUpdateResonance,
   onUpdateArc,
   onUpdateCartridge,
   onToggleFavorite,
@@ -117,7 +115,6 @@ export function CharacterCard({
   // Progress color styles per dimension
   const levelPs = getProgressStyle(character.level, 1, 90);
   const awakeningPs = getProgressStyle(awakeningCount, 0, 6);
-  const resonancePs = getProgressStyle(character.resonanceCount, 0, 6);
   const arcNamePs = character.arcId
     ? getProgressStyle(90, 1, 90) // teal when equipped
     : getProgressStyle(0, 0, 1); // rust when unequipped
@@ -219,10 +216,6 @@ export function CharacterCard({
               <StatChip
                 label={`A ${awakeningCount}/6`}
                 style={{ color: awakeningPs.color, borderColor: awakeningPs.borderColor }}
-              />
-              <StatChip
-                label={`R${character.resonanceCount}`}
-                style={{ color: resonancePs.color, borderColor: resonancePs.borderColor }}
               />
             </div>
             <div className="character-static-equip">
@@ -402,26 +395,6 @@ export function CharacterCard({
                     );
                   })}
                 </div>
-              </ProgressSection>
-
-              {/* ── Resonance ─────────────────────────────────────── */}
-              <ProgressSection label="Resonance" value={`${character.resonanceCount} / 6`}>
-                <input
-                  type="range"
-                  name={`resonance-${character.id}`}
-                  min="0"
-                  max="6"
-                  value={character.resonanceCount}
-                  onChange={(e) => onUpdateResonance(character.id!, parseInt(e.target.value))}
-                  className="character-slider"
-                  style={
-                    {
-                      '--slider-fill-color': resonancePs.color,
-                      '--slider-fill-glow': resonancePs.glowColor,
-                      background: `linear-gradient(to right, ${resonancePs.color} ${(character.resonanceCount / 6) * 100}%, rgba(255,255,255,0.1) ${(character.resonanceCount / 6) * 100}%)`,
-                    } as React.CSSProperties
-                  }
-                />
               </ProgressSection>
 
               {/* ── Arc ───────────────────────────────────────────── */}
