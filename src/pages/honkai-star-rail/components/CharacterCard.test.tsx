@@ -6,6 +6,10 @@ import type { HsrTrackedCharacter } from '@/types';
 vi.mock('@/utils/relicScoring', () => ({
   calculateRelicScore: vi.fn().mockReturnValue(0),
 }));
+vi.mock('@/lib/imagekit', () => ({
+  getMugshotUrl: (path: string) => `https://ik.imagekit.io/test${path}`,
+  getRelicIconUrl: (path: string) => `https://ik.imagekit.io/test${path}`,
+}));
 import { calculateRelicScore } from '@/utils/relicScoring';
 
 const emptyRelics: HsrTrackedCharacter['relics'] = {
