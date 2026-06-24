@@ -25,7 +25,6 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
     removeCharacter,
     updateCharacterLevel,
     toggleAwakeningSlot,
-    updateResonanceCount,
     updateArc,
     updateCartridge,
     saveCartridgePreferences,
@@ -84,7 +83,6 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
           onRemove={removeCharacter}
           onUpdateLevel={updateCharacterLevel}
           onToggleAwakening={toggleAwakeningSlot}
-          onUpdateResonance={updateResonanceCount}
           onUpdateArc={updateArc}
           onUpdateCartridge={updateCartridge}
           onToggleFavorite={toggleFavoriteCharacter}

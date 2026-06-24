@@ -191,20 +191,6 @@ describe('useCharacters', () => {
     expect(result.current.trackedCharacters[0].awakening[2]).toBe(false);
   });
 
-  it('updateResonanceCount updates and clamps', async () => {
-    const { result } = await setupWithChar();
-    const id = result.current.trackedCharacters[0].id;
-
-    act(() => result.current.updateResonanceCount(id, 4));
-    expect(result.current.trackedCharacters[0].resonanceCount).toBe(4);
-
-    act(() => result.current.updateResonanceCount(id, 10));
-    expect(result.current.trackedCharacters[0].resonanceCount).toBe(6);
-
-    act(() => result.current.updateResonanceCount(id, -1));
-    expect(result.current.trackedCharacters[0].resonanceCount).toBe(0);
-  });
-
   it('updateArc sets arcId, arcLevel, and arcTier', async () => {
     const { result } = await setupWithChar();
     const id = result.current.trackedCharacters[0].id;

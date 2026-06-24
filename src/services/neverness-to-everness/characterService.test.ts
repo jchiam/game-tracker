@@ -99,7 +99,6 @@ describe('characterService', () => {
         character_id: 'baicang',
         level: 45,
         awakening_slots: [true, true, false, false, false, false],
-        resonance_count: 3,
         arc_id: 1,
         arc_level: 30,
         arc_tier: 2,
@@ -121,7 +120,6 @@ describe('characterService', () => {
       expect(result[0].dbId).toBe('db-uuid-1');
       expect(result[0].level).toBe(45);
       expect(result[0].awakening).toEqual([true, true, false, false, false, false]);
-      expect(result[0].resonanceCount).toBe(3);
       expect(result[0].arcId).toBe(1);
       expect(result[0].arcTier).toBe(2);
       expect(result[0].cartridgeId).toBe('Cosmos_orange');

@@ -40,7 +40,6 @@ function makeChar(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedChara
     isFavorited: false,
     level: 60,
     awakening: [true, true, false, false, false, false],
-    resonanceCount: 3,
     arcId: null,
     arcLevel: 1,
     arcTier: 1,
@@ -58,7 +57,6 @@ const defaultProps = {
   onRemove: vi.fn(),
   onUpdateLevel: vi.fn(),
   onToggleAwakening: vi.fn(),
-  onUpdateResonance: vi.fn(),
   onUpdateArc: vi.fn(),
   onUpdateCartridge: vi.fn(),
   onToggleFavorite: vi.fn(),
@@ -94,11 +92,6 @@ describe('CharacterCard', () => {
   it('displays awakening count in static summary', () => {
     render(<CharacterCard character={makeChar()} {...defaultProps} />);
     expect(screen.getByText('A 2/6')).toBeInTheDocument();
-  });
-
-  it('displays resonance count in static summary', () => {
-    render(<CharacterCard character={makeChar({ resonanceCount: 4 })} {...defaultProps} />);
-    expect(screen.getByText('R4')).toBeInTheDocument();
   });
 
   // --- Favorite ---
@@ -212,22 +205,6 @@ describe('CharacterCard', () => {
     expect(buttons[1]).toHaveClass('active');
     expect(buttons[2]).toHaveClass('active');
     expect(buttons[3]).not.toHaveClass('active');
-  });
-
-  // --- Resonance slider ---
-
-  it('calls onUpdateResonance when resonance slider changes', () => {
-    const onUpdateResonance = vi.fn();
-    render(
-      <CharacterCard
-        character={makeChar()}
-        {...defaultProps}
-        onUpdateResonance={onUpdateResonance}
-      />,
-    );
-    const slider = document.querySelector(`input[name="resonance-char-1"]`) as HTMLInputElement;
-    fireEvent.change(slider, { target: { value: '5' } });
-    expect(onUpdateResonance).toHaveBeenCalledWith('char-1', 5);
   });
 
   // --- Arc select ---

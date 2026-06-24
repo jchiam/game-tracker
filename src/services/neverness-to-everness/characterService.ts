@@ -8,7 +8,6 @@ const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
 const CHARACTER_COLUMNS: Record<keyof N2ECharacterPatch, string> = {
   level: 'level',
   awakening: 'awakening_slots',
-  resonanceCount: 'resonance_count',
   arcId: 'arc_id',
   arcLevel: 'arc_level',
   arcTier: 'arc_tier',
@@ -26,7 +25,7 @@ export async function loadCharactersFromDB(userId: string): Promise<N2ETrackedCh
   const { data: dbData, error } = await supabase
     .from('n2e_tracked_characters')
     .select(
-      `id, character_id, level, awakening_slots, resonance_count, arc_id, arc_level, arc_tier,
+      `id, character_id, level, awakening_slots, arc_id, arc_level, arc_tier,
       cartridge_id, cartridge_preference_id, cartridge_rarity, cartridge_level, cartridge_main_stat, cartridge_sub_stats, cartridge_comments, is_favorited,
       n2e_cartridge_preference_main_stats ( id, stat, operator_to_next, order_index ),
       n2e_cartridge_preference_sub_stats ( id, stat, operator_to_next, order_index )`,
@@ -54,7 +53,6 @@ export async function loadCharactersFromDB(userId: string): Promise<N2ETrackedCh
         isFavorited: !!row.is_favorited,
         level: row.level,
         awakening: row.awakening_slots ?? [false, false, false, false, false, false],
-        resonanceCount: row.resonance_count ?? 0,
         arcId: row.arc_id ?? null,
         arcLevel: row.arc_level ?? 1,
         arcTier: row.arc_tier ?? 1,
@@ -96,7 +94,6 @@ export async function insertCharacter(userId: string, characterId: string): Prom
       character_id: characterId,
       level: 1,
       awakening_slots: [false, false, false, false, false, false],
-      resonance_count: 0,
       arc_id: null,
       arc_level: 1,
       arc_tier: 1,

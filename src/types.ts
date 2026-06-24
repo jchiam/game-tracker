@@ -102,7 +102,6 @@ export interface N2ETrackedCharacter extends N2ECharacter {
   isFavorited: boolean;
   level: number;
   awakening: boolean[]; // 6 individual toggle slots
-  resonanceCount: number; // 0–6
   arcId: string | null;
   arcLevel: number;
   arcTier: number; // 1–5 (T1–T5)
@@ -123,7 +122,6 @@ export interface N2ETrackedCharacter extends N2ECharacter {
 export interface N2ECharacterPatch {
   level?: number;
   awakening?: boolean[];
-  resonanceCount?: number;
   arcId?: string | null;
   arcLevel?: number;
   arcTier?: number;

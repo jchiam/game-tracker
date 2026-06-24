@@ -18,7 +18,6 @@ function makeChar(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedChara
     isFavorited: false,
     level: 60,
     awakening: [false, false, false, false, false, false],
-    resonanceCount: 0,
     arcId: null,
     arcLevel: 1,
     arcTier: 1,

@@ -19,7 +19,6 @@ function createTrackedCharacter(character: N2ECharacter): N2ETrackedCharacter {
     isFavorited: false,
     level: 1,
     awakening: [...DEFAULT_AWAKENING],
-    resonanceCount: 0,
     arcId: null,
     arcLevel: 1,
     arcTier: 1,
@@ -87,18 +86,6 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
         updateCharacter(char.dbId!, p),
       );
     }
-  };
-
-  const updateResonanceCount = (id: string, count: number) => {
-    const validCount = Math.min(6, Math.max(0, count));
-    setTrackedCharacters((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, resonanceCount: validCount } : c)),
-    );
-    const char = trackedCharactersRef.current.find((c) => c.id === id);
-    if (char?.dbId)
-      queueUpdate(char.dbId, { resonanceCount: validCount } satisfies N2ECharacterPatch, (p) =>
-        updateCharacter(char.dbId!, p),
-      );
   };
 
   const updateArc = (id: string, arcId: string | null, arcLevel: number, arcTier: number) => {
@@ -191,7 +178,6 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     removeCharacter,
     updateCharacterLevel,
     toggleAwakeningSlot,
-    updateResonanceCount,
     updateArc,
     updateCartridge,
     saveCartridgePreferences,
