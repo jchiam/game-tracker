@@ -123,6 +123,65 @@
   color: var(--color-text-primary);
 }
 
+/* ─── Collapse mechanism (static summary ⇄ edit body) ─────────────── */
+/* Canonical for all games. Toggling `.is-editing` on `.game-card-body`
+   collapses the read-only summary and expands the editing body. Each game
+   sets only the two height budgets below via custom properties on
+   `.game-card`; it must not re-declare these structural rules. */
+
+.game-card-static-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding-bottom: var(--spacing-md);
+  overflow: hidden;
+  max-height: var(--game-card-summary-max-height, 200px);
+  transition:
+    opacity 0.2s ease,
+    max-height 0.3s ease,
+    padding 0.3s ease;
+}
+
+.game-card-body.is-editing .game-card-static-summary {
+  max-height: 0;
+  opacity: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  pointer-events: none;
+}
+
+.game-card-static-stats {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.game-card-static-line {
+  font-size: var(--typography-font-size-sm);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-card-edit-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease;
+}
+
+.game-card-body.is-editing .game-card-edit-body {
+  max-height: var(--game-card-edit-max-height, 1200px);
+}
+
+.game-card-edit-body-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding-bottom: var(--spacing-lg);
+}
+
 /* ─── Favorite button ────────────────────────────────────────────── */
 
 .favorite-btn {

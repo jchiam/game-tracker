@@ -133,8 +133,8 @@ export function ArcanistCard({
         <h3 className="game-card-name">{arcanist.name}</h3>
 
         {/* Static summary — visible in static mode, collapses when editing */}
-        <div className="arcanist-static-summary">
-          <div className="arcanist-static-stats">
+        <div className="game-card-static-summary">
+          <div className="game-card-static-stats">
             <StatChip
               label={`Lv ${arcanist.level}`}
               style={{ color: levelPs.color, borderColor: levelPs.borderColor }}
@@ -154,7 +154,7 @@ export function ArcanistCard({
               />
             )}
           </div>
-          <div className="arcanist-static-psychube">
+          <div className="game-card-static-line">
             {selectedPsychube ? (
               <>
                 <span style={{ color: psychubeNamePs.color }}>{selectedPsychube.name}</span>
@@ -174,8 +174,8 @@ export function ArcanistCard({
         </div>
 
         {/* Edit body — always in DOM, expands when editing */}
-        <div className="arcanist-edit-body" aria-hidden={!isEditing}>
-          <div className="arcanist-edit-body-inner">
+        <div className="game-card-edit-body" aria-hidden={!isEditing}>
+          <div className="game-card-edit-body-inner">
             <ProgressSection label="Level" value={`${arcanist.level} / 60`}>
               <input
                 type="range"

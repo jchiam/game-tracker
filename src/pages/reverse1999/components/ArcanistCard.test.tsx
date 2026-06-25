@@ -50,7 +50,7 @@ describe('ArcanistCard', () => {
     const { container } = render(
       <ArcanistCard arcanist={makeArcanist({ level: 55 })} {...defaultProps} />,
     );
-    const statsRow = container.querySelector('.arcanist-static-stats') as HTMLElement;
+    const statsRow = container.querySelector('.game-card-static-stats') as HTMLElement;
     expect(within(statsRow).getByText('Lv 55')).toBeInTheDocument();
     expect(within(statsRow).getByText('P0')).toBeInTheDocument();
     expect(within(statsRow).getByText('R0')).toBeInTheDocument();

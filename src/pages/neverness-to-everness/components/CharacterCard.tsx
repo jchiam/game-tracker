@@ -159,8 +159,8 @@ export function CharacterCard({
           <h3 className="game-card-name">{character.name}</h3>
 
           {/* Static summary -- visible in static mode, collapses when editing */}
-          <div className="character-static-summary">
-            <div className="character-static-stats">
+          <div className="game-card-static-summary">
+            <div className="game-card-static-stats">
               <StatChip
                 label={`Lv ${character.level}`}
                 style={{ color: levelPs.color, borderColor: levelPs.borderColor }}
@@ -170,7 +170,7 @@ export function CharacterCard({
                 style={{ color: awakeningPs.color, borderColor: awakeningPs.borderColor }}
               />
             </div>
-            <div className="character-static-equip">
+            <div className="game-card-static-line">
               {selectedArc ? (
                 <span style={{ color: arcNamePs.color }}>{selectedArc.name}</span>
               ) : character.cartridgeMainStat ? null : (
@@ -297,8 +297,8 @@ export function CharacterCard({
           </div>
 
           {/* Edit body -- always in DOM, expands when editing */}
-          <div className="character-edit-body" aria-hidden={!isEditing}>
-            <div className="character-edit-body-inner">
+          <div className="game-card-edit-body" aria-hidden={!isEditing}>
+            <div className="game-card-edit-body-inner">
               {/* ── Level ─────────────────────────────────────────── */}
               <ProgressSection label="Level" value={`${character.level} / 90`}>
                 <input

@@ -10,64 +10,15 @@
   margin-bottom: var(--spacing-3);
 }
 
-/* ─── Static summary (default / collapsed state) ───────────────── */
+/* ─── Collapse height budgets (mechanism is canonical in card.css) ── */
 
-.character-static-summary {
-  padding-bottom: var(--spacing-md);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-  transition:
-    opacity 0.2s ease,
-    max-height 0.3s ease,
-    padding 0.3s ease;
-  max-height: 400px;
-  overflow: hidden;
-}
-
-.game-card-body.is-editing .character-static-summary {
-  max-height: 0;
-  opacity: 0;
-  padding-top: 0;
-  padding-bottom: 0;
-  pointer-events: none;
-}
-
-.character-static-stats {
-  display: flex;
-  gap: var(--spacing-sm);
-  flex-wrap: wrap;
-}
-
-.character-static-equip {
-  font-size: var(--typography-font-size-sm);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.game-card {
+  --game-card-summary-max-height: 400px;
+  --game-card-edit-max-height: 1200px;
 }
 
 .no-equip {
   opacity: 0.4;
-}
-
-/* ─── Edit body (expanded state) ───────────────────────────────── */
-
-.character-edit-body {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease;
-}
-
-.game-card-body.is-editing .character-edit-body {
-  max-height: 1200px;
-}
-
-.character-edit-body-inner {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-md);
-  padding-bottom: var(--spacing-lg);
 }
 
 /* ─── Badges ────────────────────────────────────────────────────── */

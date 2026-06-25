@@ -529,14 +529,14 @@ Roster card for a Reverse: 1999 Arcanist. Richer edit mode with portrait levels,
 
 **Static summary (collapsed):**
 
-- `.arcanist-static-summary` — row of colored progress chips showing Portrait/Resonance/Euphoria/Amplify levels
+- `.game-card-static-summary` — row of colored progress chips showing Portrait/Resonance/Euphoria/Amplify levels (canonical collapse class; see Card Patterns)
 - Each chip has dynamic `color`, `borderColor`, `boxShadow` via inline styles (interpolated from a `lerpColor` utility)
 
 **Edit section (expanded):**
 
 | Class                  | Description                            |
 | ---------------------- | -------------------------------------- |
-| `.arcanist-edit-body`  | Edit mode container                    |
+| `.game-card-edit-body` | Edit mode container (canonical)        |
 | `.portrait-btn`        | P0–P5 portrait level buttons           |
 | `.portrait-btn.active` | Selected portrait — gold border + glow |
 | `.resonance-slider`    | Range input for resonance level (1–10) |
@@ -560,11 +560,11 @@ Roster card for a Reverse: 1999 Arcanist. Richer edit mode with portrait levels,
   <div class="card-body">
     <h3 class="arcanist-name">Vertin</h3>
     <!-- static summary -->
-    <div class="arcanist-static-summary">
+    <div class="game-card-static-summary">
       <span class="progress-chip" style="color: ...; border-color: ...;">P2</span>
     </div>
     <!-- edit mode -->
-    <div class="arcanist-edit-body">
+    <div class="game-card-edit-body">
       <div class="portrait-btn-row">
         <button class="portrait-btn active">P0</button>
         <button class="portrait-btn">P1</button>

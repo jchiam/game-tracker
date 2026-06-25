@@ -106,8 +106,8 @@ export function OperatorCard({
       <div className={`game-card-body ${isEditing ? 'is-editing' : ''}`}>
         <h3 className="game-card-name">{operator.name}</h3>
 
-        <div className="operator-static-summary">
-          <div className="operator-static-stats">
+        <div className="game-card-static-summary">
+          <div className="game-card-static-stats">
             <StatChip label={`Lv ${operator.level}`} />
             <StatChip label={`P${operator.potential}`} />
             <span className={`rarity-indicator rarity-${operator.rarity}`}>
@@ -116,8 +116,8 @@ export function OperatorCard({
           </div>
         </div>
 
-        <div className="character-edit-body" aria-hidden={!isEditing}>
-          <div className="character-edit-body-inner">
+        <div className="game-card-edit-body" aria-hidden={!isEditing}>
+          <div className="game-card-edit-body-inner">
             <ProgressSection label="Level" value={`${operator.level} / 90`}>
               <input
                 type="range"
