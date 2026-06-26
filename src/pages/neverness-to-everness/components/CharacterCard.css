@@ -10,12 +10,9 @@
   margin-bottom: var(--spacing-3);
 }
 
-/* ─── Collapse height budgets (mechanism is canonical in card.css) ── */
-
-.game-card {
-  --game-card-summary-max-height: 400px;
-  --game-card-edit-max-height: 1200px;
-}
+/* Collapse height budgets are set inline on the card root in CharacterCard.tsx
+   (element-scoped — a shared `.game-card {}` rule leaks across games once both
+   route stylesheets are loaded in the SPA). */
 
 .no-equip {
   opacity: 0.4;

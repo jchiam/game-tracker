@@ -61,7 +61,15 @@ export function ArcanistCard({
     : getProgressStyle(0, 0, 1); // rust when unequipped
 
   return (
-    <div className={`game-card ${isEditing ? 'is-editing' : ''}`}>
+    <div
+      className={`game-card ${isEditing ? 'is-editing' : ''}`}
+      style={
+        {
+          '--game-card-summary-max-height': '80px',
+          '--game-card-edit-max-height': '700px',
+        } as React.CSSProperties
+      }
+    >
       <div className="game-card-header">
         <div className="game-card-image-wrapper">
           {imgLoading && !imgError && (

@@ -80,7 +80,15 @@ export function CharacterCard({
 
   return (
     <>
-      <div className={`game-card ${isEditing ? 'is-editing' : ''}`}>
+      <div
+        className={`game-card ${isEditing ? 'is-editing' : ''}`}
+        style={
+          {
+            '--game-card-summary-max-height': '400px',
+            '--game-card-edit-max-height': '1200px',
+          } as React.CSSProperties
+        }
+      >
         <div className="game-card-header">
           <div className="game-card-image-wrapper">
             {imgLoading && !imgError && (

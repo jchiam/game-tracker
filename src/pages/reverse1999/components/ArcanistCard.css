@@ -11,13 +11,9 @@
   margin-bottom: var(--spacing-3);
 }
 
-/* ─── Collapse height budgets (mechanism is canonical in card.css) ── */
-
-.game-card {
-  --game-card-summary-max-height: 80px;
-  /* Large enough for all five progress sections */
-  --game-card-edit-max-height: 700px;
-}
+/* Collapse height budgets are set inline on the card root in ArcanistCard.tsx
+   (element-scoped — a shared `.game-card {}` rule leaks across games once both
+   route stylesheets are loaded in the SPA). */
 
 .no-psychube {
   opacity: 0.4;

@@ -7,6 +7,18 @@
   gap: var(--spacing-md);
 }
 
+/* Collapse height budgets are set inline on the card root in CharacterCard.tsx
+   (element-scoped — a shared `.game-card {}` rule leaks across games once both
+   route stylesheets are loaded in the SPA). */
+
+/* Overlay-right grouping: score badge + edit toggle (HSR-local;
+   not shared to avoid cross-game CSS coupling) */
+.hsr-overlay-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
 /* Relics Grid */
 .relics-grid {
   display: grid;

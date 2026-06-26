@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { CharacterCard } from '@/pages/honkai-star-rail/components/CharacterCard';
 import type { HsrTrackedCharacter } from '@/types';
 
@@ -102,6 +102,8 @@ describe('CharacterCard', () => {
   it('calls onUpdateLevel when level slider changes', () => {
     const onUpdateLevel = vi.fn();
     render(<CharacterCard char={makeChar()} {...defaultProps} onUpdateLevel={onUpdateLevel} />);
+    // Slider lives in the edit body (aria-hidden until editing) — open edit mode first
+    fireEvent.click(screen.getByTitle('Edit'));
     fireEvent.change(screen.getByRole('slider'), { target: { value: '80' } });
     expect(onUpdateLevel).toHaveBeenCalledWith('char-1', 80);
   });
@@ -382,6 +384,49 @@ describe('CharacterCard', () => {
     });
     render(<CharacterCard char={char} {...defaultProps} />);
     expect(screen.getByText('≥')).toBeInTheDocument();
+  });
+
+  // --- Collapsed summary chips ---
+
+  it('renders the three collapsed-summary chips', () => {
+    const { container } = render(
+      <CharacterCard char={makeChar({ level: 60 })} {...defaultProps} />,
+    );
+    const summary = container.querySelector('.game-card-static-summary') as HTMLElement;
+    expect(within(summary).getByText('Lv 60')).toBeInTheDocument();
+    expect(within(summary).getByText('Traces ✗')).toBeInTheDocument();
+    expect(within(summary).getByText('Relics 0/6')).toBeInTheDocument();
+  });
+
+  it('relic slot-fill chip reflects the number of equipped slots', () => {
+    const char = makeChar({
+      relics: {
+        ...emptyRelics,
+        head: { setId: '101', mainStat: 'HP', subStats: [] },
+        hands: { setId: '102', mainStat: 'ATK', subStats: [] },
+        body: { setId: '103', mainStat: 'CRIT Rate', subStats: [] },
+        feet: { setId: '104', mainStat: 'SPD', subStats: [] },
+      },
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const summary = container.querySelector('.game-card-static-summary') as HTMLElement;
+    expect(within(summary).getByText('Relics 4/6')).toBeInTheDocument();
+  });
+
+  it('traces chip shows ✓ when traces are attained', () => {
+    const { container } = render(
+      <CharacterCard char={makeChar({ tracesAttained: true })} {...defaultProps} />,
+    );
+    const summary = container.querySelector('.game-card-static-summary') as HTMLElement;
+    expect(within(summary).getByText('Traces ✓')).toBeInTheDocument();
+  });
+
+  it('edit toggle expands the card by adding is-editing to the body', () => {
+    const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    const body = container.querySelector('.game-card-body') as HTMLElement;
+    expect(body).not.toHaveClass('is-editing');
+    fireEvent.click(screen.getByTitle('Edit'));
+    expect(body).toHaveClass('is-editing');
   });
 
   // --- Score badge value ---
