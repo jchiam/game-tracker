@@ -14,7 +14,7 @@ export async function loadOperatorsFromDB(userId: string): Promise<AeTrackedOper
   if (!DB_ENABLED || !import.meta.env.VITE_SUPABASE_ANON_KEY) return [];
 
   const { data, error } = await supabase
-    .from('endfield_tracked_operators')
+    .from('ae_tracked_operators')
     .select('id, operator_id, level, potential, is_favorited')
     .eq('profile_id', userId);
 
@@ -44,7 +44,7 @@ export async function insertOperator(userId: string, operatorId: string): Promis
   if (!DB_ENABLED) return null;
   await supabase.from('user_profiles').upsert({ id: userId, updated_at: new Date().toISOString() });
   const { data, error } = await supabase
-    .from('endfield_tracked_operators')
+    .from('ae_tracked_operators')
     .insert({
       profile_id: userId,
       operator_id: operatorId,
@@ -62,7 +62,7 @@ export async function insertOperator(userId: string, operatorId: string): Promis
 
 export async function deleteOperator(dbId: string): Promise<void> {
   if (!DB_ENABLED) return;
-  const { error } = await supabase.from('endfield_tracked_operators').delete().eq('id', dbId);
+  const { error } = await supabase.from('ae_tracked_operators').delete().eq('id', dbId);
   if (error) {
     console.error('DB Delete Failed:', error);
     throw error;
@@ -75,7 +75,7 @@ export async function updateOperator(dbId: string, patch: AeOperatorPatch): Prom
   for (const key of Object.keys(patch) as (keyof AeOperatorPatch)[]) {
     row[OPERATOR_COLUMNS[key]] = patch[key];
   }
-  const { error } = await supabase.from('endfield_tracked_operators').update(row).eq('id', dbId);
+  const { error } = await supabase.from('ae_tracked_operators').update(row).eq('id', dbId);
   if (error) {
     console.error('DB Update Failed:', error);
     throw error;

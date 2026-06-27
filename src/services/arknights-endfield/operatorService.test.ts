@@ -72,7 +72,7 @@ describe('operatorService', () => {
     it('loadOperatorsFromDB queries the correct table', async () => {
       mockFrom.mockReturnValue(createBuilder({ data: [], error: null }));
       await service.loadOperatorsFromDB('user-1');
-      expect(mockFrom).toHaveBeenCalledWith('endfield_tracked_operators');
+      expect(mockFrom).toHaveBeenCalledWith('ae_tracked_operators');
     });
 
     it('loadOperatorsFromDB returns empty array when data is null', async () => {
@@ -120,19 +120,19 @@ describe('operatorService', () => {
       expect(result).toHaveLength(0);
     });
 
-    it('insertOperator upserts user_profiles and inserts into endfield_tracked_operators', async () => {
+    it('insertOperator upserts user_profiles and inserts into ae_tracked_operators', async () => {
       const opBuilder = createBuilder({ data: { id: 'new-db-id' }, error: null });
       const profileBuilder = createBuilder({ data: null, error: null });
 
       mockFrom.mockImplementation((table: string) => {
-        if (table === 'endfield_tracked_operators') return opBuilder;
+        if (table === 'ae_tracked_operators') return opBuilder;
         return profileBuilder;
       });
 
       const result = await service.insertOperator('user-1', 'ember');
 
       expect(mockFrom).toHaveBeenCalledWith('user_profiles');
-      expect(mockFrom).toHaveBeenCalledWith('endfield_tracked_operators');
+      expect(mockFrom).toHaveBeenCalledWith('ae_tracked_operators');
       expect(result).toBe('new-db-id');
     });
 
@@ -148,7 +148,7 @@ describe('operatorService', () => {
       const builder = createBuilder({ data: null, error: null });
       mockFrom.mockReturnValue(builder);
       await service.deleteOperator('db-uuid-1');
-      expect(mockFrom).toHaveBeenCalledWith('endfield_tracked_operators');
+      expect(mockFrom).toHaveBeenCalledWith('ae_tracked_operators');
       expect(builder.delete).toHaveBeenCalled();
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });
@@ -173,7 +173,7 @@ describe('operatorService', () => {
         isFavorited: true,
       });
 
-      expect(mockFrom).toHaveBeenCalledWith('endfield_tracked_operators');
+      expect(mockFrom).toHaveBeenCalledWith('ae_tracked_operators');
       expect(builder.update).toHaveBeenCalledWith({
         level: 40,
         potential: 3,

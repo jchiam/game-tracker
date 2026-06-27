@@ -7,8 +7,8 @@ export async function loadParties(userId: string): Promise<AeParty[]> {
   if (!DB_ENABLED) return [];
 
   const { data, error } = await supabase
-    .from('endfield_parties')
-    .select('id, profile_id, name, notes, created_at, endfield_party_members(*)')
+    .from('ae_parties')
+    .select('id, profile_id, name, notes, created_at, ae_party_members(*)')
     .eq('profile_id', userId)
     .order('created_at', { ascending: false });
 
@@ -22,7 +22,7 @@ export async function loadParties(userId: string): Promise<AeParty[]> {
     profileId: row.profile_id,
     name: row.name,
     notes: row.notes,
-    members: (row.endfield_party_members ?? [])
+    members: (row.ae_party_members ?? [])
       .sort((a: any, b: any) => a.slot_index - b.slot_index)
       .map((m: any) => ({
         operatorId: m.operator_id,
@@ -40,7 +40,7 @@ export async function saveParty(
 
   if (party.id) {
     const { error: updateErr } = await supabase
-      .from('endfield_parties')
+      .from('ae_parties')
       .update({
         name: party.name,
         notes: party.notes,
@@ -51,10 +51,10 @@ export async function saveParty(
       throw updateErr;
     }
 
-    await supabase.from('endfield_party_members').delete().eq('party_id', party.id);
+    await supabase.from('ae_party_members').delete().eq('party_id', party.id);
 
     if (party.members.length > 0) {
-      const { error: memberErr } = await supabase.from('endfield_party_members').insert(
+      const { error: memberErr } = await supabase.from('ae_party_members').insert(
         party.members.map((m) => ({
           party_id: party.id,
           operator_id: m.operatorId,
@@ -71,7 +71,7 @@ export async function saveParty(
   }
 
   const { data, error } = await supabase
-    .from('endfield_parties')
+    .from('ae_parties')
     .insert({
       profile_id: userId,
       name: party.name ?? 'New Squad',
@@ -87,7 +87,7 @@ export async function saveParty(
 
   const partyId = data?.id;
   if (partyId && party.members.length > 0) {
-    const { error: memberErr } = await supabase.from('endfield_party_members').insert(
+    const { error: memberErr } = await supabase.from('ae_party_members').insert(
       party.members.map((m) => ({
         party_id: partyId,
         operator_id: m.operatorId,
@@ -105,7 +105,7 @@ export async function saveParty(
 
 export async function deleteParty(partyId: string): Promise<boolean> {
   if (!DB_ENABLED) return false;
-  const { error } = await supabase.from('endfield_parties').delete().eq('id', partyId);
+  const { error } = await supabase.from('ae_parties').delete().eq('id', partyId);
   if (error) {
     console.error('Party delete failed:', error);
     return false;

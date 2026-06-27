@@ -66,7 +66,7 @@ describe('partyService', () => {
     it('loadParties queries the correct table', async () => {
       mockFrom.mockReturnValue(createBuilder({ data: [], error: null }));
       await service.loadParties('user-1');
-      expect(mockFrom).toHaveBeenCalledWith('endfield_parties');
+      expect(mockFrom).toHaveBeenCalledWith('ae_parties');
     });
 
     it('loadParties throws on DB error', async () => {
@@ -81,7 +81,7 @@ describe('partyService', () => {
         name: 'Squad A',
         notes: null,
         created_at: '2026-01-01',
-        endfield_party_members: [
+        ae_party_members: [
           { operator_id: 'ember', slot_index: 1 },
           { operator_id: 'rossi', slot_index: 0 },
         ],
@@ -101,7 +101,7 @@ describe('partyService', () => {
       const memberBuilder = createBuilder({ data: null, error: null });
 
       mockFrom.mockImplementation((table: string) => {
-        if (table === 'endfield_party_members') return memberBuilder;
+        if (table === 'ae_party_members') return memberBuilder;
         return partyBuilder;
       });
 
@@ -111,8 +111,8 @@ describe('partyService', () => {
       });
 
       expect(result).toBe('new-party-id');
-      expect(mockFrom).toHaveBeenCalledWith('endfield_parties');
-      expect(mockFrom).toHaveBeenCalledWith('endfield_party_members');
+      expect(mockFrom).toHaveBeenCalledWith('ae_parties');
+      expect(mockFrom).toHaveBeenCalledWith('ae_party_members');
     });
 
     it('saveParty updates existing party when id is present', async () => {
@@ -134,7 +134,7 @@ describe('partyService', () => {
 
       const result = await service.deleteParty('party-1');
       expect(result).toBe(true);
-      expect(mockFrom).toHaveBeenCalledWith('endfield_parties');
+      expect(mockFrom).toHaveBeenCalledWith('ae_parties');
       expect(builder.delete).toHaveBeenCalled();
     });
 
