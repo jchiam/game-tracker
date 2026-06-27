@@ -450,15 +450,15 @@ describe('CharacterCard', () => {
 
   // --- Relic set one-liner ---
 
-  it('shows relic set names with counts in the summary one-liner', () => {
+  it('shows abbreviated relic set names with counts in the summary one-liner', () => {
     const char = makeChar({
       relics: {
         head: { setId: '101', mainStat: 'HP', subStats: [] },
         hands: { setId: '101', mainStat: 'ATK', subStats: [] },
         body: { setId: '101', mainStat: 'CRIT Rate', subStats: [] },
         feet: { setId: '101', mainStat: 'SPD', subStats: [] },
-        sphere: { setId: '201', mainStat: 'ATK%', subStats: [] },
-        rope: { setId: '201', mainStat: 'Energy', subStats: [] },
+        sphere: { setId: '105', mainStat: 'ATK%', subStats: [] },
+        rope: { setId: '105', mainStat: 'Energy', subStats: [] },
       },
     });
     const { container } = render(
@@ -466,14 +466,32 @@ describe('CharacterCard', () => {
         char={char}
         {...defaultProps}
         availableRelicSets={[
-          { id: '101', name: 'Firesmith', icon: '/icon1.png' },
-          { id: '201', name: 'Champion', icon: '/icon2.png' },
+          { id: '101', name: 'Passerby of Wandering Cloud', icon: '/icon1.png' },
+          { id: '105', name: 'Champion of Streetwise Boxing', icon: '/icon2.png' },
         ]}
       />,
     );
     const line = container.querySelector('.game-card-static-line') as HTMLElement;
-    expect(within(line).getByText(/Firesmith 4/)).toBeInTheDocument();
-    expect(within(line).getByText(/Champion 2/)).toBeInTheDocument();
+    expect(within(line).getByText(/Passerby 4/)).toBeInTheDocument();
+    expect(within(line).getByText(/Streetwise 2/)).toBeInTheDocument();
+  });
+
+  it('falls back to full name when short name is not mapped', () => {
+    const char = makeChar({
+      relics: {
+        ...emptyRelics,
+        head: { setId: '999', mainStat: 'HP', subStats: [] },
+      },
+    });
+    const { container } = render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[{ id: '999', name: 'Unknown Future Set', icon: '/icon.png' }]}
+      />,
+    );
+    const line = container.querySelector('.game-card-static-line') as HTMLElement;
+    expect(within(line).getByText(/Unknown Future Set 1/)).toBeInTheDocument();
   });
 
   it('shows dash when no relics are equipped', () => {

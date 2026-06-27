@@ -1,5 +1,6 @@
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet } from '@/data/honkai-star-rail/relics';
+import { RELIC_SHORT_NAMES } from '@/data/honkai-star-rail/relic_short_names';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
 import { ProgressSection } from '@/components/ProgressSection';
@@ -160,7 +161,10 @@ export function CharacterCard({
           <div className="game-card-static-line">
             {sortedSets.length > 0 ? (
               sortedSets.map(([setId, count], i) => {
-                const setName = availableRelicSets.find((s) => s.id === setId)?.name ?? setId;
+                const setName =
+                  RELIC_SHORT_NAMES[setId] ??
+                  availableRelicSets.find((s) => s.id === setId)?.name ??
+                  setId;
                 return (
                   <span key={setId}>
                     {i > 0 && <span style={{ color: equippedColor }}>&nbsp;&middot;&nbsp;</span>}

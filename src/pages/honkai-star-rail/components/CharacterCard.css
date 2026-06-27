@@ -11,6 +11,13 @@
    (element-scoped — a shared `.game-card {}` rule leaks across games once both
    route stylesheets are loaded in the SPA). */
 
+.game-card-static-line {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-height: calc(var(--typography-line-height-base) * 1em);
+}
+
 /* Overlay-right grouping: score badge + edit toggle (HSR-local;
    not shared to avoid cross-game CSS coupling) */
 .hsr-overlay-right {
