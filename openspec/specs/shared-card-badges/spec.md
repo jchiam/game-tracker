@@ -27,8 +27,8 @@ per-variant color rules (text color, background fill, border color).
 #### Scenario: No per-game badge base duplicates remain
 
 - **WHEN** the codebase is searched for badge base rules on `.element-badge`, `.path-badge`,
-  `.afflatus-badge`, `.damage-badge`, `.esper-badge`, `.arc-badge`, `.endfield-class-badge`,
-  `.endfield-element-badge`, or `.endfield-weapon-badge`
+  `.afflatus-badge`, `.damage-badge`, `.esper-badge`, `.arc-badge`, `.ae-class-badge`,
+  `.ae-element-badge`, or `.ae-weapon-badge`
 - **THEN** none of them re-declares the base appearance; only per-variant color rules remain
 
 ### Requirement: `GameBadge` emits the base plus variant scoping and modifier
