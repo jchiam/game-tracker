@@ -79,10 +79,12 @@ export function AddCharacterModal({
                 <div className="modal-list-details">
                   <span className="modal-list-name">{character.name}</span>
                   <div className="modal-list-tags">
-                    <span className={`esper-badge esper-${character.esperType.toLowerCase()}`}>
+                    <span
+                      className={`game-badge esper-badge esper-${character.esperType.toLowerCase()}`}
+                    >
                       {character.esperType}
                     </span>
-                    <span className={`arc-badge arc-${character.arcType.toLowerCase()}`}>
+                    <span className={`game-badge arc-badge arc-${character.arcType.toLowerCase()}`}>
                       {character.arcType}
                     </span>
                   </div>

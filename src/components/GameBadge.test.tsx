@@ -7,7 +7,7 @@ describe('GameBadge', () => {
     render(<GameBadge label="Fire" variant="element" modifier="fire" />);
     const badge = screen.getByText('Fire');
     expect(badge).toBeInTheDocument();
-    expect(badge).toHaveClass('element-badge', 'element-fire');
+    expect(badge).toHaveClass('game-badge', 'element-badge', 'element-fire');
   });
 
   it('works with afflatus variant', () => {

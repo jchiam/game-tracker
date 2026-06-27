@@ -54,9 +54,25 @@ Consistent label + input/textarea/select pattern used across all modals.
 
 ---
 
+### Canonical pill badge (`.game-badge`)
+
+All header "pill" badges share one base class, `.game-badge`, defined once in
+`src/styles/card.css`: `padding: 3px 8px`, `--border-radius-badge`, `--typography-font-size-xs`,
+bold, UPPERCASE, `letter-spacing: 0.04em`, `backdrop-filter: blur(8px)`, `1px solid` border,
+tight line-height, `white-space: nowrap`. The shared `GameBadge` component emits
+`game-badge {variant}-badge {variant}-{modifier}`; the few badges rendered by hand (the picker
+modals) include `game-badge` in their class string too.
+
+Per-game stylesheets contribute **only** the per-variant colour rule — text colour plus a tinted
+fill `rgba(hue, 0.25)` and border `rgba(hue, 0.6)`. They never re-declare the base. (The rgba
+fills stay literal — see the "rgba() badge backgrounds" known gap.)
+
 ### Element Badge (HSR)
 
-Colored text + border, no background fill. Uppercase label.
+Canonical pill (`.game-badge` base). The standalone `.element-*` classes set text colour + a
+coloured border and are **shared with the party slot-avatar**; the badge's tinted fill is added
+by the compound `.element-badge.element-*` rules (so it doesn't bleed into the avatar). Uppercase
+label.
 
 | Class modifier       | Element   | Color                                     |
 | -------------------- | --------- | ----------------------------------------- |
@@ -67,14 +83,14 @@ Colored text + border, no background fill. Uppercase label.
 | `.element-quantum`   | Quantum   | `--color-hsr-element-quantum` (#7864aa)   |
 | `.element-wind`      | Wind      | `--color-hsr-element-wind` (#5bc89f)      |
 | `.element-physical`  | Physical  | `--color-hsr-element-physical` (#bcbcbc)  |
-| `.element-thunder`   | Thunder   | same as lightning                         |
+| `.element-thunder`   | Thunder   | `--color-hsr-element-thunder` (#d97afe)   |
 
 ```html
-<span class="element-badge element-fire">Fire</span>
-<span class="element-badge element-ice">Ice</span>
+<span class="game-badge element-badge element-fire">Fire</span>
+<span class="game-badge element-badge element-ice">Ice</span>
 ```
 
-**Tokens used:** `--typography-font-size-xs`, `--border-radius-sm`, `--color-hsr-element-*`
+**Tokens used:** `--border-radius-badge`, `--typography-font-size-xs`, `--color-hsr-element-*`
 
 ---
 
@@ -254,7 +270,7 @@ Search + scrollable list pattern used by every game's entity picker — AddChara
         <img src="..." alt="" />
       </div>
       <span class="modal-list-name">Character Name</span>
-      <span class="element-badge element-fire">Fire</span>
+      <span class="game-badge element-badge element-fire">Fire</span>
       <button class="add-btn">+</button>
     </li>
   </ul>
@@ -570,8 +586,8 @@ badges in `.game-card-badges`:
       </div>
       <div class="game-card-controls-bottom">
         <div class="game-card-badges">
-          <span class="element-badge element-ice">Ice</span>
-          <span class="path-badge path-the-hunt">The Hunt</span>
+          <span class="game-badge element-badge element-ice">Ice</span>
+          <span class="game-badge path-badge path-the-hunt">The Hunt</span>
         </div>
         <div class="hsr-overlay-right">
           <span class="score-badge tier-s"><span>S</span></span>
@@ -686,8 +702,8 @@ control rules are the `.portrait-reset` modifier and the `.portrait-row` /
       </div>
       <div class="game-card-controls-bottom">
         <div class="game-card-badges">
-          <span class="afflatus-badge afflatus-star">Star</span>
-          <span class="damage-badge damage-reality">Reality</span>
+          <span class="game-badge afflatus-badge afflatus-star">Star</span>
+          <span class="game-badge damage-badge damage-reality">Reality</span>
         </div>
         <button class="edit-toggle-btn">✎</button>
       </div>

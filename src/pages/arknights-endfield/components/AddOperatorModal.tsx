@@ -79,12 +79,12 @@ export function AddOperatorModal({
                   <span className="modal-list-name">{operator.name}</span>
                   <div className="modal-list-tags">
                     <span
-                      className={`endfield-class-badge endfield-class-${operator.class.toLowerCase()}`}
+                      className={`game-badge endfield-class-badge endfield-class-${operator.class.toLowerCase()}`}
                     >
                       {operator.class}
                     </span>
                     <span
-                      className={`endfield-element-badge endfield-element-${operator.element.toLowerCase()}`}
+                      className={`game-badge endfield-element-badge endfield-element-${operator.element.toLowerCase()}`}
                     >
                       {operator.element}
                     </span>

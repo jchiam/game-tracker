@@ -46,17 +46,11 @@
   border-color: var(--color-brand-primary);
 }
 
-/* Element badge colours (shared across HSR views) */
-.element-badge {
-  font-size: var(--typography-font-size-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: var(--spacing-2) var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  background: rgba(0, 0, 0, 0.3);
-  font-weight: 600;
-}
-
+/* Element colours (shared across HSR views — element badge AND party
+   slot-avatar border). These standalone rules set text colour + the avatar's
+   coloured border only; they intentionally carry NO background so the
+   slot-avatar keeps its own fill. The badge's canonical tint is added by the
+   compound `.element-badge.element-*` rules below. */
 .element-lightning {
   color: var(--color-hsr-element-lightning);
   border: 1px solid rgba(217, 122, 254, 0.55);
@@ -88,6 +82,39 @@
 .element-thunder {
   color: var(--color-hsr-element-thunder);
   border: 1px solid rgba(217, 122, 254, 0.55);
+}
+
+/* Element badge tint — canonical pill fill, scoped to the badge so it does not
+   bleed into the slot-avatar. Mirrors the compound pattern other games use
+   (e.g. `.path-badge.path-*`). Base appearance comes from `.game-badge`. */
+.element-badge.element-lightning,
+.element-badge.element-thunder {
+  background: rgba(217, 122, 254, 0.25);
+  border-color: rgba(217, 122, 254, 0.6);
+}
+.element-badge.element-imaginary {
+  background: rgba(244, 210, 88, 0.25);
+  border-color: rgba(244, 210, 88, 0.6);
+}
+.element-badge.element-fire {
+  background: rgba(248, 79, 54, 0.25);
+  border-color: rgba(248, 79, 54, 0.6);
+}
+.element-badge.element-ice {
+  background: rgba(71, 199, 253, 0.25);
+  border-color: rgba(71, 199, 253, 0.6);
+}
+.element-badge.element-quantum {
+  background: rgba(120, 100, 170, 0.25);
+  border-color: rgba(120, 100, 170, 0.6);
+}
+.element-badge.element-wind {
+  background: rgba(91, 200, 159, 0.25);
+  border-color: rgba(91, 200, 159, 0.6);
+}
+.element-badge.element-physical {
+  background: rgba(188, 188, 188, 0.25);
+  border-color: rgba(188, 188, 188, 0.6);
 }
 
 /* fade-in-up defined in src/styles/animations.css */

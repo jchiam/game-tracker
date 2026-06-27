@@ -59,12 +59,14 @@ export function AddCharacterModal({
                 <div className="modal-list-details">
                   <span className="modal-list-name">{char.name}</span>
                   <div className="modal-list-tags">
-                    <span className={`element-badge element-${char.element.toLowerCase()}`}>
+                    <span
+                      className={`game-badge element-badge element-${char.element.toLowerCase()}`}
+                    >
                       {char.element}
                     </span>
                     {char.path && (
                       <span
-                        className={`path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}
+                        className={`game-badge path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}
                       >
                         {char.path}
                       </span>

@@ -20,19 +20,8 @@
 
 /* ─── Badges ────────────────────────────────────────────────────── */
 
-.esper-badge,
-.arc-badge {
-  padding: 3px 8px;
-  border-radius: var(--border-radius-badge);
-  font-size: var(--typography-font-size-xs);
-  font-weight: var(--typography-font-weight-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  backdrop-filter: blur(8px);
-  border: 1px solid;
-  line-height: var(--typography-line-height-tight);
-  white-space: nowrap;
-}
+/* Base appearance from the canonical `.game-badge` pill (card.css);
+   only the per-esper / per-arc colours live here. */
 
 /* Esper type badges */
 .esper-badge.esper-anima {

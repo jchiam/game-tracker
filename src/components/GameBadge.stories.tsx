@@ -3,6 +3,7 @@ import { GameBadge } from './GameBadge';
 import '@/pages/honkai-star-rail/components/CharacterCard.css';
 import '@/pages/reverse1999/components/ArcanistCard.css';
 import '@/pages/neverness-to-everness/components/CharacterCard.css';
+import '@/pages/arknights-endfield/components/OperatorCard.css';
 import '@/App.css';
 
 const meta = {
@@ -91,6 +92,43 @@ export const N2EArc: Story = {
       <GameBadge label="Plasma" variant="arc" modifier="plasma" />
       <GameBadge label="Solid" variant="arc" modifier="solid" />
       <GameBadge label="Synthesis" variant="arc" modifier="synthesis" />
+    </div>
+  ),
+};
+
+export const AEClass: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <GameBadge label="Caster" variant="endfield-class" modifier="caster" />
+      <GameBadge label="Defender" variant="endfield-class" modifier="defender" />
+      <GameBadge label="Guard" variant="endfield-class" modifier="guard" />
+      <GameBadge label="Striker" variant="endfield-class" modifier="striker" />
+      <GameBadge label="Supporter" variant="endfield-class" modifier="supporter" />
+      <GameBadge label="Vanguard" variant="endfield-class" modifier="vanguard" />
+    </div>
+  ),
+};
+
+export const AEElement: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <GameBadge label="Physical" variant="endfield-element" modifier="physical" />
+      <GameBadge label="Cryo" variant="endfield-element" modifier="cryo" />
+      <GameBadge label="Electric" variant="endfield-element" modifier="electric" />
+      <GameBadge label="Heat" variant="endfield-element" modifier="heat" />
+      <GameBadge label="Nature" variant="endfield-element" modifier="nature" />
+    </div>
+  ),
+};
+
+export const AEWeapon: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+      <GameBadge label="Sword" variant="endfield-weapon" modifier="sword" />
+      <GameBadge label="Greatsword" variant="endfield-weapon" modifier="greatsword" />
+      <GameBadge label="Polearm" variant="endfield-weapon" modifier="polearm" />
+      <GameBadge label="Handcannon" variant="endfield-weapon" modifier="handcannon" />
+      <GameBadge label="Arts Unit" variant="endfield-weapon" modifier="arts-unit" />
     </div>
   ),
 };

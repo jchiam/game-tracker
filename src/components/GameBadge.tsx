@@ -5,5 +5,5 @@ interface GameBadgeProps {
 }
 
 export function GameBadge({ label, variant, modifier }: GameBadgeProps) {
-  return <span className={`${variant}-badge ${variant}-${modifier}`}>{label}</span>;
+  return <span className={`game-badge ${variant}-badge ${variant}-${modifier}`}>{label}</span>;
 }

@@ -110,6 +110,26 @@
   gap: var(--spacing-2);
 }
 
+/* ─── Canonical pill badge ────────────────────────────────────────── */
+/* Shared base for every GameBadge variant (class, element, weapon,
+   afflatus, damage, esper, arc, path). Game stylesheets contribute only
+   per-variant color rules (text color, fill, border-color); they never
+   re-declare this base. `border: 1px solid` carries no color on purpose —
+   the per-variant modifier supplies `border-color`. */
+.game-badge {
+  padding: 3px 8px;
+  border-radius: var(--border-radius-badge);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid;
+  line-height: var(--typography-line-height-tight);
+  white-space: nowrap;
+}
+
 /* ─── Card body (games override padding/gap) ─────────────────────── */
 
 .game-card-body {
