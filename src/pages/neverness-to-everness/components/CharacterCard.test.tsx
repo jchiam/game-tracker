@@ -94,6 +94,25 @@ describe('CharacterCard', () => {
     expect(screen.getByText('A 2/6')).toBeInTheDocument();
   });
 
+  it('displays cartridge score chip when preferences exist', () => {
+    vi.mocked(calculateCartridgeScore).mockReturnValue(82);
+    vi.mocked(getScoreGrade).mockReturnValue('A');
+    const char = makeChar({
+      cartridgePreferences: {
+        cartridgeId: null,
+        mainStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
+        subStats: [],
+      },
+    });
+    render(<CharacterCard character={char} {...defaultProps} />);
+    expect(screen.getByText('Cart 82%')).toBeInTheDocument();
+  });
+
+  it('does not show cartridge score chip when no preferences', () => {
+    render(<CharacterCard character={makeChar()} {...defaultProps} />);
+    expect(screen.queryByText(/^Cart \d+%$/)).not.toBeInTheDocument();
+  });
+
   // --- Favorite ---
 
   it('shows filled star when favorited', () => {
@@ -293,8 +312,9 @@ describe('CharacterCard', () => {
     ).toBeInTheDocument();
   });
 
-  it('opens CartridgeEditorModal when cartridge slot is clicked', () => {
+  it('opens CartridgeEditorModal when cartridge slot is clicked (edit mode)', () => {
     render(<CharacterCard character={makeChar()} {...defaultProps} />);
+    fireEvent.click(screen.getByTitle('Edit'));
     fireEvent.click(screen.getByText('+ Equip Cartridge'));
     expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
   });

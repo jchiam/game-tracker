@@ -84,7 +84,7 @@ export function CharacterCard({
         className={`game-card ${isEditing ? 'is-editing' : ''}`}
         style={
           {
-            '--game-card-summary-max-height': '400px',
+            '--game-card-summary-max-height': '100px',
             '--game-card-edit-max-height': '1200px',
           } as React.CSSProperties
         }
@@ -177,131 +177,45 @@ export function CharacterCard({
                 label={`A ${awakeningCount}/6`}
                 style={{ color: awakeningPs.color, borderColor: awakeningPs.borderColor }}
               />
+              {showCartridgeScore && (
+                <StatChip
+                  label={`Cart ${cartridgeScore.toFixed(0)}%`}
+                  style={{
+                    color: getProgressStyle(cartridgeScore, 0, 100).color,
+                    borderColor: getProgressStyle(cartridgeScore, 0, 100).borderColor,
+                  }}
+                />
+              )}
             </div>
             <div className="game-card-static-line">
               {selectedArc ? (
-                <span style={{ color: arcNamePs.color }}>{selectedArc.name}</span>
-              ) : character.cartridgeMainStat ? null : (
+                <>
+                  <span style={{ color: arcNamePs.color }}>{selectedArc.name}</span>
+                  {isCartridgeEquipped && (
+                    <>
+                      <span style={{ color: getProgressStyle(90, 1, 90).color }}>
+                        &nbsp;&middot;&nbsp;
+                      </span>
+                      <span style={{ color: getProgressStyle(90, 1, 90).color }}>
+                        {equippedCartridgeName || character.cartridgeMainStat}
+                        {character.cartridgeRarity && ` ${character.cartridgeRarity}`}
+                        {` Lv${character.cartridgeLevel}`}
+                      </span>
+                    </>
+                  )}
+                </>
+              ) : isCartridgeEquipped ? (
+                <span style={{ color: getProgressStyle(90, 1, 90).color }}>
+                  {equippedCartridgeName || character.cartridgeMainStat}
+                  {character.cartridgeRarity && ` ${character.cartridgeRarity}`}
+                  {` Lv${character.cartridgeLevel}`}
+                </span>
+              ) : (
                 <span className="no-equip" style={{ color: arcNamePs.color }}>
                   &mdash;
                 </span>
               )}
-              {character.cartridgeMainStat && (
-                <>
-                  {selectedArc && (
-                    <span style={{ color: getProgressStyle(90, 1, 90).color }}>
-                      &nbsp;&middot;&nbsp;
-                    </span>
-                  )}
-                  <span style={{ color: getProgressStyle(90, 1, 90).color }}>
-                    {character.cartridgeMainStat}
-                  </span>
-                </>
-              )}
             </div>
-
-            {/* Cartridge slot -- clickable, opens CartridgeEditorModal */}
-            <div className="cartridge-slot-section">
-              <div className="section-header">
-                <span>Cartridge</span>
-              </div>
-              <div
-                className={`cartridge-slot ${isCartridgeEquipped ? 'active' : ''}`}
-                onClick={() => setIsCartridgeEditorOpen(true)}
-                title={
-                  isCartridgeEquipped
-                    ? `${character.cartridgeRarity || ''} ${equippedCartridgeName || character.cartridgeMainStat || 'Equipped'} Lv${character.cartridgeLevel}`
-                    : 'Click to equip cartridge'
-                }
-              >
-                {isCartridgeEquipped ? (
-                  <div className="cartridge-slot-info">
-                    {character.cartridgeRarity && (
-                      <span
-                        className={`cartridge-rarity-badge rarity-${character.cartridgeRarity.toLowerCase()}`}
-                      >
-                        {character.cartridgeRarity}
-                      </span>
-                    )}
-                    <span className="cartridge-slot-stat">
-                      {equippedCartridgeName || character.cartridgeMainStat || 'No name'}
-                    </span>
-                    <span className="cartridge-slot-level">Lv{character.cartridgeLevel}</span>
-                    {character.cartridgeSubStats.length > 0 && (
-                      <span className="cartridge-slot-subs">
-                        {character.cartridgeSubStats.length} sub
-                        {character.cartridgeSubStats.length !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="cartridge-slot-empty">+ Equip Cartridge</span>
-                )}
-              </div>
-            </div>
-
-            {/* Target Build display */}
-            {hasCartridgePrefs && (
-              <div className="cartridge-target-build">
-                <div className="target-build-header">
-                  <span className="target-build-label">Target Build</span>
-                </div>
-                {character.cartridgePreferences.cartridgeId && (
-                  <div className="target-build-chain">
-                    <span className="target-build-chain-label">Set</span>
-                    <span className="pref-stat-badge">
-                      {ALL_CARTRIDGES.find(
-                        (c) => c.id === character.cartridgePreferences.cartridgeId,
-                      )?.name ?? character.cartridgePreferences.cartridgeId}
-                    </span>
-                    <span
-                      className={`cartridge-rarity-badge rarity-${(ALL_CARTRIDGES.find((c) => c.id === character.cartridgePreferences.cartridgeId)?.rarity ?? '').toLowerCase()}`}
-                    >
-                      {
-                        ALL_CARTRIDGES.find(
-                          (c) => c.id === character.cartridgePreferences.cartridgeId,
-                        )?.rarity
-                      }
-                    </span>
-                  </div>
-                )}
-                {character.cartridgePreferences.mainStats.length > 0 && (
-                  <div className="target-build-chain">
-                    <span className="target-build-chain-label">Main</span>
-                    {character.cartridgePreferences.mainStats.map((p, i) => (
-                      <span key={i}>
-                        <span className="pref-stat-badge">{p.stat}</span>
-                        {p.operator && (
-                          <span className="pref-operator-badge">
-                            {p.operator === '>=' ? '≥' : p.operator}
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {character.cartridgePreferences.subStats.length > 0 && (
-                  <div className="target-build-chain">
-                    <span className="target-build-chain-label">Subs</span>
-                    {character.cartridgePreferences.subStats.map((p, i) => (
-                      <span key={i}>
-                        <span className="pref-stat-badge">{p.stat}</span>
-                        {p.operator && (
-                          <span className="pref-operator-badge">
-                            {p.operator === '>=' ? '≥' : p.operator}
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {character.cartridgePreferences.comments && (
-                  <div className="target-build-comments">
-                    {character.cartridgePreferences.comments}
-                  </div>
-                )}
-              </div>
-            )}
           </div>
 
           {/* Edit body -- always in DOM, expands when editing */}
@@ -439,6 +353,109 @@ export function CharacterCard({
                   })}
                 </div>
               </ProgressSection>
+
+              {/* ── Cartridge slot (clickable, opens modal) ──────────── */}
+              <div className="cartridge-slot-section">
+                <div className="section-header">
+                  <span>Cartridge</span>
+                </div>
+                <div
+                  className={`cartridge-slot ${isCartridgeEquipped ? 'active' : ''}`}
+                  onClick={() => setIsCartridgeEditorOpen(true)}
+                  title={
+                    isCartridgeEquipped
+                      ? `${character.cartridgeRarity || ''} ${equippedCartridgeName || character.cartridgeMainStat || 'Equipped'} Lv${character.cartridgeLevel}`
+                      : 'Click to equip cartridge'
+                  }
+                >
+                  {isCartridgeEquipped ? (
+                    <div className="cartridge-slot-info">
+                      {character.cartridgeRarity && (
+                        <span
+                          className={`cartridge-rarity-badge rarity-${character.cartridgeRarity.toLowerCase()}`}
+                        >
+                          {character.cartridgeRarity}
+                        </span>
+                      )}
+                      <span className="cartridge-slot-stat">
+                        {equippedCartridgeName || character.cartridgeMainStat || 'No name'}
+                      </span>
+                      <span className="cartridge-slot-level">Lv{character.cartridgeLevel}</span>
+                      {character.cartridgeSubStats.length > 0 && (
+                        <span className="cartridge-slot-subs">
+                          {character.cartridgeSubStats.length} sub
+                          {character.cartridgeSubStats.length !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="cartridge-slot-empty">+ Equip Cartridge</span>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Target Build (read-only preferences display) ─────── */}
+              {hasCartridgePrefs && (
+                <div className="cartridge-target-build">
+                  <div className="target-build-header">
+                    <span className="target-build-label">Target Build</span>
+                  </div>
+                  {character.cartridgePreferences.cartridgeId && (
+                    <div className="target-build-chain">
+                      <span className="target-build-chain-label">Set</span>
+                      <span className="pref-stat-badge">
+                        {ALL_CARTRIDGES.find(
+                          (c) => c.id === character.cartridgePreferences.cartridgeId,
+                        )?.name ?? character.cartridgePreferences.cartridgeId}
+                      </span>
+                      <span
+                        className={`cartridge-rarity-badge rarity-${(ALL_CARTRIDGES.find((c) => c.id === character.cartridgePreferences.cartridgeId)?.rarity ?? '').toLowerCase()}`}
+                      >
+                        {
+                          ALL_CARTRIDGES.find(
+                            (c) => c.id === character.cartridgePreferences.cartridgeId,
+                          )?.rarity
+                        }
+                      </span>
+                    </div>
+                  )}
+                  {character.cartridgePreferences.mainStats.length > 0 && (
+                    <div className="target-build-chain">
+                      <span className="target-build-chain-label">Main</span>
+                      {character.cartridgePreferences.mainStats.map((p, i) => (
+                        <span key={i}>
+                          <span className="pref-stat-badge">{p.stat}</span>
+                          {p.operator && (
+                            <span className="pref-operator-badge">
+                              {p.operator === '>=' ? '≥' : p.operator}
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {character.cartridgePreferences.subStats.length > 0 && (
+                    <div className="target-build-chain">
+                      <span className="target-build-chain-label">Subs</span>
+                      {character.cartridgePreferences.subStats.map((p, i) => (
+                        <span key={i}>
+                          <span className="pref-stat-badge">{p.stat}</span>
+                          {p.operator && (
+                            <span className="pref-operator-badge">
+                              {p.operator === '>=' ? '≥' : p.operator}
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {character.cartridgePreferences.comments && (
+                    <div className="target-build-comments">
+                      {character.cartridgePreferences.comments}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
