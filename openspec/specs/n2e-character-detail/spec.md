@@ -1,6 +1,6 @@
 ## Purpose
 
-Neverness to Everness per-character tracked fields. Covers level (1–90), awakening (6 boolean slots), resonance count (0–6), arc equipment (id + level + tier), cartridge equipment (cartridgeId + rarity + level + main stat + sub stats), cartridge build preferences (target cartridgeId + main/sub chains + comments), favorite toggle, level-based sort, and search keys.
+Neverness to Everness per-character tracked fields. Covers level (1–90), awakening (6 boolean slots), arc equipment (id + level + tier), cartridge equipment (cartridgeId + rarity + level + main stat + sub stats), cartridge build preferences (target cartridgeId + main/sub chains + comments), favorite toggle, level-based sort, search keys, and card collapse composition.
 
 ## Requirements
 
@@ -41,20 +41,6 @@ The system SHALL track six boolean awakening slots per character, each defaultin
 
 - **WHEN** a character is added to the roster
 - **THEN** all six awakening slots are false
-
-### Requirement: Resonance count field
-
-The system SHALL track a character's resonance count as an integer in the range 0–6, defaulting to 0 on add. Updates SHALL be clamped to this range.
-
-#### Scenario: Resonance count updated within range
-
-- **WHEN** user sets resonance count to a value between 0 and 6 inclusive
-- **THEN** resonance count is updated in local state and queued for DB write
-
-#### Scenario: Resonance count clamped
-
-- **WHEN** user sets resonance count below 0 or above 6
-- **THEN** value is clamped to the valid range before update
 
 ### Requirement: Arc equipment
 
@@ -179,3 +165,45 @@ The system SHALL search the N2E roster using Fuse.js with keys: name, esperType,
 
 - **WHEN** user searches for a role name
 - **THEN** characters with that role are returned via fuzzy search
+
+### Requirement: N2E card collapsed summary composition
+
+The N2E character card's collapsed summary (`.game-card-static-summary`) SHALL contain exactly two child blocks: a stat chips row and a one-line equipment digest. No editing affordances (buttons, clickable slots) SHALL appear in the collapsed summary.
+
+#### Scenario: Stat chips row displays investment progress
+
+- **WHEN** the card is in collapsed (non-editing) state
+- **THEN** `.game-card-static-stats` renders `Lv {level}` and `A {awakeningCount}/6` chips colored by `getProgressStyle`, plus a conditional `Cart {score}%` chip (shown only when cartridge preferences exist and score >= 0, colored by `getProgressStyle(score, 0, 100)`)
+
+#### Scenario: Equipment one-liner shows arc and cartridge digest
+
+- **WHEN** the card is in collapsed state and arc and/or cartridge are equipped
+- **THEN** `.game-card-static-line` shows arc name (teal) and/or cartridge name + rarity + Lv (teal), separated by `·`
+
+#### Scenario: No equipment shows dash placeholder
+
+- **WHEN** the card is in collapsed state and neither arc nor cartridge is equipped
+- **THEN** `.game-card-static-line` shows `—` with the `.no-equip` class
+
+### Requirement: N2E card edit body contains cartridge slot and Target Build
+
+The cartridge slot section (clickable, opens `CartridgeEditorModal`) and the Target Build display SHALL be rendered inside `.game-card-edit-body-inner`, visible only when the card is in editing state.
+
+#### Scenario: Cartridge slot in edit body
+
+- **WHEN** the card is expanded (editing state)
+- **THEN** the `.cartridge-slot-section` is visible and clickable, opening `CartridgeEditorModal`
+
+#### Scenario: Target Build in edit body
+
+- **WHEN** the card is expanded and `hasCartridgePrefs` is true
+- **THEN** the `.cartridge-target-build` block renders the full preferences (Set, Main, Subs, comments)
+
+### Requirement: N2E summary height budget
+
+The N2E card's inline `--game-card-summary-max-height` SHALL be approximately 100px (matching other games' compact summaries), reduced from the prior 400px.
+
+#### Scenario: Collapsed height is uniform
+
+- **WHEN** N2E cards are rendered in the roster grid
+- **THEN** all collapsed cards have the same height regardless of whether cartridge preferences exist (the variable-height Target Build is no longer in the summary)

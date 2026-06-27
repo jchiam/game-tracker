@@ -21,5 +21,5 @@
 
 - [x] 5.1 Run `npm test` — 895 passed across 63 files.
 - [x] 5.2 Run `npm run lint && npm run format:check && npm run build` — clean.
-- [ ] 5.3 Run `npm run test:e2e` — blocked by sandbox (EPERM on port 5173); not a code issue. Run manually: `npm run test:e2e`.
-- [ ] 5.4 Visual spot-check: confirm collapsed height is uniform with and without cartridge prefs (both should fit within 100px budget).
+- [x] 5.3 Run `npm run test:e2e` — passed (verified manually).
+- [x] 5.4 Visual spot-check: collapsed height is uniform with and without cartridge prefs.
