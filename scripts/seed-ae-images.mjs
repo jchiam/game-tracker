@@ -2,6 +2,10 @@
 // Downloads operator portraits from prydwen.gg and uploads to ImageKit.
 // Idempotent — skips operators whose images already exist in ImageKit.
 //
+// The OPERATORS id array below must stay in sync with ALL_OPERATORS in
+// src/data/arknights-endfield/operators.ts. See the full manual-maintenance
+// procedure in openspec/specs/ae-operator-catalog/spec.md.
+//
 // Usage:
 //   node scripts/seed-ae-images.mjs                # skip already-uploaded
 //   node scripts/seed-ae-images.mjs --reupload     # force reupload all

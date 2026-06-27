@@ -1,6 +1,8 @@
-// Hand-authored operator catalog for Arknights: Endfield — Phase 1.
-// This file is manually maintained until a stable structured data source exists.
-// Phase 2 will replace it with an auto-generated file via scripts/update-ae-data.mjs.
+// Hand-authored operator catalog for Arknights: Endfield.
+// Manually maintained — no stable structured data source exists yet. When editing,
+// follow the documented procedure in openspec/specs/ae-operator-catalog/spec.md and
+// keep the `OPERATORS` id array in scripts/seed-ae-images.mjs in sync with ALL_OPERATORS.
+// Automating this is tracked by the `add-ae-data-pipeline` change (future update-ae-data.mjs).
 
 export interface AeOperator {
   id: string;

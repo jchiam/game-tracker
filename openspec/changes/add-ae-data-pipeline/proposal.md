@@ -40,4 +40,7 @@ the per-game update pattern once a stable structured data source exists.
   is hand-maintained "until a stable structured data source exists" — this change cannot
   be implemented until that source is identified (e.g. a Prydwen/wiki endpoint with a
   parseable operator list).
+- **Supersedes**: the manual maintenance procedure documented in the `ae-operator-catalog`
+  spec — that spec's hand-authored + seed-script requirements will be replaced by the
+  generated catalog + workflow when this change is implemented.
 - **No breaking changes** to existing games.
