@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
-import { ALL_OPERATORS, type EndfieldOperator } from '@/data/arknights-endfield/operators';
-import type { EndfieldOperatorPatch, EndfieldTrackedOperator } from '@/types';
+import { ALL_OPERATORS, type AeOperator } from '@/data/arknights-endfield/operators';
+import type { AeOperatorPatch, AeTrackedOperator } from '@/types';
 import {
   loadOperatorsFromDB,
   insertOperator,
@@ -10,7 +10,7 @@ import {
 } from '@/services/arknights-endfield/operatorService';
 import { useRoster } from '@/hooks/useRoster';
 
-function createTrackedOperator(operator: EndfieldOperator): EndfieldTrackedOperator {
+function createTrackedOperator(operator: AeOperator): AeTrackedOperator {
   return {
     ...operator,
     isFavorited: false,
@@ -33,7 +33,7 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
     addEntity: addOperator,
     removeEntity: removeOperator,
     filterRoster,
-  } = useRoster<EndfieldOperator, EndfieldTrackedOperator>(session, isAuthLoading, {
+  } = useRoster<AeOperator, AeTrackedOperator>(session, isAuthLoading, {
     allEntities: ALL_OPERATORS,
     loadFromDB: loadOperatorsFromDB,
     insertEntity: insertOperator,
@@ -49,7 +49,7 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
     setTrackedOperators((prev) => prev.map((o) => (o.id === id ? { ...o, level: validLevel } : o)));
     const op = trackedOperatorsRef.current.find((o) => o.id === id);
     if (op?.dbId)
-      queueUpdate(op.dbId, { level: validLevel } satisfies EndfieldOperatorPatch, (p) =>
+      queueUpdate(op.dbId, { level: validLevel } satisfies AeOperatorPatch, (p) =>
         updateOperator(op.dbId!, p),
       );
   };
@@ -61,7 +61,7 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
     );
     const op = trackedOperatorsRef.current.find((o) => o.id === id);
     if (op?.dbId)
-      queueUpdate(op.dbId, { potential: validPotential } satisfies EndfieldOperatorPatch, (p) =>
+      queueUpdate(op.dbId, { potential: validPotential } satisfies AeOperatorPatch, (p) =>
         updateOperator(op.dbId!, p),
       );
   };
@@ -72,7 +72,7 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
     );
     const op = trackedOperatorsRef.current.find((o) => o.id === id);
     if (op?.dbId)
-      queueUpdate(op.dbId, { isFavorited: value } satisfies EndfieldOperatorPatch, (p) =>
+      queueUpdate(op.dbId, { isFavorited: value } satisfies AeOperatorPatch, (p) =>
         updateOperator(op.dbId!, p),
       );
   };

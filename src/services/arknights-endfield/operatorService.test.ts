@@ -88,7 +88,7 @@ describe('operatorService', () => {
       });
     });
 
-    it('loadOperatorsFromDB transforms DB rows into EndfieldTrackedOperator objects', async () => {
+    it('loadOperatorsFromDB transforms DB rows into AeTrackedOperator objects', async () => {
       const dbRow = {
         id: 'db-uuid-1',
         operator_id: 'ember',

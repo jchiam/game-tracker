@@ -3,8 +3,8 @@
 // Idempotent — skips operators whose images already exist in ImageKit.
 //
 // Usage:
-//   node scripts/seed-endfield-images.mjs                # skip already-uploaded
-//   node scripts/seed-endfield-images.mjs --reupload     # force reupload all
+//   node scripts/seed-ae-images.mjs                # skip already-uploaded
+//   node scripts/seed-ae-images.mjs --reupload     # force reupload all
 
 import { resolve, dirname } from 'path';
 import { fileURLToPath } from 'url';

@@ -25,7 +25,7 @@ const GAMES = [
     color: '#7b2dff',
   },
   {
-    id: 'endfield',
+    id: 'ae',
     name: 'Arknights: Endfield',
     path: '/arknights-endfield',
     icon: '/assets/icons/endfield-icon.png',

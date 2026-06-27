@@ -8,7 +8,7 @@
 }
 
 .rarity-indicator.rarity-5 {
-  color: var(--color-endfield-class-striker);
+  color: var(--color-ae-class-striker);
 }
 
 .rarity-indicator.rarity-4 {
@@ -53,100 +53,100 @@
    live here, at the canonical 0.25 fill / 0.6 border opacity. */
 
 /* Class */
-.endfield-class-caster {
-  color: var(--color-endfield-class-caster);
+.ae-class-caster {
+  color: var(--color-ae-class-caster);
   background: rgba(201, 168, 248, 0.25);
   border-color: rgba(201, 168, 248, 0.6);
 }
 
-.endfield-class-defender {
-  color: var(--color-endfield-class-defender);
+.ae-class-defender {
+  color: var(--color-ae-class-defender);
   background: rgba(138, 184, 245, 0.25);
   border-color: rgba(138, 184, 245, 0.6);
 }
 
-.endfield-class-guard {
-  color: var(--color-endfield-class-guard);
+.ae-class-guard {
+  color: var(--color-ae-class-guard);
   background: rgba(255, 144, 144, 0.25);
   border-color: rgba(255, 144, 144, 0.6);
 }
 
-.endfield-class-striker {
-  color: var(--color-endfield-class-striker);
+.ae-class-striker {
+  color: var(--color-ae-class-striker);
   background: rgba(245, 214, 138, 0.25);
   border-color: rgba(245, 214, 138, 0.6);
 }
 
-.endfield-class-supporter {
-  color: var(--color-endfield-class-supporter);
+.ae-class-supporter {
+  color: var(--color-ae-class-supporter);
   background: rgba(144, 224, 154, 0.25);
   border-color: rgba(144, 224, 154, 0.6);
 }
 
-.endfield-class-vanguard {
-  color: var(--color-endfield-class-vanguard);
+.ae-class-vanguard {
+  color: var(--color-ae-class-vanguard);
   background: rgba(245, 176, 128, 0.25);
   border-color: rgba(245, 176, 128, 0.6);
 }
 
 /* Element */
-.endfield-element-physical {
-  color: var(--color-endfield-element-physical);
+.ae-element-physical {
+  color: var(--color-ae-element-physical);
   background: rgba(188, 188, 188, 0.25);
   border-color: rgba(188, 188, 188, 0.6);
 }
 
-.endfield-element-cryo {
-  color: var(--color-endfield-element-cryo);
+.ae-element-cryo {
+  color: var(--color-ae-element-cryo);
   background: rgba(71, 199, 253, 0.25);
   border-color: rgba(71, 199, 253, 0.6);
 }
 
-.endfield-element-electric {
-  color: var(--color-endfield-element-electric);
+.ae-element-electric {
+  color: var(--color-ae-element-electric);
   background: rgba(217, 122, 254, 0.25);
   border-color: rgba(217, 122, 254, 0.6);
 }
 
-.endfield-element-heat {
-  color: var(--color-endfield-element-heat);
+.ae-element-heat {
+  color: var(--color-ae-element-heat);
   background: rgba(248, 79, 54, 0.25);
   border-color: rgba(248, 79, 54, 0.6);
 }
 
-.endfield-element-nature {
-  color: var(--color-endfield-element-nature);
+.ae-element-nature {
+  color: var(--color-ae-element-nature);
   background: rgba(91, 200, 159, 0.25);
   border-color: rgba(91, 200, 159, 0.6);
 }
 
 /* Weapon */
-.endfield-weapon-sword {
-  color: var(--color-endfield-weapon-sword);
+.ae-weapon-sword {
+  color: var(--color-ae-weapon-sword);
   background: rgba(240, 168, 216, 0.25);
   border-color: rgba(240, 168, 216, 0.6);
 }
 
-.endfield-weapon-greatsword {
-  color: var(--color-endfield-weapon-greatsword);
+.ae-weapon-greatsword {
+  color: var(--color-ae-weapon-greatsword);
   background: rgba(245, 176, 128, 0.25);
   border-color: rgba(245, 176, 128, 0.6);
 }
 
-.endfield-weapon-polearm {
-  color: var(--color-endfield-weapon-polearm);
+.ae-weapon-polearm {
+  color: var(--color-ae-weapon-polearm);
   background: rgba(144, 208, 240, 0.25);
   border-color: rgba(144, 208, 240, 0.6);
 }
 
-.endfield-weapon-handcannon {
-  color: var(--color-endfield-weapon-handcannon);
+.ae-weapon-handcannon {
+  color: var(--color-ae-weapon-handcannon);
   background: rgba(245, 214, 138, 0.25);
   border-color: rgba(245, 214, 138, 0.6);
 }
 
-.endfield-weapon-arts-unit {
-  color: var(--color-endfield-weapon-arts-unit);
+.ae-weapon-arts-unit {
+  color: var(--color-ae-weapon-arts-unit);
   background: rgba(201, 168, 248, 0.25);
   border-color: rgba(201, 168, 248, 0.6);
 }

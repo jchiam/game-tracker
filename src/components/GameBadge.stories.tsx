@@ -99,12 +99,12 @@ export const N2EArc: Story = {
 export const AEClass: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-      <GameBadge label="Caster" variant="endfield-class" modifier="caster" />
-      <GameBadge label="Defender" variant="endfield-class" modifier="defender" />
-      <GameBadge label="Guard" variant="endfield-class" modifier="guard" />
-      <GameBadge label="Striker" variant="endfield-class" modifier="striker" />
-      <GameBadge label="Supporter" variant="endfield-class" modifier="supporter" />
-      <GameBadge label="Vanguard" variant="endfield-class" modifier="vanguard" />
+      <GameBadge label="Caster" variant="ae-class" modifier="caster" />
+      <GameBadge label="Defender" variant="ae-class" modifier="defender" />
+      <GameBadge label="Guard" variant="ae-class" modifier="guard" />
+      <GameBadge label="Striker" variant="ae-class" modifier="striker" />
+      <GameBadge label="Supporter" variant="ae-class" modifier="supporter" />
+      <GameBadge label="Vanguard" variant="ae-class" modifier="vanguard" />
     </div>
   ),
 };
@@ -112,11 +112,11 @@ export const AEClass: Story = {
 export const AEElement: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-      <GameBadge label="Physical" variant="endfield-element" modifier="physical" />
-      <GameBadge label="Cryo" variant="endfield-element" modifier="cryo" />
-      <GameBadge label="Electric" variant="endfield-element" modifier="electric" />
-      <GameBadge label="Heat" variant="endfield-element" modifier="heat" />
-      <GameBadge label="Nature" variant="endfield-element" modifier="nature" />
+      <GameBadge label="Physical" variant="ae-element" modifier="physical" />
+      <GameBadge label="Cryo" variant="ae-element" modifier="cryo" />
+      <GameBadge label="Electric" variant="ae-element" modifier="electric" />
+      <GameBadge label="Heat" variant="ae-element" modifier="heat" />
+      <GameBadge label="Nature" variant="ae-element" modifier="nature" />
     </div>
   ),
 };
@@ -124,11 +124,11 @@ export const AEElement: Story = {
 export const AEWeapon: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-      <GameBadge label="Sword" variant="endfield-weapon" modifier="sword" />
-      <GameBadge label="Greatsword" variant="endfield-weapon" modifier="greatsword" />
-      <GameBadge label="Polearm" variant="endfield-weapon" modifier="polearm" />
-      <GameBadge label="Handcannon" variant="endfield-weapon" modifier="handcannon" />
-      <GameBadge label="Arts Unit" variant="endfield-weapon" modifier="arts-unit" />
+      <GameBadge label="Sword" variant="ae-weapon" modifier="sword" />
+      <GameBadge label="Greatsword" variant="ae-weapon" modifier="greatsword" />
+      <GameBadge label="Polearm" variant="ae-weapon" modifier="polearm" />
+      <GameBadge label="Handcannon" variant="ae-weapon" modifier="handcannon" />
+      <GameBadge label="Arts Unit" variant="ae-weapon" modifier="arts-unit" />
     </div>
   ),
 };

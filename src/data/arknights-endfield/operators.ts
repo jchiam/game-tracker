@@ -1,8 +1,8 @@
 // Hand-authored operator catalog for Arknights: Endfield — Phase 1.
 // This file is manually maintained until a stable structured data source exists.
-// Phase 2 will replace it with an auto-generated file via scripts/update-endfield-data.mjs.
+// Phase 2 will replace it with an auto-generated file via scripts/update-ae-data.mjs.
 
-export interface EndfieldOperator {
+export interface AeOperator {
   id: string;
   name: string;
   rarity: 4 | 5 | 6;
@@ -12,7 +12,7 @@ export interface EndfieldOperator {
   imageUrl: string;
 }
 
-export const ALL_OPERATORS: EndfieldOperator[] = [
+export const ALL_OPERATORS: AeOperator[] = [
   // 6-star
   {
     id: 'ardelia',

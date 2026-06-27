@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { PartiesTab } from './PartiesTab';
 import { ALL_OPERATORS } from '@/data/arknights-endfield/operators';
 import { createMockSession } from '@/test/mocks/supabase';
-import type { EndfieldParty } from '@/types';
+import type { AeParty } from '@/types';
 
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => path,
@@ -15,7 +15,7 @@ vi.mock('@/utils/toast', () => ({
   addToast: vi.fn(),
 }));
 
-function makeParty(overrides: Partial<EndfieldParty> = {}): EndfieldParty {
+function makeParty(overrides: Partial<AeParty> = {}): AeParty {
   return {
     id: 'party-1',
     profileId: 'user-1',
@@ -29,7 +29,7 @@ function makeParty(overrides: Partial<EndfieldParty> = {}): EndfieldParty {
 
 describe('PartiesTab', () => {
   const defaultProps = {
-    parties: [] as EndfieldParty[],
+    parties: [] as AeParty[],
     availableOperators: ALL_OPERATORS,
     onSaveParty: vi.fn().mockResolvedValue('new-id'),
     onDeleteParty: vi.fn().mockResolvedValue(true),

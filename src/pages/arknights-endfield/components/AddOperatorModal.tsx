@@ -1,15 +1,15 @@
 import { useState, useMemo } from 'react';
 import Fuse from 'fuse.js';
-import type { EndfieldOperator } from '@/data/arknights-endfield/operators';
-import type { EndfieldTrackedOperator } from '@/types';
+import type { AeOperator } from '@/data/arknights-endfield/operators';
+import type { AeTrackedOperator } from '@/types';
 import { getAvatarUrl } from '@/lib/imagekit';
 import { Modal } from '@/components/Modal';
 import '@/components/AddEntityModal.css';
 
 interface AddOperatorModalProps {
-  availableOperators: EndfieldOperator[];
-  trackedOperators: EndfieldTrackedOperator[];
-  onAddOperator: (operator: EndfieldOperator) => void;
+  availableOperators: AeOperator[];
+  trackedOperators: AeTrackedOperator[];
+  onAddOperator: (operator: AeOperator) => void;
   onClose: () => void;
 }
 
@@ -79,12 +79,12 @@ export function AddOperatorModal({
                   <span className="modal-list-name">{operator.name}</span>
                   <div className="modal-list-tags">
                     <span
-                      className={`game-badge endfield-class-badge endfield-class-${operator.class.toLowerCase()}`}
+                      className={`game-badge ae-class-badge ae-class-${operator.class.toLowerCase()}`}
                     >
                       {operator.class}
                     </span>
                     <span
-                      className={`game-badge endfield-element-badge endfield-element-${operator.element.toLowerCase()}`}
+                      className={`game-badge ae-element-badge ae-element-${operator.element.toLowerCase()}`}
                     >
                       {operator.element}
                     </span>

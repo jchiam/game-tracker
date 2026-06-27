@@ -3,7 +3,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { PartyEditorModal } from './PartyEditorModal';
 import { ALL_OPERATORS } from '@/data/arknights-endfield/operators';
-import type { EndfieldParty } from '@/types';
+import type { AeParty } from '@/types';
 
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => path,
@@ -14,7 +14,7 @@ vi.mock('@/utils/toast', () => ({
   addToast: vi.fn(),
 }));
 
-function makeParty(overrides: Partial<EndfieldParty> = {}): EndfieldParty {
+function makeParty(overrides: Partial<AeParty> = {}): AeParty {
   return {
     id: 'p1',
     profileId: 'user-1',

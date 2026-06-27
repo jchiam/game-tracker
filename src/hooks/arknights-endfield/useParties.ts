@@ -1,5 +1,5 @@
 import { type Session } from '@supabase/supabase-js';
-import type { EndfieldParty, EndfieldPartyMember } from '@/types';
+import type { AeParty, AePartyMember } from '@/types';
 import {
   loadParties,
   saveParty as apiSaveParty,
@@ -9,8 +9,8 @@ import { useParties as usePartiesBase } from '@/hooks/useParties';
 
 export function useParties(session: Session | null) {
   const { parties, isLoading, saveParty, deleteParty, refreshParties } = usePartiesBase<
-    EndfieldParty,
-    EndfieldPartyMember
+    AeParty,
+    AePartyMember
   >(session, {
     loadParties,
     saveParty: apiSaveParty,

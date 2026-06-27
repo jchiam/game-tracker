@@ -2,7 +2,7 @@ import { type Character } from '@/data/honkai-star-rail/characters';
 import { type EquippedRelic } from '@/data/honkai-star-rail/relics';
 import { type Arcanist } from '@/data/reverse1999/arcanists';
 import { type N2ECharacter } from '@/data/neverness-to-everness/characters';
-import { type EndfieldOperator } from '@/data/arknights-endfield/operators';
+import { type AeOperator } from '@/data/arknights-endfield/operators';
 
 /** One entry in a build/cartridge stat-preference priority chain. */
 export interface StatPreference {
@@ -149,29 +149,29 @@ export interface N2EPartyMember {
   slotIndex: number; // 0–3
 }
 
-export interface EndfieldTrackedOperator extends EndfieldOperator {
+export interface AeTrackedOperator extends AeOperator {
   dbId?: string;
   isFavorited: boolean;
   level: number;
   potential: number; // 0–5
 }
 
-export interface EndfieldOperatorPatch {
+export interface AeOperatorPatch {
   level?: number;
   potential?: number;
   isFavorited?: boolean;
 }
 
-export interface EndfieldParty {
+export interface AeParty {
   id: string;
   profileId: string;
   name: string;
   notes: string | null;
-  members: EndfieldPartyMember[];
+  members: AePartyMember[];
   createdAt: string;
 }
 
-export interface EndfieldPartyMember {
+export interface AePartyMember {
   operatorId: string;
   slotIndex: number; // 0–3
 }

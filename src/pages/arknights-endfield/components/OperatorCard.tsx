@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { EndfieldTrackedOperator } from '@/types';
+import type { AeTrackedOperator } from '@/types';
 import { GameBadge } from '@/components/GameBadge';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { ProgressSection } from '@/components/ProgressSection';
@@ -8,7 +8,7 @@ import { getProgressStyle } from '@/utils/progressGradient';
 import './OperatorCard.css';
 
 interface OperatorCardProps {
-  operator: EndfieldTrackedOperator;
+  operator: AeTrackedOperator;
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
   onUpdatePotential: (id: string, potential: number) => void;
@@ -91,17 +91,17 @@ export function OperatorCard({
             <div className="game-card-badges">
               <GameBadge
                 label={operator.class}
-                variant="endfield-class"
+                variant="ae-class"
                 modifier={operator.class.toLowerCase()}
               />
               <GameBadge
                 label={operator.element}
-                variant="endfield-element"
+                variant="ae-element"
                 modifier={operator.element.toLowerCase()}
               />
               <GameBadge
                 label={operator.weapon}
-                variant="endfield-weapon"
+                variant="ae-weapon"
                 modifier={operator.weapon.toLowerCase().replace(' ', '-')}
               />
             </div>

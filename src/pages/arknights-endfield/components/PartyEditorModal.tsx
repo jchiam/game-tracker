@@ -1,15 +1,15 @@
 import { useState, useMemo } from 'react';
-import type { EndfieldParty, EndfieldPartyMember } from '@/types';
-import type { EndfieldOperator } from '@/data/arknights-endfield/operators';
+import type { AeParty, AePartyMember } from '@/types';
+import type { AeOperator } from '@/data/arknights-endfield/operators';
 import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
 import { addToast } from '@/utils/toast';
 import { Modal } from '@/components/Modal';
 import '@/components/PartyEditorModal.css';
 
 interface PartyEditorModalProps {
-  party?: EndfieldParty;
-  availableOperators: EndfieldOperator[];
-  onSave: (party: Partial<EndfieldParty> & { members: EndfieldPartyMember[] }) => Promise<void>;
+  party?: AeParty;
+  availableOperators: AeOperator[];
+  onSave: (party: Partial<AeParty> & { members: AePartyMember[] }) => Promise<void>;
   onClose: () => void;
 }
 
@@ -21,7 +21,7 @@ export function PartyEditorModal({
 }: PartyEditorModalProps) {
   const [name, setName] = useState(party?.name || '');
   const [notes, setNotes] = useState(party?.notes || '');
-  const [members, setMembers] = useState<EndfieldPartyMember[]>(party?.members || []);
+  const [members, setMembers] = useState<AePartyMember[]>(party?.members || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
 

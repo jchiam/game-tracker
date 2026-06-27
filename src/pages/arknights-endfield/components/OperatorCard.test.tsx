@@ -2,13 +2,13 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OperatorCard } from './OperatorCard';
-import type { EndfieldTrackedOperator } from '@/types';
+import type { AeTrackedOperator } from '@/types';
 
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => path,
 }));
 
-function makeOperator(overrides: Partial<EndfieldTrackedOperator> = {}): EndfieldTrackedOperator {
+function makeOperator(overrides: Partial<AeTrackedOperator> = {}): AeTrackedOperator {
   return {
     id: 'ember',
     name: 'Ember',

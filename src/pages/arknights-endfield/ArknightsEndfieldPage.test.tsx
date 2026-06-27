@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { ArknightsEndfieldPage } from './ArknightsEndfieldPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
-import type { EndfieldTrackedOperator, EndfieldParty } from '@/types';
+import type { AeTrackedOperator, AeParty } from '@/types';
 
 vi.mock('@/hooks/arknights-endfield/useOperators', () => ({
   useOperators: vi.fn(),
@@ -20,7 +20,7 @@ vi.mock('@/lib/imagekit', () => ({
 import { useOperators } from '@/hooks/arknights-endfield/useOperators';
 import { useParties } from '@/hooks/arknights-endfield/useParties';
 
-function makeOperator(id: string, name: string): EndfieldTrackedOperator {
+function makeOperator(id: string, name: string): AeTrackedOperator {
   return {
     id,
     name,
@@ -36,7 +36,7 @@ function makeOperator(id: string, name: string): EndfieldTrackedOperator {
   };
 }
 
-function makeParty(id: string, name: string): EndfieldParty {
+function makeParty(id: string, name: string): AeParty {
   return {
     id,
     profileId: 'user-1',
@@ -49,7 +49,7 @@ function makeParty(id: string, name: string): EndfieldParty {
 
 const defaultOperatorsHook = {
   availableOperators: [],
-  trackedOperators: [] as EndfieldTrackedOperator[],
+  trackedOperators: [] as AeTrackedOperator[],
   isInitialLoad: false,
   isLoadError: false,
   retryLoad: vi.fn(),
@@ -63,7 +63,7 @@ const defaultOperatorsHook = {
 };
 
 const defaultPartiesHook = {
-  parties: [] as EndfieldParty[],
+  parties: [] as AeParty[],
   isLoading: false,
   saveParty: vi.fn().mockResolvedValue(null),
   deleteParty: vi.fn().mockResolvedValue(true),

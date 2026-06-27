@@ -1,16 +1,16 @@
 import { supabase } from '@/lib/supabase';
-import type { EndfieldOperatorPatch, EndfieldTrackedOperator } from '@/types';
+import type { AeOperatorPatch, AeTrackedOperator } from '@/types';
 import { ALL_OPERATORS } from '@/data/arknights-endfield/operators';
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
 
-const OPERATOR_COLUMNS: Record<keyof EndfieldOperatorPatch, string> = {
+const OPERATOR_COLUMNS: Record<keyof AeOperatorPatch, string> = {
   level: 'level',
   potential: 'potential',
   isFavorited: 'is_favorited',
 };
 
-export async function loadOperatorsFromDB(userId: string): Promise<EndfieldTrackedOperator[]> {
+export async function loadOperatorsFromDB(userId: string): Promise<AeTrackedOperator[]> {
   if (!DB_ENABLED || !import.meta.env.VITE_SUPABASE_ANON_KEY) return [];
 
   const { data, error } = await supabase
@@ -37,7 +37,7 @@ export async function loadOperatorsFromDB(userId: string): Promise<EndfieldTrack
         potential: row.potential ?? 0,
       };
     })
-    .filter(Boolean) as EndfieldTrackedOperator[];
+    .filter(Boolean) as AeTrackedOperator[];
 }
 
 export async function insertOperator(userId: string, operatorId: string): Promise<string | null> {
@@ -69,10 +69,10 @@ export async function deleteOperator(dbId: string): Promise<void> {
   }
 }
 
-export async function updateOperator(dbId: string, patch: EndfieldOperatorPatch): Promise<void> {
+export async function updateOperator(dbId: string, patch: AeOperatorPatch): Promise<void> {
   if (!DB_ENABLED) return;
   const row: Record<string, unknown> = {};
-  for (const key of Object.keys(patch) as (keyof EndfieldOperatorPatch)[]) {
+  for (const key of Object.keys(patch) as (keyof AeOperatorPatch)[]) {
     row[OPERATOR_COLUMNS[key]] = patch[key];
   }
   const { error } = await supabase.from('endfield_tracked_operators').update(row).eq('id', dbId);

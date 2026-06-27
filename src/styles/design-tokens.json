@@ -80,7 +80,7 @@
       "rarityA": { "$value": "#c9a8f8", "$type": "color" },
       "rarityB": { "$value": "#90d0f0", "$type": "color" }
     },
-    "endfield": {
+    "ae": {
       "elementPhysical": { "$value": "#bcbcbc", "$type": "color" },
       "elementCryo": { "$value": "#47c7fd", "$type": "color" },
       "elementElectric": { "$value": "#d97afe", "$type": "color" },

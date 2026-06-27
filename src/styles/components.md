@@ -256,7 +256,7 @@ Base modal shell. Overlay dismisses on mousedown outside modal content. Escape k
 
 `src/components/AddEntityModal.css`
 
-Search + scrollable list pattern used by every game's entity picker — AddCharacterModal (HSR / N2E), AddArcanistModal (R1999), AddOperatorModal (Endfield).
+Search + scrollable list pattern used by every game's entity picker — AddCharacterModal (HSR / N2E), AddArcanistModal (R1999), AddOperatorModal (AE).
 
 ```html
 <div class="modal-content add-entity-modal">

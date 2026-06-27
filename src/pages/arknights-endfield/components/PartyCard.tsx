@@ -1,11 +1,11 @@
-import type { EndfieldParty } from '@/types';
-import type { EndfieldOperator } from '@/data/arknights-endfield/operators';
+import type { AeParty } from '@/types';
+import type { AeOperator } from '@/data/arknights-endfield/operators';
 import { getMugshotUrl } from '@/lib/imagekit';
 import './PartyCard.css';
 
 interface PartyCardProps {
-  party: EndfieldParty;
-  availableOperators: EndfieldOperator[];
+  party: AeParty;
+  availableOperators: AeOperator[];
   onEdit: () => void;
   onDelete: () => void;
 }

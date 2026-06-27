@@ -1,9 +1,9 @@
 import { supabase } from '@/lib/supabase';
-import type { EndfieldParty } from '@/types';
+import type { AeParty } from '@/types';
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
 
-export async function loadParties(userId: string): Promise<EndfieldParty[]> {
+export async function loadParties(userId: string): Promise<AeParty[]> {
   if (!DB_ENABLED) return [];
 
   const { data, error } = await supabase
@@ -34,7 +34,7 @@ export async function loadParties(userId: string): Promise<EndfieldParty[]> {
 
 export async function saveParty(
   userId: string,
-  party: Partial<EndfieldParty> & { members: EndfieldParty['members'] },
+  party: Partial<AeParty> & { members: AeParty['members'] },
 ): Promise<string | null> {
   if (!DB_ENABLED) return null;
 

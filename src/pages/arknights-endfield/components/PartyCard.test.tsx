@@ -2,13 +2,13 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PartyCard } from './PartyCard';
 import { ALL_OPERATORS } from '@/data/arknights-endfield/operators';
-import type { EndfieldParty } from '@/types';
+import type { AeParty } from '@/types';
 
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => path,
 }));
 
-function makeParty(overrides: Partial<EndfieldParty> = {}): EndfieldParty {
+function makeParty(overrides: Partial<AeParty> = {}): AeParty {
   return {
     id: 'p1',
     profileId: 'user-1',

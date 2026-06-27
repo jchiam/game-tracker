@@ -1,17 +1,15 @@
 import { useState } from 'react';
-import type { EndfieldParty, EndfieldPartyMember } from '@/types';
-import type { EndfieldOperator } from '@/data/arknights-endfield/operators';
+import type { AeParty, AePartyMember } from '@/types';
+import type { AeOperator } from '@/data/arknights-endfield/operators';
 import type { Session } from '@supabase/supabase-js';
 import { PartyCard } from './PartyCard';
 import { PartyEditorModal } from './PartyEditorModal';
 import './PartiesTab.css';
 
 interface PartiesTabProps {
-  parties: EndfieldParty[];
-  availableOperators: EndfieldOperator[];
-  onSaveParty: (
-    party: Partial<EndfieldParty> & { members: EndfieldPartyMember[] },
-  ) => Promise<string | null>;
+  parties: AeParty[];
+  availableOperators: AeOperator[];
+  onSaveParty: (party: Partial<AeParty> & { members: AePartyMember[] }) => Promise<string | null>;
   onDeleteParty: (id: string) => Promise<boolean>;
   session: Session | null;
 }
@@ -23,7 +21,7 @@ export function PartiesTab({
   onDeleteParty,
   session,
 }: PartiesTabProps) {
-  const [editingParty, setEditingParty] = useState<EndfieldParty | null>(null);
+  const [editingParty, setEditingParty] = useState<AeParty | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   if (!session) {
