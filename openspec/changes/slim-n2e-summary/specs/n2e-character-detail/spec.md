@@ -1,4 +1,4 @@
-## Delta: Card collapse presentation (slim summary)
+## ADDED Requirements
 
 ### Requirement: N2E card collapsed summary composition
 
