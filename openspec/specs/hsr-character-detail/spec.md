@@ -156,24 +156,29 @@ The collapsed summary SHALL contain three gradient-colored stat chips, colored v
 
 ### Requirement: Collapsed summary gear one-liner
 
-The HSR character card's collapsed summary SHALL include a `.game-card-static-line` displaying equipped relic set names with piece counts, providing a gear-at-a-glance digest consistent with R1999 and N2E cards.
+The HSR character card's collapsed summary SHALL include a `.game-card-static-line` displaying equipped relic set names with piece counts, providing a gear-at-a-glance digest consistent with R1999 and N2E cards. Set names SHALL use abbreviated short names from `RELIC_SHORT_NAMES`, falling back to full names for unmapped sets.
 
-#### Scenario: Relic sets displayed with counts
+#### Scenario: Relic sets displayed with abbreviated names
 
 - **WHEN** the card is in collapsed state and one or more relic slots have a `setId`
-- **THEN** `.game-card-static-line` renders each distinct set name followed by its piece count, sorted by count descending, separated by `·`, colored teal
+- **THEN** `.game-card-static-line` renders each set using its short display name (from `RELIC_SHORT_NAMES` mapping) followed by piece count, falling back to the full name if no short name is mapped
 
 #### Scenario: Multiple sets displayed
 
 - **WHEN** a character has relics from 2+ different sets
-- **THEN** all sets are shown in descending count order (e.g. "Firesmith 4 · Champion 2")
+- **THEN** all sets are shown in descending count order (e.g. "Firesmith 4 · Streetwise 2"), separated by `·`, colored teal
 
 #### Scenario: No relics equipped shows dash
 
 - **WHEN** the card is in collapsed state and no relic slots have a `setId`
 - **THEN** `.game-card-static-line` shows `—` with the `.no-equip` class, colored rust
 
-#### Scenario: Long set names handled by CSS overflow
+#### Scenario: One-liner truncates with ellipsis
 
-- **WHEN** the combined set text exceeds the card width
-- **THEN** the text truncates with ellipsis via the existing `.game-card-static-line` CSS (`text-overflow: ellipsis`)
+- **WHEN** the combined set text exceeds a single line width
+- **THEN** the text is truncated with ellipsis (`text-overflow: ellipsis`, `white-space: nowrap`)
+
+#### Scenario: Fixed 1-line height reservation
+
+- **WHEN** the card is in collapsed state regardless of whether relics are equipped
+- **THEN** the `.game-card-static-line` area reserves exactly 1 line of vertical space via `min-height`, ensuring uniform collapsed card height across all HSR cards
