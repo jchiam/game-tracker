@@ -52,6 +52,19 @@ export function CharacterCard({
   const tracesPs = getProgressStyle(char.tracesAttained ? 1 : 0, 0, 1);
   const relicsPs = getProgressStyle(relicCount, 0, 6);
 
+  // Relic set counts for the gear one-liner
+  const relicSetCounts = (['head', 'hands', 'body', 'feet', 'sphere', 'rope'] as const).reduce(
+    (acc, slot) => {
+      const setId = char.relics[slot]?.setId;
+      if (setId) acc.set(setId, (acc.get(setId) ?? 0) + 1);
+      return acc;
+    },
+    new Map<string, number>(),
+  );
+  const sortedSets = [...relicSetCounts.entries()].sort((a, b) => b[1] - a[1]);
+  const equippedColor = getProgressStyle(90, 1, 90).color;
+  const emptyColor = getProgressStyle(0, 0, 1).color;
+
   return (
     <div
       className={`game-card ${isEditing ? 'is-editing' : ''}`}
@@ -143,6 +156,25 @@ export function CharacterCard({
               label={`Relics ${relicCount}/6`}
               style={{ color: relicsPs.color, borderColor: relicsPs.borderColor }}
             />
+          </div>
+          <div className="game-card-static-line">
+            {sortedSets.length > 0 ? (
+              sortedSets.map(([setId, count], i) => {
+                const setName = availableRelicSets.find((s) => s.id === setId)?.name ?? setId;
+                return (
+                  <span key={setId}>
+                    {i > 0 && <span style={{ color: equippedColor }}>&nbsp;&middot;&nbsp;</span>}
+                    <span style={{ color: equippedColor }}>
+                      {setName} {count}
+                    </span>
+                  </span>
+                );
+              })
+            ) : (
+              <span className="no-equip" style={{ color: emptyColor }}>
+                &mdash;
+              </span>
+            )}
           </div>
         </div>
 

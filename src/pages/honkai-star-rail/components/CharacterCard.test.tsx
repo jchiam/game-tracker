@@ -447,4 +447,38 @@ describe('CharacterCard', () => {
     render(<CharacterCard char={char} {...defaultProps} />);
     expect(screen.getByText('72.5%')).toBeInTheDocument();
   });
+
+  // --- Relic set one-liner ---
+
+  it('shows relic set names with counts in the summary one-liner', () => {
+    const char = makeChar({
+      relics: {
+        head: { setId: '101', mainStat: 'HP', subStats: [] },
+        hands: { setId: '101', mainStat: 'ATK', subStats: [] },
+        body: { setId: '101', mainStat: 'CRIT Rate', subStats: [] },
+        feet: { setId: '101', mainStat: 'SPD', subStats: [] },
+        sphere: { setId: '201', mainStat: 'ATK%', subStats: [] },
+        rope: { setId: '201', mainStat: 'Energy', subStats: [] },
+      },
+    });
+    const { container } = render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[
+          { id: '101', name: 'Firesmith', icon: '/icon1.png' },
+          { id: '201', name: 'Champion', icon: '/icon2.png' },
+        ]}
+      />,
+    );
+    const line = container.querySelector('.game-card-static-line') as HTMLElement;
+    expect(within(line).getByText(/Firesmith 4/)).toBeInTheDocument();
+    expect(within(line).getByText(/Champion 2/)).toBeInTheDocument();
+  });
+
+  it('shows dash when no relics are equipped', () => {
+    const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    const line = container.querySelector('.game-card-static-line') as HTMLElement;
+    expect(line.querySelector('.no-equip')).toBeInTheDocument();
+  });
 });
