@@ -125,6 +125,12 @@
   box-shadow: var(--shadow-inset-glow);
 }
 
+/* Compact variant for dense toggle rows (arc tier, amplification) */
+.toggle-btn.compact {
+  padding: 5px 4px;
+  font-size: 0.78rem;
+}
+
 /* ─── Custom select dropdown (R1999 + N2E) ───────────────────────── */
 
 .game-select {

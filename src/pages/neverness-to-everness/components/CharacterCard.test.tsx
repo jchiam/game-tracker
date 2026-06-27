@@ -219,7 +219,7 @@ describe('CharacterCard', () => {
         {...defaultProps}
       />,
     );
-    const buttons = container.querySelectorAll('.awakening-btn');
+    const buttons = container.querySelectorAll('.awakening-row .toggle-btn');
     expect(buttons[0]).toHaveClass('active');
     expect(buttons[1]).toHaveClass('active');
     expect(buttons[2]).toHaveClass('active');

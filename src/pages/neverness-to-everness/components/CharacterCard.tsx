@@ -230,7 +230,7 @@ export function CharacterCard({
                   max="90"
                   value={character.level}
                   onChange={(e) => onUpdateLevel(character.id!, parseInt(e.target.value))}
-                  className="character-slider"
+                  className="level-slider"
                   style={
                     {
                       '--slider-fill-color': levelPs.color,
@@ -250,7 +250,7 @@ export function CharacterCard({
                     return (
                       <button
                         key={idx}
-                        className={`awakening-btn ${isActive ? 'active' : ''}`}
+                        className={`toggle-btn ${isActive ? 'active' : ''}`}
                         onClick={() => onToggleAwakening(character.id!, idx)}
                         title={`Toggle A${idx + 1}`}
                         style={
@@ -275,7 +275,7 @@ export function CharacterCard({
               <ProgressSection label="Arc" value={`${character.arcLevel} / 80`}>
                 <select
                   name={`arc-${character.id}`}
-                  className="character-select"
+                  className="game-select"
                   value={character.arcId ?? ''}
                   onChange={(e) =>
                     onUpdateArc(
@@ -307,7 +307,7 @@ export function CharacterCard({
                       character.arcTier,
                     )
                   }
-                  className="character-slider"
+                  className="level-slider"
                   style={
                     {
                       '--slider-fill-color': arcLevelPs.color,
@@ -325,7 +325,7 @@ export function CharacterCard({
                     return (
                       <button
                         key={tier}
-                        className={`arc-tier-btn ${isActive ? 'active' : ''}`}
+                        className={`toggle-btn compact ${isActive ? 'active' : ''}`}
                         onClick={() =>
                           onUpdateArc(character.id!, character.arcId, character.arcLevel, tier)
                         }

@@ -9,7 +9,7 @@ import eslintConfigPrettier from 'eslint-config-prettier';
 
 export default [
   {
-    ignores: ['dist', '.vercel', 'node_modules', 'public', 'coverage'],
+    ignores: ['dist', '.vercel', 'node_modules', 'public', 'coverage', 'storybook-static'],
   },
   {
     files: ['**/*.{ts,tsx}'],

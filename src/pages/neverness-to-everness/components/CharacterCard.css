@@ -93,44 +93,14 @@
   color: var(--color-n2e-arc-synthesis);
 }
 
+/* Awakening + arc-tier buttons use the canonical `.toggle-btn` (`.compact` for
+   arc tier) from controls.css; only the layout wrappers remain here. */
+
 /* ─── Awakening row (button toggles) ──────────────────────────── */
 
 .awakening-row {
   display: flex;
   gap: var(--spacing-3);
-}
-
-.awakening-btn {
-  flex: 1;
-  padding: var(--spacing-3);
-  font-size: var(--typography-font-size-sm);
-  font-weight: var(--typography-font-weight-semibold);
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--color-ui-border);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  min-width: unset;
-  text-align: center;
-}
-
-.awakening-btn::before {
-  display: none;
-}
-
-.awakening-btn:hover {
-  border-color: var(--color-brand-primary);
-  color: var(--color-brand-primary);
-  transform: none;
-  box-shadow: none;
-}
-
-.awakening-btn.active {
-  background: var(--color-brand-primary-muted);
-  border-color: var(--color-brand-primary);
-  color: var(--color-brand-primary);
-  box-shadow: var(--shadow-inset-glow);
 }
 
 /* ─── Arc tier row ─────────────────────────────────────────────── */
@@ -140,39 +110,6 @@
   align-items: center;
   gap: var(--spacing-sm);
   margin-top: var(--spacing-2);
-}
-
-.arc-tier-btn {
-  flex: 1;
-  padding: 5px 4px;
-  font-size: 0.78rem;
-  font-weight: var(--typography-font-weight-semibold);
-  border-radius: var(--border-radius-sm);
-  border: 1px solid var(--color-ui-border);
-  background: rgba(255, 255, 255, 0.03);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  min-width: unset;
-  text-align: center;
-}
-
-.arc-tier-btn::before {
-  display: none;
-}
-
-.arc-tier-btn:hover {
-  border-color: var(--color-brand-primary);
-  color: var(--color-brand-primary);
-  transform: none;
-  box-shadow: none;
-}
-
-.arc-tier-btn.active {
-  background: var(--color-brand-primary-muted);
-  border-color: var(--color-brand-primary);
-  color: var(--color-brand-primary);
-  box-shadow: var(--shadow-inset-glow);
 }
 
 /* ─── Cartridge slot (clickable, opens modal) ────────────────── */
@@ -270,65 +207,8 @@
   gap: var(--spacing-sm);
 }
 
-/* ─── Selects (arc + cartridge) ────────────────────────────────── */
-
-.character-select {
-  width: 100%;
-  padding: var(--spacing-3) var(--spacing-5);
-  font-size: 0.85rem;
-  border: 1px solid var(--color-ui-border);
-  border-radius: var(--border-radius-sm);
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-text-primary);
-  outline: none;
-  transition: border-color var(--transition-fast);
-  box-sizing: border-box;
-  cursor: pointer;
-  appearance: none;
-  -webkit-appearance: none;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a0a0b5' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 10px center;
-  padding-right: 30px;
-}
-
-.character-select option {
-  background: var(--color-bg-surface);
-  color: var(--color-text-primary);
-}
-
-.character-select:focus {
-  border-color: var(--color-brand-primary);
-}
-
-/* ─── Sliders ──────────────────────────────────────────────────── */
-
-.character-slider {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 100%;
-  height: 4px;
-  border-radius: 2px;
-  outline: none;
-  margin: var(--spacing-sm) 0;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5) inset;
-}
-
-.character-slider::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 16px;
-  height: 16px;
-  border-radius: var(--border-radius-full);
-  background: var(--slider-fill-color, var(--color-brand-primary));
-  cursor: pointer;
-  box-shadow: 0 0 10px var(--slider-fill-glow, var(--color-brand-primary-glow));
-  transition: transform var(--transition-fast);
-}
-
-.character-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
-}
+/* Arc/cartridge selects use the canonical `.game-select`, and the level/arc
+   sliders use the canonical `.level-slider` — both from controls.css. */
 
 /* ─── Target Build comments ──────────────────────────────────── */
 

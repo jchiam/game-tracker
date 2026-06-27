@@ -78,6 +78,77 @@ Colored text + border, no background fill. Uppercase label.
 
 ---
 
+## Card Patterns (canonical, all games)
+
+Every game's roster card is built from the same canonical `.game-card-*` skeleton in
+`src/styles/card.css` and `src/styles/controls.css`. Game CSS files add only overrides
+(padding, hover transforms) and game-unique rules — they must **never** re-declare a
+rule that already exists in `card.css` or `controls.css`. See the **Card Patterns** and
+**Control Patterns** Storybook stories for live examples.
+
+### Collapse mechanism (static summary ⇄ edit body)
+
+A card body toggles between a read-only summary and an editing body by adding
+`.is-editing` to `.game-card-body`. The structure is identical across HSR, R1999, and
+N2E; each game only tunes two height budgets via custom properties set inline on the
+card root (`--game-card-summary-max-height`, `--game-card-edit-max-height`).
+
+```html
+<div class="game-card-body is-editing">
+  <h3 class="game-card-name">Unit Name</h3>
+
+  <!-- collapses to height 0 when .is-editing -->
+  <div class="game-card-static-summary">
+    <div class="game-card-static-stats">
+      <!-- StatChips colored by investment (see below) -->
+    </div>
+    <div class="game-card-static-line">Equipped Gear · Lv 60 · A5</div>
+  </div>
+
+  <!-- expands from height 0 when .is-editing -->
+  <div class="game-card-edit-body">
+    <div class="game-card-edit-body-inner">
+      <!-- ProgressSections, sliders, toggle buttons -->
+    </div>
+  </div>
+
+  <button class="edit-toggle-btn">✎</button>
+</div>
+```
+
+| Class                        | Description                                         |
+| ---------------------------- | --------------------------------------------------- |
+| `.game-card-static-summary`  | Collapsed read-only summary (chips row + one-liner) |
+| `.game-card-static-stats`    | Row of `StatChip`s (`.stat-chip`)                   |
+| `.game-card-static-line`     | Single-line equip digest (truncates with ellipsis)  |
+| `.game-card-edit-body`       | Editing container, height-animated open/closed      |
+| `.game-card-edit-body-inner` | Edit-body content wrapper                           |
+| `.edit-toggle-btn`           | ✎ toggle that flips `.is-editing`                   |
+
+**Tokens used:** `--spacing-3`, `--spacing-md`, `--spacing-lg`, `--typography-font-size-sm`, `--color-text-secondary`
+
+### Investment-color language (`getProgressStyle`)
+
+`src/utils/progressGradient.ts` maps a normalized progress value to a continuous
+**rust → amber → gold → teal** gradient (`getProgressStyle(value, min, max)`). It is the
+single source of truth for "how invested is this unit" color across all games:
+
+- **Summary chips** — each `StatChip` in `.game-card-static-stats` gets its `color` and
+  `borderColor` from `getProgressStyle` (e.g. `Lv 80`, `P5`, `R15`).
+- **Level sliders** — the `.level-slider` track fill plus `--slider-fill-color` /
+  `--slider-fill-glow` (thumb fill + glow) derive from the same value, so the slider and
+  the chip for that value read the same color.
+- **Gear one-liner** — `.game-card-static-line` text is tinted by the gradient
+  (full-investment teal when equipped, dull rust `—` when empty).
+
+Anchor stops: `0% #8a6050` (rust, uninvested) → `33% #c88040` (amber) → `67% #d4af37`
+(gold) → `100% #40c8a0` (teal, complete). See the **Investment Color** Storybook story.
+
+> Intrinsic properties (rarity, element, afflatus) are **not** investment and keep their
+> own fixed badge colors — only progress/level/equip state uses the gradient.
+
+---
+
 ## Shared Components
 
 ### Navbar
@@ -165,11 +236,11 @@ Base modal shell. Overlay dismisses on mousedown outside modal content. Escape k
 
 ---
 
-### AddEntityModal (shared by both games)
+### AddEntityModal (shared across games)
 
 `src/components/AddEntityModal.css`
 
-Search + scrollable list pattern used by AddCharacterModal (HSR) and AddArcanistModal (R1999).
+Search + scrollable list pattern used by every game's entity picker — AddCharacterModal (HSR / N2E), AddArcanistModal (R1999), AddOperatorModal (Endfield).
 
 ```html
 <div class="modal-content add-entity-modal">
@@ -194,11 +265,11 @@ Search + scrollable list pattern used by AddCharacterModal (HSR) and AddArcanist
 
 ---
 
-### PartyEditorModal (shared by both games)
+### PartyEditorModal (shared across games)
 
 `src/components/PartyEditorModal.css`
 
-Party/lineup creation and editing. Used by both HSR and R1999 party editors with game-specific entity names.
+Party/lineup creation and editing. Used by every game's party editor with game-specific entity names.
 
 | Class                | Description                        |
 | -------------------- | ---------------------------------- |
@@ -454,68 +525,121 @@ Main game page. Shared layout: hero header → view selector tabs (Roster / Line
 
 `src/pages/honkai-star-rail/components/CharacterCard.tsx` | `CharacterCard.css`
 
-Roster card for a Honkai: Star Rail character. Two modes: static summary and edit mode (toggled by ✎ button).
+Roster card for a Honkai: Star Rail character. Built on the canonical
+`.game-card-*` skeleton + collapse mechanism (see **Card Patterns**). Two modes:
+collapsed static summary and edit mode (toggled by ✎).
 
-**Header section:**
+**Header (`.game-card-header`):** canonical image + overlay + controls. Game-unique
+badges in `.game-card-badges`:
 
-| Class             | Description                                        |
-| ----------------- | -------------------------------------------------- |
-| `.character-card` | Card root — surface bg, border, hover glow         |
-| `.card-header`    | 250px image section, character art                 |
-| `.card-overlay`   | Gradient over header image                         |
-| `.favorite-btn`   | ★/☆ top-left                                       |
-| `.remove-btn`     | ✕ remove top-right                                 |
-| `.element-badge`  | Element type pill (bottom of header)               |
-| `.path-badge`     | Path type pill (bottom of header)                  |
-| `.score-badge`    | Build score badge (tier-s / tier-a / tier-b class) |
+| Class                | Description                                          |
+| -------------------- | ---------------------------------------------------- |
+| `.element-badge`     | Element type pill (`element-fire`, `element-ice`, …) |
+| `.path-badge`        | Path type pill (`path-the-hunt`, `path-harmony`, …)  |
+| `.score-badge`       | Build score badge (`tier-s` / `tier-a` / `tier-b`)   |
+| `.hsr-overlay-right` | Groups score badge + edit toggle (HSR-local)         |
 
-**Body section (static):**
+**Collapsed summary (`.game-card-static-summary`):**
 
-- `.character-name` — large name
-- `.level-display` — "Lv. 80" chip
-- `.traces-row` — Traces completed indicator
+- `.game-card-static-stats` — `StatChip`s for `Lv {n}`, `Traces ✓/✗`, `Relics n/6`,
+  each colored by `getProgressStyle` (investment gradient).
+- `.game-card-static-line` — relic-set one-liner (abbreviated set names + counts,
+  tinted by gradient; `—` via `.no-equip` when nothing equipped).
 
-**Body section (edit mode):**
+**Edit body (`.game-card-edit-body-inner`):**
 
-| Class                  | Description                                                           |
-| ---------------------- | --------------------------------------------------------------------- |
-| `.progress-section`    | Collapsible section (Level, Eidolons, Traces)                         |
-| `.level-slider`        | Range input with gradient fill via CSS variable `--slider-fill-color` |
-| `.eidolon-btn`         | E0–E6 toggle buttons                                                  |
-| `.relics-grid`         | 2×3 relic slot grid                                                   |
-| `.relic-slot`          | Individual relic slot, ⬡ (cavern) or ○ (planar) symbol                |
-| `.relic-slot.equipped` | Filled slot — shows relic set icon                                    |
-| `.pref-display`        | Build preference section (main stats + substats)                      |
-| `.pref-stat-badge`     | Stat name chip with operator (>, >=, OR)                              |
-| `.pref-operator-badge` | Operator connector between stats                                      |
+| Class                  | Description                                                        |
+| ---------------------- | ------------------------------------------------------------------ |
+| `.progress-section`    | Level / Eidolons / Traces sections (shared `ProgressSection`)      |
+| `.level-slider`        | Range input with gradient fill via `--slider-fill-color` / `-glow` |
+| `.relics-grid`         | 6-column relic slot grid                                           |
+| `.relic-slot`          | Individual relic slot; `.active` shows equipped relic set icon     |
+| `.build-prefs-display` | Build preference section (main stats + substats)                   |
+| `.pref-stat-badge`     | Stat name chip with operator (>, >=, OR)                           |
+| `.pref-operator-badge` | Operator connector between stats                                   |
 
 ```html
-<div class="character-card">
-  <div class="card-header">
-    <div class="card-overlay"></div>
-    <img class="character-image" src="..." alt="" />
-    <button class="favorite-btn">★</button>
-    <button class="remove-btn">✕</button>
-    <div class="card-badges">
-      <span class="element-badge element-ice">Ice</span>
-      <span class="path-badge path-hunt">The Hunt</span>
-      <span class="score-badge tier-s">S</span>
+<div class="game-card">
+  <div class="game-card-header">
+    <div class="game-card-overlay"></div>
+    <img class="game-card-image" src="..." alt="" />
+    <div class="game-card-controls">
+      <div class="game-card-controls-top">
+        <button class="favorite-btn">★</button>
+        <button class="remove-btn">✕</button>
+      </div>
+      <div class="game-card-controls-bottom">
+        <div class="game-card-badges">
+          <span class="element-badge element-ice">Ice</span>
+          <span class="path-badge path-the-hunt">The Hunt</span>
+        </div>
+        <div class="hsr-overlay-right">
+          <span class="score-badge tier-s"><span>S</span></span>
+          <button class="edit-toggle-btn">✎</button>
+        </div>
+      </div>
     </div>
   </div>
-  <div class="card-body">
-    <h3 class="character-name">Seele</h3>
-    <!-- edit mode -->
-    <div class="relics-grid">
-      <div class="relic-slot cavern equipped">
-        <img class="relic-icon" src="..." alt="" />
+  <div class="game-card-body is-editing">
+    <h3 class="game-card-name">Seele</h3>
+    <div class="game-card-static-summary">
+      <div class="game-card-static-stats">
+        <span class="stat-chip">Lv 80</span>
+        <span class="stat-chip">Relics 6/6</span>
       </div>
-      <div class="relic-slot planar">⬡</div>
+      <div class="game-card-static-line">Glamoth 4 · Space Sealing 2</div>
+    </div>
+    <div class="game-card-edit-body">
+      <div class="game-card-edit-body-inner">
+        <div class="relics-grid">
+          <div class="relic-slot active"><img class="relic-set-icon" src="..." alt="" /></div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 ```
 
-**Tokens used:** `--color-hsr-path-*`, `--color-hsr-element-*`, `--shadow-card-hover`, `--shadow-glow-sm`, `--border-radius-lg`, `--typography-font-size-2xl`, `--color-ui-danger`
+**Tokens used:** `--color-hsr-path-*`, `--color-hsr-element-*`, `--color-hsr-score-tier-a*`, `--shadow-card-hover`, `--shadow-inset-glow`, `--border-radius-lg`, `--typography-font-size-2xl`, `--color-ui-danger`
+
+---
+
+### CharacterCard (N2E — Neverness to Everness)
+
+`src/pages/neverness-to-everness/components/CharacterCard.tsx` | `CharacterCard.css`
+
+Roster card for a Neverness to Everness character. Same canonical skeleton + collapse
+mechanism as the others; game-unique parts are esper/arc badges, awakening + arc-tier
+toggles, and a clickable cartridge slot.
+
+**Header badges:** `.esper-badge` (`esper-anima`, `esper-chaos`, …) and `.arc-badge`
+(`arc-gas`, `arc-liquid`, …). `.character-overlay-right` groups the cartridge score
+badge + edit toggle.
+
+**Collapsed summary:**
+
+- `.game-card-static-stats` — `StatChip`s for `Lv {n}`, `A {n}/6` (awakening), and an
+  optional `Cart {n}%` (cartridge score), each colored by `getProgressStyle`.
+- `.game-card-static-line` — selected arc name + equipped cartridge digest (gradient
+  tint; `—` via `.no-equip` when empty).
+
+**Edit body:**
+
+| Class                     | Description                                                          |
+| ------------------------- | -------------------------------------------------------------------- |
+| `.awakening-row`          | Wrapper for the awakening `.toggle-btn` row                          |
+| `.arc-tier-row`           | Wrapper for the arc-tier `.toggle-btn.compact` row                   |
+| `.cartridge-slot`         | Clickable slot that opens the cartridge editor modal                 |
+| `.cartridge-rarity-badge` | S/A/B rarity pill (`rarity-s` / `rarity-a` / `rarity-b`)             |
+| `.cartridge-target-build` | Target-build preference display (`.cartridge-score-badge` grade-s…d) |
+
+Awakening/arc-tier buttons use the canonical `.toggle-btn` (`.compact` for arc tier),
+the level + arc sliders use `.level-slider`, and the arc/cartridge selects use
+`.game-select` — all from `controls.css`. Only the layout wrappers above are game-local.
+
+**Esper badge colors:** `--color-n2e-esper-anima/chaos/cosmos/incantation/lakshana/psyche`
+**Arc badge colors:** `--color-n2e-arc-gas/liquid/plasma/solid/synthesis`
+**Tokens used:** `--color-n2e-rarity-*`, `--color-n2e-score-grade-*`, `--shadow-card-hover`, `--shadow-inset-glow`, `--border-radius-lg`, `--color-ui-danger`
 
 ---
 
@@ -523,53 +647,70 @@ Roster card for a Honkai: Star Rail character. Two modes: static summary and edi
 
 `src/pages/reverse1999/components/ArcanistCard.tsx` | `ArcanistCard.css`
 
-Roster card for a Reverse: 1999 Arcanist. Richer edit mode with portrait levels, resonance, euphoria, psychube, and amplification.
+Roster card for a Reverse: 1999 Arcanist. Same canonical skeleton + collapse mechanism;
+richer edit mode with portrait levels, resonance, euphoria, psychube, and amplification.
 
-**Header section:** Identical pattern to CharacterCard — image, overlay, favorite, remove, afflatus badge, damage badge.
+**Header badges:** `.afflatus-badge` (`afflatus-star`, `afflatus-plant`, …) and
+`.damage-badge` (`damage-mental` / `damage-reality`).
 
-**Static summary (collapsed):**
+**Collapsed summary:**
 
-- `.game-card-static-summary` — row of colored progress chips showing Portrait/Resonance/Euphoria/Amplify levels (canonical collapse class; see Card Patterns)
-- Each chip has dynamic `color`, `borderColor`, `boxShadow` via inline styles (interpolated from a `lerpColor` utility)
+- `.game-card-static-stats` — `StatChip`s for `Lv {n}`, `P{n}` (portrait), `R{n}`
+  (resonance), and `E{n}` (euphoria, when unlocked), each colored by `getProgressStyle`.
+- `.game-card-static-line` — equipped psychube name + level + amplification (gradient
+  tint; `—` via `.no-psychube` when nothing equipped).
 
-**Edit section (expanded):**
+**Edit body:**
 
-| Class                  | Description                            |
-| ---------------------- | -------------------------------------- |
-| `.game-card-edit-body` | Edit mode container (canonical)        |
-| `.portrait-btn`        | P0–P5 portrait level buttons           |
-| `.portrait-btn.active` | Selected portrait — gold border + glow |
-| `.resonance-slider`    | Range input for resonance level (1–10) |
-| `.euphoria-btn`        | E0–E4 euphoria buttons                 |
-| `.psychube-selector`   | Dropdown for equipping psychube        |
-| `.amplify-btn`         | A1–A5 amplification buttons            |
+| Element                      | Canonical class used                               |
+| ---------------------------- | -------------------------------------------------- |
+| Portrait buttons (P0–P5)     | `.toggle-btn` (+ `.portrait-reset` modifier on P0) |
+| Euphoria buttons (E0–E4)     | `.toggle-btn`                                      |
+| Amplify buttons (A1–A5)      | `.toggle-btn.compact`                              |
+| Resonance / psychube sliders | `.level-slider`                                    |
+| Psychube dropdown            | `.game-select`                                     |
+
+All controls use the canonical primitives from `controls.css`; the only R1999-local
+control rules are the `.portrait-reset` modifier and the `.portrait-row` /
+`.euphoria-row` / `.amplification-row` layout wrappers.
 
 ```html
-<div class="arcanist-card">
-  <div class="card-header">
-    <div class="card-overlay"></div>
-    <img class="arcanist-mugshot" src="..." alt="" />
-    <button class="favorite-btn">☆</button>
-    <button class="remove-btn">✕</button>
-    <div class="card-badges">
-      <span class="afflatus-badge afflatus-star">Star</span>
-      <span class="damage-badge damage-reality">Reality</span>
-    </div>
-    <button class="edit-toggle-btn">✎</button>
-  </div>
-  <div class="card-body">
-    <h3 class="arcanist-name">Vertin</h3>
-    <!-- static summary -->
-    <div class="game-card-static-summary">
-      <span class="progress-chip" style="color: ...; border-color: ...;">P2</span>
-    </div>
-    <!-- edit mode -->
-    <div class="game-card-edit-body">
-      <div class="portrait-btn-row">
-        <button class="portrait-btn active">P0</button>
-        <button class="portrait-btn">P1</button>
+<div class="game-card">
+  <div class="game-card-header">
+    <div class="game-card-overlay"></div>
+    <img class="game-card-image" src="..." alt="" />
+    <div class="game-card-controls">
+      <div class="game-card-controls-top">
+        <button class="favorite-btn">☆</button>
+        <button class="remove-btn">✕</button>
       </div>
-      <input type="range" class="resonance-slider" min="1" max="10" />
+      <div class="game-card-controls-bottom">
+        <div class="game-card-badges">
+          <span class="afflatus-badge afflatus-star">Star</span>
+          <span class="damage-badge damage-reality">Reality</span>
+        </div>
+        <button class="edit-toggle-btn">✎</button>
+      </div>
+    </div>
+  </div>
+  <div class="game-card-body is-editing">
+    <h3 class="game-card-name">Vertin</h3>
+    <div class="game-card-static-summary">
+      <div class="game-card-static-stats">
+        <span class="stat-chip">Lv 60</span>
+        <span class="stat-chip">P2</span>
+        <span class="stat-chip">R10</span>
+      </div>
+      <div class="game-card-static-line">His Bounden Duty · Lv 60 · A5</div>
+    </div>
+    <div class="game-card-edit-body">
+      <div class="game-card-edit-body-inner">
+        <div class="portrait-row">
+          <button class="portrait-btn active">P0</button>
+          <button class="portrait-btn">P1</button>
+        </div>
+        <input type="range" class="resonance-slider" min="1" max="10" />
+      </div>
     </div>
   </div>
 </div>
@@ -577,7 +718,7 @@ Roster card for a Reverse: 1999 Arcanist. Richer edit mode with portrait levels,
 
 **Afflatus badge colors:** `--color-r1999-afflatus-plant/star/beast/mineral/intellect/spirit`
 **Damage badge colors:** `--color-r1999-damage-mental/reality`
-**Tokens used:** `--shadow-card-hover`, `--shadow-glow-sm`, `--border-radius-lg`, `--typography-font-size-2xl`, `--color-ui-danger`
+**Tokens used:** `--shadow-card-hover`, `--shadow-inset-glow`, `--border-radius-lg`, `--typography-font-size-2xl`, `--color-ui-danger`
 
 ---
 

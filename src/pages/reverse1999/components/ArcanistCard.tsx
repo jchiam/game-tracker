@@ -212,7 +212,7 @@ export function ArcanistCard({
                   return (
                     <button
                       key={level}
-                      className={`portrait-btn ${level === 0 ? 'portrait-reset' : ''} ${isActive ? 'active' : ''}`}
+                      className={`toggle-btn ${level === 0 ? 'portrait-reset' : ''} ${isActive ? 'active' : ''}`}
                       onClick={() => onUpdatePortrait(arcanist.id!, level)}
                       title={level === 0 ? 'Reset portrait level' : `Portrait ${level}`}
                       style={
@@ -247,7 +247,7 @@ export function ArcanistCard({
                 max="15"
                 value={arcanist.resonanceLevel}
                 onChange={(e) => onUpdateResonance(arcanist.id!, parseInt(e.target.value))}
-                className="resonance-slider"
+                className="level-slider"
                 style={
                   {
                     '--slider-fill-color': resonancePs.color,
@@ -268,7 +268,7 @@ export function ArcanistCard({
                     return (
                       <button
                         key={stage}
-                        className={`euphoria-btn ${isActive ? 'active' : ''}`}
+                        className={`toggle-btn ${isActive ? 'active' : ''}`}
                         onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
                         style={
                           isActive
@@ -298,7 +298,7 @@ export function ArcanistCard({
             <ProgressSection label="Psychube" value={`${arcanist.psychubeLevel} / 60`}>
               <select
                 name={`psychube-${arcanist.id}`}
-                className="psychube-select"
+                className="game-select"
                 value={arcanist.psychubeName ?? ''}
                 onChange={(e) =>
                   onUpdatePsychube(arcanist.id!, e.target.value || null, arcanist.psychubeLevel)
@@ -320,7 +320,7 @@ export function ArcanistCard({
                 onChange={(e) =>
                   onUpdatePsychube(arcanist.id!, arcanist.psychubeName, parseInt(e.target.value))
                 }
-                className="psychube-slider"
+                className="level-slider"
                 style={
                   {
                     '--slider-fill-color': psychubeLevelPs.color,
@@ -338,7 +338,7 @@ export function ArcanistCard({
                   return (
                     <button
                       key={lvl}
-                      className={`amplify-btn ${isActive ? 'active' : ''}`}
+                      className={`toggle-btn compact ${isActive ? 'active' : ''}`}
                       onClick={() => onUpdatePsychubeAmplification(arcanist.id!, lvl)}
                       title={`A${lvl}`}
                       style={

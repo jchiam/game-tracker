@@ -48,10 +48,20 @@ export const StatChips: Story = {
 
 export const ToggleButtons: Story = {
   render: () => (
-    <div style={{ display: 'flex', gap: '8px', maxWidth: 400 }}>
-      <button className="toggle-btn active">Portrait</button>
-      <button className="toggle-btn">Euphoria</button>
-      <button className="toggle-btn">Awakening</button>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 400 }}>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button className="toggle-btn active">Portrait</button>
+        <button className="toggle-btn">Euphoria</button>
+        <button className="toggle-btn">Awakening</button>
+      </div>
+      {/* .compact — dense rows (arc tier, amplification) */}
+      <div style={{ display: 'flex', gap: '8px' }}>
+        <button className="toggle-btn compact active">A1</button>
+        <button className="toggle-btn compact">A2</button>
+        <button className="toggle-btn compact">A3</button>
+        <button className="toggle-btn compact">A4</button>
+        <button className="toggle-btn compact">A5</button>
+      </div>
     </div>
   ),
 };
