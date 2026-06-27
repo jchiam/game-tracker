@@ -2,7 +2,12 @@
 
 ## Purpose
 
-TBD - created by archiving change bootstrap-shared-animations. Update Purpose after archive.
+The L2 shared animation keyframes. Defines once, in `src/styles/animations.css`, the nine shared
+`@keyframes` (`fade-in-up`, `fade-in-down`, `fade-in`, `slide-in-down`, `slide-up`,
+`toast-slide-in`, `saving-toast-pulse`, `spinner-bounce`, `pulse-warn`). The file is imported
+globally via `src/index.css`, so the keyframes resolve on any route; components and game styles
+reference them by name and never redefine them. The `--duration-*` token rule stays owned by
+`shared-design-tokens`.
 
 ## Requirements
 

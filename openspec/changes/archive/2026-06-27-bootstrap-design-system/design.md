@@ -41,19 +41,19 @@ A grep of the new specs for `collapse` / `is-editing` / `toggle-btn` / `level-sl
 A design-system spec captures the **visual/structural contract** (classes, props, "games override
 only X"), not behaviour another spec already asserts. These are therefore out of scope:
 
-| Component                       | Already owned by        |
-| ------------------------------- | ----------------------- |
-| `AuthGate`                      | `shared-auth`           |
-| `SavingToast`, `ToastContainer` | `shared-save-behaviour` |
-| `RosterPageLayout`, `LoadErrorState` | `shared-roster`    |
-| `GameBadge`                     | `shared-card-badges`    |
+| Component                            | Already owned by        |
+| ------------------------------------ | ----------------------- |
+| `AuthGate`                           | `shared-auth`           |
+| `SavingToast`, `ToastContainer`      | `shared-save-behaviour` |
+| `RosterPageLayout`, `LoadErrorState` | `shared-roster`         |
+| `GameBadge`                          | `shared-card-badges`    |
 
 `shared-ui-components` covers the remainder: `StatChip`, `ProgressSection`, `Modal`,
 `GameSwitcher`, `Navbar`, `ConfirmCheckbox`, `PreferenceChain`.
 
 ### L1 tokens spec is discipline, not enumeration
 
-`shared-design-tokens` documents the *rules* for using tokens (token-first CSS, generated
+`shared-design-tokens` documents the _rules_ for using tokens (token-first CSS, generated
 `tokens.css`, game-colour namespacing, canonical names, duration vs transition) — not a frozen
 list of every token value, which would churn on every palette tweak and duplicate the JSON.
 

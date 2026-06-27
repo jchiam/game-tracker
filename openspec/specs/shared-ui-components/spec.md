@@ -1,8 +1,16 @@
 # shared-ui-components Specification
 
 ## Purpose
-TBD - created by archiving change bootstrap-design-system. Update Purpose after archive.
+
+The L3 shared-component contracts — the class/prop surface of the reusable UI components whose
+behaviour is not already owned by another capability: `StatChip`, `ProgressSection`, `Modal`,
+`GameSwitcher`, `Navbar`, `ConfirmCheckbox`, and `PreferenceChain`. Components specced
+behaviourally elsewhere are referenced, not redeclared: `AuthGate` (`shared-auth`), `SavingToast`
+/ `ToastContainer` (`shared-save-behaviour`), `RosterPageLayout` / `LoadErrorState`
+(`shared-roster`), and `GameBadge` (`shared-card-badges`).
+
 ## Requirements
+
 ### Requirement: StatChip renders the canonical stat-chip
 
 The shared `StatChip` component SHALL render a single `<span class="stat-chip">` carrying its
@@ -132,4 +140,3 @@ here: `AuthGate` (`shared-auth`), `SavingToast` / `ToastContainer` (`shared-save
   `shared-roster`, and `shared-card-badges`
 - **THEN** none of `AuthGate`, `SavingToast`, `ToastContainer`, `RosterPageLayout`,
   `LoadErrorState`, or `GameBadge` is given a requirement here
-

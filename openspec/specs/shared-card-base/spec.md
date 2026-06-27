@@ -1,8 +1,16 @@
 # shared-card-base Specification
 
 ## Purpose
-TBD - created by archiving change bootstrap-design-system. Update Purpose after archive.
+
+The canonical L2 card skeleton shared by every game. Defines once, in `src/styles/card.css`, the
+`.game-card-*` structure (wrapper, header, image, overlay, controls, body, name), the three header
+buttons (`.favorite-btn`, `.remove-btn`, `.edit-toggle-btn`), and the progress-section primitives
+(`.progress-section`, `.section-*`). Games override only padding/gap/hover and add game-unique
+rules. The collapse mechanism, control primitives, and the pill badge hang off this skeleton but
+are specced separately (`shared-card-collapse`, `shared-card-controls`, `shared-card-badges`).
+
 ## Requirements
+
 ### Requirement: Canonical card skeleton defined once
 
 The card skeleton classes SHALL be defined exactly once, in `src/styles/card.css`, using the
@@ -90,4 +98,3 @@ their rules.
 - **THEN** the collapse classes (`.game-card-static-summary`, `.game-card-edit-body`, …), the
   control primitives (`.toggle-btn`, `.level-slider`, `.game-select`), and the `.game-badge` pill
   are mentioned only as cross-references, not redeclared as requirements here
-

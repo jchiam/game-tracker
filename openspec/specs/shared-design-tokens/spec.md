@@ -2,7 +2,12 @@
 
 ## Purpose
 
-TBD - created by archiving change bootstrap-design-system. Update Purpose after archive.
+The L1 design-token discipline. Tokens are the single source of truth for colour, spacing, radius,
+shadow, transition, duration, and z-index values; `src/styles/tokens.css` is compiled from
+`src/styles/design-tokens.json` by Style Dictionary and never hand-edited; game-specific colours
+live under a per-game `color.{gameId}` group; token names use their canonical form; and
+`--duration-*` (animation) is kept distinct from `--transition-*` (transition). Documents the
+rules for using tokens, not an enumeration of token values.
 
 ## Requirements
 
