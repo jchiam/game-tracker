@@ -69,6 +69,53 @@ describe('OperatorCard', () => {
     expect(screen.getByText('★★★★')).toBeInTheDocument();
   });
 
+  // --- Investment gradient wiring (shared rust→teal color language) ---
+
+  it('colors the level chip by investment — rust at min, teal at max', () => {
+    const { rerender } = render(
+      <OperatorCard {...defaultProps} operator={makeOperator({ level: 1 })} />,
+    );
+    const lowChip = screen.getByText('Lv 1');
+    expect(lowChip.style.color).toBe('rgb(138, 96, 80)'); // rust
+    expect(lowChip.style.borderColor).toBe('rgba(138, 96, 80, 0.5)');
+
+    rerender(<OperatorCard {...defaultProps} operator={makeOperator({ level: 90 })} />);
+    expect(screen.getByText('Lv 90').style.color).toBe('rgb(64, 200, 160)'); // teal
+  });
+
+  it('colors the potential chip by investment', () => {
+    // Scope to the summary chip — `P0` also appears as an edit-body button.
+    const { container } = render(
+      <OperatorCard {...defaultProps} operator={makeOperator({ potential: 0 })} />,
+    );
+    const chips = container.querySelectorAll<HTMLElement>('.game-card-static-stats .stat-chip');
+    const potentialChip = chips[1]; // [0] = Lv, [1] = P
+    expect(potentialChip).toHaveTextContent('P0');
+    expect(potentialChip.style.color).toBe('rgb(138, 96, 80)'); // rust at potential 0
+  });
+
+  it('drives the level slider fill from the investment gradient via the canonical class', async () => {
+    const user = userEvent.setup();
+    render(<OperatorCard {...defaultProps} operator={makeOperator({ level: 1 })} />);
+    await user.click(screen.getByTitle('Edit'));
+    const slider = screen.getByRole('slider');
+    expect(slider).toHaveClass('level-slider');
+    expect(slider).not.toHaveClass('character-slider');
+    expect(slider.style.getPropertyValue('--slider-fill-color')).toBe('rgb(138, 96, 80)');
+  });
+
+  it('renders no gear one-liner — AE operators have no equippable gear', () => {
+    const { container } = render(<OperatorCard {...defaultProps} />);
+    expect(container.querySelector('.game-card-static-line')).toBeNull();
+  });
+
+  it('does not gradient-color the rarity stars (rarity is intrinsic, not investment)', () => {
+    const { container } = render(<OperatorCard {...defaultProps} />);
+    const rarity = container.querySelector<HTMLElement>('.rarity-indicator');
+    expect(rarity).not.toBeNull();
+    expect(rarity!.style.color).toBe('');
+  });
+
   // --- Favorite ---
 
   it('calls onToggleFavorite with true when favoriting', async () => {

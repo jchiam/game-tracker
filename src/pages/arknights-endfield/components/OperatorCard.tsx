@@ -4,6 +4,7 @@ import { GameBadge } from '@/components/GameBadge';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
+import { getProgressStyle } from '@/utils/progressGradient';
 import './OperatorCard.css';
 
 interface OperatorCardProps {
@@ -29,8 +30,20 @@ export function OperatorCard({
 
   const imageUrl = getMugshotUrl(operator.imageUrl);
 
+  // Investment chips + slider share the cross-game rust→teal gradient
+  const levelPs = getProgressStyle(operator.level, 1, 90);
+  const potentialPs = getProgressStyle(operator.potential, 0, 5);
+
   return (
-    <div className={`game-card ${isEditing ? 'is-editing' : ''}`}>
+    <div
+      className={`game-card ${isEditing ? 'is-editing' : ''}`}
+      style={
+        {
+          '--game-card-summary-max-height': '80px',
+          '--game-card-edit-max-height': '360px',
+        } as React.CSSProperties
+      }
+    >
       <div className="game-card-header">
         <div className="game-card-image-wrapper">
           {imgLoading && !imgError && (
@@ -108,8 +121,14 @@ export function OperatorCard({
 
         <div className="game-card-static-summary">
           <div className="game-card-static-stats">
-            <StatChip label={`Lv ${operator.level}`} />
-            <StatChip label={`P${operator.potential}`} />
+            <StatChip
+              label={`Lv ${operator.level}`}
+              style={{ color: levelPs.color, borderColor: levelPs.borderColor }}
+            />
+            <StatChip
+              label={`P${operator.potential}`}
+              style={{ color: potentialPs.color, borderColor: potentialPs.borderColor }}
+            />
             <span className={`rarity-indicator rarity-${operator.rarity}`}>
               {RARITY_STARS[operator.rarity]}
             </span>
@@ -126,10 +145,14 @@ export function OperatorCard({
                 max="90"
                 value={operator.level}
                 onChange={(e) => onUpdateLevel(operator.id, parseInt(e.target.value))}
-                className="character-slider"
-                style={{
-                  background: `linear-gradient(to right, var(--color-brand-primary) ${((operator.level - 1) / 89) * 100}%, rgba(255,255,255,0.1) ${((operator.level - 1) / 89) * 100}%)`,
-                }}
+                className="level-slider"
+                style={
+                  {
+                    '--slider-fill-color': levelPs.color,
+                    '--slider-fill-glow': levelPs.glowColor,
+                    background: `linear-gradient(to right, ${levelPs.color} ${((operator.level - 1) / 89) * 100}%, rgba(255,255,255,0.1) ${((operator.level - 1) / 89) * 100}%)`,
+                  } as React.CSSProperties
+                }
               />
             </ProgressSection>
 
