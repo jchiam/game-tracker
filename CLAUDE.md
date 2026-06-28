@@ -27,6 +27,7 @@ npm run storybook    # Storybook dev server on :6006
 npm run build:storybook # Build static Storybook
 ```
 
+Pre-commit hook (Husky) runs: `openspec validate --all`.
 Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`, `test:e2e`.
 
 ## Git
@@ -34,6 +35,7 @@ Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`, `test:e2e`.
 - Always use `git -c commit.gpgsign=false` — GPG signing is not configured in this environment.
 - Conventional Commits style: `feat(r1999):`, `fix(hsr):`, `chore(n2e):`, `test:`, `refactor:`, `style:`.
 - Game-scoped commits use the short game ID: `hsr`, `r1999`, `n2e`.
+- **Always run `npx openspec validate --all` before committing** when openspec specs or changes were modified. The pre-commit hook enforces this, but verify manually if unsure.
 
 ## Code Conventions
 
