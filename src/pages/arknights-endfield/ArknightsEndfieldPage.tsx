@@ -31,6 +31,7 @@ export function ArknightsEndfieldPage({
     updatePhase,
     updateSkillsMaxed,
     updateWeapon,
+    updateWeaponPreferences,
     toggleFavorite,
     getFilteredRoster,
   } = useOperators(session, isAuthLoading);
@@ -88,6 +89,7 @@ export function ArknightsEndfieldPage({
           onUpdatePhase={updatePhase}
           onUpdateSkillsMaxed={updateSkillsMaxed}
           onUpdateWeapon={updateWeapon}
+          onUpdateWeaponPreferences={updateWeaponPreferences}
           onToggleFavorite={toggleFavorite}
         />
       ))}

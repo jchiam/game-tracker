@@ -36,6 +36,7 @@ function makeOperator(id: string, name: string): AeTrackedOperator {
     skillsMaxed: false,
     weaponName: null,
     weaponLevel: 1,
+    weaponPreferences: [],
   };
 }
 
@@ -63,6 +64,7 @@ const defaultOperatorsHook = {
   updatePhase: vi.fn(),
   updateSkillsMaxed: vi.fn(),
   updateWeapon: vi.fn(),
+  updateWeaponPreferences: vi.fn(),
   toggleFavorite: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };

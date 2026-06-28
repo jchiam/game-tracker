@@ -157,6 +157,7 @@ export interface AeTrackedOperator extends AeOperator {
   skillsMaxed: boolean;
   weaponName: string | null; // display name from ALL_WEAPONS
   weaponLevel: number; // 1–90
+  weaponPreferences: string[]; // ordered ALL_WEAPONS ids, highest priority first, no duplicates
 }
 
 export interface AeOperatorPatch {
@@ -165,6 +166,7 @@ export interface AeOperatorPatch {
   skillsMaxed?: boolean;
   weaponName?: string | null;
   weaponLevel?: number;
+  weaponPreferences?: string[];
   isFavorited?: boolean;
 }
 

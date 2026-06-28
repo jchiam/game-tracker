@@ -86,6 +86,7 @@ describe('useOperators', () => {
     expect(result.current.trackedOperators[0].skillsMaxed).toBe(false);
     expect(result.current.trackedOperators[0].weaponName).toBeNull();
     expect(result.current.trackedOperators[0].weaponLevel).toBe(1);
+    expect(result.current.trackedOperators[0].weaponPreferences).toEqual([]);
   });
 
   it('removes an operator', async () => {
@@ -134,6 +135,38 @@ describe('useOperators', () => {
     expect(result.current.trackedOperators[0].weaponName).toBeNull();
   });
 
+  it('updateWeaponPreferences sets the ordered list and queues a save', async () => {
+    const { result } = await setupWithOp();
+    act(() => result.current.updateWeaponPreferences(firstOp.id, ['exemplar', 'standard-issue']));
+    expect(result.current.trackedOperators[0].weaponPreferences).toEqual([
+      'exemplar',
+      'standard-issue',
+    ]);
+    expect(mockUpdateOperator).toHaveBeenCalledWith('new-db-id', {
+      weaponPreferences: ['exemplar', 'standard-issue'],
+    });
+  });
+
+  it('updateWeaponPreferences reorders the list', async () => {
+    const { result } = await setupWithOp();
+    act(() => result.current.updateWeaponPreferences(firstOp.id, ['a', 'b', 'c']));
+    act(() => result.current.updateWeaponPreferences(firstOp.id, ['c', 'a', 'b']));
+    expect(result.current.trackedOperators[0].weaponPreferences).toEqual(['c', 'a', 'b']);
+  });
+
+  it('updateWeaponPreferences removes entries', async () => {
+    const { result } = await setupWithOp();
+    act(() => result.current.updateWeaponPreferences(firstOp.id, ['a', 'b', 'c']));
+    act(() => result.current.updateWeaponPreferences(firstOp.id, ['a', 'c']));
+    expect(result.current.trackedOperators[0].weaponPreferences).toEqual(['a', 'c']);
+  });
+
+  it('updateWeaponPreferences dedupes repeated ids, keeping order', async () => {
+    const { result } = await setupWithOp();
+    act(() => result.current.updateWeaponPreferences(firstOp.id, ['a', 'b', 'a', 'c', 'b']));
+    expect(result.current.trackedOperators[0].weaponPreferences).toEqual(['a', 'b', 'c']);
+  });
+
   it('toggleFavorite updates isFavorited', async () => {
     const { result } = await setupWithOp();
     act(() => result.current.toggleFavorite(firstOp.id, true));
@@ -151,6 +184,7 @@ describe('useOperators', () => {
         skillsMaxed: false,
         weaponName: null,
         weaponLevel: 1,
+        weaponPreferences: [],
       },
       {
         ...ALL_OPERATORS[1],
@@ -161,6 +195,7 @@ describe('useOperators', () => {
         skillsMaxed: true,
         weaponName: null,
         weaponLevel: 1,
+        weaponPreferences: [],
       },
     ]);
     const { result } = await setup();

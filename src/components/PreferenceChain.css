@@ -84,3 +84,69 @@
   border-color: var(--color-ui-border-strong);
   color: var(--color-text-primary);
 }
+
+.add-pref-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─── Ranked-list mode ───────────────────────────────────────────── */
+
+/* Rows stack vertically and stretch full-width so each select matches the
+   standalone `.game-select` dropdown used elsewhere on the card. */
+.pref-chain-ranked {
+  flex-direction: column;
+  align-items: stretch;
+  flex-wrap: nowrap;
+}
+
+.pref-ranked-item {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.pref-ranked-item .game-select {
+  flex: 1;
+  min-width: 0;
+}
+
+.pref-rank {
+  color: var(--color-text-dim);
+  font-size: var(--typography-font-size-sm);
+  font-weight: var(--typography-font-weight-bold);
+  min-width: var(--spacing-8);
+}
+
+.pref-item-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.reorder-btn {
+  background: none;
+  border: none;
+  color: var(--color-text-dim);
+  cursor: pointer;
+  font-size: var(--typography-font-size-sm);
+  padding: 0 var(--spacing-2);
+  line-height: 1;
+  transition: color var(--transition-fast);
+  min-width: unset;
+}
+
+.reorder-btn::before {
+  display: none;
+}
+
+.reorder-btn:hover:not(:disabled) {
+  color: var(--color-text-primary);
+  transform: none;
+  box-shadow: none;
+}
+
+.reorder-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

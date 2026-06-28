@@ -5,6 +5,18 @@
   opacity: 0.4;
 }
 
+/* Equipped-vs-preferred match badge on the weapon static-line. Color is set
+   inline from the shared rust→teal gradient; only the pill shape lives here. */
+.weapon-match-badge {
+  margin-left: var(--spacing-sm);
+  padding: 0 var(--spacing-2);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-bold);
+  border: 1px solid;
+  border-radius: var(--border-radius-sm);
+  line-height: 1.4;
+}
+
 .phase-row {
   display: flex;
   gap: var(--spacing-xs);

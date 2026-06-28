@@ -11,7 +11,9 @@ vi.mock('@/lib/imagekit', () => ({
 
 // Ember is a Greatsword operator — derive expected names from the catalog so these
 // tests assert the filter behavior (by type), not specific catalog strings.
-const greatswordWeapon = ALL_WEAPONS.find((w) => w.type === 'Greatsword')!;
+const greatswords = ALL_WEAPONS.filter((w) => w.type === 'Greatsword');
+const greatswordWeapon = greatswords[0];
+const secondGreatsword = greatswords[1];
 const nonGreatswordWeapon = ALL_WEAPONS.find((w) => w.type !== 'Greatsword')!;
 
 function makeOperator(overrides: Partial<AeTrackedOperator> = {}): AeTrackedOperator {
@@ -30,6 +32,7 @@ function makeOperator(overrides: Partial<AeTrackedOperator> = {}): AeTrackedOper
     skillsMaxed: false,
     weaponName: null,
     weaponLevel: 1,
+    weaponPreferences: [],
     ...overrides,
   };
 }
@@ -42,6 +45,7 @@ describe('OperatorCard', () => {
     onUpdatePhase: vi.fn(),
     onUpdateSkillsMaxed: vi.fn(),
     onUpdateWeapon: vi.fn(),
+    onUpdateWeaponPreferences: vi.fn(),
     onToggleFavorite: vi.fn(),
   };
 
@@ -284,6 +288,107 @@ describe('OperatorCard', () => {
     const weaponSlider = sliders[sliders.length - 1];
     fireEvent.change(weaponSlider, { target: { value: '70' } });
     expect(defaultProps.onUpdateWeapon).toHaveBeenCalledWith('ember', greatswordWeapon.name, 70);
+  });
+
+  // --- Weapon preference match badge ---
+
+  it('shows a teal #1 badge when the equipped weapon is the first preference', () => {
+    const { container } = render(
+      <OperatorCard
+        {...defaultProps}
+        operator={makeOperator({
+          weaponName: greatswordWeapon.name,
+          weaponPreferences: [greatswordWeapon.id, secondGreatsword.id],
+        })}
+      />,
+    );
+    const badge = container.querySelector<HTMLElement>('.weapon-match-badge');
+    expect(badge).not.toBeNull();
+    expect(badge).toHaveTextContent('#1');
+    expect(badge!.style.color).toBe('rgb(64, 200, 160)'); // teal — full match
+  });
+
+  it('shows a lower-ranked badge when the equipped weapon is not the first preference', () => {
+    const { container } = render(
+      <OperatorCard
+        {...defaultProps}
+        operator={makeOperator({
+          weaponName: secondGreatsword.name,
+          weaponPreferences: [greatswordWeapon.id, secondGreatsword.id],
+        })}
+      />,
+    );
+    const badge = container.querySelector<HTMLElement>('.weapon-match-badge');
+    expect(badge).toHaveTextContent('#2');
+    expect(badge!.style.color).not.toBe('rgb(64, 200, 160)'); // not full teal
+  });
+
+  it('shows an off-build badge when the equipped weapon is not in the preference list', () => {
+    const { container } = render(
+      <OperatorCard
+        {...defaultProps}
+        operator={makeOperator({
+          weaponName: greatswordWeapon.name,
+          weaponPreferences: [secondGreatsword.id],
+        })}
+      />,
+    );
+    const badge = container.querySelector<HTMLElement>('.weapon-match-badge');
+    expect(badge).toHaveTextContent('Off-build');
+    expect(badge!.style.color).toBe('rgb(138, 96, 80)'); // rust
+  });
+
+  it('degrades to off-build when the equipped name does not resolve in the catalog', () => {
+    const { container } = render(
+      <OperatorCard
+        {...defaultProps}
+        operator={makeOperator({
+          weaponName: 'Nonexistent Blade',
+          weaponPreferences: [greatswordWeapon.id],
+        })}
+      />,
+    );
+    expect(container.querySelector('.weapon-match-badge')).toHaveTextContent('Off-build');
+  });
+
+  it('renders no badge when there are no preferences', () => {
+    const { container } = render(
+      <OperatorCard
+        {...defaultProps}
+        operator={makeOperator({ weaponName: greatswordWeapon.name, weaponPreferences: [] })}
+      />,
+    );
+    expect(container.querySelector('.weapon-match-badge')).toBeNull();
+  });
+
+  it('renders no badge when no weapon is equipped even if preferences exist', () => {
+    const { container } = render(
+      <OperatorCard
+        {...defaultProps}
+        operator={makeOperator({ weaponName: null, weaponPreferences: [greatswordWeapon.id] })}
+      />,
+    );
+    expect(container.querySelector('.weapon-match-badge')).toBeNull();
+  });
+
+  // --- Weapon preference editor ---
+
+  it('renders the preferred-weapons editor in the edit body', async () => {
+    const user = userEvent.setup();
+    render(<OperatorCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    expect(screen.getByText('Preferred Weapons')).toBeInTheDocument();
+    expect(screen.getByText('+ Add Weapon')).toBeInTheDocument();
+  });
+
+  it('calls onUpdateWeaponPreferences when a weapon is added to the list', async () => {
+    const user = userEvent.setup();
+    render(<OperatorCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByText('+ Add Weapon'));
+    expect(defaultProps.onUpdateWeaponPreferences).toHaveBeenCalledWith('ember', [
+      greatswordWeapon.id,
+    ]);
   });
 
   // --- Image fallback ---

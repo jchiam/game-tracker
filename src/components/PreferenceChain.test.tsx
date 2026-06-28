@@ -96,3 +96,85 @@ describe('PreferenceChain', () => {
     expect(onChange).toHaveBeenCalledWith([{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }]);
   });
 });
+
+describe('PreferenceChain — ranked-list mode', () => {
+  const weaponOptions = [
+    { value: 'defender', label: 'Defender' },
+    { value: 'last-light', label: 'Last Light' },
+    { value: 'sunder', label: 'Sunder' },
+  ];
+
+  const rankedProps = {
+    variant: 'ranked-list' as const,
+    values: [] as string[],
+    options: weaponOptions,
+    onChange: vi.fn(),
+    namePrefix: 'test-ranked',
+    addLabel: '+ Add Weapon',
+  };
+
+  it('renders no operator selects', () => {
+    render(<PreferenceChain {...rankedProps} values={['defender', 'last-light']} />);
+    // Only the per-row weapon selects, no operator select between rows
+    expect(screen.getAllByRole('combobox')).toHaveLength(2);
+    expect(screen.queryByText('OR')).not.toBeInTheDocument();
+  });
+
+  it('appends the first not-yet-ranked option on add', () => {
+    const onChange = vi.fn();
+    render(<PreferenceChain {...rankedProps} values={['defender']} onChange={onChange} />);
+
+    fireEvent.click(screen.getByText('+ Add Weapon'));
+
+    expect(onChange).toHaveBeenCalledWith(['defender', 'last-light']);
+  });
+
+  it('disables add when all options are ranked (dedupe of selectable options)', () => {
+    render(<PreferenceChain {...rankedProps} values={['defender', 'last-light', 'sunder']} />);
+    expect(screen.getByText('+ Add Weapon')).toBeDisabled();
+  });
+
+  it('emits the value, not the label, when a row select changes', () => {
+    const onChange = vi.fn();
+    render(<PreferenceChain {...rankedProps} values={['defender']} onChange={onChange} />);
+
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'sunder' } });
+
+    expect(onChange).toHaveBeenCalledWith(['sunder']);
+  });
+
+  it('removes the targeted item, keeping the rest in order', () => {
+    const onChange = vi.fn();
+    render(
+      <PreferenceChain
+        {...rankedProps}
+        values={['defender', 'last-light', 'sunder']}
+        onChange={onChange}
+      />,
+    );
+
+    // Remove the first row
+    fireEvent.click(screen.getAllByLabelText('Remove')[0]);
+
+    expect(onChange).toHaveBeenCalledWith(['last-light', 'sunder']);
+  });
+
+  it('reorders an item upward when its up control is clicked', () => {
+    const onChange = vi.fn();
+    render(
+      <PreferenceChain {...rankedProps} values={['defender', 'last-light']} onChange={onChange} />,
+    );
+
+    // Move the second row up
+    fireEvent.click(screen.getAllByLabelText('Move up')[1]);
+
+    expect(onChange).toHaveBeenCalledWith(['last-light', 'defender']);
+  });
+
+  it('disables up on the first row and down on the last row', () => {
+    render(<PreferenceChain {...rankedProps} values={['defender', 'last-light']} />);
+
+    expect(screen.getAllByLabelText('Move up')[0]).toBeDisabled();
+    expect(screen.getAllByLabelText('Move down')[1]).toBeDisabled();
+  });
+});

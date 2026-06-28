@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { AeTrackedOperator } from '@/types';
 import { ALL_WEAPONS } from '@/data/arknights-endfield/weapons';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
+import { PreferenceChain } from '@/components/PreferenceChain';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
 import { getProgressStyle } from '@/utils/progressGradient';
+import { resolveWeaponRank } from './weaponMatch';
 import './OperatorCard.css';
 
 interface OperatorCardProps {
@@ -16,6 +18,7 @@ interface OperatorCardProps {
   onUpdatePhase: (id: string, phase: number) => void;
   onUpdateSkillsMaxed: (id: string, value: boolean) => void;
   onUpdateWeapon: (id: string, weaponName: string | null, weaponLevel: number) => void;
+  onUpdateWeaponPreferences: (id: string, preferences: string[]) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
 }
 
@@ -26,16 +29,43 @@ export function OperatorCard({
   onUpdatePhase,
   onUpdateSkillsMaxed,
   onUpdateWeapon,
+  onUpdateWeaponPreferences,
   onToggleFavorite,
 }: OperatorCardProps) {
   const [imgLoading, setImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
+  // The edit body is height-capped for its expand/collapse transition, so measure
+  // the real content height (which grows with each preferred-weapon row) and use it
+  // as the budget — the card lengthens to fit instead of clipping the bottom.
+  const editInnerRef = useRef<HTMLDivElement>(null);
+  const [editHeight, setEditHeight] = useState(0);
+  useLayoutEffect(() => {
+    if (editInnerRef.current) setEditHeight(editInnerRef.current.scrollHeight);
+  }, [operator.weaponPreferences.length, operator.weaponName, isEditing]);
+
   const imageUrl = getMugshotUrl(operator.imageUrl);
 
   // Weapons equippable on this operator are filtered by class (exact type match)
   const equippableWeapons = ALL_WEAPONS.filter((w) => w.type === operator.weapon);
+  // Preference editor works in id-space; the picker shows the same label as the
+  // equip selector (name + rarity) so the two dropdowns read identically.
+  const weaponPrefOptions = equippableWeapons.map((w) => ({
+    value: w.id,
+    label: `${w.name} (${w.rarity}★)`,
+  }));
+
+  // Match badge: where the equipped weapon ranks in the preference list.
+  const prefCount = operator.weaponPreferences.length;
+  const matchRank = resolveWeaponRank(operator.weaponName, operator.weaponPreferences);
+  const showMatchBadge = prefCount > 0 && operator.weaponName !== null;
+  // First choice reads full/teal; lower ranks step toward rust; not-listed = off-build rust.
+  const matchPs =
+    matchRank === null
+      ? getProgressStyle(0, 0, 1)
+      : getProgressStyle(prefCount - matchRank, 0, prefCount);
+  const matchLabel = matchRank === null ? 'Off-build' : `#${matchRank + 1}`;
 
   // Investment chips + sliders share the cross-game rust→teal gradient
   const levelPs = getProgressStyle(operator.level, 1, 90);
@@ -53,7 +83,7 @@ export function OperatorCard({
       style={
         {
           '--game-card-summary-max-height': '80px',
-          '--game-card-edit-max-height': '620px',
+          '--game-card-edit-max-height': `${editHeight}px`,
         } as React.CSSProperties
       }
     >
@@ -160,11 +190,20 @@ export function OperatorCard({
                 &mdash;
               </span>
             )}
+            {showMatchBadge && (
+              <span
+                className="weapon-match-badge"
+                style={{ color: matchPs.color, borderColor: matchPs.borderColor }}
+                title="Equipped weapon vs preferred"
+              >
+                {matchLabel}
+              </span>
+            )}
           </div>
         </div>
 
         <div className="game-card-edit-body" aria-hidden={!isEditing}>
-          <div className="game-card-edit-body-inner">
+          <div className="game-card-edit-body-inner" ref={editInnerRef}>
             <ProgressSection label="Level" value={`${operator.level} / 90`}>
               <input
                 type="range"
@@ -240,6 +279,17 @@ export function OperatorCard({
                     background: `linear-gradient(to right, ${weaponLevelPs.color} ${((operator.weaponLevel - 1) / 89) * 100}%, rgba(255,255,255,0.1) ${((operator.weaponLevel - 1) / 89) * 100}%)`,
                   } as React.CSSProperties
                 }
+              />
+            </ProgressSection>
+
+            <ProgressSection label="Preferred Weapons">
+              <PreferenceChain
+                variant="ranked-list"
+                values={operator.weaponPreferences}
+                options={weaponPrefOptions}
+                onChange={(prefs) => onUpdateWeaponPreferences(operator.id, prefs)}
+                namePrefix={`weapon-pref-${operator.id}`}
+                addLabel="+ Add Weapon"
               />
             </ProgressSection>
           </div>

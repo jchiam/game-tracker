@@ -97,6 +97,7 @@ describe('operatorService', () => {
         skills_maxed: true,
         weapon_name: 'Exemplar',
         weapon_level: 60,
+        weapon_preferences: ['exemplar', 'standard-issue'],
         is_favorited: true,
       };
 
@@ -112,9 +113,24 @@ describe('operatorService', () => {
       expect(result[0].skillsMaxed).toBe(true);
       expect(result[0].weaponName).toBe('Exemplar');
       expect(result[0].weaponLevel).toBe(60);
+      expect(result[0].weaponPreferences).toEqual(['exemplar', 'standard-issue']);
       expect(result[0].isFavorited).toBe(true);
       expect(result[0].name).toBe('Ember');
       expect(result[0].class).toBe('Defender');
+    });
+
+    it('loadOperatorsFromDB defaults weaponPreferences to [] when column is null', async () => {
+      const dbRow = {
+        id: 'db-uuid-1',
+        operator_id: 'ember',
+        level: 1,
+        phase: 0,
+        weapon_preferences: null,
+        is_favorited: false,
+      };
+      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+      const result = await service.loadOperatorsFromDB('user-1');
+      expect(result[0].weaponPreferences).toEqual([]);
     });
 
     it('loadOperatorsFromDB skips rows with unknown operator_id', async () => {
@@ -179,6 +195,7 @@ describe('operatorService', () => {
         skillsMaxed: true,
         weaponName: 'Exemplar',
         weaponLevel: 60,
+        weaponPreferences: ['exemplar', 'standard-issue'],
         isFavorited: true,
       });
 
@@ -189,6 +206,7 @@ describe('operatorService', () => {
         skills_maxed: true,
         weapon_name: 'Exemplar',
         weapon_level: 60,
+        weapon_preferences: ['exemplar', 'standard-issue'],
         is_favorited: true,
       });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');

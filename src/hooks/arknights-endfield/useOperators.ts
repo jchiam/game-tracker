@@ -19,6 +19,7 @@ function createTrackedOperator(operator: AeOperator): AeTrackedOperator {
     skillsMaxed: false,
     weaponName: null,
     weaponLevel: 1,
+    weaponPreferences: [],
   };
 }
 
@@ -90,6 +91,19 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
       );
   };
 
+  const updateWeaponPreferences = (id: string, preferences: string[]) => {
+    // A weapon id may appear at most once; keep first occurrence, preserve order.
+    const deduped = preferences.filter((p, i) => preferences.indexOf(p) === i);
+    setTrackedOperators((prev) =>
+      prev.map((o) => (o.id === id ? { ...o, weaponPreferences: deduped } : o)),
+    );
+    const op = trackedOperatorsRef.current.find((o) => o.id === id);
+    if (op?.dbId)
+      queueUpdate(op.dbId, { weaponPreferences: deduped } satisfies AeOperatorPatch, (p) =>
+        updateOperator(op.dbId!, p),
+      );
+  };
+
   const toggleFavorite = (id: string, value: boolean) => {
     setTrackedOperators((prev) =>
       prev.map((o) => (o.id === id ? { ...o, isFavorited: value } : o)),
@@ -120,6 +134,7 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
     updatePhase,
     updateSkillsMaxed,
     updateWeapon,
+    updateWeaponPreferences,
     toggleFavorite,
     getFilteredRoster,
   };

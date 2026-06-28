@@ -33,6 +33,7 @@ describe('AddOperatorModal', () => {
         skillsMaxed: false,
         weaponName: null,
         weaponLevel: 1,
+        weaponPreferences: [],
       },
     ];
     render(<AddOperatorModal {...defaultProps} trackedOperators={tracked} />);

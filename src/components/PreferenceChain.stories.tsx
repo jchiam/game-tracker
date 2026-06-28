@@ -64,3 +64,40 @@ export const Default: Story = {
 export const Interactive: Story = {
   render: () => <PreferenceChainInteractive />,
 };
+
+// Ranked-list mode: pure ranking, no operators, value≠label, reorder + per-item remove
+function RankedListInteractive() {
+  const [values, setValues] = useState<string[]>(['defender', 'last-light']);
+
+  const options = [
+    { value: 'defender', label: 'Defender' },
+    { value: 'last-light', label: 'Last Light' },
+    { value: 'sunder', label: 'Sunder' },
+    { value: 'aegis', label: 'Aegis' },
+  ];
+
+  return (
+    <div
+      style={{
+        maxWidth: '400px',
+        padding: '16px',
+        background: 'rgba(25, 25, 35, 0.95)',
+        borderRadius: '8px',
+        border: '1px solid var(--color-ui-border)',
+      }}
+    >
+      <PreferenceChain
+        variant="ranked-list"
+        values={values}
+        options={options}
+        onChange={setValues}
+        namePrefix="story-ranked-interactive"
+        addLabel="+ Add Weapon"
+      />
+    </div>
+  );
+}
+
+export const RankedList: Story = {
+  render: () => <RankedListInteractive />,
+};

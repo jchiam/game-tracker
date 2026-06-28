@@ -10,6 +10,7 @@ const OPERATOR_COLUMNS: Record<keyof AeOperatorPatch, string> = {
   skillsMaxed: 'skills_maxed',
   weaponName: 'weapon_name',
   weaponLevel: 'weapon_level',
+  weaponPreferences: 'weapon_preferences',
   isFavorited: 'is_favorited',
 };
 
@@ -18,7 +19,9 @@ export async function loadOperatorsFromDB(userId: string): Promise<AeTrackedOper
 
   const { data, error } = await supabase
     .from('ae_tracked_operators')
-    .select('id, operator_id, level, phase, skills_maxed, weapon_name, weapon_level, is_favorited')
+    .select(
+      'id, operator_id, level, phase, skills_maxed, weapon_name, weapon_level, weapon_preferences, is_favorited',
+    )
     .eq('profile_id', userId);
 
   if (error) {
@@ -41,6 +44,7 @@ export async function loadOperatorsFromDB(userId: string): Promise<AeTrackedOper
         skillsMaxed: !!row.skills_maxed,
         weaponName: row.weapon_name ?? null,
         weaponLevel: row.weapon_level ?? 1,
+        weaponPreferences: row.weapon_preferences ?? [],
       };
     })
     .filter(Boolean) as AeTrackedOperator[];
