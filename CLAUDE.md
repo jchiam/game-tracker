@@ -71,11 +71,11 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 
 ### L2 — Shared Styles
 
-| File                        | Contents                                                                                                                                                |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/styles/card.css`       | `.game-card` wrapper, header, overlay, controls, body, name, `.favorite-btn`, `.remove-btn`, `.edit-toggle-btn`, `.progress-section`, `.section-header` |
-| `src/styles/controls.css`   | `.level-slider`, `.spinner-dot`, `.stat-chip`, `.toggle-btn`, `.game-select`, `.game-card-image` loading states                                         |
-| `src/styles/animations.css` | All shared `@keyframes`                                                                                                                                 |
+| File                        | Contents                                                                                                                                                                                 |
+| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/styles/card.css`       | `.game-card` wrapper, header, overlay, controls, body, name, `.favorite-btn`, `.remove-btn`, `.edit-toggle-btn`, `.progress-section`, `.section-header`                                  |
+| `src/styles/controls.css`   | `.level-slider`/`.level-value`, `.spinner-dot`, `.stat-chip`, `.toggle-btn`, `.game-select`, `.segmented-buttons`, `.substats-section`/`.substat-row`, `.game-card-image` loading states |
+| `src/styles/animations.css` | All shared `@keyframes`                                                                                                                                                                  |
 
 **Card class names are canonical** — all games use `.game-card`, `.game-card-header`, `.game-card-image`, `.game-card-overlay`, `.game-card-controls`, `.game-card-body`, `.game-card-name`. Game-specific CSS files only add overrides (padding, hover transforms) and game-unique rules. Never re-declare a rule already in `card.css` or `controls.css`.
 
@@ -83,7 +83,7 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 
 | Component         | CSS                   | Purpose                                                            |
 | ----------------- | --------------------- | ------------------------------------------------------------------ |
-| `Modal`           | `Modal.css`           | Base modal + tabs + preference chains + build-comments             |
+| `Modal`           | `Modal.css`           | Base modal + tabs + form-group input/textarea surfaces             |
 | `ProgressSection` | uses `card.css`       | `.progress-section` + `.section-header` + `.section-value` wrapper |
 | `GameBadge`       | uses game CSS         | Badge with `{variant}-badge {variant}-{modifier}` classes          |
 | `StatChip`        | uses `controls.css`   | Compact stat display chip (`.stat-chip`)                           |
@@ -97,7 +97,21 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 
 Shared modal CSS: `AddEntityModal.css` (list patterns), `PartyEditorModal.css` (team builder).
 
-**Use shared components for consistency.** All game cards must use `ProgressSection` for stat sections, `GameBadge` for type/element/afflatus badges, and `StatChip` for compact stat displays. Don't re-implement these patterns with raw `<div>`/`<span>` elements.
+#### Build-preference primitives
+
+Form controls shared across every build-preference / equipment editor (HSR relics, N2E cartridges, AE weapons) and card investment rows. All use `controls.css`.
+
+| Component          | Purpose                                                                                                                                         |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Select`           | Tokenized `<select>` (`.game-select`) — chevron, gold focus glow, `sm`/`md` size                                                                |
+| `FormGroup`        | `.form-group` label + control wrapper                                                                                                           |
+| `LevelSlider`      | `.level-slider` with internal `getProgressStyle` fill + optional `.level-value`                                                                 |
+| `SegmentedButtons` | Single-exact button row; `coloring="static"` (per-option modifier class) or `"investment"` (active rung takes gradient colour); `allowDeselect` |
+| `SubStatList`      | Stat-row list — discriminated `stat-only` (string[]) / `stat-value` ({type,value}[]); add/remove rows                                           |
+| `PreferenceChain`  | Ordered preference chain with `>` / `>=` / `OR` operators (StatChain)                                                                           |
+| `BuildComments`    | `FormGroup` + free-text textarea                                                                                                                |
+
+**Use shared components for consistency.** All game cards must use `ProgressSection` for stat sections, `GameBadge` for type/element/afflatus badges, and `StatChip` for compact stat displays. All build-preference and equipment editors must compose the build-preference primitives above — `Select` (never a raw `<select>`), `LevelSlider` (never a raw range input), `SegmentedButtons` for discrete tiers/phases, `SubStatList` for stat-row lists, `PreferenceChain` for priority chains, `BuildComments` for notes. Don't re-implement these patterns with raw `<div>`/`<span>`/`<select>`/`<input>` elements.
 
 ### L4 — Game Components
 
@@ -117,7 +131,7 @@ Storybook documents L1–L3 of the design system. Run `npm run storybook` to bro
 
 - **Stories colocated next to source** — `Foo.stories.tsx` lives next to `Foo.tsx`. Token/style stories live in `src/styles/`.
 - **Every design system change must update Storybook** — new token → update `DesignTokens.stories.tsx`; new shared style → update `CardPatterns` or `ControlPatterns` stories; new shared component → create a `.stories.tsx` with all variants.
-- **Use Controls addon** — all component props should be interactive via Storybook Controls. Use `fn()` from `@storybook/test` for action callbacks.
+- **Use Controls addon** — all component props should be interactive via Storybook Controls. Use `fn()` from `storybook/test` for action callbacks.
 - **Don't create stories for L4 game components** — game-specific components change too frequently and require complex mock data.
 
 ## Architecture — Per-Game Module Pattern
