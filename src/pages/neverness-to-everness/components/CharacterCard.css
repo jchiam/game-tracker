@@ -87,9 +87,7 @@
 
 .arc-tier-row {
   display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-2);
+  gap: var(--spacing-3);
 }
 
 /* ─── Cartridge slot (clickable, opens modal) ────────────────── */

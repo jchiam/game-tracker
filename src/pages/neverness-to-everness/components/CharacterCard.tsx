@@ -316,8 +316,8 @@ export function CharacterCard({
                     } as React.CSSProperties
                   }
                 />
+                <span className="section-sublabel">Tier</span>
                 <div className="arc-tier-row">
-                  <span className="section-sublabel">Tier</span>
                   {([1, 2, 3, 4, 5] as const).map((tier) => {
                     const btnPs = getProgressStyle(tier, 1, 5);
                     const isActive = character.arcTier === tier;

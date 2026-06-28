@@ -19,11 +19,11 @@
 
 .phase-row {
   display: flex;
-  gap: var(--spacing-xs);
-  flex-wrap: wrap;
+  gap: var(--spacing-3);
 }
 
 .phase-btn {
+  flex: 1;
   padding: var(--spacing-2) var(--spacing-sm);
   font-size: var(--typography-font-size-xs);
   border-radius: var(--border-radius-sm);
@@ -32,6 +32,7 @@
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  text-align: center;
 }
 
 .phase-btn:hover {
