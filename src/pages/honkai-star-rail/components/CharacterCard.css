@@ -1,22 +1,8 @@
-.game-card:hover {
-  transform: translateY(-5px) scale(1.02);
-}
-
-.game-card-body {
-  padding: var(--spacing-lg) var(--spacing-md);
-  gap: var(--spacing-md);
-}
-
-/* Collapse height budgets are set inline on the card root in CharacterCard.tsx
-   (element-scoped — a shared `.game-card {}` rule leaks across games once both
+/* HSR card body uses the canonical layout in card.css (padding, gap, name margin)
+   and the shared card hover — it contributes no body-layout override. Collapse
+   height budgets are set inline on the card root in CharacterCard.tsx
+   (element-scoped — a bare `.game-card {}` rule leaks across games once both
    route stylesheets are loaded in the SPA). */
-
-.game-card-static-line {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-height: calc(var(--typography-line-height-base) * 1em);
-}
 
 /* Overlay-right grouping: score badge + edit toggle (HSR-local;
    not shared to avoid cross-game CSS coupling) */

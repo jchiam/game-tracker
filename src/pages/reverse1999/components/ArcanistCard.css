@@ -1,19 +1,9 @@
 /* ─── R1999 ArcanistCard — game-specific overrides ─────────────────── */
 
-/* ─── Card body ────────────────────────────────────────────────── */
-
-.game-card-body {
-  padding: var(--spacing-md) var(--spacing-md) 0;
-}
-
-/* Name sits above both sections — always visible */
-.game-card-body > .game-card-name {
-  margin-bottom: var(--spacing-3);
-}
-
-/* Collapse height budgets are set inline on the card root in ArcanistCard.tsx
-   (element-scoped — a shared `.game-card {}` rule leaks across games once both
-   route stylesheets are loaded in the SPA). */
+/* Card body layout (padding + name margin) is the canonical default in card.css;
+   R1999 matches it and contributes no body rule. Collapse height budgets are set
+   inline on the card root in ArcanistCard.tsx (element-scoped — a bare
+   `.game-card {}` rule leaks across games once both route stylesheets load). */
 
 .no-psychube {
   opacity: 0.4;

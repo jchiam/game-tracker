@@ -135,12 +135,23 @@
 .game-card-body {
   display: flex;
   flex-direction: column;
+  /* Canonical body layout shared by R1999, N2E, and AE. A game matching this
+     contributes NO body CSS. A genuine outlier (e.g. HSR) overrides leak-proof
+     via a game-scoped `.game-card.is-{game}` selector — never a bare
+     `.game-card-body` rule in route-split CSS, which would leak across games. */
+  padding: var(--spacing-md) var(--spacing-md) 0;
 }
 
 .game-card-name {
   font-size: var(--typography-font-size-2xl);
   margin-bottom: 0;
   color: var(--color-text-primary);
+}
+
+/* Name sits above the summary/edit sections — canonical spacing for games that
+   don't use a body gap. HSR cancels this under its own scope. */
+.game-card-body > .game-card-name {
+  margin-bottom: var(--spacing-3);
 }
 
 /* ─── Collapse mechanism (static summary ⇄ edit body) ─────────────── */

@@ -26,7 +26,7 @@ export const CardStructure: Story = {
           </div>
         </div>
       </div>
-      <div className="game-card-body" style={{ padding: 'var(--spacing-md)' }}>
+      <div className="game-card-body">
         <h3 className="game-card-name">Character Name</h3>
       </div>
     </div>
@@ -64,10 +64,7 @@ function CollapseDemo() {
         } as React.CSSProperties
       }
     >
-      <div
-        className={`game-card-body ${editing ? 'is-editing' : ''}`}
-        style={{ padding: 'var(--spacing-md)' }}
-      >
+      <div className={`game-card-body ${editing ? 'is-editing' : ''}`}>
         <h3 className="game-card-name">Character Name</h3>
 
         <div className="game-card-static-summary">

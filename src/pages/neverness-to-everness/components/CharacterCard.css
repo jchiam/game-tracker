@@ -1,18 +1,9 @@
 /* ─── N2E CharacterCard overrides & game-specific styles ─────────── */
 
-/* ─── Card body (N2E-specific padding) ────────────────────────────── */
-
-.game-card-body {
-  padding: var(--spacing-md) var(--spacing-md) 0;
-}
-
-.game-card-body > .game-card-name {
-  margin-bottom: var(--spacing-3);
-}
-
-/* Collapse height budgets are set inline on the card root in CharacterCard.tsx
-   (element-scoped — a shared `.game-card {}` rule leaks across games once both
-   route stylesheets are loaded in the SPA). */
+/* Card body layout (padding + name margin) is the canonical default in card.css;
+   N2E matches it and contributes no body rule. Collapse height budgets are set
+   inline on the card root in CharacterCard.tsx (element-scoped — a bare
+   `.game-card {}` rule leaks across games once both route stylesheets load). */
 
 .no-equip {
   opacity: 0.4;

@@ -1,3 +1,6 @@
+/* Card body layout (padding + name margin) is the canonical default in card.css;
+   AE matches it and contributes no body rule. */
+
 .no-weapon {
   opacity: 0.4;
 }
