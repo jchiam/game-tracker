@@ -68,7 +68,7 @@ npm run test        # Vitest unit tests
 npm run test:e2e    # Playwright e2e tests
 ```
 
-A Husky `pre-push` hook runs `format:check`, `lint`, `test`, `build`, and `test:e2e` before pushes.
+A Husky `pre-commit` hook runs `openspec validate --all`, and a `pre-push` hook runs `format:check`, `lint`, `test`, `build`, and `test:e2e` before pushes.
 
 ## Deployment
 
