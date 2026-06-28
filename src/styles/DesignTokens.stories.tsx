@@ -170,6 +170,16 @@ function ColorsSection() {
       />
 
       <ColorGroup
+        label="Input"
+        variables={[
+          '--color-input-surface',
+          '--color-input-surface-focus',
+          '--color-input-surface-subtle',
+          '--color-focus-glow',
+        ]}
+      />
+
+      <ColorGroup
         label="Game: Honkai Star Rail"
         variables={[
           '--color-hsr-element-lightning',
@@ -461,6 +471,7 @@ function ShadowsSection() {
     { variable: '--shadow-glow-primary', label: 'glow-primary' },
     { variable: '--shadow-glow-sm', label: 'glow-sm' },
     { variable: '--shadow-inset-glow', label: 'inset-glow' },
+    { variable: '--shadow-slider-track-inset', label: 'slider-track-inset' },
     { variable: '--shadow-modal', label: 'modal' },
     { variable: '--shadow-card-hover', label: 'card-hover' },
   ];

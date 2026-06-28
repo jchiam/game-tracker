@@ -28,6 +28,26 @@
   transform: scale(1.2);
 }
 
+/* Slider + numeric readout row (LevelSlider showValue) */
+.level-slider-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.level-slider-row .level-slider {
+  flex: 1;
+  margin: 0;
+}
+
+.level-value {
+  font-size: var(--typography-font-size-md);
+  font-weight: var(--typography-font-weight-bold);
+  color: var(--color-text-primary);
+  min-width: 2ch;
+  text-align: right;
+}
+
 /* ─── Image loading states (R1999 + N2E) ─────────────────────────── */
 
 .game-card-image.loading {
@@ -131,6 +151,12 @@
   font-size: 0.78rem;
 }
 
+/* Pill-button row container (SegmentedButtons) */
+.segmented-buttons {
+  display: flex;
+  gap: var(--spacing-3);
+}
+
 /* ─── Custom select dropdown (R1999 + N2E) ───────────────────────── */
 
 .game-select {
@@ -139,18 +165,28 @@
   font-size: 0.85rem;
   border: 1px solid var(--color-ui-border);
   border-radius: var(--border-radius-sm);
-  background: rgba(255, 255, 255, 0.05);
+  background-color: var(--color-input-surface);
   color: var(--color-text-primary);
   outline: none;
-  transition: border-color var(--transition-fast);
+  transition: all var(--transition-fast);
   box-sizing: border-box;
   cursor: pointer;
   appearance: none;
   -webkit-appearance: none;
+  /* Chevron stroke colour is the one documented rgba() exception — a data-URI
+     can't reference a CSS var (mirrors the CLAUDE.md badge-background gap). */
   background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23a0a0b5' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 10px center;
   padding-right: 30px;
+}
+
+/* Modal density — the larger padding/radius/font used inside form groups. */
+.game-select-md {
+  padding: var(--spacing-5) var(--spacing-6);
+  padding-right: 30px;
+  font-size: var(--typography-font-size-md);
+  border-radius: var(--border-radius-md);
 }
 
 .game-select option {
@@ -160,4 +196,108 @@
 
 .game-select:focus {
   border-color: var(--color-brand-primary);
+  background-color: var(--color-input-surface-focus);
+  box-shadow: 0 0 12px var(--color-focus-glow);
+}
+
+.game-select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Sub-stat list (SubStatList) ─────────────────────────────────── */
+
+.substats-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.substats-section label {
+  font-size: var(--typography-font-size-base);
+  color: var(--color-text-secondary);
+  font-weight: var(--typography-font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.substat-row {
+  display: grid;
+  gap: var(--spacing-sm);
+  align-items: center;
+}
+
+.substat-row.stat-value {
+  grid-template-columns: 2fr 1fr auto;
+}
+
+.substat-row.stat-only {
+  grid-template-columns: 1fr auto;
+}
+
+.substat-value-input {
+  padding: 10px 14px;
+  background: var(--color-input-surface);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-md);
+  color: var(--color-text-primary);
+  font-family: var(--typography-font-family-base);
+  font-size: var(--typography-font-size-md);
+  transition: all var(--transition-fast);
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.substat-value-input:focus {
+  outline: none;
+  border-color: var(--color-brand-primary);
+  background: var(--color-input-surface-focus);
+  box-shadow: 0 0 12px var(--color-focus-glow);
+}
+
+.remove-substat {
+  background: var(--color-ui-danger-bg);
+  color: var(--color-ui-danger);
+  border: 1px solid rgba(255, 77, 79, 0.3);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--border-radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+  min-width: unset;
+}
+
+.remove-substat:hover {
+  background: var(--color-ui-danger);
+  color: var(--color-text-primary);
+}
+
+.remove-substat::before {
+  display: none;
+}
+
+.add-substat-btn {
+  background: transparent;
+  border: 1px dashed var(--color-ui-border);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-5);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.add-substat-btn:hover {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+  background: rgba(212, 175, 55, 0.05);
+}
+
+@media (max-width: 600px) {
+  .substat-row.stat-value {
+    grid-template-columns: 1fr 1fr auto;
+  }
 }

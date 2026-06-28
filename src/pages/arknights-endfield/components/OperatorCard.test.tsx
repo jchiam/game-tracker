@@ -235,13 +235,12 @@ describe('OperatorCard', () => {
     expect(defaultProps.onUpdatePhase).toHaveBeenCalledWith('ember', 5);
   });
 
-  it('marks phase buttons up to current value as active', () => {
+  it('marks only the current phase button as active (single-exact)', () => {
     render(<OperatorCard {...defaultProps} operator={makeOperator({ phase: 3 })} />);
-    for (let p = 0; p <= 3; p++) {
-      expect(screen.getByTitle(`P${p}`)).toHaveClass('active');
+    expect(screen.getByTitle('P3')).toHaveClass('active');
+    for (const p of [0, 1, 2, 4, 5]) {
+      expect(screen.getByTitle(`P${p}`)).not.toHaveClass('active');
     }
-    expect(screen.getByTitle('P4')).not.toHaveClass('active');
-    expect(screen.getByTitle('P5')).not.toHaveClass('active');
   });
 
   // --- Skills maxed ---
@@ -273,7 +272,9 @@ describe('OperatorCard', () => {
     render(<OperatorCard {...defaultProps} />);
     await user.click(screen.getByTitle('Edit'));
     await user.selectOptions(screen.getByRole('combobox'), greatswordWeapon.name);
-    expect(defaultProps.onUpdateWeapon).toHaveBeenCalledWith('ember', greatswordWeapon.name, 1);
+    expect(defaultProps.onUpdateWeapon).toHaveBeenCalledWith('ember', {
+      weaponName: greatswordWeapon.name,
+    });
   });
 
   it('calls onUpdateWeapon when the weapon level slider changes', async () => {
@@ -288,7 +289,7 @@ describe('OperatorCard', () => {
     const sliders = screen.getAllByRole('slider');
     const weaponSlider = sliders[sliders.length - 1];
     fireEvent.change(weaponSlider, { target: { value: '70' } });
-    expect(defaultProps.onUpdateWeapon).toHaveBeenCalledWith('ember', greatswordWeapon.name, 70);
+    expect(defaultProps.onUpdateWeapon).toHaveBeenCalledWith('ember', { weaponLevel: 70 });
   });
 
   // --- Weapon preference match badge ---

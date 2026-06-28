@@ -287,13 +287,16 @@ Search + scrollable list pattern used by every game's entity picker — AddChara
 
 Party/lineup creation and editing. Used by every game's party editor with game-specific entity names.
 
-| Class                | Description                        |
-| -------------------- | ---------------------------------- |
-| `.tier-btn`          | Tier selector buttons (S+/S/A/B)   |
-| `.tier-btn.active`   | Selected tier, lit with tier color |
-| `.team-slot`         | Empty or filled team member slot   |
-| `.slot-avatar`       | Circular character/arcanist avatar |
-| `.remove-member-btn` | Remove member from slot (✕)        |
+| Class                          | Description                                                  |
+| ------------------------------ | ------------------------------------------------------------ |
+| `.tier-selector .toggle-btn`   | Tier selector buttons (S+/S/A/B) — shared `SegmentedButtons` |
+| `.toggle-btn.tier-{s…}.active` | Selected tier, lit with the per-tier categorical color       |
+| `.team-slot`                   | Empty or filled team member slot                             |
+| `.slot-avatar`                 | Circular character/arcanist avatar                           |
+| `.remove-member-btn`           | Remove member from slot (✕)                                  |
+
+The tier row renders via the shared `SegmentedButtons` (`single` + `allowDeselect`,
+static `tier-*` modifier); only the per-tier active colours are game-local here.
 
 ```html
 <div class="modal-content party-editor-modal">
@@ -301,13 +304,14 @@ Party/lineup creation and editing. Used by every game's party editor with game-s
     <label>Party Name</label>
     <input type="text" />
   </div>
-  <div class="form-group tier-selector">
+  <div class="form-group">
     <label>Tier</label>
-    <div class="tier-btn-group">
-      <button class="tier-btn tier-splus active">S+</button>
-      <button class="tier-btn tier-s">S</button>
-      <button class="tier-btn tier-a">A</button>
-      <button class="tier-btn tier-b">B</button>
+    <!-- <SegmentedButtons className="tier-selector" …/> renders: -->
+    <div class="segmented-buttons tier-selector" role="group">
+      <button class="toggle-btn tier-Splus active">S+</button>
+      <button class="toggle-btn tier-S">S</button>
+      <button class="toggle-btn tier-A">A</button>
+      <button class="toggle-btn tier-B">B</button>
     </div>
   </div>
   <div class="team-slots">

@@ -28,6 +28,12 @@
       "warning": { "$value": "#ff6b6b", "$type": "color" },
       "interactiveHover": { "$value": "rgba(255,255,255,0.05)", "$type": "color" }
     },
+    "input": {
+      "surface": { "$value": "rgba(255,255,255,0.05)", "$type": "color" },
+      "surfaceFocus": { "$value": "rgba(255,255,255,0.08)", "$type": "color" },
+      "surfaceSubtle": { "$value": "rgba(255,255,255,0.03)", "$type": "color" }
+    },
+    "focusGlow": { "$value": "rgba(212,175,55,0.2)", "$type": "color" },
     "toast": {
       "errorBg": { "$value": "rgba(220,38,38,0.95)", "$type": "color" },
       "errorBorder": { "$value": "rgba(248,113,113,0.5)", "$type": "color" },
@@ -178,6 +184,7 @@
     "glowPrimary": { "$value": "0 0 15px rgba(212,175,55,0.4)", "$type": "shadow" },
     "glowSm": { "$value": "0 0 8px rgba(212,175,55,0.4)", "$type": "shadow" },
     "insetGlow": { "$value": "0 0 8px rgba(212,175,55,0.4) inset", "$type": "shadow" },
+    "sliderTrackInset": { "$value": "0 0 10px rgba(0,0,0,0.5) inset", "$type": "shadow" },
     "modal": {
       "$value": "0 20px 50px rgba(0,0,0,0.5), 0 0 20px rgba(212,175,55,0.4)",
       "$type": "shadow"

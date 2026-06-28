@@ -4,7 +4,14 @@ import type { N2ECharacter } from '@/data/neverness-to-everness/characters';
 import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
 import { addToast } from '@/utils/toast';
 import { Modal } from '@/components/Modal';
+import { SegmentedButtons } from '@/components/SegmentedButtons';
 import '@/components/PartyEditorModal.css';
+
+const TIER_OPTIONS = (['S+', 'S', 'A', 'B'] as const).map((t) => ({
+  value: t,
+  label: t,
+  modifier: `tier-${t.replace('+', 'plus')}`,
+}));
 
 interface PartyEditorModalProps {
   party?: N2EParty;
@@ -101,18 +108,13 @@ export function PartyEditorModal({
 
         <div className="form-group">
           <label>Tier</label>
-          <div className="tier-selector">
-            {(['S+', 'S', 'A', 'B'] as const).map((t) => (
-              <button
-                key={t}
-                className={`tier-btn tier-${t.replace('+', 'plus')} ${tier === t ? 'active' : ''}`}
-                onClick={() => setTier(tier === t ? null : t)}
-                type="button"
-              >
-                {t}
-              </button>
-            ))}
-          </div>
+          <SegmentedButtons
+            className="tier-selector"
+            options={TIER_OPTIONS}
+            value={tier}
+            allowDeselect
+            onChange={setTier}
+          />
         </div>
 
         <div className="form-group">

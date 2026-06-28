@@ -1,9 +1,12 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import type { AeTrackedOperator } from '@/types';
+import type { AeTrackedOperator, AeWeaponPatch } from '@/types';
 import { ALL_WEAPONS } from '@/data/arknights-endfield/weapons';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
+import { LevelSlider } from '@/components/LevelSlider';
 import { PreferenceChain } from '@/components/PreferenceChain';
+import { Select } from '@/components/Select';
+import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
@@ -12,13 +15,15 @@ import { resolveWeaponRank } from './weaponMatch';
 import { sortWeaponsForDisplay } from './weaponSort';
 import './OperatorCard.css';
 
+const PHASE_OPTIONS = [0, 1, 2, 3, 4, 5].map((p) => ({ value: String(p), label: `P${p}` }));
+
 interface OperatorCardProps {
   operator: AeTrackedOperator;
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
   onUpdatePhase: (id: string, phase: number) => void;
   onUpdateSkillsMaxed: (id: string, value: boolean) => void;
-  onUpdateWeapon: (id: string, weaponName: string | null, weaponLevel: number) => void;
+  onUpdateWeapon: (id: string, patch: AeWeaponPatch) => void;
   onUpdateWeaponPreferences: (id: string, preferences: string[]) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
 }
@@ -208,37 +213,23 @@ export function OperatorCard({
         <div className="game-card-edit-body" aria-hidden={!isEditing}>
           <div className="game-card-edit-body-inner" ref={editInnerRef}>
             <ProgressSection label="Level" value={`${operator.level} / 90`}>
-              <input
-                type="range"
+              <LevelSlider
                 name={`level-${operator.id}`}
-                min="1"
-                max="90"
                 value={operator.level}
-                onChange={(e) => onUpdateLevel(operator.id, parseInt(e.target.value))}
-                className="level-slider"
-                style={
-                  {
-                    '--slider-fill-color': levelPs.color,
-                    '--slider-fill-glow': levelPs.glowColor,
-                    background: `linear-gradient(to right, ${levelPs.color} ${((operator.level - 1) / 89) * 100}%, rgba(255,255,255,0.1) ${((operator.level - 1) / 89) * 100}%)`,
-                  } as React.CSSProperties
-                }
+                min={1}
+                max={90}
+                onChange={(n) => onUpdateLevel(operator.id, n)}
               />
             </ProgressSection>
 
             <ProgressSection label="Phase" value={`${operator.phase} / 5`}>
-              <div className="phase-row">
-                {([0, 1, 2, 3, 4, 5] as const).map((p) => (
-                  <button
-                    key={p}
-                    className={`phase-btn ${operator.phase >= p ? 'active' : ''}`}
-                    onClick={() => onUpdatePhase(operator.id, p)}
-                    title={`P${p}`}
-                  >
-                    P{p}
-                  </button>
-                ))}
-              </div>
+              <SegmentedButtons
+                className="phase-row"
+                options={PHASE_OPTIONS}
+                value={String(operator.phase)}
+                coloring="investment"
+                onChange={(v) => onUpdatePhase(operator.id, Number(v))}
+              />
             </ProgressSection>
 
             <ProgressSection label="Skills">
@@ -250,38 +241,23 @@ export function OperatorCard({
             </ProgressSection>
 
             <ProgressSection label="Weapon" value={`${operator.weaponLevel} / 90`}>
-              <select
+              <Select
                 name={`weapon-${operator.id}`}
-                className="game-select"
+                size="sm"
                 value={operator.weaponName ?? ''}
-                onChange={(e) =>
-                  onUpdateWeapon(operator.id, e.target.value || null, operator.weaponLevel)
-                }
-              >
-                <option value="">No Weapon</option>
-                {equippableWeapons.map((w) => (
-                  <option key={w.id} value={w.name}>
-                    {w.name} ({w.rarity}★)
-                  </option>
-                ))}
-              </select>
-              <input
-                type="range"
+                placeholder="No Weapon"
+                options={equippableWeapons.map((w) => ({
+                  value: w.name,
+                  label: `${w.name} (${w.rarity}★)`,
+                }))}
+                onChange={(v) => onUpdateWeapon(operator.id, { weaponName: v || null })}
+              />
+              <LevelSlider
                 name={`weapon-level-${operator.id}`}
-                min="1"
-                max="90"
                 value={operator.weaponLevel}
-                onChange={(e) =>
-                  onUpdateWeapon(operator.id, operator.weaponName, parseInt(e.target.value))
-                }
-                className="level-slider"
-                style={
-                  {
-                    '--slider-fill-color': weaponLevelPs.color,
-                    '--slider-fill-glow': weaponLevelPs.glowColor,
-                    background: `linear-gradient(to right, ${weaponLevelPs.color} ${((operator.weaponLevel - 1) / 89) * 100}%, rgba(255,255,255,0.1) ${((operator.weaponLevel - 1) / 89) * 100}%)`,
-                  } as React.CSSProperties
-                }
+                min={1}
+                max={90}
+                onChange={(n) => onUpdateWeapon(operator.id, { weaponLevel: n })}
               />
             </ProgressSection>
 

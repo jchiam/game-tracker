@@ -349,9 +349,10 @@ describe('RelicEditorModal', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /\+ add substat/i }));
+    // SubStatList adds a row with an empty value for the user to fill in.
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
-        subStats: expect.arrayContaining([expect.objectContaining({ value: '2.5%' })]),
+        subStats: expect.arrayContaining([expect.objectContaining({ value: '' })]),
       }),
     );
   });

@@ -2,7 +2,11 @@ import { useState } from 'react';
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet, EquippedRelic } from '@/data/honkai-star-rail/relics';
 import { Modal } from '@/components/Modal';
+import { BuildComments } from '@/components/BuildComments';
+import { FormGroup } from '@/components/FormGroup';
 import { PreferenceChain } from '@/components/PreferenceChain';
+import { Select } from '@/components/Select';
+import { SubStatList } from '@/components/SubStatList';
 import './RelicEditorModal.css';
 
 interface RelicEditorModalProps {
@@ -91,38 +95,14 @@ export function RelicEditorModal({
     onSave(newRelic);
   };
 
-  const addMainStatPref = () => {
-    if (slot === 'head' || slot === 'hands') return;
-    const newPrefs = { ...currentPrefs };
-    const arr = [...newPrefs.mainStats[slot]];
-    if (arr.length > 0) arr[arr.length - 1].operator = '>';
-    arr.push({ stat: validMainStats[slot][0], operator: null, orderIndex: arr.length });
-    newPrefs.mainStats[slot] = arr;
-    onUpdateBuildPreferences(newPrefs);
-  };
-
-  const updateMainStatPref = (
-    idx: number,
-    updates: Partial<(typeof currentPrefs.mainStats)['body'][0]>,
-  ) => {
-    if (slot === 'head' || slot === 'hands') return;
-    const newPrefs = { ...currentPrefs };
-    newPrefs.mainStats[slot][idx] = { ...newPrefs.mainStats[slot][idx], ...updates };
-    onUpdateBuildPreferences(newPrefs);
-  };
-
-  const removeMainStatPref = (idx: number) => {
-    if (slot === 'head' || slot === 'hands') return;
-    const newPrefs = { ...currentPrefs };
-    newPrefs.mainStats[slot].splice(idx, 1);
-    if (newPrefs.mainStats[slot].length > 0)
-      newPrefs.mainStats[slot][newPrefs.mainStats[slot].length - 1].operator = null;
-    onUpdateBuildPreferences(newPrefs);
-  };
+  const slotLabel = slot.charAt(0).toUpperCase() + slot.slice(1);
+  const isFixedSlot = slot === 'head' || slot === 'hands';
+  // The equipped main stat must not also be offered as a sub-stat.
+  const excludeSubStats = currentRelic.mainStat ? [currentRelic.mainStat] : [];
 
   return (
     <Modal
-      title={`Edit ${slot.charAt(0).toUpperCase() + slot.slice(1)}`}
+      title={`Edit ${slotLabel}`}
       onClose={onClose}
       className="relic-editor"
       footer={
@@ -156,33 +136,24 @@ export function RelicEditorModal({
       <div className="relic-editor-body">
         {activeTab === 'equip' ? (
           <>
-            <div className="form-group">
-              <label>Relic Set</label>
-              <select
+            <FormGroup label="Relic Set">
+              <Select
                 name="relic-set"
                 value={currentRelic.setId || ''}
-                onChange={(e) => validateAndSave({ setId: e.target.value })}
-              >
-                <option value="">-- No Set --</option>
-                {availableRelicSets
-                  .filter((set) => {
-                    if (slot === 'sphere' || slot === 'rope') {
-                      return set.id.startsWith('3');
-                    } else {
-                      return set.id.startsWith('1');
-                    }
-                  })
-                  .map((set) => (
-                    <option key={set.id} value={set.id}>
-                      {set.name}
-                    </option>
-                  ))}
-              </select>
-            </div>
+                placeholder="-- No Set --"
+                options={availableRelicSets
+                  .filter((set) =>
+                    slot === 'sphere' || slot === 'rope'
+                      ? set.id.startsWith('3')
+                      : set.id.startsWith('1'),
+                  )
+                  .map((set) => ({ value: set.id, label: set.name }))}
+                onChange={(v) => validateAndSave({ setId: v })}
+              />
+            </FormGroup>
 
-            <div className="form-group">
-              <label>Main Stat</label>
-              {slot === 'head' || slot === 'hands' ? (
+            <FormGroup label="Main Stat">
+              {isFixedSlot ? (
                 <div
                   style={{
                     padding: '10px 14px',
@@ -195,92 +166,26 @@ export function RelicEditorModal({
                   {slot === 'head' ? 'HP' : 'ATK'} (Fixed)
                 </div>
               ) : (
-                <select
+                <Select
                   name="relic-main-stat"
                   value={currentRelic.mainStat || ''}
-                  onChange={(e) => validateAndSave({ mainStat: e.target.value })}
-                >
-                  <option value="">-- No Main Stat --</option>
-                  {validMainStats[slot].map((stat) => (
-                    <option key={stat} value={stat}>
-                      {stat}
-                    </option>
-                  ))}
-                </select>
+                  placeholder="-- No Main Stat --"
+                  options={validMainStats[slot]}
+                  onChange={(v) => validateAndSave({ mainStat: v })}
+                />
               )}
-            </div>
+            </FormGroup>
 
-            <div className="substats-section">
-              <label>Substats (Max 4)</label>
-              {currentRelic.subStats.map((sub, idx) => (
-                <div key={idx} className="substat-row">
-                  <select
-                    name={`substat-type-${idx}`}
-                    value={sub.type}
-                    onChange={(e) => {
-                      const newSubs = [...currentRelic.subStats];
-                      newSubs[idx] = { ...newSubs[idx], type: e.target.value };
-                      validateAndSave({ subStats: newSubs });
-                    }}
-                  >
-                    <option value="">- Stat -</option>
-                    {allSubStats
-                      .filter(
-                        (s) =>
-                          s !== currentRelic.mainStat ||
-                          (slot === 'head' && s === 'HP') ||
-                          (slot === 'hands' && s === 'ATK'),
-                      ) // Allow raw versions if main stat matches but type differs, wait actually HP == HP so block it.
-                      .filter((s) => s !== currentRelic.mainStat)
-                      .map((s) => (
-                        <option key={s} value={s}>
-                          {s}
-                        </option>
-                      ))}
-                  </select>
-                  <input
-                    type="text"
-                    name={`substat-value-${idx}`}
-                    placeholder="Value"
-                    value={sub.value}
-                    onChange={(e) => {
-                      const newSubs = [...currentRelic.subStats];
-                      newSubs[idx] = { ...newSubs[idx], value: e.target.value };
-                      validateAndSave({ subStats: newSubs });
-                    }}
-                  />
-                  <button
-                    className="remove-substat"
-                    onClick={() => {
-                      const newSubs = currentRelic.subStats.filter((_, i) => i !== idx);
-                      validateAndSave({ subStats: newSubs });
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-
-              {currentRelic.subStats.length < 4 && (
-                <button
-                  className="add-substat-btn"
-                  onClick={() =>
-                    Object.assign(() => {
-                      const defaultSafeStat =
-                        allSubStats.find((s) => s !== currentRelic.mainStat) || 'CRIT Rate';
-                      validateAndSave({
-                        subStats: [
-                          ...currentRelic.subStats,
-                          { type: defaultSafeStat, value: '2.5%' },
-                        ],
-                      });
-                    })()
-                  }
-                >
-                  + Add Substat
-                </button>
-              )}
-            </div>
+            <SubStatList
+              variant="stat-value"
+              values={currentRelic.subStats}
+              options={allSubStats}
+              namePrefix="substat"
+              label="Substats (Max 4)"
+              addLabel="+ Add Substat"
+              excludeValues={excludeSubStats}
+              onChange={(subStats) => validateAndSave({ subStats })}
+            />
           </>
         ) : (
           <div className="preferences-tab">
@@ -288,45 +193,20 @@ export function RelicEditorModal({
               Define the ideal stats you want to roll for this character.
             </p>
 
-            {slot !== 'head' && slot !== 'hands' && (
+            {!isFixedSlot && (
               <div className="pref-section">
-                <h3>Preferred Main Stat ({slot.charAt(0).toUpperCase() + slot.slice(1)})</h3>
-                <div className="pref-chain">
-                  {currentPrefs.mainStats[slot].map((pref, idx) => (
-                    <div key={idx} className="pref-item">
-                      <select
-                        name={`pref-main-stat-${idx}`}
-                        value={pref.stat}
-                        onChange={(e) => updateMainStatPref(idx, { stat: e.target.value })}
-                      >
-                        {validMainStats[slot].map((s) => (
-                          <option key={s} value={s}>
-                            {s}
-                          </option>
-                        ))}
-                      </select>
-                      {idx < currentPrefs.mainStats[slot].length - 1 ? (
-                        <select
-                          name={`pref-main-stat-operator-${idx}`}
-                          className="operator-select"
-                          value={pref.operator || '>'}
-                          onChange={(e) => updateMainStatPref(idx, { operator: e.target.value })}
-                        >
-                          <option value=">">&gt;</option>
-                          <option value=">=">&ge;</option>
-                          <option value="OR">OR</option>
-                        </select>
-                      ) : (
-                        <button className="remove-pref-btn" onClick={() => removeMainStatPref(idx)}>
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <button className="add-pref-btn" onClick={addMainStatPref}>
-                  + Add Priority
-                </button>
+                <h3>Preferred Main Stat ({slotLabel})</h3>
+                <PreferenceChain
+                  values={currentPrefs.mainStats[slot]}
+                  options={validMainStats[slot]}
+                  namePrefix="pref-main-stat"
+                  onChange={(mainStatsForSlot) =>
+                    onUpdateBuildPreferences({
+                      ...currentPrefs,
+                      mainStats: { ...currentPrefs.mainStats, [slot]: mainStatsForSlot },
+                    })
+                  }
+                />
               </div>
             )}
 
@@ -341,15 +221,11 @@ export function RelicEditorModal({
             </div>
 
             <div className="pref-section">
-              <h3>Build Comments</h3>
-              <textarea
-                className="build-comments-textarea"
-                placeholder="Additional notes about this build..."
+              <BuildComments
+                label="Build Comments"
                 value={currentPrefs.comments || ''}
-                onChange={(e) => {
-                  const newPrefs = { ...currentPrefs, comments: e.target.value };
-                  onUpdateBuildPreferences(newPrefs);
-                }}
+                placeholder="Additional notes about this build..."
+                onChange={(comments) => onUpdateBuildPreferences({ ...currentPrefs, comments })}
               />
             </div>
           </div>

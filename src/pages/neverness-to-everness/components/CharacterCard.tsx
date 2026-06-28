@@ -1,4 +1,4 @@
-import type { N2ETrackedCharacter } from '@/types';
+import type { N2ETrackedCharacter, N2ECartridgePatch } from '@/types';
 import { ALL_ARCS } from '@/data/neverness-to-everness/arcs';
 import { ALL_CARTRIDGES } from '@/data/neverness-to-everness/cartridges';
 import { calculateCartridgeScore, getScoreGrade } from '@/utils/cartridgeScoring';
@@ -6,10 +6,13 @@ import { GameBadge } from '@/components/GameBadge';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { getProgressStyle } from '@/utils/progressGradient';
 import { ProgressSection } from '@/components/ProgressSection';
+import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { StatChip } from '@/components/StatChip';
 import { useState } from 'react';
 import { CartridgeEditorModal } from './CartridgeEditorModal';
 import './CharacterCard.css';
+
+const ARC_TIER_OPTIONS = [1, 2, 3, 4, 5].map((t) => ({ value: String(t), label: `T${t}` }));
 
 interface CharacterCardProps {
   character: N2ETrackedCharacter;
@@ -17,14 +20,7 @@ interface CharacterCardProps {
   onUpdateLevel: (id: string, level: number) => void;
   onToggleAwakening: (id: string, slotIndex: number) => void;
   onUpdateArc: (id: string, arcId: string | null, arcLevel: number, arcTier: number) => void;
-  onUpdateCartridge: (
-    id: string,
-    cartridgeId: string | null,
-    rarity: string | null,
-    level: number,
-    mainStat: string | null,
-    subStats: string[],
-  ) => void;
+  onUpdateCartridge: (id: string, patch: N2ECartridgePatch) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
   onSaveCartridgePreferences: (
     id: string,
@@ -317,41 +313,16 @@ export function CharacterCard({
                   }
                 />
                 <span className="section-sublabel">Tier</span>
-                <div className="arc-tier-row">
-                  {([1, 2, 3, 4, 5] as const).map((tier) => {
-                    const btnPs = getProgressStyle(tier, 1, 5);
-                    const isActive = character.arcTier === tier;
-                    const isPassed = tier < character.arcTier;
-                    return (
-                      <button
-                        key={tier}
-                        className={`toggle-btn compact ${isActive ? 'active' : ''}`}
-                        onClick={() =>
-                          onUpdateArc(character.id!, character.arcId, character.arcLevel, tier)
-                        }
-                        title={`T${tier}`}
-                        style={
-                          isActive
-                            ? {
-                                color: btnPs.color,
-                                borderColor: btnPs.borderColor,
-                                background: btnPs.activeBg,
-                                boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
-                              }
-                            : isPassed
-                              ? {
-                                  color: btnPs.color,
-                                  borderColor: btnPs.borderColor,
-                                  opacity: 0.35,
-                                }
-                              : undefined
-                        }
-                      >
-                        T{tier}
-                      </button>
-                    );
-                  })}
-                </div>
+                <SegmentedButtons
+                  className="arc-tier-row"
+                  options={ARC_TIER_OPTIONS}
+                  value={String(character.arcTier)}
+                  coloring="investment"
+                  size="compact"
+                  onChange={(v) =>
+                    onUpdateArc(character.id!, character.arcId, character.arcLevel, Number(v))
+                  }
+                />
               </ProgressSection>
 
               {/* ── Cartridge slot (clickable, opens modal) ──────────── */}
@@ -464,9 +435,7 @@ export function CharacterCard({
       {isCartridgeEditorOpen && (
         <CartridgeEditorModal
           character={character}
-          onSaveCartridge={(cartridgeId, rarity, level, mainStat, subStats) =>
-            onUpdateCartridge(character.id!, cartridgeId, rarity, level, mainStat, subStats)
-          }
+          onSaveCartridge={(patch) => onUpdateCartridge(character.id!, patch)}
           onSavePreferences={(prefs) => onSaveCartridgePreferences(character.id!, prefs)}
           onClose={() => setIsCartridgeEditorOpen(false)}
         />

@@ -124,14 +124,16 @@ describe('useOperators', () => {
 
   it('updateWeapon sets name and clamps level to 1–90', async () => {
     const { result } = await setupWithOp();
-    act(() => result.current.updateWeapon(firstOp.id, 'Exemplar', 100));
+    act(() =>
+      result.current.updateWeapon(firstOp.id, { weaponName: 'Exemplar', weaponLevel: 100 }),
+    );
     expect(result.current.trackedOperators[0].weaponName).toBe('Exemplar');
     expect(result.current.trackedOperators[0].weaponLevel).toBe(90);
 
-    act(() => result.current.updateWeapon(firstOp.id, 'Exemplar', 0));
+    act(() => result.current.updateWeapon(firstOp.id, { weaponLevel: 0 }));
     expect(result.current.trackedOperators[0].weaponLevel).toBe(1);
 
-    act(() => result.current.updateWeapon(firstOp.id, null, 50));
+    act(() => result.current.updateWeapon(firstOp.id, { weaponName: null }));
     expect(result.current.trackedOperators[0].weaponName).toBeNull();
   });
 

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import { ALL_CHARACTERS, type N2ECharacter } from '@/data/neverness-to-everness/characters';
-import type { N2ECharacterPatch, N2ETrackedCharacter } from '@/types';
+import type { N2ECharacterPatch, N2ECartridgePatch, N2ETrackedCharacter } from '@/types';
 import {
   loadCharactersFromDB,
   insertCharacter,
@@ -99,40 +99,12 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
       );
   };
 
-  const updateCartridge = (
-    id: string,
-    cartridgeId: string | null,
-    rarity: string | null,
-    level: number,
-    mainStat: string | null,
-    subStats: string[],
-  ) => {
-    setTrackedCharacters((prev) =>
-      prev.map((c) =>
-        c.id === id
-          ? {
-              ...c,
-              cartridgeId,
-              cartridgeRarity: rarity,
-              cartridgeLevel: level,
-              cartridgeMainStat: mainStat,
-              cartridgeSubStats: subStats,
-            }
-          : c,
-      ),
-    );
+  const updateCartridge = (id: string, patch: N2ECartridgePatch) => {
+    setTrackedCharacters((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
     const char = trackedCharactersRef.current.find((c) => c.id === id);
     if (char?.dbId)
-      queueUpdate(
-        char.dbId,
-        {
-          cartridgeId,
-          cartridgeRarity: rarity,
-          cartridgeLevel: level,
-          cartridgeMainStat: mainStat,
-          cartridgeSubStats: subStats,
-        } satisfies N2ECharacterPatch,
-        (p) => updateCharacter(char.dbId!, p),
+      queueUpdate(char.dbId, patch satisfies N2ECharacterPatch, (p) =>
+        updateCharacter(char.dbId!, p),
       );
   };
 

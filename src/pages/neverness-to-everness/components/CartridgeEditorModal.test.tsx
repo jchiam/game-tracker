@@ -85,11 +85,14 @@ describe('CartridgeEditorModal', () => {
     render(
       <CartridgeEditorModal character={char} {...defaultProps} onSaveCartridge={onSaveCartridge} />,
     );
-    const rarityBtns = document.querySelectorAll('.rarity-btn');
+    const rarityBtns = document.querySelectorAll('.rarity-btn-row .toggle-btn');
     // Click S rarity button
     const sBtn = Array.from(rarityBtns).find((b) => b.textContent === 'S') as HTMLButtonElement;
     fireEvent.click(sBtn);
-    expect(onSaveCartridge).toHaveBeenCalledWith(firstCartridge.id, 'S', 0, null, []);
+    expect(onSaveCartridge).toHaveBeenCalledWith({
+      cartridgeId: firstCartridge.id,
+      cartridgeRarity: 'S',
+    });
   });
 
   it('calls onSaveCartridge when main stat is changed', () => {
@@ -105,7 +108,7 @@ describe('CartridgeEditorModal', () => {
       'select[name="cartridge-main-stat"]',
     ) as HTMLSelectElement;
     fireEvent.change(select, { target: { value: 'ATK %' } });
-    expect(onSaveCartridge).toHaveBeenCalledWith(null, null, 0, 'ATK %', []);
+    expect(onSaveCartridge).toHaveBeenCalledWith({ cartridgeMainStat: 'ATK %' });
   });
 
   it('calls onSaveCartridge when level slider changes', () => {
@@ -119,7 +122,7 @@ describe('CartridgeEditorModal', () => {
     );
     const slider = document.querySelector('input[name="cartridge-level"]') as HTMLInputElement;
     fireEvent.change(slider, { target: { value: '15' } });
-    expect(onSaveCartridge).toHaveBeenCalledWith(null, null, 15, null, []);
+    expect(onSaveCartridge).toHaveBeenCalledWith({ cartridgeLevel: 15 });
   });
 
   it('calls onSaveCartridge with null values when un-equip is clicked', () => {
@@ -136,7 +139,13 @@ describe('CartridgeEditorModal', () => {
       />,
     );
     fireEvent.click(screen.getByText('Un-equip Cartridge'));
-    expect(onSaveCartridge).toHaveBeenCalledWith(null, null, 0, null, []);
+    expect(onSaveCartridge).toHaveBeenCalledWith({
+      cartridgeId: null,
+      cartridgeRarity: null,
+      cartridgeLevel: 0,
+      cartridgeMainStat: null,
+      cartridgeSubStats: [],
+    });
   });
 
   it('calls onClose when Done button is clicked', () => {
@@ -157,15 +166,11 @@ describe('CartridgeEditorModal', () => {
     );
     fireEvent.click(screen.getByText('+ Add Sub Stat'));
     // First sub stat default = first in CARTRIDGE_SUB_STATS
-    expect(onSaveCartridge).toHaveBeenCalledWith(
-      null,
-      null,
-      0,
-      null,
-      expect.arrayContaining([expect.any(String)]),
-    );
+    expect(onSaveCartridge).toHaveBeenCalledWith({
+      cartridgeSubStats: expect.arrayContaining([expect.any(String)]),
+    });
     const call = onSaveCartridge.mock.calls[0];
-    expect(call[4]).toHaveLength(1);
+    expect(call[0].cartridgeSubStats).toHaveLength(1);
   });
 
   it('removes a sub stat when remove button is clicked', () => {
@@ -180,7 +185,7 @@ describe('CartridgeEditorModal', () => {
     const removeButtons = screen.getAllByText('✕');
     const substatRemoveBtn = removeButtons.find((btn) => btn.classList.contains('remove-substat'))!;
     fireEvent.click(substatRemoveBtn);
-    expect(onSaveCartridge).toHaveBeenCalledWith(null, null, 0, null, ['HP']);
+    expect(onSaveCartridge).toHaveBeenCalledWith({ cartridgeSubStats: ['HP'] });
   });
 
   it('hides add sub stat button when 4 subs are equipped', () => {

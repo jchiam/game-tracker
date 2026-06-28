@@ -2,12 +2,29 @@ import type { R1999TrackedArcanist } from '@/types';
 import { ALL_ARCANISTS } from '@/data/reverse1999/arcanists';
 import { ALL_PSYCHUBES } from '@/data/reverse1999/psychubes';
 import { GameBadge } from '@/components/GameBadge';
+import { LevelSlider } from '@/components/LevelSlider';
 import { ProgressSection } from '@/components/ProgressSection';
+import { SegmentedButtons } from '@/components/SegmentedButtons';
+import { Select } from '@/components/Select';
 import { StatChip } from '@/components/StatChip';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { getProgressStyle } from '@/utils/progressGradient';
 import { useState } from 'react';
 import './ArcanistCard.css';
+
+const PORTRAIT_OPTIONS = [0, 1, 2, 3, 4, 5].map((level) => ({
+  value: String(level),
+  label: `P${level}`,
+  modifier: level === 0 ? 'portrait-reset' : undefined,
+}));
+const EUPHORIA_OPTIONS = [0, 1, 2, 3, 4].map((stage) => ({
+  value: String(stage),
+  label: `E${stage}`,
+}));
+const AMPLIFICATION_OPTIONS = [1, 2, 3, 4, 5].map((lvl) => ({
+  value: String(lvl),
+  label: `A${lvl}`,
+}));
 
 interface ArcanistCardProps {
   arcanist: R1999TrackedArcanist;
@@ -185,183 +202,75 @@ export function ArcanistCard({
         <div className="game-card-edit-body" aria-hidden={!isEditing}>
           <div className="game-card-edit-body-inner">
             <ProgressSection label="Level" value={`${arcanist.level} / 60`}>
-              <input
-                type="range"
+              <LevelSlider
                 name={`level-${arcanist.id}`}
-                min="1"
-                max="60"
                 value={arcanist.level}
-                onChange={(e) => onUpdateLevel(arcanist.id!, parseInt(e.target.value))}
-                className="level-slider"
-                style={
-                  {
-                    '--slider-fill-color': levelPs.color,
-                    '--slider-fill-glow': levelPs.glowColor,
-                    background: `linear-gradient(to right, ${levelPs.color} ${((arcanist.level - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.level - 1) / 59) * 100}%)`,
-                  } as React.CSSProperties
-                }
+                min={1}
+                max={60}
+                onChange={(n) => onUpdateLevel(arcanist.id!, n)}
               />
             </ProgressSection>
 
             <ProgressSection label="Portrait Level" value={`${arcanist.portraitLevel} / 5`}>
-              <div className="portrait-row">
-                {([0, 1, 2, 3, 4, 5] as const).map((level) => {
-                  const btnPs = getProgressStyle(level, 0, 5);
-                  const isActive = arcanist.portraitLevel === level;
-                  const isPassed = level > 0 && level < arcanist.portraitLevel;
-                  return (
-                    <button
-                      key={level}
-                      className={`toggle-btn ${level === 0 ? 'portrait-reset' : ''} ${isActive ? 'active' : ''}`}
-                      onClick={() => onUpdatePortrait(arcanist.id!, level)}
-                      title={level === 0 ? 'Reset portrait level' : `Portrait ${level}`}
-                      style={
-                        isActive
-                          ? {
-                              color: btnPs.color,
-                              borderColor: btnPs.borderColor,
-                              background: btnPs.activeBg,
-                              boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
-                            }
-                          : isPassed
-                            ? {
-                                color: btnPs.color,
-                                borderColor: btnPs.borderColor,
-                                opacity: 0.35,
-                              }
-                            : undefined
-                      }
-                    >
-                      P{level}
-                    </button>
-                  );
-                })}
-              </div>
+              <SegmentedButtons
+                className="portrait-row"
+                options={PORTRAIT_OPTIONS}
+                value={String(arcanist.portraitLevel)}
+                coloring="investment"
+                onChange={(v) => onUpdatePortrait(arcanist.id!, Number(v))}
+              />
             </ProgressSection>
 
             <ProgressSection label="Resonance Level" value={`${arcanist.resonanceLevel} / 15`}>
-              <input
-                type="range"
+              <LevelSlider
                 name={`resonance-${arcanist.id}`}
-                min="0"
-                max="15"
                 value={arcanist.resonanceLevel}
-                onChange={(e) => onUpdateResonance(arcanist.id!, parseInt(e.target.value))}
-                className="level-slider"
-                style={
-                  {
-                    '--slider-fill-color': resonancePs.color,
-                    '--slider-fill-glow': resonancePs.glowColor,
-                    background: `linear-gradient(to right, ${resonancePs.color} ${(arcanist.resonanceLevel / 15) * 100}%, rgba(255,255,255,0.1) ${(arcanist.resonanceLevel / 15) * 100}%)`,
-                  } as React.CSSProperties
-                }
+                min={0}
+                max={15}
+                onChange={(n) => onUpdateResonance(arcanist.id!, n)}
               />
             </ProgressSection>
 
             {hasEuphoria && (
               <ProgressSection label="Euphoria">
-                <div className="euphoria-row">
-                  {([0, 1, 2, 3, 4] as const).map((stage) => {
-                    const btnPs = getProgressStyle(stage, 0, 4);
-                    const isActive = arcanist.euphoriaStage === stage;
-                    const isPassed = stage < arcanist.euphoriaStage;
-                    return (
-                      <button
-                        key={stage}
-                        className={`toggle-btn ${isActive ? 'active' : ''}`}
-                        onClick={() => onUpdateEuphoriaStage(arcanist.id!, stage)}
-                        style={
-                          isActive
-                            ? {
-                                color: btnPs.color,
-                                borderColor: btnPs.borderColor,
-                                background: btnPs.activeBg,
-                                boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
-                              }
-                            : isPassed
-                              ? {
-                                  color: btnPs.color,
-                                  borderColor: btnPs.borderColor,
-                                  opacity: 0.35,
-                                }
-                              : undefined
-                        }
-                      >
-                        E{stage}
-                      </button>
-                    );
-                  })}
-                </div>
+                <SegmentedButtons
+                  className="euphoria-row"
+                  options={EUPHORIA_OPTIONS}
+                  value={String(arcanist.euphoriaStage)}
+                  coloring="investment"
+                  onChange={(v) => onUpdateEuphoriaStage(arcanist.id!, Number(v))}
+                />
               </ProgressSection>
             )}
 
             <ProgressSection label="Psychube" value={`${arcanist.psychubeLevel} / 60`}>
-              <select
+              <Select
                 name={`psychube-${arcanist.id}`}
-                className="game-select"
+                size="sm"
                 value={arcanist.psychubeName ?? ''}
-                onChange={(e) =>
-                  onUpdatePsychube(arcanist.id!, e.target.value || null, arcanist.psychubeLevel)
-                }
-              >
-                <option value="">No Psychube</option>
-                {ALL_PSYCHUBES.map((p) => (
-                  <option key={p.name} value={p.name}>
-                    {p.name} ({p.rarity}★)
-                  </option>
-                ))}
-              </select>
-              <input
-                type="range"
+                placeholder="No Psychube"
+                options={ALL_PSYCHUBES.map((p) => ({
+                  value: p.name,
+                  label: `${p.name} (${p.rarity}★)`,
+                }))}
+                onChange={(v) => onUpdatePsychube(arcanist.id!, v || null, arcanist.psychubeLevel)}
+              />
+              <LevelSlider
                 name={`psychube-level-${arcanist.id}`}
-                min="1"
-                max="60"
                 value={arcanist.psychubeLevel}
-                onChange={(e) =>
-                  onUpdatePsychube(arcanist.id!, arcanist.psychubeName, parseInt(e.target.value))
-                }
-                className="level-slider"
-                style={
-                  {
-                    '--slider-fill-color': psychubeLevelPs.color,
-                    '--slider-fill-glow': psychubeLevelPs.glowColor,
-                    background: `linear-gradient(to right, ${psychubeLevelPs.color} ${((arcanist.psychubeLevel - 1) / 59) * 100}%, rgba(255,255,255,0.1) ${((arcanist.psychubeLevel - 1) / 59) * 100}%)`,
-                  } as React.CSSProperties
-                }
+                min={1}
+                max={60}
+                onChange={(n) => onUpdatePsychube(arcanist.id!, arcanist.psychubeName, n)}
               />
               <div className="amplification-row">
                 <span className="section-sublabel">Amplify</span>
-                {([1, 2, 3, 4, 5] as const).map((lvl) => {
-                  const btnPs = getProgressStyle(lvl, 1, 5);
-                  const isActive = arcanist.psychubeAmplification === lvl;
-                  const isPassed = lvl < arcanist.psychubeAmplification;
-                  return (
-                    <button
-                      key={lvl}
-                      className={`toggle-btn compact ${isActive ? 'active' : ''}`}
-                      onClick={() => onUpdatePsychubeAmplification(arcanist.id!, lvl)}
-                      title={`A${lvl}`}
-                      style={
-                        isActive
-                          ? {
-                              color: btnPs.color,
-                              borderColor: btnPs.borderColor,
-                              background: btnPs.activeBg,
-                              boxShadow: `0 0 8px ${btnPs.glowColor} inset`,
-                            }
-                          : isPassed
-                            ? {
-                                color: btnPs.color,
-                                borderColor: btnPs.borderColor,
-                                opacity: 0.35,
-                              }
-                            : undefined
-                      }
-                    >
-                      {`A${lvl}`}
-                    </button>
-                  );
-                })}
+                <SegmentedButtons
+                  options={AMPLIFICATION_OPTIONS}
+                  value={String(arcanist.psychubeAmplification)}
+                  coloring="investment"
+                  size="compact"
+                  onChange={(v) => onUpdatePsychubeAmplification(arcanist.id!, Number(v))}
+                />
               </div>
             </ProgressSection>
           </div>

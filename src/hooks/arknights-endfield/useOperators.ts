@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import { ALL_OPERATORS, type AeOperator } from '@/data/arknights-endfield/operators';
-import type { AeOperatorPatch, AeTrackedOperator } from '@/types';
+import type { AeOperatorPatch, AeWeaponPatch, AeTrackedOperator } from '@/types';
 import {
   loadOperatorsFromDB,
   insertOperator,
@@ -79,14 +79,15 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
       );
   };
 
-  const updateWeapon = (id: string, weaponName: string | null, weaponLevel: number) => {
-    const validLevel = Math.min(90, Math.max(1, weaponLevel));
-    setTrackedOperators((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, weaponName, weaponLevel: validLevel } : o)),
-    );
+  const updateWeapon = (id: string, patch: AeWeaponPatch) => {
+    const normalized: AeWeaponPatch = { ...patch };
+    if (normalized.weaponLevel !== undefined) {
+      normalized.weaponLevel = Math.min(90, Math.max(1, normalized.weaponLevel));
+    }
+    setTrackedOperators((prev) => prev.map((o) => (o.id === id ? { ...o, ...normalized } : o)));
     const op = trackedOperatorsRef.current.find((o) => o.id === id);
     if (op?.dbId)
-      queueUpdate(op.dbId, { weaponName, weaponLevel: validLevel } satisfies AeOperatorPatch, (p) =>
+      queueUpdate(op.dbId, normalized satisfies AeOperatorPatch, (p) =>
         updateOperator(op.dbId!, p),
       );
   };

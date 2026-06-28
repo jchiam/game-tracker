@@ -133,6 +133,12 @@ export interface N2ECharacterPatch {
   isFavorited?: boolean;
 }
 
+/** Patch shape for the N2E cartridge-equip callback (`onSaveCartridge`). */
+export type N2ECartridgePatch = Pick<
+  N2ECharacterPatch,
+  'cartridgeId' | 'cartridgeRarity' | 'cartridgeLevel' | 'cartridgeMainStat' | 'cartridgeSubStats'
+>;
+
 export interface N2EParty {
   id: string;
   profileId: string;
@@ -169,6 +175,9 @@ export interface AeOperatorPatch {
   weaponPreferences?: string[];
   isFavorited?: boolean;
 }
+
+/** Patch shape for the AE operator weapon-equip callback (`onUpdateWeapon`). */
+export type AeWeaponPatch = Pick<AeOperatorPatch, 'weaponName' | 'weaponLevel'>;
 
 export interface AeParty {
   id: string;

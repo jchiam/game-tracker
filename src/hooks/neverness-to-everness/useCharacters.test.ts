@@ -206,10 +206,13 @@ describe('useCharacters', () => {
     const id = result.current.trackedCharacters[0].id;
 
     act(() =>
-      result.current.updateCartridge(id, 'Cosmos_orange', 'S', 15, 'ATK %', [
-        'CRIT Rate %',
-        'CRIT DMG %',
-      ]),
+      result.current.updateCartridge(id, {
+        cartridgeId: 'Cosmos_orange',
+        cartridgeRarity: 'S',
+        cartridgeLevel: 15,
+        cartridgeMainStat: 'ATK %',
+        cartridgeSubStats: ['CRIT Rate %', 'CRIT DMG %'],
+      }),
     );
     const char = result.current.trackedCharacters[0];
     expect(char.cartridgeId).toBe('Cosmos_orange');

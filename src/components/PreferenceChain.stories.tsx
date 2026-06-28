@@ -101,3 +101,38 @@ function RankedListInteractive() {
 export const RankedList: Story = {
   render: () => <RankedListInteractive />,
 };
+
+// Main-stat priority usage — the same stat-chain the HSR/N2E editors now compose
+// for their "Preferred Main Stat" sections (replacing the old inline, mutation-prone
+// implementations). Appending clones the previous tail before setting its operator.
+function MainStatChainInteractive() {
+  const [values, setValues] = useState<StatPreference[]>([
+    { stat: 'CRIT DMG', operator: '>', orderIndex: 0 },
+    { stat: 'ATK%', operator: null, orderIndex: 1 },
+  ]);
+
+  const bodyMainStats = ['HP%', 'DEF%', 'ATK%', 'CRIT Rate', 'CRIT DMG', 'Effect Hit Rate'];
+
+  return (
+    <div
+      style={{
+        maxWidth: '400px',
+        padding: '16px',
+        background: 'rgba(25, 25, 35, 0.95)',
+        borderRadius: '8px',
+        border: '1px solid var(--color-ui-border)',
+      }}
+    >
+      <PreferenceChain
+        values={values}
+        options={bodyMainStats}
+        onChange={setValues}
+        namePrefix="story-main-stat"
+      />
+    </div>
+  );
+}
+
+export const MainStatChain: Story = {
+  render: () => <MainStatChainInteractive />,
+};

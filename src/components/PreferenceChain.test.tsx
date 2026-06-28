@@ -83,6 +83,23 @@ describe('PreferenceChain', () => {
     ]);
   });
 
+  it('does not mutate the input values array or its items when appending', () => {
+    const onChange = vi.fn();
+    const tail = { stat: 'CRIT Rate', operator: null as string | null, orderIndex: 0 };
+    const values: StatPreference[] = [tail];
+    const frozen = Object.freeze([Object.freeze({ ...tail })]) as unknown as StatPreference[];
+    render(<PreferenceChain {...defaultProps} values={frozen} onChange={onChange} />);
+
+    // Appending sets the previous tail's operator to '>'; that must land on a clone,
+    // never on the caller's item object (which is frozen here).
+    expect(() => fireEvent.click(screen.getByText('+ Add Priority'))).not.toThrow();
+    const emitted = onChange.mock.calls[0][0] as StatPreference[];
+    expect(emitted[0]).toEqual({ stat: 'CRIT Rate', operator: '>', orderIndex: 0 });
+    expect(emitted[0]).not.toBe(frozen[0]);
+    expect(frozen[0].operator).toBeNull(); // original untouched
+    expect(values[0].operator).toBeNull();
+  });
+
   it('calls onChange with removed item and updates tail operator when remove button is clicked', () => {
     const onChange = vi.fn();
     const values: StatPreference[] = [

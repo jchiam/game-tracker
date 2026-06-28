@@ -75,12 +75,15 @@
   letter-spacing: 0.05em;
 }
 
+/* Selects inside a form group are rendered by the shared `Select` component and
+   own their look via `.game-select` (controls.css); the form-group surface rules
+   below intentionally cover only input + textarea so they don't clobber the
+   Select chevron/background. */
 .form-group input,
-.form-group select,
 .form-group textarea {
   width: 100%;
   padding: var(--spacing-5) var(--spacing-6);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-input-surface);
   border: 1px solid var(--color-ui-border);
   border-radius: var(--border-radius-md);
   color: var(--color-text-primary);
@@ -97,17 +100,11 @@
 }
 
 .form-group input:focus,
-.form-group select:focus,
 .form-group textarea:focus {
   outline: none;
   border-color: var(--color-brand-primary);
-  background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 12px rgba(212, 175, 55, 0.2);
-}
-
-.form-group select option {
-  background: var(--color-bg-base);
-  color: var(--color-text-primary);
+  background: var(--color-input-surface-focus);
+  box-shadow: 0 0 12px var(--color-focus-glow);
 }
 
 .form-group textarea {
@@ -223,26 +220,8 @@
 
 /* ─── Build comments textarea ────────────────────────────────────── */
 
-.build-comments-textarea {
-  width: 100%;
-  min-height: 80px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid var(--color-ui-border);
-  border-radius: var(--border-radius-md);
-  color: var(--color-text-primary);
-  padding: 10px 14px;
-  font-family: inherit;
-  font-size: var(--typography-font-size-base);
-  resize: vertical;
-  transition: all var(--transition-fast);
-  box-sizing: border-box;
-}
-
-.build-comments-textarea:focus {
-  outline: none;
-  border-color: var(--color-brand-primary);
-  background: rgba(255, 255, 255, 0.08);
-}
+/* `.build-comments-textarea` removed — BuildComments now reuses the canonical
+   `.form-group textarea` styling above. */
 
 @media (max-width: 600px) {
   .modal-content {
