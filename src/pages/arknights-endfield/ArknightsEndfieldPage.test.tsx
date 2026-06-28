@@ -32,7 +32,10 @@ function makeOperator(id: string, name: string): AeTrackedOperator {
     dbId: `db-${id}`,
     isFavorited: false,
     level: 45,
-    potential: 3,
+    phase: 3,
+    skillsMaxed: false,
+    weaponName: null,
+    weaponLevel: 1,
   };
 }
 
@@ -57,7 +60,9 @@ const defaultOperatorsHook = {
   addOperator: vi.fn(),
   removeOperator: vi.fn(),
   updateLevel: vi.fn(),
-  updatePotential: vi.fn(),
+  updatePhase: vi.fn(),
+  updateSkillsMaxed: vi.fn(),
+  updateWeapon: vi.fn(),
   toggleFavorite: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };

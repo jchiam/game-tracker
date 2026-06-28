@@ -6,7 +6,10 @@ const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
 
 const OPERATOR_COLUMNS: Record<keyof AeOperatorPatch, string> = {
   level: 'level',
-  potential: 'potential',
+  phase: 'phase',
+  skillsMaxed: 'skills_maxed',
+  weaponName: 'weapon_name',
+  weaponLevel: 'weapon_level',
   isFavorited: 'is_favorited',
 };
 
@@ -15,7 +18,7 @@ export async function loadOperatorsFromDB(userId: string): Promise<AeTrackedOper
 
   const { data, error } = await supabase
     .from('ae_tracked_operators')
-    .select('id, operator_id, level, potential, is_favorited')
+    .select('id, operator_id, level, phase, skills_maxed, weapon_name, weapon_level, is_favorited')
     .eq('profile_id', userId);
 
   if (error) {
@@ -34,7 +37,10 @@ export async function loadOperatorsFromDB(userId: string): Promise<AeTrackedOper
         dbId: row.id,
         isFavorited: !!row.is_favorited,
         level: row.level,
-        potential: row.potential ?? 0,
+        phase: row.phase ?? 0,
+        skillsMaxed: !!row.skills_maxed,
+        weaponName: row.weapon_name ?? null,
+        weaponLevel: row.weapon_level ?? 1,
       };
     })
     .filter(Boolean) as AeTrackedOperator[];
@@ -49,7 +55,9 @@ export async function insertOperator(userId: string, operatorId: string): Promis
       profile_id: userId,
       operator_id: operatorId,
       level: 1,
-      potential: 0,
+      phase: 0,
+      skills_maxed: false,
+      weapon_level: 1,
     })
     .select('id')
     .single();

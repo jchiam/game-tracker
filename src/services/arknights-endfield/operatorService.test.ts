@@ -93,7 +93,10 @@ describe('operatorService', () => {
         id: 'db-uuid-1',
         operator_id: 'ember',
         level: 45,
-        potential: 3,
+        phase: 3,
+        skills_maxed: true,
+        weapon_name: 'Exemplar',
+        weapon_level: 60,
         is_favorited: true,
       };
 
@@ -105,7 +108,10 @@ describe('operatorService', () => {
       expect(result[0].id).toBe('ember');
       expect(result[0].dbId).toBe('db-uuid-1');
       expect(result[0].level).toBe(45);
-      expect(result[0].potential).toBe(3);
+      expect(result[0].phase).toBe(3);
+      expect(result[0].skillsMaxed).toBe(true);
+      expect(result[0].weaponName).toBe('Exemplar');
+      expect(result[0].weaponLevel).toBe(60);
       expect(result[0].isFavorited).toBe(true);
       expect(result[0].name).toBe('Ember');
       expect(result[0].class).toBe('Defender');
@@ -169,14 +175,20 @@ describe('operatorService', () => {
 
       await service.updateOperator('db-uuid-1', {
         level: 40,
-        potential: 3,
+        phase: 3,
+        skillsMaxed: true,
+        weaponName: 'Exemplar',
+        weaponLevel: 60,
         isFavorited: true,
       });
 
       expect(mockFrom).toHaveBeenCalledWith('ae_tracked_operators');
       expect(builder.update).toHaveBeenCalledWith({
         level: 40,
-        potential: 3,
+        phase: 3,
+        skills_maxed: true,
+        weapon_name: 'Exemplar',
+        weapon_level: 60,
         is_favorited: true,
       });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');

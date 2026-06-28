@@ -82,7 +82,10 @@ describe('useOperators', () => {
     expect(result.current.trackedOperators).toHaveLength(1);
     expect(result.current.trackedOperators[0].id).toBe(firstOp.id);
     expect(result.current.trackedOperators[0].level).toBe(1);
-    expect(result.current.trackedOperators[0].potential).toBe(0);
+    expect(result.current.trackedOperators[0].phase).toBe(0);
+    expect(result.current.trackedOperators[0].skillsMaxed).toBe(false);
+    expect(result.current.trackedOperators[0].weaponName).toBeNull();
+    expect(result.current.trackedOperators[0].weaponLevel).toBe(1);
   });
 
   it('removes an operator', async () => {
@@ -103,13 +106,32 @@ describe('useOperators', () => {
     expect(result.current.trackedOperators[0].level).toBe(1);
   });
 
-  it('updatePotential clamps to 0–5', async () => {
+  it('updatePhase clamps to 0–5', async () => {
     const { result } = await setupWithOp();
-    act(() => result.current.updatePotential(firstOp.id, 10));
-    expect(result.current.trackedOperators[0].potential).toBe(5);
+    act(() => result.current.updatePhase(firstOp.id, 10));
+    expect(result.current.trackedOperators[0].phase).toBe(5);
 
-    act(() => result.current.updatePotential(firstOp.id, -1));
-    expect(result.current.trackedOperators[0].potential).toBe(0);
+    act(() => result.current.updatePhase(firstOp.id, -1));
+    expect(result.current.trackedOperators[0].phase).toBe(0);
+  });
+
+  it('updateSkillsMaxed updates the flag', async () => {
+    const { result } = await setupWithOp();
+    act(() => result.current.updateSkillsMaxed(firstOp.id, true));
+    expect(result.current.trackedOperators[0].skillsMaxed).toBe(true);
+  });
+
+  it('updateWeapon sets name and clamps level to 1–90', async () => {
+    const { result } = await setupWithOp();
+    act(() => result.current.updateWeapon(firstOp.id, 'Exemplar', 100));
+    expect(result.current.trackedOperators[0].weaponName).toBe('Exemplar');
+    expect(result.current.trackedOperators[0].weaponLevel).toBe(90);
+
+    act(() => result.current.updateWeapon(firstOp.id, 'Exemplar', 0));
+    expect(result.current.trackedOperators[0].weaponLevel).toBe(1);
+
+    act(() => result.current.updateWeapon(firstOp.id, null, 50));
+    expect(result.current.trackedOperators[0].weaponName).toBeNull();
   });
 
   it('toggleFavorite updates isFavorited', async () => {
@@ -120,8 +142,26 @@ describe('useOperators', () => {
 
   it('getFilteredRoster returns sorted results', async () => {
     mockLoadOperatorsFromDB.mockResolvedValue([
-      { ...ALL_OPERATORS[0], dbId: 'db-1', isFavorited: false, level: 50, potential: 2 },
-      { ...ALL_OPERATORS[1], dbId: 'db-2', isFavorited: true, level: 30, potential: 1 },
+      {
+        ...ALL_OPERATORS[0],
+        dbId: 'db-1',
+        isFavorited: false,
+        level: 50,
+        phase: 2,
+        skillsMaxed: false,
+        weaponName: null,
+        weaponLevel: 1,
+      },
+      {
+        ...ALL_OPERATORS[1],
+        dbId: 'db-2',
+        isFavorited: true,
+        level: 30,
+        phase: 1,
+        skillsMaxed: true,
+        weaponName: null,
+        weaponLevel: 1,
+      },
     ]);
     const { result } = await setup();
     const sorted = result.current.getFilteredRoster('', 'LEVEL');

@@ -15,7 +15,10 @@ function createTrackedOperator(operator: AeOperator): AeTrackedOperator {
     ...operator,
     isFavorited: false,
     level: 1,
-    potential: 0,
+    phase: 0,
+    skillsMaxed: false,
+    weaponName: null,
+    weaponLevel: 1,
   };
 }
 
@@ -54,14 +57,35 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
       );
   };
 
-  const updatePotential = (id: string, potential: number) => {
-    const validPotential = Math.min(5, Math.max(0, potential));
+  const updatePhase = (id: string, phase: number) => {
+    const validPhase = Math.min(5, Math.max(0, phase));
+    setTrackedOperators((prev) => prev.map((o) => (o.id === id ? { ...o, phase: validPhase } : o)));
+    const op = trackedOperatorsRef.current.find((o) => o.id === id);
+    if (op?.dbId)
+      queueUpdate(op.dbId, { phase: validPhase } satisfies AeOperatorPatch, (p) =>
+        updateOperator(op.dbId!, p),
+      );
+  };
+
+  const updateSkillsMaxed = (id: string, value: boolean) => {
     setTrackedOperators((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, potential: validPotential } : o)),
+      prev.map((o) => (o.id === id ? { ...o, skillsMaxed: value } : o)),
     );
     const op = trackedOperatorsRef.current.find((o) => o.id === id);
     if (op?.dbId)
-      queueUpdate(op.dbId, { potential: validPotential } satisfies AeOperatorPatch, (p) =>
+      queueUpdate(op.dbId, { skillsMaxed: value } satisfies AeOperatorPatch, (p) =>
+        updateOperator(op.dbId!, p),
+      );
+  };
+
+  const updateWeapon = (id: string, weaponName: string | null, weaponLevel: number) => {
+    const validLevel = Math.min(90, Math.max(1, weaponLevel));
+    setTrackedOperators((prev) =>
+      prev.map((o) => (o.id === id ? { ...o, weaponName, weaponLevel: validLevel } : o)),
+    );
+    const op = trackedOperatorsRef.current.find((o) => o.id === id);
+    if (op?.dbId)
+      queueUpdate(op.dbId, { weaponName, weaponLevel: validLevel } satisfies AeOperatorPatch, (p) =>
         updateOperator(op.dbId!, p),
       );
   };
@@ -93,7 +117,9 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
     addOperator,
     removeOperator,
     updateLevel,
-    updatePotential,
+    updatePhase,
+    updateSkillsMaxed,
+    updateWeapon,
     toggleFavorite,
     getFilteredRoster,
   };

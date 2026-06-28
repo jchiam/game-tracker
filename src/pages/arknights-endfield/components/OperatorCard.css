@@ -1,27 +1,14 @@
-.rarity-indicator {
-  font-size: var(--typography-font-size-xs);
-  letter-spacing: -1px;
+.no-weapon {
+  opacity: 0.4;
 }
 
-.rarity-indicator.rarity-6 {
-  color: var(--color-brand-primary);
-}
-
-.rarity-indicator.rarity-5 {
-  color: var(--color-ae-class-striker);
-}
-
-.rarity-indicator.rarity-4 {
-  color: var(--color-text-secondary);
-}
-
-.potential-row {
+.phase-row {
   display: flex;
   gap: var(--spacing-xs);
   flex-wrap: wrap;
 }
 
-.potential-btn {
+.phase-btn {
   padding: var(--spacing-2) var(--spacing-sm);
   font-size: var(--typography-font-size-xs);
   border-radius: var(--border-radius-sm);
@@ -32,17 +19,17 @@
   transition: all var(--transition-fast);
 }
 
-.potential-btn:hover {
+.phase-btn:hover {
   border-color: var(--color-brand-primary);
   transform: none;
   box-shadow: none;
 }
 
-.potential-btn::before {
+.phase-btn::before {
   display: none;
 }
 
-.potential-btn.active {
+.phase-btn.active {
   color: var(--color-brand-primary);
   border-color: rgba(212, 175, 55, 0.5);
   background: rgba(212, 175, 55, 0.12);

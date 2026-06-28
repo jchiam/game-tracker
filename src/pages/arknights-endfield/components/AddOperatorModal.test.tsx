@@ -24,7 +24,16 @@ describe('AddOperatorModal', () => {
 
   it('filters operators already tracked', () => {
     const tracked = [
-      { ...ALL_OPERATORS[0], dbId: 'db-1', isFavorited: false, level: 1, potential: 0 },
+      {
+        ...ALL_OPERATORS[0],
+        dbId: 'db-1',
+        isFavorited: false,
+        level: 1,
+        phase: 0,
+        skillsMaxed: false,
+        weaponName: null,
+        weaponLevel: 1,
+      },
     ];
     render(<AddOperatorModal {...defaultProps} trackedOperators={tracked} />);
     expect(screen.queryByText(ALL_OPERATORS[0].name)).not.toBeInTheDocument();

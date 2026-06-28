@@ -2,11 +2,17 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OperatorCard } from './OperatorCard';
+import { ALL_WEAPONS } from '@/data/arknights-endfield/weapons';
 import type { AeTrackedOperator } from '@/types';
 
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => path,
 }));
+
+// Ember is a Greatsword operator — derive expected names from the catalog so these
+// tests assert the filter behavior (by type), not specific catalog strings.
+const greatswordWeapon = ALL_WEAPONS.find((w) => w.type === 'Greatsword')!;
+const nonGreatswordWeapon = ALL_WEAPONS.find((w) => w.type !== 'Greatsword')!;
 
 function makeOperator(overrides: Partial<AeTrackedOperator> = {}): AeTrackedOperator {
   return {
@@ -20,7 +26,10 @@ function makeOperator(overrides: Partial<AeTrackedOperator> = {}): AeTrackedOper
     dbId: 'db-1',
     isFavorited: false,
     level: 45,
-    potential: 3,
+    phase: 3,
+    skillsMaxed: false,
+    weaponName: null,
+    weaponLevel: 1,
     ...overrides,
   };
 }
@@ -30,7 +39,9 @@ describe('OperatorCard', () => {
     operator: makeOperator(),
     onRemove: vi.fn(),
     onUpdateLevel: vi.fn(),
-    onUpdatePotential: vi.fn(),
+    onUpdatePhase: vi.fn(),
+    onUpdateSkillsMaxed: vi.fn(),
+    onUpdateWeapon: vi.fn(),
     onToggleFavorite: vi.fn(),
   };
 
@@ -48,25 +59,17 @@ describe('OperatorCard', () => {
     expect(screen.getByText('Greatsword')).toBeInTheDocument();
   });
 
-  it('renders level and potential stat chips', () => {
+  it('renders level, phase, and skills stat chips', () => {
     render(<OperatorCard {...defaultProps} />);
     expect(screen.getByText('Lv 45')).toBeInTheDocument();
     expect(screen.getAllByText('P3').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByText('Skills ✗')).toBeInTheDocument();
   });
 
-  it('renders rarity stars for 6-star', () => {
-    render(<OperatorCard {...defaultProps} />);
-    expect(screen.getByText('★★★★★★')).toBeInTheDocument();
-  });
-
-  it('renders rarity stars for 5-star', () => {
-    render(<OperatorCard {...defaultProps} operator={makeOperator({ rarity: 5 })} />);
-    expect(screen.getByText('★★★★★')).toBeInTheDocument();
-  });
-
-  it('renders rarity stars for 4-star', () => {
-    render(<OperatorCard {...defaultProps} operator={makeOperator({ rarity: 4 })} />);
-    expect(screen.getByText('★★★★')).toBeInTheDocument();
+  it('does not render a rarity-star indicator', () => {
+    const { container } = render(<OperatorCard {...defaultProps} />);
+    expect(container.querySelector('.rarity-indicator')).toBeNull();
+    expect(screen.queryByText('★★★★★★')).not.toBeInTheDocument();
   });
 
   // --- Investment gradient wiring (shared rust→teal color language) ---
@@ -83,37 +86,46 @@ describe('OperatorCard', () => {
     expect(screen.getByText('Lv 90').style.color).toBe('rgb(64, 200, 160)'); // teal
   });
 
-  it('colors the potential chip by investment', () => {
+  it('colors the phase chip by investment', () => {
     // Scope to the summary chip — `P0` also appears as an edit-body button.
     const { container } = render(
-      <OperatorCard {...defaultProps} operator={makeOperator({ potential: 0 })} />,
+      <OperatorCard {...defaultProps} operator={makeOperator({ phase: 0 })} />,
     );
     const chips = container.querySelectorAll<HTMLElement>('.game-card-static-stats .stat-chip');
-    const potentialChip = chips[1]; // [0] = Lv, [1] = P
-    expect(potentialChip).toHaveTextContent('P0');
-    expect(potentialChip.style.color).toBe('rgb(138, 96, 80)'); // rust at potential 0
+    const phaseChip = chips[1]; // [0] = Lv, [1] = P, [2] = Skills
+    expect(phaseChip).toHaveTextContent('P0');
+    expect(phaseChip.style.color).toBe('rgb(138, 96, 80)'); // rust at phase 0
   });
 
   it('drives the level slider fill from the investment gradient via the canonical class', async () => {
     const user = userEvent.setup();
     render(<OperatorCard {...defaultProps} operator={makeOperator({ level: 1 })} />);
     await user.click(screen.getByTitle('Edit'));
-    const slider = screen.getByRole('slider');
+    const slider = screen.getAllByRole('slider')[0];
     expect(slider).toHaveClass('level-slider');
     expect(slider).not.toHaveClass('character-slider');
     expect(slider.style.getPropertyValue('--slider-fill-color')).toBe('rgb(138, 96, 80)');
   });
 
-  it('renders no gear one-liner — AE operators have no equippable gear', () => {
+  // --- Weapon gear one-liner ---
+
+  it('shows an em-dash gear one-liner when no weapon is equipped', () => {
     const { container } = render(<OperatorCard {...defaultProps} />);
-    expect(container.querySelector('.game-card-static-line')).toBeNull();
+    const line = container.querySelector('.game-card-static-line');
+    expect(line).not.toBeNull();
+    expect(line).toHaveTextContent('—');
   });
 
-  it('does not gradient-color the rarity stars (rarity is intrinsic, not investment)', () => {
-    const { container } = render(<OperatorCard {...defaultProps} />);
-    const rarity = container.querySelector<HTMLElement>('.rarity-indicator');
-    expect(rarity).not.toBeNull();
-    expect(rarity!.style.color).toBe('');
+  it('shows the equipped weapon name and level in the gear one-liner', () => {
+    const { container } = render(
+      <OperatorCard
+        {...defaultProps}
+        operator={makeOperator({ weaponName: greatswordWeapon.name, weaponLevel: 60 })}
+      />,
+    );
+    const line = container.querySelector('.game-card-static-line');
+    expect(line).toHaveTextContent(greatswordWeapon.name);
+    expect(line).toHaveTextContent(/Lv.*60/);
   });
 
   // --- Favorite ---
@@ -187,7 +199,7 @@ describe('OperatorCard', () => {
     const user = userEvent.setup();
     render(<OperatorCard {...defaultProps} />);
     await user.click(screen.getByTitle('Edit'));
-    const slider = screen.getByRole('slider');
+    const slider = screen.getAllByRole('slider')[0];
     expect(slider).toHaveValue('45');
     expect(slider).toHaveAttribute('min', '1');
     expect(slider).toHaveAttribute('max', '90');
@@ -197,34 +209,81 @@ describe('OperatorCard', () => {
     const user = userEvent.setup();
     render(<OperatorCard {...defaultProps} />);
     await user.click(screen.getByTitle('Edit'));
-    const slider = screen.getByRole('slider');
+    const slider = screen.getAllByRole('slider')[0];
     fireEvent.change(slider, { target: { value: '60' } });
     expect(defaultProps.onUpdateLevel).toHaveBeenCalledWith('ember', 60);
   });
 
-  // --- Potential buttons ---
+  // --- Phase buttons ---
 
-  it('renders all 6 potential buttons (P0–P5)', () => {
+  it('renders all 6 phase buttons (P0–P5)', () => {
     render(<OperatorCard {...defaultProps} />);
     for (let p = 0; p <= 5; p++) {
       expect(screen.getByTitle(`P${p}`)).toBeInTheDocument();
     }
   });
 
-  it('calls onUpdatePotential when a potential button is clicked', async () => {
+  it('calls onUpdatePhase when a phase button is clicked', async () => {
     const user = userEvent.setup();
     render(<OperatorCard {...defaultProps} />);
     await user.click(screen.getByTitle('P5'));
-    expect(defaultProps.onUpdatePotential).toHaveBeenCalledWith('ember', 5);
+    expect(defaultProps.onUpdatePhase).toHaveBeenCalledWith('ember', 5);
   });
 
-  it('marks potential buttons up to current value as active', () => {
-    render(<OperatorCard {...defaultProps} operator={makeOperator({ potential: 3 })} />);
+  it('marks phase buttons up to current value as active', () => {
+    render(<OperatorCard {...defaultProps} operator={makeOperator({ phase: 3 })} />);
     for (let p = 0; p <= 3; p++) {
       expect(screen.getByTitle(`P${p}`)).toHaveClass('active');
     }
     expect(screen.getByTitle('P4')).not.toHaveClass('active');
     expect(screen.getByTitle('P5')).not.toHaveClass('active');
+  });
+
+  // --- Skills maxed ---
+
+  it('calls onUpdateSkillsMaxed when the skills checkbox is confirmed', async () => {
+    const user = userEvent.setup();
+    render(<OperatorCard {...defaultProps} />);
+    await user.click(screen.getByText('All Skills Maxed')); // arms confirmation
+    await user.click(screen.getByText('Click to confirm'));
+    expect(defaultProps.onUpdateSkillsMaxed).toHaveBeenCalledWith('ember', true);
+  });
+
+  // --- Weapon picker ---
+
+  it('filters the weapon picker to the operator weapon class', async () => {
+    const user = userEvent.setup();
+    render(<OperatorCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    const select = screen.getByRole('combobox') as HTMLSelectElement;
+    const optionValues = Array.from(select.options).map((o) => o.value);
+    // Ember is a Greatsword operator: only Greatsword weapons + the empty option
+    expect(optionValues).toContain('');
+    expect(optionValues).toContain(greatswordWeapon.name);
+    expect(optionValues).not.toContain(nonGreatswordWeapon.name);
+  });
+
+  it('calls onUpdateWeapon when a weapon is selected', async () => {
+    const user = userEvent.setup();
+    render(<OperatorCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.selectOptions(screen.getByRole('combobox'), greatswordWeapon.name);
+    expect(defaultProps.onUpdateWeapon).toHaveBeenCalledWith('ember', greatswordWeapon.name, 1);
+  });
+
+  it('calls onUpdateWeapon when the weapon level slider changes', async () => {
+    const user = userEvent.setup();
+    render(
+      <OperatorCard
+        {...defaultProps}
+        operator={makeOperator({ weaponName: greatswordWeapon.name, weaponLevel: 1 })}
+      />,
+    );
+    await user.click(screen.getByTitle('Edit'));
+    const sliders = screen.getAllByRole('slider');
+    const weaponSlider = sliders[sliders.length - 1];
+    fireEvent.change(weaponSlider, { target: { value: '70' } });
+    expect(defaultProps.onUpdateWeapon).toHaveBeenCalledWith('ember', greatswordWeapon.name, 70);
   });
 
   // --- Image fallback ---

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { AeTrackedOperator } from '@/types';
+import { ALL_WEAPONS } from '@/data/arknights-endfield/weapons';
+import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
 import { getMugshotUrl } from '@/lib/imagekit';
 import { ProgressSection } from '@/components/ProgressSection';
@@ -11,17 +13,19 @@ interface OperatorCardProps {
   operator: AeTrackedOperator;
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
-  onUpdatePotential: (id: string, potential: number) => void;
+  onUpdatePhase: (id: string, phase: number) => void;
+  onUpdateSkillsMaxed: (id: string, value: boolean) => void;
+  onUpdateWeapon: (id: string, weaponName: string | null, weaponLevel: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
 }
-
-const RARITY_STARS: Record<number, string> = { 4: '★★★★', 5: '★★★★★', 6: '★★★★★★' };
 
 export function OperatorCard({
   operator,
   onRemove,
   onUpdateLevel,
-  onUpdatePotential,
+  onUpdatePhase,
+  onUpdateSkillsMaxed,
+  onUpdateWeapon,
   onToggleFavorite,
 }: OperatorCardProps) {
   const [imgLoading, setImgLoading] = useState(true);
@@ -30,9 +34,18 @@ export function OperatorCard({
 
   const imageUrl = getMugshotUrl(operator.imageUrl);
 
-  // Investment chips + slider share the cross-game rust→teal gradient
+  // Weapons equippable on this operator are filtered by class (exact type match)
+  const equippableWeapons = ALL_WEAPONS.filter((w) => w.type === operator.weapon);
+
+  // Investment chips + sliders share the cross-game rust→teal gradient
   const levelPs = getProgressStyle(operator.level, 1, 90);
-  const potentialPs = getProgressStyle(operator.potential, 0, 5);
+  const phasePs = getProgressStyle(operator.phase, 0, 5);
+  const skillsPs = getProgressStyle(operator.skillsMaxed ? 1 : 0, 0, 1);
+  // Weapon line: name teal when equipped / rust when empty; level colored by its own level
+  const weaponNamePs = operator.weaponName
+    ? getProgressStyle(90, 1, 90)
+    : getProgressStyle(0, 0, 1);
+  const weaponLevelPs = getProgressStyle(operator.weaponLevel, 1, 90);
 
   return (
     <div
@@ -40,7 +53,7 @@ export function OperatorCard({
       style={
         {
           '--game-card-summary-max-height': '80px',
-          '--game-card-edit-max-height': '360px',
+          '--game-card-edit-max-height': '620px',
         } as React.CSSProperties
       }
     >
@@ -126,12 +139,27 @@ export function OperatorCard({
               style={{ color: levelPs.color, borderColor: levelPs.borderColor }}
             />
             <StatChip
-              label={`P${operator.potential}`}
-              style={{ color: potentialPs.color, borderColor: potentialPs.borderColor }}
+              label={`P${operator.phase}`}
+              style={{ color: phasePs.color, borderColor: phasePs.borderColor }}
             />
-            <span className={`rarity-indicator rarity-${operator.rarity}`}>
-              {RARITY_STARS[operator.rarity]}
-            </span>
+            <StatChip
+              label={`Skills ${operator.skillsMaxed ? '✓' : '✗'}`}
+              style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
+            />
+          </div>
+          <div className="game-card-static-line">
+            {operator.weaponName ? (
+              <>
+                <span style={{ color: weaponNamePs.color }}>{operator.weaponName}</span>
+                <span style={{ color: weaponLevelPs.color }}>
+                  &nbsp;·&nbsp;Lv&nbsp;{operator.weaponLevel}
+                </span>
+              </>
+            ) : (
+              <span className="no-weapon" style={{ color: weaponNamePs.color }}>
+                &mdash;
+              </span>
+            )}
           </div>
         </div>
 
@@ -156,19 +184,63 @@ export function OperatorCard({
               />
             </ProgressSection>
 
-            <ProgressSection label="Potential" value={`${operator.potential} / 5`}>
-              <div className="potential-row">
+            <ProgressSection label="Phase" value={`${operator.phase} / 5`}>
+              <div className="phase-row">
                 {([0, 1, 2, 3, 4, 5] as const).map((p) => (
                   <button
                     key={p}
-                    className={`potential-btn ${operator.potential >= p ? 'active' : ''}`}
-                    onClick={() => onUpdatePotential(operator.id, p)}
+                    className={`phase-btn ${operator.phase >= p ? 'active' : ''}`}
+                    onClick={() => onUpdatePhase(operator.id, p)}
                     title={`P${p}`}
                   >
                     P{p}
                   </button>
                 ))}
               </div>
+            </ProgressSection>
+
+            <ProgressSection label="Skills">
+              <ConfirmCheckbox
+                checked={operator.skillsMaxed}
+                onChange={(val) => onUpdateSkillsMaxed(operator.id, val)}
+                label="All Skills Maxed"
+              />
+            </ProgressSection>
+
+            <ProgressSection label="Weapon" value={`${operator.weaponLevel} / 90`}>
+              <select
+                name={`weapon-${operator.id}`}
+                className="game-select"
+                value={operator.weaponName ?? ''}
+                onChange={(e) =>
+                  onUpdateWeapon(operator.id, e.target.value || null, operator.weaponLevel)
+                }
+              >
+                <option value="">No Weapon</option>
+                {equippableWeapons.map((w) => (
+                  <option key={w.id} value={w.name}>
+                    {w.name} ({w.rarity}★)
+                  </option>
+                ))}
+              </select>
+              <input
+                type="range"
+                name={`weapon-level-${operator.id}`}
+                min="1"
+                max="90"
+                value={operator.weaponLevel}
+                onChange={(e) =>
+                  onUpdateWeapon(operator.id, operator.weaponName, parseInt(e.target.value))
+                }
+                className="level-slider"
+                style={
+                  {
+                    '--slider-fill-color': weaponLevelPs.color,
+                    '--slider-fill-glow': weaponLevelPs.glowColor,
+                    background: `linear-gradient(to right, ${weaponLevelPs.color} ${((operator.weaponLevel - 1) / 89) * 100}%, rgba(255,255,255,0.1) ${((operator.weaponLevel - 1) / 89) * 100}%)`,
+                  } as React.CSSProperties
+                }
+              />
             </ProgressSection>
           </div>
         </div>

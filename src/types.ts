@@ -152,13 +152,19 @@ export interface N2EPartyMember {
 export interface AeTrackedOperator extends AeOperator {
   dbId?: string;
   isFavorited: boolean;
-  level: number;
-  potential: number; // 0–5
+  level: number; // 1–90
+  phase: number; // 0–5
+  skillsMaxed: boolean;
+  weaponName: string | null; // display name from ALL_WEAPONS
+  weaponLevel: number; // 1–90
 }
 
 export interface AeOperatorPatch {
   level?: number;
-  potential?: number;
+  phase?: number;
+  skillsMaxed?: boolean;
+  weaponName?: string | null;
+  weaponLevel?: number;
   isFavorited?: boolean;
 }
 

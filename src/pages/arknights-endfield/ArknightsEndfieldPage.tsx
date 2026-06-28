@@ -28,7 +28,9 @@ export function ArknightsEndfieldPage({
     addOperator,
     removeOperator,
     updateLevel,
-    updatePotential,
+    updatePhase,
+    updateSkillsMaxed,
+    updateWeapon,
     toggleFavorite,
     getFilteredRoster,
   } = useOperators(session, isAuthLoading);
@@ -83,7 +85,9 @@ export function ArknightsEndfieldPage({
           operator={operator}
           onRemove={removeOperator}
           onUpdateLevel={updateLevel}
-          onUpdatePotential={updatePotential}
+          onUpdatePhase={updatePhase}
+          onUpdateSkillsMaxed={updateSkillsMaxed}
+          onUpdateWeapon={updateWeapon}
           onToggleFavorite={toggleFavorite}
         />
       ))}
