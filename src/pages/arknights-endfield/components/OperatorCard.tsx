@@ -9,6 +9,7 @@ import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
 import { getProgressStyle } from '@/utils/progressGradient';
 import { resolveWeaponRank } from './weaponMatch';
+import { sortWeaponsForDisplay } from './weaponSort';
 import './OperatorCard.css';
 
 interface OperatorCardProps {
@@ -48,7 +49,9 @@ export function OperatorCard({
   const imageUrl = getMugshotUrl(operator.imageUrl);
 
   // Weapons equippable on this operator are filtered by class (exact type match)
-  const equippableWeapons = ALL_WEAPONS.filter((w) => w.type === operator.weapon);
+  const equippableWeapons = sortWeaponsForDisplay(
+    ALL_WEAPONS.filter((w) => w.type === operator.weapon),
+  );
   // Preference editor works in id-space; the picker shows the same label as the
   // equip selector (name + rarity) so the two dropdowns read identically.
   const weaponPrefOptions = equippableWeapons.map((w) => ({

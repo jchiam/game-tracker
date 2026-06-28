@@ -3,15 +3,16 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { OperatorCard } from './OperatorCard';
 import { ALL_WEAPONS } from '@/data/arknights-endfield/weapons';
+import { sortWeaponsForDisplay } from './weaponSort';
 import type { AeTrackedOperator } from '@/types';
 
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => path,
 }));
 
-// Ember is a Greatsword operator — derive expected names from the catalog so these
-// tests assert the filter behavior (by type), not specific catalog strings.
-const greatswords = ALL_WEAPONS.filter((w) => w.type === 'Greatsword');
+// Ember is a Greatsword operator — derive expected names from the sorted catalog
+// so these tests assert the display-order behavior (rarity desc, alpha asc).
+const greatswords = sortWeaponsForDisplay(ALL_WEAPONS.filter((w) => w.type === 'Greatsword'));
 const greatswordWeapon = greatswords[0];
 const secondGreatsword = greatswords[1];
 const nonGreatswordWeapon = ALL_WEAPONS.find((w) => w.type !== 'Greatsword')!;
