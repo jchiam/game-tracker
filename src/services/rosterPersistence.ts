@@ -109,6 +109,143 @@ export function createRosterPersistence<
 }
 
 /**
+ * Config for one game's party persistence. Everything that varies between
+ * games is data here; the CRUD behaviour lives in the factory below.
+ */
+export interface PartyPersistenceConfig<TParty, TMember> {
+  /** Parties table, e.g. 'hsr_parties'. */
+  partiesTable: string;
+  /** Party-members table, e.g. 'hsr_party_members'. */
+  membersTable: string;
+  /** Name applied when a party is saved without one. */
+  defaultName: string;
+  /** Builds the camelCase member from a member DB row. */
+  memberFromRow: (row: any) => TMember;
+  /** Maps a member to its DB columns; `party_id` is added by the factory. */
+  memberToRow: (member: TMember) => Record<string, unknown>;
+  /** Extra party columns beyond id/profile_id/name/notes/created_at, e.g. 'tier, is_favorited'. */
+  extraSelect?: string;
+  /** Maps the extra columns onto the party on load. */
+  extraFromRow?: (row: any) => Partial<TParty>;
+  /** Maps extra party fields to their DB columns for insert and update. */
+  extraToRow?: (party: Partial<TParty>) => Record<string, unknown>;
+}
+
+/**
+ * Error semantics are deliberately asymmetric: `loadParties` throws (the shared
+ * party hook catches), but `saveParty` resolves to null on failure — nothing in
+ * the save call chain catches, so a rejection would surface unhandled. A member
+ * insert failing after the party row is persisted still returns the id, so the
+ * hook's reload shows the true DB state instead of inviting a duplicate retry.
+ * Member replacement is delete-then-reinsert with no transaction (see CLAUDE.md
+ * Known Limitations, same pattern as savePreferenceRows).
+ */
+export function createPartyPersistence<
+  TParty extends { id: string; name: string; notes: string | null },
+  TMember,
+>(config: PartyPersistenceConfig<TParty, TMember>) {
+  const selectStatement = `id, profile_id, name, notes, created_at${
+    config.extraSelect ? `, ${config.extraSelect}` : ''
+  }, ${config.membersTable} ( * )`;
+
+  async function loadParties(userId: string): Promise<TParty[]> {
+    if (!DB_ENABLED) return [];
+
+    const { data, error } = await supabase
+      .from(config.partiesTable)
+      .select(selectStatement)
+      .eq('profile_id', userId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Party Load Failed:', error);
+      throw error;
+    }
+
+    return (data ?? []).map((row: any) => ({
+      id: row.id,
+      profileId: row.profile_id,
+      name: row.name,
+      notes: row.notes,
+      createdAt: row.created_at,
+      ...(config.extraFromRow ? config.extraFromRow(row) : {}),
+      members: (row[config.membersTable] ?? [])
+        .sort((a: any, b: any) => a.slot_index - b.slot_index)
+        .map(config.memberFromRow),
+    })) as unknown as TParty[];
+  }
+
+  async function saveParty(
+    userId: string,
+    party: Partial<TParty> & { members: TMember[] },
+  ): Promise<string | null> {
+    if (!DB_ENABLED) return null;
+
+    const partyRow = {
+      name: party.name || config.defaultName,
+      notes: party.notes ?? null,
+      ...(config.extraToRow ? config.extraToRow(party) : {}),
+    };
+
+    let partyId = party.id;
+
+    if (partyId) {
+      const { error } = await supabase.from(config.partiesTable).update(partyRow).eq('id', partyId);
+      if (error) {
+        console.error('Party Update Failed:', error);
+        return null;
+      }
+      await supabase.from(config.membersTable).delete().eq('party_id', partyId);
+    } else {
+      const { data, error } = await supabase
+        .from(config.partiesTable)
+        .insert({ profile_id: userId, ...partyRow })
+        .select('id')
+        .single();
+      if (error || !data) {
+        console.error('Party Create Failed:', error);
+        return null;
+      }
+      partyId = data.id;
+    }
+
+    if (party.members.length > 0) {
+      const { error } = await supabase
+        .from(config.membersTable)
+        .insert(party.members.map((m) => ({ party_id: partyId, ...config.memberToRow(m) })));
+      if (error) console.error('Party Members Save Failed:', error);
+    }
+
+    return partyId ?? null;
+  }
+
+  async function deleteParty(partyId: string): Promise<boolean> {
+    if (!DB_ENABLED) return false;
+    const { error } = await supabase.from(config.partiesTable).delete().eq('id', partyId);
+    if (error) {
+      console.error('Party Delete Failed:', error);
+      return false;
+    }
+    return true;
+  }
+
+  async function toggleFavoriteParty(partyId: string, value: boolean): Promise<boolean> {
+    if (!DB_ENABLED) return false;
+    const { error } = await supabase
+      .from(config.partiesTable)
+      .update({ is_favorited: value })
+      .eq('id', partyId);
+    if (error) {
+      console.error('Party Favorite Toggle Failed:', error);
+      return false;
+    }
+    return true;
+  }
+
+  return { loadParties, saveParty, deleteParty, toggleFavoriteParty };
+}
+
+/**
  * Replaces a variable-length set of preference rows: delete existing rows by FK,
  * optionally update the parent row, then insert the new ordered rows.
  *

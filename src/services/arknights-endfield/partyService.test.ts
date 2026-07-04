@@ -1,150 +1,88 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { createBuilder } from '@/test/mocks/supabase';
 
-function createBuilder(result: { data: any; error: any } = { data: null, error: null }) {
-  const builder: Record<string, any> = {};
-  for (const method of ['select', 'eq', 'insert', 'update', 'delete', 'upsert', 'order']) {
-    builder[method] = vi.fn().mockReturnValue(builder);
-  }
-  builder.single = vi.fn().mockResolvedValue(result);
-  builder.then = (onFulfilled: any, onRejected: any) =>
-    Promise.resolve(result).then(onFulfilled, onRejected);
-  return builder;
-}
+// Config-wiring tests only — generic party CRUD behaviour (DB-disabled paths,
+// create/update flows, error semantics) is covered by rosterPersistence.test.ts.
 
-describe('partyService', () => {
-  describe('DB disabled', () => {
-    beforeEach(async () => {
-      vi.resetModules();
-      vi.stubEnv('VITE_SUPABASE_URL', '');
-      vi.doMock('@/lib/supabase', () => ({
-        supabase: { from: vi.fn() },
-      }));
-    });
+describe('ae partyService', () => {
+  let mockFrom: ReturnType<typeof vi.fn>;
+  let service: typeof import('@/services/arknights-endfield/partyService');
 
-    afterEach(() => {
-      vi.unstubAllEnvs();
-    });
+  beforeEach(async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_SUPABASE_URL', 'https://test.supabase.co');
+    vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
-    it('loadParties returns empty array', async () => {
-      const { loadParties } = await import('@/services/arknights-endfield/partyService');
-      expect(await loadParties('user-1')).toEqual([]);
-    });
+    mockFrom = vi.fn().mockReturnValue(createBuilder());
+    vi.doMock('@/lib/supabase', () => ({
+      supabase: { from: mockFrom },
+    }));
 
-    it('saveParty returns null', async () => {
-      const { saveParty } = await import('@/services/arknights-endfield/partyService');
-      expect(await saveParty('user-1', { members: [] })).toBeNull();
-    });
-
-    it('deleteParty returns false', async () => {
-      const { deleteParty } = await import('@/services/arknights-endfield/partyService');
-      expect(await deleteParty('party-1')).toBe(false);
-    });
+    service = await import('@/services/arknights-endfield/partyService');
   });
 
-  describe('DB enabled', () => {
-    let mockFrom: ReturnType<typeof vi.fn>;
-    let service: typeof import('@/services/arknights-endfield/partyService');
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
 
-    beforeEach(async () => {
-      vi.resetModules();
-      vi.stubEnv('VITE_SUPABASE_URL', 'https://test.supabase.co');
-      vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
+  it('loadParties queries ae tables and maps operator_id to operatorId', async () => {
+    const builder = createBuilder({
+      data: [
+        {
+          id: 'party-1',
+          profile_id: 'user-1',
+          name: 'Squad One',
+          notes: null,
+          created_at: '2024-01-01T00:00:00Z',
+          ae_party_members: [
+            { operator_id: 'ardelia', slot_index: 1 },
+            { operator_id: 'ember', slot_index: 0 },
+          ],
+        },
+      ],
+      error: null,
+    });
+    mockFrom.mockReturnValue(builder);
 
-      mockFrom = vi.fn().mockReturnValue(createBuilder());
+    const result = await service.loadParties('user-1');
 
-      vi.doMock('@/lib/supabase', () => ({
-        supabase: { from: mockFrom },
-      }));
+    expect(mockFrom).toHaveBeenCalledWith('ae_parties');
+    expect(builder.select).toHaveBeenCalledWith(
+      'id, profile_id, name, notes, created_at, ae_party_members ( * )',
+    );
+    expect(result[0].members).toEqual([
+      { operatorId: 'ember', slotIndex: 0 },
+      { operatorId: 'ardelia', slotIndex: 1 },
+    ]);
+  });
 
-      service = await import('@/services/arknights-endfield/partyService');
+  it('saveParty inserts ae member columns and the AE default name', async () => {
+    const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
+    const memberBuilder = createBuilder({ data: null, error: null });
+    mockFrom.mockImplementation((table: string) =>
+      table === 'ae_parties' ? partyBuilder : memberBuilder,
+    );
+
+    await service.saveParty('user-1', {
+      members: [{ operatorId: 'ember', slotIndex: 0 }],
     });
 
-    afterEach(() => {
-      vi.unstubAllEnvs();
+    expect(partyBuilder.insert).toHaveBeenCalledWith({
+      profile_id: 'user-1',
+      name: 'New Squad',
+      notes: null,
     });
+    expect(memberBuilder.insert).toHaveBeenCalledWith([
+      { party_id: 'new-party-id', operator_id: 'ember', slot_index: 0 },
+    ]);
+  });
 
-    it('loadParties queries the correct table', async () => {
-      mockFrom.mockReturnValue(createBuilder({ data: [], error: null }));
-      await service.loadParties('user-1');
-      expect(mockFrom).toHaveBeenCalledWith('ae_parties');
-    });
+  it('deleteParty targets ae_parties', async () => {
+    const builder = createBuilder({ data: null, error: null });
+    mockFrom.mockReturnValue(builder);
 
-    it('loadParties throws on DB error', async () => {
-      mockFrom.mockReturnValue(createBuilder({ data: null, error: { message: 'DB error' } }));
-      await expect(service.loadParties('user-1')).rejects.toEqual({ message: 'DB error' });
-    });
-
-    it('loadParties transforms rows with members sorted by slot_index', async () => {
-      const dbRow = {
-        id: 'party-1',
-        profile_id: 'user-1',
-        name: 'Squad A',
-        notes: null,
-        created_at: '2026-01-01',
-        ae_party_members: [
-          { operator_id: 'ember', slot_index: 1 },
-          { operator_id: 'rossi', slot_index: 0 },
-        ],
-      };
-
-      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
-
-      const result = await service.loadParties('user-1');
-      expect(result).toHaveLength(1);
-      expect(result[0].name).toBe('Squad A');
-      expect(result[0].members[0].operatorId).toBe('rossi');
-      expect(result[0].members[1].operatorId).toBe('ember');
-    });
-
-    it('saveParty creates new party and inserts members', async () => {
-      const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-      const memberBuilder = createBuilder({ data: null, error: null });
-
-      mockFrom.mockImplementation((table: string) => {
-        if (table === 'ae_party_members') return memberBuilder;
-        return partyBuilder;
-      });
-
-      const result = await service.saveParty('user-1', {
-        name: 'My Squad',
-        members: [{ operatorId: 'ember', slotIndex: 0 }],
-      });
-
-      expect(result).toBe('new-party-id');
-      expect(mockFrom).toHaveBeenCalledWith('ae_parties');
-      expect(mockFrom).toHaveBeenCalledWith('ae_party_members');
-    });
-
-    it('saveParty updates existing party when id is present', async () => {
-      const builder = createBuilder({ data: null, error: null });
-      mockFrom.mockReturnValue(builder);
-
-      await service.saveParty('user-1', {
-        id: 'existing-id',
-        name: 'Updated',
-        members: [],
-      });
-
-      expect(builder.update).toHaveBeenCalledWith({ name: 'Updated', notes: undefined });
-    });
-
-    it('deleteParty calls delete on the correct table', async () => {
-      const builder = createBuilder({ data: null, error: null });
-      mockFrom.mockReturnValue(builder);
-
-      const result = await service.deleteParty('party-1');
-      expect(result).toBe(true);
-      expect(mockFrom).toHaveBeenCalledWith('ae_parties');
-      expect(builder.delete).toHaveBeenCalled();
-    });
-
-    it('deleteParty returns false on error', async () => {
-      const builder = createBuilder({ data: null, error: { message: 'fail' } });
-      mockFrom.mockReturnValue(builder);
-      const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-      const result = await service.deleteParty('party-1');
-      expect(result).toBe(false);
-      spy.mockRestore();
-    });
+    expect(await service.deleteParty('party-1')).toBe(true);
+    expect(mockFrom).toHaveBeenCalledWith('ae_parties');
+    expect(builder.eq).toHaveBeenCalledWith('id', 'party-1');
   });
 });

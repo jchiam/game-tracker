@@ -22,6 +22,38 @@ const CATALOG: TestBase[] = [
   { id: 'beta', name: 'Beta' },
 ];
 
+interface TestMember {
+  entityId: string;
+  slotIndex: number;
+}
+
+interface TestParty {
+  id: string;
+  profileId: string;
+  name: string;
+  notes: string | null;
+  tier?: string | null;
+  isFavorited?: boolean;
+  members: TestMember[];
+  createdAt: string;
+}
+
+function partyConfig() {
+  return {
+    partiesTable: 'test_parties',
+    membersTable: 'test_party_members',
+    defaultName: 'New Party',
+    memberFromRow: (row: any): TestMember => ({
+      entityId: row.entity_id,
+      slotIndex: row.slot_index,
+    }),
+    memberToRow: (member: TestMember) => ({
+      entity_id: member.entityId,
+      slot_index: member.slotIndex,
+    }),
+  };
+}
+
 function baseConfig() {
   return {
     table: 'test_tracked_entities',
@@ -87,6 +119,15 @@ describe('rosterPersistence', () => {
           inserts: [{ table: 'test_prefs', rows: [{ stat: 'ATK' }] }],
         }),
       ).resolves.toBeUndefined();
+    });
+
+    it('party functions return their disabled defaults', async () => {
+      const { createPartyPersistence } = await import('@/services/rosterPersistence');
+      const svc = createPartyPersistence<TestParty, TestMember>(partyConfig());
+      expect(await svc.loadParties('user-1')).toEqual([]);
+      expect(await svc.saveParty('user-1', { name: 'Team', members: [] })).toBeNull();
+      expect(await svc.deleteParty('party-1')).toBe(false);
+      expect(await svc.toggleFavoriteParty('party-1', true)).toBe(false);
     });
   });
 
@@ -314,6 +355,262 @@ describe('rosterPersistence', () => {
             inserts: [{ table: 'test_pref_main', rows: [{ stat: 'ATK' }] }],
           }),
         ).rejects.toEqual({ message: 'Insert failed' });
+        spy.mockRestore();
+      });
+    });
+
+    describe('createPartyPersistence', () => {
+      function makePartyService(extras?: {
+        extraSelect: string;
+        extraFromRow: (row: any) => Partial<TestParty>;
+        extraToRow: (party: Partial<TestParty>) => Record<string, unknown>;
+      }) {
+        return mod.createPartyPersistence<TestParty, TestMember>({
+          ...partyConfig(),
+          ...extras,
+        });
+      }
+
+      it('loadParties queries with the members join ordered by created_at desc', async () => {
+        const builder = createBuilder({ data: [], error: null });
+        mockFrom.mockReturnValue(builder);
+
+        await makePartyService().loadParties('user-1');
+
+        expect(mockFrom).toHaveBeenCalledWith('test_parties');
+        expect(builder.select).toHaveBeenCalledWith(
+          'id, profile_id, name, notes, created_at, test_party_members ( * )',
+        );
+        expect(builder.eq).toHaveBeenCalledWith('profile_id', 'user-1');
+        expect(builder.order).toHaveBeenCalledWith('created_at', { ascending: false });
+      });
+
+      it('loadParties maps rows and sorts members by slot_index', async () => {
+        const dbRow = {
+          id: 'party-1',
+          profile_id: 'user-1',
+          name: 'Team',
+          notes: 'Notes',
+          created_at: '2024-01-01T00:00:00Z',
+          test_party_members: [
+            { entity_id: 'beta', slot_index: 1 },
+            { entity_id: 'alpha', slot_index: 0 },
+          ],
+        };
+        mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+        const result = await makePartyService().loadParties('user-1');
+
+        expect(result).toEqual([
+          {
+            id: 'party-1',
+            profileId: 'user-1',
+            name: 'Team',
+            notes: 'Notes',
+            createdAt: '2024-01-01T00:00:00Z',
+            members: [
+              { entityId: 'alpha', slotIndex: 0 },
+              { entityId: 'beta', slotIndex: 1 },
+            ],
+          },
+        ]);
+      });
+
+      it('loadParties appends the extras select and merges extraFromRow', async () => {
+        const builder = createBuilder({
+          data: [
+            {
+              id: 'party-1',
+              profile_id: 'user-1',
+              name: 'Team',
+              notes: null,
+              tier: 'S',
+              is_favorited: 1,
+              created_at: '2024-01-01T00:00:00Z',
+              test_party_members: [],
+            },
+          ],
+          error: null,
+        });
+        mockFrom.mockReturnValue(builder);
+
+        const result = await makePartyService({
+          extraSelect: 'tier, is_favorited',
+          extraFromRow: (row) => ({ tier: row.tier, isFavorited: !!row.is_favorited }),
+          extraToRow: () => ({}),
+        }).loadParties('user-1');
+
+        expect(builder.select).toHaveBeenCalledWith(
+          'id, profile_id, name, notes, created_at, tier, is_favorited, test_party_members ( * )',
+        );
+        expect(result[0].tier).toBe('S');
+        expect(result[0].isFavorited).toBe(true);
+      });
+
+      it('loadParties throws on DB error', async () => {
+        mockFrom.mockReturnValue(createBuilder({ data: null, error: { message: 'DB error' } }));
+        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        await expect(makePartyService().loadParties('user-1')).rejects.toEqual({
+          message: 'DB error',
+        });
+        spy.mockRestore();
+      });
+
+      it('saveParty creates a party then inserts mapped members and returns the id', async () => {
+        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
+        const memberBuilder = createBuilder({ data: null, error: null });
+        mockFrom.mockImplementation((table: string) =>
+          table === 'test_parties' ? partyBuilder : memberBuilder,
+        );
+
+        const result = await makePartyService().saveParty('user-1', {
+          name: 'Team',
+          notes: 'Notes',
+          members: [{ entityId: 'alpha', slotIndex: 0 }],
+        });
+
+        expect(partyBuilder.insert).toHaveBeenCalledWith({
+          profile_id: 'user-1',
+          name: 'Team',
+          notes: 'Notes',
+        });
+        expect(memberBuilder.insert).toHaveBeenCalledWith([
+          { party_id: 'new-party-id', entity_id: 'alpha', slot_index: 0 },
+        ]);
+        expect(result).toBe('new-party-id');
+      });
+
+      it('saveParty defaults name and notes on create', async () => {
+        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
+        mockFrom.mockReturnValue(partyBuilder);
+
+        await makePartyService().saveParty('user-1', { members: [] });
+
+        expect(partyBuilder.insert).toHaveBeenCalledWith({
+          profile_id: 'user-1',
+          name: 'New Party',
+          notes: null,
+        });
+      });
+
+      it('saveParty spreads extraToRow into the party row', async () => {
+        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
+        mockFrom.mockReturnValue(partyBuilder);
+
+        await makePartyService({
+          extraSelect: 'tier, is_favorited',
+          extraFromRow: () => ({}),
+          extraToRow: (party) => ({ tier: party.tier ?? null }),
+        }).saveParty('user-1', { name: 'Team', tier: 'S', members: [] });
+
+        expect(partyBuilder.insert).toHaveBeenCalledWith(expect.objectContaining({ tier: 'S' }));
+      });
+
+      it('saveParty updates the row, clears members, and reinserts on update', async () => {
+        const partyBuilder = createBuilder({ data: null, error: null });
+        const memberBuilder = createBuilder({ data: null, error: null });
+        mockFrom.mockImplementation((table: string) =>
+          table === 'test_parties' ? partyBuilder : memberBuilder,
+        );
+
+        const result = await makePartyService().saveParty('user-1', {
+          id: 'existing-id',
+          name: 'Renamed',
+          notes: null,
+          members: [{ entityId: 'beta', slotIndex: 1 }],
+        });
+
+        expect(partyBuilder.update).toHaveBeenCalledWith({ name: 'Renamed', notes: null });
+        expect(partyBuilder.eq).toHaveBeenCalledWith('id', 'existing-id');
+        expect(memberBuilder.delete).toHaveBeenCalled();
+        expect(memberBuilder.eq).toHaveBeenCalledWith('party_id', 'existing-id');
+        expect(memberBuilder.insert).toHaveBeenCalledWith([
+          { party_id: 'existing-id', entity_id: 'beta', slot_index: 1 },
+        ]);
+        expect(result).toBe('existing-id');
+      });
+
+      it('saveParty skips the member insert when members is empty', async () => {
+        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
+        const memberBuilder = createBuilder({ data: null, error: null });
+        mockFrom.mockImplementation((table: string) =>
+          table === 'test_parties' ? partyBuilder : memberBuilder,
+        );
+
+        await makePartyService().saveParty('user-1', { name: 'Team', members: [] });
+
+        expect(memberBuilder.insert).not.toHaveBeenCalled();
+      });
+
+      it('saveParty returns null (no rejection) on create error', async () => {
+        mockFrom.mockReturnValue(
+          createBuilder({ data: null, error: { message: 'Insert failed' } }),
+        );
+        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const result = await makePartyService().saveParty('user-1', { name: 'T', members: [] });
+        expect(result).toBeNull();
+        spy.mockRestore();
+      });
+
+      it('saveParty returns null (no rejection) on update error', async () => {
+        mockFrom.mockReturnValue(
+          createBuilder({ data: null, error: { message: 'Update failed' } }),
+        );
+        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const result = await makePartyService().saveParty('user-1', {
+          id: 'existing-id',
+          name: 'T',
+          members: [],
+        });
+        expect(result).toBeNull();
+        spy.mockRestore();
+      });
+
+      it('saveParty logs but still returns the id on member insert error', async () => {
+        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
+        const memberBuilder = createBuilder({ data: null, error: { message: 'Members failed' } });
+        mockFrom.mockImplementation((table: string) =>
+          table === 'test_parties' ? partyBuilder : memberBuilder,
+        );
+
+        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        const result = await makePartyService().saveParty('user-1', {
+          name: 'Team',
+          members: [{ entityId: 'alpha', slotIndex: 0 }],
+        });
+        expect(result).toBe('new-party-id');
+        expect(spy).toHaveBeenCalled();
+        spy.mockRestore();
+      });
+
+      it('deleteParty deletes by id and returns false on error', async () => {
+        const okBuilder = createBuilder({ data: null, error: null });
+        mockFrom.mockReturnValue(okBuilder);
+        expect(await makePartyService().deleteParty('party-1')).toBe(true);
+        expect(mockFrom).toHaveBeenCalledWith('test_parties');
+        expect(okBuilder.delete).toHaveBeenCalled();
+        expect(okBuilder.eq).toHaveBeenCalledWith('id', 'party-1');
+
+        mockFrom.mockReturnValue(
+          createBuilder({ data: null, error: { message: 'Delete failed' } }),
+        );
+        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        expect(await makePartyService().deleteParty('party-1')).toBe(false);
+        spy.mockRestore();
+      });
+
+      it('toggleFavoriteParty updates is_favorited and returns false on error', async () => {
+        const okBuilder = createBuilder({ data: null, error: null });
+        mockFrom.mockReturnValue(okBuilder);
+        expect(await makePartyService().toggleFavoriteParty('party-1', true)).toBe(true);
+        expect(okBuilder.update).toHaveBeenCalledWith({ is_favorited: true });
+        expect(okBuilder.eq).toHaveBeenCalledWith('id', 'party-1');
+
+        mockFrom.mockReturnValue(
+          createBuilder({ data: null, error: { message: 'Update failed' } }),
+        );
+        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        expect(await makePartyService().toggleFavoriteParty('party-1', false)).toBe(false);
         spy.mockRestore();
       });
     });
