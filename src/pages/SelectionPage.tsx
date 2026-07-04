@@ -1,45 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import type { Session } from '@supabase/supabase-js';
+import { GAMES } from '@/lib/games';
 import './SelectionPage.css';
-
-const GAMES = [
-  {
-    id: 'honkai-star-rail',
-    name: 'Honkai Star Rail',
-    path: '/honkai-star-rail',
-    bgClass: 'bg-honkai-star-rail-sel',
-    imageUrl: '/assets/honkai-star-rail/selection-cover.png',
-    description: 'Track trailblazers, relics, and warp progress.',
-    tag: 'HoYoverse',
-  },
-  {
-    id: 'reverse-1999',
-    name: 'Reverse: 1999',
-    path: '/reverse-1999',
-    bgClass: 'bg-r1999-sel',
-    imageUrl: '/assets/reverse-1999/selection-cover.jpg',
-    description: 'Track arcanists, psychubes, and wilderness materials.',
-    tag: 'Bluepoch',
-  },
-  {
-    id: 'neverness-to-everness',
-    name: 'Neverness to Everness',
-    path: '/neverness-to-everness',
-    bgClass: 'bg-n2e-sel',
-    imageUrl: '/assets/neverness-to-everness/selection-cover.png',
-    description: 'Track espers, awakenings, and team compositions.',
-    tag: 'Hotta Studio',
-  },
-  {
-    id: 'arknights-endfield',
-    name: 'Arknights: Endfield',
-    path: '/arknights-endfield',
-    bgClass: 'bg-ae-sel',
-    imageUrl: '/assets/arknights-endfield/selection-cover.png',
-    description: 'Track operators, levels, and squad compositions.',
-    tag: 'Hypergryph',
-  },
-];
 
 interface SelectionPageProps {
   session: Session | null;
@@ -84,7 +46,7 @@ export function SelectionPage({ session, isAuthLoading, signInWithGoogle }: Sele
           >
             <div className={`selection-card-header ${game.bgClass}`}>
               <img
-                src={game.imageUrl}
+                src={game.coverImage}
                 alt={game.name}
                 className="game-character-image"
                 onError={(e) => {
@@ -104,7 +66,7 @@ export function SelectionPage({ session, isAuthLoading, signInWithGoogle }: Sele
             <div className="selection-card-body">
               <div className="game-title-row">
                 <h2 className="game-name">{game.name}</h2>
-                <span className="game-tag-badge">{game.tag}</span>
+                <span className="game-tag-badge">{game.developer}</span>
               </div>
               <p className="game-description">{game.description}</p>
             </div>

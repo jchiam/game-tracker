@@ -204,12 +204,10 @@ supabase/migrations/
 After creating the per-game module, connect it in these files:
 
 1. **`src/types.ts`** — Add `{Game}Tracked{Entity}` and `{Game}Party`/`{Game}PartyMember` interfaces.
-2. **`src/App.tsx`** — Add lazy-loaded route: `const {Game}Page = lazy(() => import(...))` + `<Route path="/{game-slug}" .../>`.
-3. **`src/components/GameSwitcher.tsx`** — Add entry to `GAMES` array (id, name, path, icon, color).
-4. **`src/pages/SelectionPage.tsx`** — Add entry to `GAMES` array (id, name, path, bgClass, imageUrl, description, tag).
-5. **`src/index.css`** — Add `.game-card-header.bg-{game}-sel` background style.
-6. **`vercel.json`** — If new external image domain needed, add to CSP `img-src`.
-7. **`.env.template`** — Add any new env vars.
+2. **`src/lib/games.ts`** — Add one `GAMES` registry entry (id, name, path, developer, description, icon, color, coverImage, bgClass, lazy `Page`). This alone wires the route, the GameSwitcher dropdown, and the SelectionPage card.
+3. **`src/index.css`** — Add `.game-card-header.bg-{game}-sel` background style.
+4. **`vercel.json`** — If new external image domain needed, add to CSP `img-src`.
+5. **`.env.template`** — Add any new env vars.
 
 Reference implementation: Reverse: 1999 (`src/hooks/reverse1999/useArcanists.ts`, `src/services/reverse1999/arcanistService.ts`, `src/pages/reverse1999/Reverse1999Page.tsx`).
 

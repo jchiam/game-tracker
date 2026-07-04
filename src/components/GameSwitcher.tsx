@@ -1,37 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { GAMES } from '@/lib/games';
 import './GameSwitcher.css';
-
-const GAMES = [
-  {
-    id: 'hsr',
-    name: 'Honkai Star Rail',
-    path: '/honkai-star-rail',
-    icon: '/assets/icons/hsr-icon.webp',
-    color: '#00ccff',
-  },
-  {
-    id: 'r1999',
-    name: 'Reverse: 1999',
-    path: '/reverse-1999',
-    icon: '/assets/icons/r1999-icon.png',
-    color: '#deb887',
-  },
-  {
-    id: 'n2e',
-    name: 'Neverness to Everness',
-    path: '/neverness-to-everness',
-    icon: '/assets/icons/n2e-icon.png',
-    color: '#7b2dff',
-  },
-  {
-    id: 'ae',
-    name: 'Arknights: Endfield',
-    path: '/arknights-endfield',
-    icon: '/assets/icons/endfield-icon.png',
-    color: '#47c7fd',
-  },
-];
 
 export function GameSwitcher() {
   const [isOpen, setIsOpen] = useState(false);

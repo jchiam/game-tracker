@@ -63,10 +63,10 @@ shell.
 
 ### Requirement: GameSwitcher renders the game dropdown and hides on selection
 
-The shared `GameSwitcher` component SHALL render a `.game-switcher` dropdown driven by a `GAMES`
-array (each entry: `id`, `name`, `path`, `icon`, `color`), highlight the active game by path
-prefix, close on outside click, and render `null` on the selection page (`location.pathname ===
-'/'`).
+The shared `GameSwitcher` component SHALL render a `.game-switcher` dropdown driven by
+the shared `GAMES` registry (`src/lib/games.ts`), highlight the active game by path
+prefix, close on outside click, and render `null` on the selection page
+(`location.pathname === '/'`).
 
 #### Scenario: Hidden on the selection page
 
