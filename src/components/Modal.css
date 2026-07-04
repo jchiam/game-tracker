@@ -47,18 +47,11 @@
   color: var(--color-text-secondary);
   font-size: var(--typography-font-size-2xl);
   padding: 0;
-  min-width: unset;
+  transition: color var(--transition-fast);
 }
 
 .close-btn:hover {
   color: var(--color-text-primary);
-  transform: none;
-  box-shadow: none;
-  border-color: transparent;
-}
-
-.close-btn::before {
-  display: none;
 }
 
 .form-group {

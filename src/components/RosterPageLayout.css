@@ -94,7 +94,6 @@
   width: 46px;
   height: 46px;
   padding: 0;
-  min-width: unset;
   border-radius: var(--border-radius-md);
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid var(--color-ui-border);
@@ -130,16 +129,11 @@
   box-shadow: 0 0 10px var(--color-brand-primary-glow) inset;
 }
 
-.sort-btn::before {
-  display: none;
-}
-
 .roster-add-btn {
   flex-shrink: 0;
   width: 46px;
   height: 46px;
   padding: 0;
-  min-width: unset;
   border-radius: var(--border-radius-md);
   background: var(--color-brand-primary-muted);
   border: 1px solid var(--color-brand-primary);
@@ -157,7 +151,6 @@
   background: var(--color-brand-primary);
   color: var(--color-bg-base);
   box-shadow: 0 0 14px var(--color-brand-primary-glow);
-  transform: none;
 }
 
 .roster-grid {

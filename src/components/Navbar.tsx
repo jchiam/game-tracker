@@ -22,12 +22,12 @@ export function Navbar({ userEmail, onSignIn, onSignOut }: NavbarProps) {
         {userEmail ? (
           <>
             <span className="user-email">{userEmail}</span>
-            <button className="secondary-action" onClick={onSignOut}>
+            <button className="btn secondary-action" onClick={onSignOut}>
               Sign Out
             </button>
           </>
         ) : (
-          <button className="primary-action" onClick={onSignIn}>
+          <button className="btn primary-action" onClick={onSignIn}>
             Sign In with Google
           </button>
         )}

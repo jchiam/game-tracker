@@ -46,6 +46,19 @@ export const StatChips: Story = {
   ),
 };
 
+export const ActionButtons: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+      {/* `.btn` is the opt-in styled base (glass gradient, shimmer, hover
+          lift); bare <button> only gets the minimal reset from index.css. */}
+      <button className="btn">Default .btn</button>
+      <button className="btn primary-action">Primary action</button>
+      <button className="btn secondary-action">Secondary action</button>
+      <button className="btn secondary-action danger">Danger</button>
+    </div>
+  ),
+};
+
 export const ToggleButtons: Story = {
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 400 }}>

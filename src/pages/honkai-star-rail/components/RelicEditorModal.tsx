@@ -108,11 +108,11 @@ export function RelicEditorModal({
       footer={
         <>
           {activeTab === 'equip' && (
-            <button className="secondary-action danger" onClick={onRemove}>
+            <button className="btn secondary-action danger" onClick={onRemove}>
               Un-equip Relic
             </button>
           )}
-          <button className="primary-action" onClick={onClose}>
+          <button className="btn primary-action" onClick={onClose}>
             Done
           </button>
         </>

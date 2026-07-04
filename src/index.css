@@ -50,16 +50,27 @@ a:hover {
   text-shadow: 0 0 8px var(--color-brand-primary-glow);
 }
 
+/* Minimal button reset — every button styles itself (or adds `.btn` below).
+   Keeps font/color/cursor consistent without forcing an appearance. */
 button {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
-  border: 1px solid var(--color-ui-border);
-  color: var(--color-text-primary);
-  padding: var(--spacing-5) var(--spacing-md);
-  border-radius: var(--border-radius-md);
   font-family: var(--typography-font-family-base);
   font-size: var(--typography-font-size-md);
-  font-weight: var(--typography-font-weight-medium);
+  color: var(--color-text-primary);
+  background: none;
+  border: none;
+  padding: 0;
   cursor: pointer;
+}
+
+/* Opt-in styled default: glass gradient, shimmer sweep, hover lift.
+   Used by `.primary-action` / `.secondary-action` (App.css), which layer
+   colours on top of this base. */
+.btn {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+  border: 1px solid var(--color-ui-border);
+  padding: var(--spacing-5) var(--spacing-md);
+  border-radius: var(--border-radius-md);
+  font-weight: var(--typography-font-weight-medium);
   transition: all var(--transition-normal);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -67,7 +78,7 @@ button {
   overflow: hidden;
 }
 
-button::before {
+.btn::before {
   content: '';
   position: absolute;
   top: 0;
@@ -79,11 +90,11 @@ button::before {
   transition: all var(--transition-slow);
 }
 
-button:hover::before {
+.btn:hover::before {
   left: 150%;
 }
 
-button:hover {
+.btn:hover {
   border-color: var(--color-brand-primary);
   box-shadow: var(--shadow-glow-primary);
   transform: translateY(-2px);
@@ -101,7 +112,6 @@ button:hover {
   display: flex;
   flex-direction: column;
   animation: fade-in-up 0.5s ease-out backwards;
-  padding: 0;
   text-align: left;
 }
 
@@ -116,10 +126,6 @@ button:hover {
   transform: translateY(-5px) scale(1.02);
   border-color: var(--color-brand-primary);
   box-shadow: var(--shadow-card-hover);
-}
-
-.selection-card::before {
-  display: none;
 }
 
 .selection-card-header {

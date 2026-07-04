@@ -10,7 +10,7 @@ export function AuthGate({ onSignIn }: AuthGateProps) {
         Securely sync your character builds, trace tracking, and relics across all your devices
         using Google Authentication.
       </p>
-      <button className="primary-action auth-gate-btn" onClick={onSignIn}>
+      <button className="btn primary-action auth-gate-btn" onClick={onSignIn}>
         Sign In with Google
       </button>
     </div>

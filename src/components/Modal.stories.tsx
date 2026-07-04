@@ -27,8 +27,8 @@ export const WithFooter: Story = {
     children: <p>Are you sure you want to proceed with this action?</p>,
     footer: (
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-        <button className="secondary-action">Cancel</button>
-        <button className="primary-action">Save</button>
+        <button className="btn secondary-action">Cancel</button>
+        <button className="btn primary-action">Save</button>
       </div>
     ),
   },

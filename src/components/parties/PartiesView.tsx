@@ -104,7 +104,7 @@ export function PartiesView<E extends PartyEntity>({
     <div className={`parties-tab${config.variantClass ? ` ${config.variantClass}` : ''}`}>
       <div className="parties-header">
         <h2>{nouns.header}</h2>
-        <button className="primary-action" onClick={() => setIsCreateModalOpen(true)}>
+        <button className="btn primary-action" onClick={() => setIsCreateModalOpen(true)}>
           Create New {nouns.party}
         </button>
       </div>

@@ -231,12 +231,7 @@
   transition: all var(--transition-fast);
   backdrop-filter: blur(4px);
   padding: 0;
-  min-width: unset;
   line-height: 1;
-}
-
-.favorite-btn::before {
-  display: none;
 }
 
 .favorite-btn:hover {
@@ -264,7 +259,6 @@
   padding: 0;
   width: 28px;
   height: 28px;
-  min-width: unset;
   border-radius: var(--border-radius-full);
   display: flex;
   align-items: center;
@@ -273,13 +267,6 @@
 
 .remove-btn:hover {
   color: var(--color-ui-danger);
-  transform: none;
-  box-shadow: none;
-  border-color: transparent;
-}
-
-.remove-btn::before {
-  display: none;
 }
 
 /* ─── Edit toggle button ─────────────────────────────────────────── */
@@ -299,20 +286,13 @@
   transition: all var(--transition-fast);
   backdrop-filter: blur(4px);
   padding: 0;
-  min-width: unset;
   line-height: 1;
   flex-shrink: 0;
-}
-
-.edit-toggle-btn::before {
-  display: none;
 }
 
 .edit-toggle-btn:hover {
   border-color: var(--color-brand-primary);
   color: var(--color-brand-primary);
-  transform: none;
-  box-shadow: none;
 }
 
 .edit-toggle-btn.active {

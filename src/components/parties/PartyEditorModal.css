@@ -179,6 +179,12 @@
   padding: var(--spacing-sm) var(--spacing-md);
   border-radius: var(--border-radius-md);
   cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cancel-picker:hover {
+  border-color: var(--color-ui-border-strong);
+  color: var(--color-text-primary);
 }
 
 .picker-list {

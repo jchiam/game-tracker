@@ -128,11 +128,11 @@ export function CartridgeEditorModal({
       footer={
         <>
           {activeTab === 'equip' && (
-            <button className="secondary-action danger" onClick={handleUnequip}>
+            <button className="btn secondary-action danger" onClick={handleUnequip}>
               Un-equip Cartridge
             </button>
           )}
-          <button className="primary-action" onClick={onClose}>
+          <button className="btn primary-action" onClick={onClose}>
             Done
           </button>
         </>

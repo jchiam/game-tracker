@@ -62,17 +62,10 @@
   padding: 0 var(--spacing-2);
   line-height: 1;
   transition: color var(--transition-fast);
-  min-width: unset;
-}
-
-.remove-pref-btn::before {
-  display: none;
 }
 
 .remove-pref-btn:hover {
   color: var(--color-ui-danger);
-  transform: none;
-  box-shadow: none;
 }
 
 .add-pref-btn {
@@ -141,17 +134,10 @@
   padding: 0 var(--spacing-2);
   line-height: 1;
   transition: color var(--transition-fast);
-  min-width: unset;
-}
-
-.reorder-btn::before {
-  display: none;
 }
 
 .reorder-btn:hover:not(:disabled) {
   color: var(--color-text-primary);
-  transform: none;
-  box-shadow: none;
 }
 
 .reorder-btn:disabled {

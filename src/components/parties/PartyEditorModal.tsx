@@ -87,10 +87,10 @@ export function PartyEditorModal<E extends PartyEntity>({
       }}
       footer={
         <>
-          <button className="secondary-action" onClick={onClose}>
+          <button className="btn secondary-action" onClick={onClose}>
             Cancel
           </button>
-          <button className="primary-action" onClick={handleSave}>
+          <button className="btn primary-action" onClick={handleSave}>
             Save {nouns.party}
           </button>
         </>
