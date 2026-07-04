@@ -105,3 +105,18 @@
     box-shadow: 0 0 10px rgba(255, 107, 107, 0.4);
   }
 }
+
+/* ─── Motion accessibility ───────────────────────────────────────── */
+/* Collapse every animation and transition to a single imperceptible
+   frame when the user requests reduced motion. Elements land in their
+   final state instantly; infinite loops (spinners, pulses) freeze after
+   one iteration but stay visible. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: var(--duration-instant) !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: var(--duration-instant) !important;
+  }
+}

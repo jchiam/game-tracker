@@ -28,6 +28,30 @@
   transform: scale(1.2);
 }
 
+/* Firefox thumb — mirrors the -webkit rules above (Firefox draws a border
+   and its own track/thumb chrome unless reset here). */
+.level-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: var(--border-radius-full);
+  background: var(--slider-fill-color, var(--color-brand-primary));
+  cursor: pointer;
+  box-shadow: 0 0 10px var(--slider-fill-glow, var(--color-brand-primary-glow));
+  transition: transform var(--transition-fast);
+}
+
+.level-slider::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* `outline: none` above suppresses the mouse-click ring; restore a ring for
+   keyboard focus (higher specificity than the base rule's outline reset). */
+.level-slider:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 4px;
+}
+
 /* Slider + numeric readout row (LevelSlider showValue) */
 .level-slider-row {
   display: flex;

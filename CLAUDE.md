@@ -80,7 +80,7 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 | `src/styles/card.css`       | `.game-card` wrapper, header, overlay, controls, body, name, `.favorite-btn`, `.remove-btn`, `.edit-toggle-btn`, `.progress-section`, `.section-header`                                  |
 | `src/styles/controls.css`   | `.level-slider`/`.level-value`, `.spinner-dot`, `.stat-chip`, `.toggle-btn`, `.game-select`, `.segmented-buttons`, `.substats-section`/`.substat-row`, `.game-card-image` loading states |
 | `src/styles/party.css`      | Lineups view: `.parties-tab`/`.parties-header`/`.parties-grid`, `.party-card`, `.party-tier-banner`, `.icon-btn`/`.party-favorite-btn`/`.edit-btn`/`.delete-btn`, `.slot-avatar` row     |
-| `src/styles/animations.css` | All shared `@keyframes`                                                                                                                                                                  |
+| `src/styles/animations.css` | All shared `@keyframes` + the global `prefers-reduced-motion` kill switch                                                                                                                |
 
 **Card class names are canonical** — all games use `.game-card`, `.game-card-header`, `.game-card-image`, `.game-card-overlay`, `.game-card-controls`, `.game-card-body`, `.game-card-name`. Game-specific CSS files only add overrides (padding, hover transforms) and game-unique rules. Never re-declare a rule already in `card.css` or `controls.css`.
 
