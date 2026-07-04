@@ -1,8 +1,6 @@
-import { supabase } from '@/lib/supabase';
+import { createRosterPersistence } from '@/services/rosterPersistence';
 import type { R1999ArcanistPatch, R1999TrackedArcanist } from '@/types';
-import { ALL_ARCANISTS } from '@/data/reverse1999/arcanists';
-
-const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
+import { ALL_ARCANISTS, type Arcanist } from '@/data/reverse1999/arcanists';
 
 /** Maps each camelCase patch key to its DB column. Schema stays service-private. */
 const ARCANIST_COLUMNS: Record<keyof R1999ArcanistPatch, string> = {
@@ -16,86 +14,37 @@ const ARCANIST_COLUMNS: Record<keyof R1999ArcanistPatch, string> = {
   isFavorited: 'is_favorited',
 };
 
-export async function loadArcanistsFromDB(userId: string): Promise<R1999TrackedArcanist[]> {
-  if (!DB_ENABLED || !import.meta.env.VITE_SUPABASE_ANON_KEY) return [];
+const svc = createRosterPersistence<Arcanist, R1999TrackedArcanist, R1999ArcanistPatch>({
+  table: 'r1999_tracked_arcanists',
+  entityIdColumn: 'arcanist_id',
+  catalog: ALL_ARCANISTS,
+  columns: ARCANIST_COLUMNS,
+  insertDefaults: {
+    level: 1,
+    portrait_level: 0,
+    resonance_level: 0,
+    euphoria_stage: 0,
+    psychube_name: null,
+    psychube_level: 1,
+    psychube_amplification: 1,
+  },
+  select:
+    'id, arcanist_id, level, portrait_level, resonance_level, is_favorited, euphoria_stage, psychube_name, psychube_level, psychube_amplification',
+  fromRow: (row, base) => ({
+    ...base,
+    dbId: row.id,
+    isFavorited: !!row.is_favorited,
+    level: row.level,
+    portraitLevel: row.portrait_level ?? 0,
+    resonanceLevel: row.resonance_level ?? 0,
+    euphoriaStage: row.euphoria_stage ?? 0,
+    psychubeName: row.psychube_name ?? null,
+    psychubeLevel: row.psychube_level ?? 1,
+    psychubeAmplification: row.psychube_amplification ?? 1,
+  }),
+});
 
-  const { data: dbData, error } = await supabase
-    .from('r1999_tracked_arcanists')
-    .select(
-      'id, arcanist_id, level, portrait_level, resonance_level, is_favorited, euphoria_stage, psychube_name, psychube_level, psychube_amplification',
-    )
-    .eq('profile_id', userId);
-
-  if (error) {
-    console.error('Error fetching arcanists:', error);
-    throw error;
-  }
-
-  if (!dbData || dbData.length === 0) return [];
-
-  return dbData
-    .map((row: any) => {
-      const baseArcanist = ALL_ARCANISTS.find((a) => a.id === row.arcanist_id);
-      if (!baseArcanist) return null;
-      return {
-        ...baseArcanist,
-        dbId: row.id,
-        isFavorited: !!row.is_favorited,
-        level: row.level,
-        portraitLevel: row.portrait_level ?? 0,
-        resonanceLevel: row.resonance_level ?? 0,
-        euphoriaStage: row.euphoria_stage ?? 0,
-        psychubeName: row.psychube_name ?? null,
-        psychubeLevel: row.psychube_level ?? 1,
-        psychubeAmplification: row.psychube_amplification ?? 1,
-      };
-    })
-    .filter(Boolean) as R1999TrackedArcanist[];
-}
-
-export async function insertArcanist(userId: string, arcanistId: string): Promise<string | null> {
-  if (!DB_ENABLED) return null;
-  await supabase.from('user_profiles').upsert({ id: userId, updated_at: new Date().toISOString() });
-  const { data, error } = await supabase
-    .from('r1999_tracked_arcanists')
-    .insert({
-      profile_id: userId,
-      arcanist_id: arcanistId,
-      level: 1,
-      portrait_level: 0,
-      resonance_level: 0,
-      euphoria_stage: 0,
-      psychube_name: null,
-      psychube_level: 1,
-      psychube_amplification: 1,
-    })
-    .select('id')
-    .single();
-  if (error) {
-    console.error('DB Insert Failed:', error);
-    throw error;
-  }
-  return data?.id ?? null;
-}
-
-export async function deleteArcanist(dbId: string): Promise<void> {
-  if (!DB_ENABLED) return;
-  const { error } = await supabase.from('r1999_tracked_arcanists').delete().eq('id', dbId);
-  if (error) {
-    console.error('DB Delete Failed:', error);
-    throw error;
-  }
-}
-
-export async function updateArcanist(dbId: string, patch: R1999ArcanistPatch): Promise<void> {
-  if (!DB_ENABLED) return;
-  const row: Record<string, unknown> = {};
-  for (const key of Object.keys(patch) as (keyof R1999ArcanistPatch)[]) {
-    row[ARCANIST_COLUMNS[key]] = patch[key];
-  }
-  const { error } = await supabase.from('r1999_tracked_arcanists').update(row).eq('id', dbId);
-  if (error) {
-    console.error('DB Update Failed:', error);
-    throw error;
-  }
-}
+export const loadArcanistsFromDB = svc.load;
+export const insertArcanist = svc.insert;
+export const deleteArcanist = svc.remove;
+export const updateArcanist = svc.update;

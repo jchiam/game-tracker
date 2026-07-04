@@ -1,9 +1,8 @@
-import { supabase } from '@/lib/supabase';
+import { createRosterPersistence } from '@/services/rosterPersistence';
 import type { AeOperatorPatch, AeTrackedOperator } from '@/types';
-import { ALL_OPERATORS } from '@/data/arknights-endfield/operators';
+import { ALL_OPERATORS, type AeOperator } from '@/data/arknights-endfield/operators';
 
-const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
-
+/** Maps each camelCase patch key to its DB column. Schema stays service-private. */
 const OPERATOR_COLUMNS: Record<keyof AeOperatorPatch, string> = {
   level: 'level',
   phase: 'phase',
@@ -14,82 +13,33 @@ const OPERATOR_COLUMNS: Record<keyof AeOperatorPatch, string> = {
   isFavorited: 'is_favorited',
 };
 
-export async function loadOperatorsFromDB(userId: string): Promise<AeTrackedOperator[]> {
-  if (!DB_ENABLED || !import.meta.env.VITE_SUPABASE_ANON_KEY) return [];
+const svc = createRosterPersistence<AeOperator, AeTrackedOperator, AeOperatorPatch>({
+  table: 'ae_tracked_operators',
+  entityIdColumn: 'operator_id',
+  catalog: ALL_OPERATORS,
+  columns: OPERATOR_COLUMNS,
+  insertDefaults: {
+    level: 1,
+    phase: 0,
+    skills_maxed: false,
+    weapon_level: 1,
+  },
+  select:
+    'id, operator_id, level, phase, skills_maxed, weapon_name, weapon_level, weapon_preferences, is_favorited',
+  fromRow: (row, base) => ({
+    ...base,
+    dbId: row.id,
+    isFavorited: !!row.is_favorited,
+    level: row.level,
+    phase: row.phase ?? 0,
+    skillsMaxed: !!row.skills_maxed,
+    weaponName: row.weapon_name ?? null,
+    weaponLevel: row.weapon_level ?? 1,
+    weaponPreferences: row.weapon_preferences ?? [],
+  }),
+});
 
-  const { data, error } = await supabase
-    .from('ae_tracked_operators')
-    .select(
-      'id, operator_id, level, phase, skills_maxed, weapon_name, weapon_level, weapon_preferences, is_favorited',
-    )
-    .eq('profile_id', userId);
-
-  if (error) {
-    console.error('Error fetching operators:', error);
-    throw error;
-  }
-
-  if (!data || data.length === 0) return [];
-
-  return data
-    .map((row: any) => {
-      const base = ALL_OPERATORS.find((o) => o.id === row.operator_id);
-      if (!base) return null;
-      return {
-        ...base,
-        dbId: row.id,
-        isFavorited: !!row.is_favorited,
-        level: row.level,
-        phase: row.phase ?? 0,
-        skillsMaxed: !!row.skills_maxed,
-        weaponName: row.weapon_name ?? null,
-        weaponLevel: row.weapon_level ?? 1,
-        weaponPreferences: row.weapon_preferences ?? [],
-      };
-    })
-    .filter(Boolean) as AeTrackedOperator[];
-}
-
-export async function insertOperator(userId: string, operatorId: string): Promise<string | null> {
-  if (!DB_ENABLED) return null;
-  await supabase.from('user_profiles').upsert({ id: userId, updated_at: new Date().toISOString() });
-  const { data, error } = await supabase
-    .from('ae_tracked_operators')
-    .insert({
-      profile_id: userId,
-      operator_id: operatorId,
-      level: 1,
-      phase: 0,
-      skills_maxed: false,
-      weapon_level: 1,
-    })
-    .select('id')
-    .single();
-  if (error) {
-    console.error('DB Insert Failed:', error);
-    throw error;
-  }
-  return data?.id ?? null;
-}
-
-export async function deleteOperator(dbId: string): Promise<void> {
-  if (!DB_ENABLED) return;
-  const { error } = await supabase.from('ae_tracked_operators').delete().eq('id', dbId);
-  if (error) {
-    console.error('DB Delete Failed:', error);
-    throw error;
-  }
-}
-
-export async function updateOperator(dbId: string, patch: AeOperatorPatch): Promise<void> {
-  if (!DB_ENABLED) return;
-  const row: Record<string, unknown> = {};
-  for (const key of Object.keys(patch) as (keyof AeOperatorPatch)[]) {
-    row[OPERATOR_COLUMNS[key]] = patch[key];
-  }
-  const { error } = await supabase.from('ae_tracked_operators').update(row).eq('id', dbId);
-  if (error) {
-    console.error('DB Update Failed:', error);
-    throw error;
-  }
-}
+export const loadOperatorsFromDB = svc.load;
+export const insertOperator = svc.insert;
+export const deleteOperator = svc.remove;
+export const updateOperator = svc.update;
