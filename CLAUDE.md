@@ -197,7 +197,7 @@ supabase/migrations/
 
 4. **Page layer** (`src/pages/{game}/`): Composes hooks + components. Two views: "Roster" (entity cards grid) and "Lineups" (party tab). Handles auth gating, loading/error states, search, sort.
 
-5. **Update script** (`scripts/update-{game}-data.mjs`): Fetches from external APIs (wikis, GitHub repos), downloads images, uploads to ImageKit, regenerates `src/data/{game}/*.ts` files. Idempotent — skips already-uploaded assets unless `--reupload-*` flags passed. Has a matching `.github/workflows/update-{game}-data.yml` that runs weekly + manual dispatch, auto-creates a PR with changes.
+5. **Update script** (`scripts/update-{game}-data.mjs`): Fetches from external APIs (wikis, GitHub repos), downloads images, uploads to ImageKit, regenerates `src/data/{game}/*.ts` files. Idempotent — skips already-uploaded assets unless `--reupload-*` flags passed. Has a matching `.github/workflows/update-{game}-data.yml` that runs weekly + manual dispatch, auto-creates a PR with changes. Pipeline plumbing (env loading, ImageKit init/exists/upload, `--reupload-*` parsing, `fetchJSON`/`downloadImage`, `slugify`/`esc`, catalog diffing, generated-file banner) lives once in `scripts/lib/pipeline.mjs` — scripts import it, never copy it; game-specific fetching, mapping, and codegen bodies stay in each script.
 
 ### Wiring a New Game Into the App
 
@@ -317,6 +317,7 @@ Reuse these existing shared components — don't recreate them:
 | `src/lib/supabase.ts`               | Supabase client (10 s timeout, auto session refresh)                                                        |
 | `src/hooks/usePendingSaves.ts`      | Debounced DB write queue — reuse for all mutations                                                          |
 | `src/services/rosterPersistence.ts` | Shared roster + party CRUD factories + `savePreferenceRows` — all game services are config adapters over it |
+| `scripts/lib/pipeline.mjs`          | Shared update-script plumbing (ImageKit, flags, diffing) — all update scripts compose it                    |
 | `supabase/migrations/`              | Full schema history                                                                                         |
 | `.env.template`                     | Required env var names (`VITE_SUPABASE_*`, `VITE_IMAGEKIT_*`)                                               |
 

@@ -1,0 +1,137 @@
+// Unit tests for the shared update-pipeline helpers. Network-bound paths
+// (fetchJSON, downloadImage, live ImageKit calls) are exercised by the real
+// weekly workflows, not here.
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import {
+  toImageKitLocation,
+  initImageKit,
+  parseReuploadFlags,
+  slugify,
+  esc,
+  diffByKey,
+  formatDiff,
+  generatedHeader,
+} from './pipeline.mjs';
+
+describe('slugify', () => {
+  it('slugs with underscore by default (R1999/N2E convention)', () => {
+    expect(slugify('Liang Yue')).toBe('liang_yue');
+    expect(slugify('  A.K.A.-6  ')).toBe('a_k_a_6');
+  });
+
+  it('slugs with hyphen for HSR ids', () => {
+    expect(slugify('Dan Heng • Imbibitor Lunae', '-')).toBe('dan-heng-imbibitor-lunae');
+    expect(slugify('Topaz & Numby', '-')).toBe('topaz-numby');
+  });
+
+  it('collapses runs and trims leading/trailing separators', () => {
+    expect(slugify('--Weird__Name--', '-')).toBe('weird-name');
+    expect(slugify('__Weird__Name__')).toBe('weird_name');
+  });
+});
+
+describe('esc', () => {
+  it('escapes single quotes and backslashes for single-quoted literals', () => {
+    expect(esc("Ms. Moissan's")).toBe("Ms. Moissan\\'s");
+    expect(esc('back\\slash')).toBe('back\\\\slash');
+  });
+});
+
+describe('toImageKitLocation', () => {
+  it('strips /assets, underscores directory segments, keeps filename', () => {
+    expect(toImageKitLocation('/assets/reverse-1999/arcanists/foo-bar.webp')).toEqual({
+      folder: '/reverse_1999/arcanists',
+      fileName: 'foo-bar.webp',
+    });
+  });
+
+  it('handles absolute Windows paths', () => {
+    expect(
+      toImageKitLocation('C:\\repo\\public\\assets\\honkai-star-rail\\characters\\seele.webp'),
+    ).toEqual({
+      folder: '/honkai_star_rail/characters',
+      fileName: 'seele.webp',
+    });
+  });
+
+  it('returns null for paths without /assets/', () => {
+    expect(toImageKitLocation('/somewhere/else/foo.webp')).toBeNull();
+  });
+});
+
+describe('parseReuploadFlags', () => {
+  it('no flags: nothing requested', () => {
+    const { all, flags } = parseReuploadFlags(['relics'], []);
+    expect(all).toBe(false);
+    expect(flags.relics).toBe(false);
+  });
+
+  it('--reupload-all implies every type', () => {
+    const { all, flags } = parseReuploadFlags(
+      ['mugshots', 'full-art', 'psychubes'],
+      ['--reupload-all'],
+    );
+    expect(all).toBe(true);
+    expect(flags).toEqual({ mugshots: true, 'full-art': true, psychubes: true });
+  });
+
+  it('per-type flag only enables that type', () => {
+    const { all, flags } = parseReuploadFlags(
+      ['mugshots', 'full-art', 'psychubes'],
+      ['--reupload-full-art'],
+    );
+    expect(all).toBe(false);
+    expect(flags).toEqual({ mugshots: false, 'full-art': true, psychubes: false });
+  });
+});
+
+describe('diffByKey / formatDiff', () => {
+  const existing = [{ id: 'a' }, { id: 'b' }];
+  const next = [{ id: 'b' }, { id: 'c' }];
+
+  it('splits added and removed by key', () => {
+    const { added, removed } = diffByKey(existing, next, (x) => x.id);
+    expect(added).toEqual([{ id: 'c' }]);
+    expect(removed).toEqual([{ id: 'a' }]);
+  });
+
+  it('formats a change summary and a no-change summary', () => {
+    const { added, removed } = diffByKey(existing, next, (x) => x.id);
+    expect(formatDiff(added, removed)).toBe('+1 added, -1 removed');
+    expect(formatDiff([], [])).toBe('no changes');
+  });
+});
+
+describe('generatedHeader', () => {
+  it('produces the two banner lines', () => {
+    expect(generatedHeader('StarRailRes', 'update-hsr-data.mjs')).toEqual([
+      '// Auto-generated from StarRailRes — do not edit manually.',
+      '// Run `node scripts/update-hsr-data.mjs` or trigger the GitHub Actions workflow to update.',
+    ]);
+  });
+});
+
+describe('initImageKit (disabled)', () => {
+  beforeEach(() => {
+    vi.stubEnv('IMAGEKIT_PRIVATE_KEY', '');
+    vi.stubEnv('VITE_IMAGEKIT_PRIVATE_KEY', '');
+    vi.spyOn(console, 'log').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it('reports disabled and short-circuits both operations without touching the network', async () => {
+    const kit = initImageKit();
+    expect(kit.enabled).toBe(false);
+    await expect(kit.existsOnImageKit('/assets/x/y.webp')).resolves.toBe(false);
+    await expect(
+      kit.uploadToImageKit(Buffer.from(''), '/assets/x/y.webp'),
+    ).resolves.toBeUndefined();
+    expect(console.log).toHaveBeenCalledWith(
+      'ImageKit uploads skipped (IMAGEKIT_PRIVATE_KEY not set)',
+    );
+  });
+});

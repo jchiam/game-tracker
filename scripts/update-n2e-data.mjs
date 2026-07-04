@@ -17,46 +17,26 @@
 //   node scripts/update-n2e-data.mjs --reupload-arcs    # force reupload arc icons only
 
 import { readFile, writeFile } from 'fs/promises';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import ImageKit, { toFile } from '@imagekit/nodejs';
+import { resolve } from 'path';
 import sharp from 'sharp';
+import {
+  ROOT,
+  loadLocalEnv,
+  initImageKit,
+  parseReuploadFlags,
+  downloadImage,
+  slugify,
+  esc,
+  diffByKey,
+  formatDiff,
+  generatedHeader,
+} from './lib/pipeline.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, '..');
+loadLocalEnv();
+const { existsOnImageKit, uploadToImageKit } = initImageKit();
 
-try {
-  process.loadEnvFile(resolve(ROOT, '.env.local'));
-} catch {
-  // No .env.local — rely on environment variables already set (e.g. CI secrets)
-}
-
-const IMAGEKIT_PRIVATE_KEY =
-  process.env.IMAGEKIT_PRIVATE_KEY ?? process.env.VITE_IMAGEKIT_PRIVATE_KEY ?? '';
-const IMAGEKIT_PUBLIC_KEY =
-  process.env.IMAGEKIT_PUBLIC_KEY ?? process.env.VITE_IMAGEKIT_PUBLIC_KEY ?? '';
-const IMAGEKIT_URL_ENDPOINT =
-  process.env.IMAGEKIT_URL_ENDPOINT ?? process.env.VITE_IMAGEKIT_URL_ENDPOINT ?? '';
-
-const imagekitClient = IMAGEKIT_PRIVATE_KEY
-  ? new ImageKit({
-      privateKey: IMAGEKIT_PRIVATE_KEY,
-      publicKey: IMAGEKIT_PUBLIC_KEY,
-      urlEndpoint: IMAGEKIT_URL_ENDPOINT,
-    })
-  : null;
-
-if (imagekitClient) {
-  console.log('ImageKit uploads enabled');
-} else {
-  console.log('ImageKit uploads skipped (IMAGEKIT_PRIVATE_KEY not set)');
-}
-
-const args = new Set(process.argv.slice(2));
-const reuploadAll = args.has('--reupload-all');
-const reuploadArcs = reuploadAll || args.has('--reupload-arcs');
-if (reuploadAll) console.log('Reupload mode: all assets');
-else if (reuploadArcs) console.log('Reupload mode: arcs');
+const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags(['arcs']);
+const reuploadArcs = reuploadFlags.arcs;
 
 // ─── Constants & Mappings ──────────────────────────────────────────
 
@@ -118,18 +98,6 @@ async function fetchGraphQL(query) {
   return json.data;
 }
 
-function esc(str) {
-  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-}
-
-function slugify(name) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
-}
-
 function avatarFilename(esperId) {
   if (AVATAR_OVERRIDES[esperId]) return AVATAR_OVERRIDES[esperId];
   const suffix = String(esperId).slice(1); // 1003 → 003
@@ -188,68 +156,6 @@ async function loadExistingCartridges() {
   }
 }
 
-// ─── ImageKit ──────────────────────────────────────────────────────
-
-function toImageKitLocation(localAssetPath) {
-  const normalized = localAssetPath.replace(/\\/g, '/');
-  const assetsIdx = normalized.indexOf('/assets/');
-  if (assetsIdx === -1) return null;
-  const segments = normalized
-    .slice(assetsIdx)
-    .replace(/^\/assets/, '')
-    .split('/');
-  const mapped = segments.map((seg, i) =>
-    i < segments.length - 1 ? seg.replace(/[^a-zA-Z0-9]/g, '_') : seg,
-  );
-  return {
-    fileName: mapped[mapped.length - 1],
-    folder: '/' + mapped.slice(0, -1).filter(Boolean).join('/'),
-  };
-}
-
-async function existsOnImageKit(localAssetPath) {
-  if (!imagekitClient) return false;
-  const loc = toImageKitLocation(localAssetPath);
-  if (!loc) return false;
-  try {
-    const existing = await imagekitClient.assets.list({
-      path: loc.folder,
-      searchQuery: `name = "${loc.fileName}"`,
-      limit: 1,
-    });
-    return existing.length > 0;
-  } catch {
-    return false;
-  }
-}
-
-async function uploadToImageKit(buffer, localAssetPath) {
-  if (!imagekitClient) return;
-  const loc = toImageKitLocation(localAssetPath);
-  if (!loc) {
-    console.warn(`    ImageKit: could not derive asset path from ${localAssetPath}`);
-    return;
-  }
-  try {
-    const uploadable = await toFile(buffer, loc.fileName, { type: 'image/webp' });
-    await imagekitClient.files.upload({
-      file: uploadable,
-      fileName: loc.fileName,
-      folder: loc.folder,
-      useUniqueFileName: false,
-    });
-    console.log(`    Uploaded to ImageKit: ${loc.folder}/${loc.fileName}`);
-  } catch (e) {
-    console.warn(`    ImageKit upload failed: ${e?.message ?? String(e)}`);
-  }
-}
-
-async function downloadImage(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return Buffer.from(await res.arrayBuffer());
-}
-
 // Merge two avatar images into a 50:50 left/right composite.
 async function mergeAvatars(leftBuffer, rightBuffer) {
   const left = sharp(leftBuffer);
@@ -280,8 +186,7 @@ function generateCharactersTs(characters) {
   const aRank = characters.filter((c) => c.rarity === 'A');
 
   const lines = [
-    '// Auto-generated from everness.info GraphQL API — do not edit manually.',
-    '// Run `node scripts/update-n2e-data.mjs` or trigger the GitHub Actions workflow to update.',
+    ...generatedHeader('everness.info GraphQL API', 'update-n2e-data.mjs'),
     '',
     'export interface N2ECharacter {',
     '  id: string;',
@@ -330,8 +235,7 @@ function generateArcsTs(arcs) {
   const bRank = arcs.filter((a) => a.rarity === 'B');
 
   const lines = [
-    '// Auto-generated from everness.info GraphQL API — do not edit manually.',
-    '// Run `node scripts/update-n2e-data.mjs` or trigger the GitHub Actions workflow to update.',
+    ...generatedHeader('everness.info GraphQL API', 'update-n2e-data.mjs'),
     '',
     'export interface N2EArc {',
     '  id: string;',
@@ -378,8 +282,7 @@ function generateCartridgesTs(cartridges) {
   const bRank = cartridges.filter((c) => c.rarity === 'B');
 
   const lines = [
-    '// Auto-generated from everness.info GraphQL API — do not edit manually.',
-    '// Run `node scripts/update-n2e-data.mjs` or trigger the GitHub Actions workflow to update.',
+    ...generatedHeader('everness.info GraphQL API', 'update-n2e-data.mjs'),
     '',
     'export interface N2ECartridge {',
     '  id: string;',
@@ -416,8 +319,7 @@ function generateCartridgesTs(cartridges) {
 
 function generateCartridgeStatsTs(mainStats, subStats) {
   const lines = [
-    '// Auto-generated from everness.info GraphQL API — do not edit manually.',
-    '// Run `node scripts/update-n2e-data.mjs` or trigger the GitHub Actions workflow to update.',
+    ...generatedHeader('everness.info GraphQL API', 'update-n2e-data.mjs'),
     '',
     'export const CARTRIDGE_MAIN_STATS = [',
     ...mainStats.map((s) => `  '${esc(s)}',`),
@@ -625,23 +527,15 @@ async function main() {
 
   // ── Report ───────────────────────────────────────────────────────
 
-  const existingCharNames = new Set(existingChars.map((e) => e.name));
-  const newCharNames = new Set(characters.map((c) => c.name));
-  const charsAdded = characters.filter((c) => !existingCharNames.has(c.name));
-  const charsRemoved = existingChars.filter((e) => !newCharNames.has(e.name));
-  const charDiff =
-    charsAdded.length || charsRemoved.length
-      ? `+${charsAdded.length} added, -${charsRemoved.length} removed`
-      : 'no changes';
+  const { added: charsAdded, removed: charsRemoved } = diffByKey(
+    existingChars,
+    characters,
+    (c) => c.name,
+  );
+  const charDiff = formatDiff(charsAdded, charsRemoved);
 
-  const existingArcNames = new Set(existingArcs.map((e) => e.name));
-  const newArcNames = new Set(arcs.map((a) => a.name));
-  const arcsAdded = arcs.filter((a) => !existingArcNames.has(a.name));
-  const arcsRemoved = existingArcs.filter((e) => !newArcNames.has(e.name));
-  const arcDiff =
-    arcsAdded.length || arcsRemoved.length
-      ? `+${arcsAdded.length} added, -${arcsRemoved.length} removed`
-      : 'no changes';
+  const { added: arcsAdded, removed: arcsRemoved } = diffByKey(existingArcs, arcs, (a) => a.name);
+  const arcDiff = formatDiff(arcsAdded, arcsRemoved);
 
   console.log('\nDone!');
   console.log(
@@ -655,14 +549,12 @@ async function main() {
   for (const a of arcsAdded) console.log(`    + ${a.name} [${a.rarity} ${a.arcType}]`);
   for (const a of arcsRemoved) console.log(`    - ${a.name} (removed from source)`);
 
-  const existingCartridgeIds = new Set(existingCartridges.map((e) => e.id));
-  const newCartridgeIds = new Set(cartridges.map((c) => c.id));
-  const cartridgesAdded = cartridges.filter((c) => !existingCartridgeIds.has(c.id));
-  const cartridgesRemoved = existingCartridges.filter((e) => !newCartridgeIds.has(e.id));
-  const cartridgeDiff =
-    cartridgesAdded.length || cartridgesRemoved.length
-      ? `+${cartridgesAdded.length} added, -${cartridgesRemoved.length} removed`
-      : 'no changes';
+  const { added: cartridgesAdded, removed: cartridgesRemoved } = diffByKey(
+    existingCartridges,
+    cartridges,
+    (c) => c.id,
+  );
+  const cartridgeDiff = formatDiff(cartridgesAdded, cartridgesRemoved);
   console.log(`  Cartridges: ${cartridges.length} total (${cartridgeDiff})`);
   for (const c of cartridgesAdded) console.log(`    + ${c.name} [${c.rarity}]`);
   for (const c of cartridgesRemoved) console.log(`    - ${c.name} (removed from source)`);

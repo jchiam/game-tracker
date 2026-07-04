@@ -21,55 +21,28 @@
 //   node scripts/update-r1999-data.mjs --reupload-psychubes
 
 import { readFile, writeFile } from 'fs/promises';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import ImageKit, { toFile } from '@imagekit/nodejs';
+import { resolve } from 'path';
+import {
+  ROOT,
+  loadLocalEnv,
+  initImageKit,
+  parseReuploadFlags,
+  fetchJSON,
+  downloadImage,
+  slugify,
+  esc,
+  diffByKey,
+  formatDiff,
+  generatedHeader,
+} from './lib/pipeline.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, '..');
+loadLocalEnv();
+const { existsOnImageKit, uploadToImageKit } = initImageKit();
 
-// Load .env.local if present (Node 22+ built-in)
-try {
-  process.loadEnvFile(resolve(ROOT, '.env.local'));
-} catch {
-  // No .env.local — rely on environment variables already set (e.g. CI secrets)
-}
-
-const IMAGEKIT_PRIVATE_KEY =
-  process.env.IMAGEKIT_PRIVATE_KEY ?? process.env.VITE_IMAGEKIT_PRIVATE_KEY ?? '';
-const IMAGEKIT_PUBLIC_KEY =
-  process.env.IMAGEKIT_PUBLIC_KEY ?? process.env.VITE_IMAGEKIT_PUBLIC_KEY ?? '';
-const IMAGEKIT_URL_ENDPOINT =
-  process.env.IMAGEKIT_URL_ENDPOINT ?? process.env.VITE_IMAGEKIT_URL_ENDPOINT ?? '';
-
-const imagekitClient = IMAGEKIT_PRIVATE_KEY
-  ? new ImageKit({
-      privateKey: IMAGEKIT_PRIVATE_KEY,
-      publicKey: IMAGEKIT_PUBLIC_KEY,
-      urlEndpoint: IMAGEKIT_URL_ENDPOINT,
-    })
-  : null;
-
-if (imagekitClient) {
-  console.log('ImageKit uploads enabled');
-} else {
-  console.log('ImageKit uploads skipped (IMAGEKIT_PRIVATE_KEY not set)');
-}
-
-const args = new Set(process.argv.slice(2));
-const reuploadMugshots = args.has('--reupload-all') || args.has('--reupload-mugshots');
-const reuploadFullArt = args.has('--reupload-all') || args.has('--reupload-full-art');
-const reuploadPsychubes = args.has('--reupload-all') || args.has('--reupload-psychubes');
-if (reuploadMugshots || reuploadFullArt || reuploadPsychubes) {
-  const targets = [
-    reuploadMugshots && 'mugshots',
-    reuploadFullArt && 'full-art',
-    reuploadPsychubes && 'psychubes',
-  ]
-    .filter(Boolean)
-    .join(' + ');
-  console.log(`Reupload mode: ${targets}`);
-}
+const { flags: reuploadFlags } = parseReuploadFlags(['mugshots', 'full-art', 'psychubes']);
+const reuploadMugshots = reuploadFlags['mugshots'];
+const reuploadFullArt = reuploadFlags['full-art'];
+const reuploadPsychubes = reuploadFlags['psychubes'];
 
 const KORNBLUME_BASE = 'https://raw.githubusercontent.com/windbow27/kornblume/main/public';
 const FANDOM_API = 'https://reverse1999.fandom.com/api.php';
@@ -127,25 +100,6 @@ function buildHeadiconLookup(arcanistMap) {
   };
 }
 
-async function fetchJSON(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
-  return res.json();
-}
-
-// Escape single quotes so they're safe inside single-quoted JS string literals.
-function esc(str) {
-  return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
-}
-
-function slugify(name) {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '_')
-    .replace(/_+/g, '_')
-    .replace(/^_|_$/g, '');
-}
-
 async function loadExistingArcanists() {
   const filePath = resolve(ROOT, 'src/data/reverse1999/arcanists.ts');
   try {
@@ -167,71 +121,6 @@ async function loadExistingArcanists() {
     return { entries, idMap, damageMap, euphoriaMap };
   } catch {
     return { entries: [], idMap: new Map(), damageMap: new Map(), euphoriaMap: new Map() };
-  }
-}
-
-// Download a raw image and return the buffer.
-async function downloadImage(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  return Buffer.from(await res.arrayBuffer());
-}
-
-// Derive ImageKit folder and fileName from a local asset path.
-// Path mapping mirrors toImageKitPath() from src/lib/imagekit.ts.
-function toImageKitLocation(localAssetPath) {
-  const normalized = localAssetPath.replace(/\\/g, '/');
-  const assetsIdx = normalized.indexOf('/assets/');
-  if (assetsIdx === -1) return null;
-  const segments = normalized
-    .slice(assetsIdx)
-    .replace(/^\/assets/, '')
-    .split('/');
-  const mapped = segments.map((seg, i) =>
-    i < segments.length - 1 ? seg.replace(/[^a-zA-Z0-9]/g, '_') : seg,
-  );
-  return {
-    fileName: mapped[mapped.length - 1],
-    folder: '/' + mapped.slice(0, -1).filter(Boolean).join('/'),
-  };
-}
-
-// Check whether a file already exists on ImageKit. Returns false if ImageKit is not configured.
-async function existsOnImageKit(localAssetPath) {
-  if (!imagekitClient) return false;
-  const loc = toImageKitLocation(localAssetPath);
-  if (!loc) return false;
-  try {
-    const existing = await imagekitClient.assets.list({
-      path: loc.folder,
-      searchQuery: `name = "${loc.fileName}"`,
-      limit: 1,
-    });
-    return existing.length > 0;
-  } catch {
-    return false;
-  }
-}
-
-// Upload a buffer to ImageKit using the path derived from a local asset path.
-async function uploadToImageKit(buffer, localAssetPath) {
-  if (!imagekitClient) return;
-  const loc = toImageKitLocation(localAssetPath);
-  if (!loc) {
-    console.warn(`    ImageKit: could not derive asset path from ${localAssetPath}`);
-    return;
-  }
-  try {
-    const uploadable = await toFile(buffer, loc.fileName, { type: 'image/webp' });
-    await imagekitClient.files.upload({
-      file: uploadable,
-      fileName: loc.fileName,
-      folder: loc.folder,
-      useUniqueFileName: false,
-    });
-    console.log(`    Uploaded to ImageKit: ${loc.folder}/${loc.fileName}`);
-  } catch (e) {
-    console.warn(`    ImageKit upload failed: ${e?.message ?? String(e)}`);
   }
 }
 
@@ -287,8 +176,10 @@ function generateArcanistsTs(arcanists) {
   const fiveStars = arcanists.filter((a) => a.rarity === 5);
 
   const lines = [
-    '// Auto-generated from kornblume, Reverse: 1999 Wiki, and CN ArcanistMap — do not edit manually.',
-    '// Run `node scripts/update-r1999-data.mjs` or trigger the GitHub Actions workflow to update.',
+    ...generatedHeader(
+      'kornblume, Reverse: 1999 Wiki, and CN ArcanistMap',
+      'update-r1999-data.mjs',
+    ),
     '// imageUrl resolves to the best available mugshot: CN headicon first, kornblume icon as fallback.',
     '// hasEuphoria: set to true when the game releases Euphoria for this arcanist.',
     '',
@@ -356,8 +247,7 @@ function generatePsychubesTs(psychubes) {
   const threeStars = psychubes.filter((p) => p.rarity === 3);
 
   const lines = [
-    '// Auto-generated from Reverse: 1999 Fandom Wiki — do not edit manually.',
-    '// Run `node scripts/update-r1999-data.mjs` or trigger the GitHub Actions workflow to update.',
+    ...generatedHeader('Reverse: 1999 Fandom Wiki', 'update-r1999-data.mjs'),
     '',
     'export interface Psychube {',
     '  name: string;',
@@ -608,15 +498,8 @@ async function main() {
   await writeFile(filePath, generateArcanistsTs(arcanists), 'utf-8');
 
   // Diff against existing data
-  const existingNames = new Set(existingEntries.map((e) => e.name));
-  const newNames = new Set(arcanists.map((a) => a.name));
-  const added = arcanists.filter((a) => !existingNames.has(a.name));
-  const removed = existingEntries.filter((e) => !newNames.has(e.name));
-
-  const diff =
-    added.length || removed.length
-      ? `+${added.length} added, -${removed.length} removed`
-      : 'no changes';
+  const { added, removed } = diffByKey(existingEntries, arcanists, (a) => a.name);
+  const diff = formatDiff(added, removed);
 
   console.log('\nDone!');
   console.log(
@@ -722,15 +605,12 @@ async function main() {
   const psychubePath = resolve(ROOT, 'src/data/reverse1999/psychubes.ts');
   await writeFile(psychubePath, generatePsychubesTs(psychubes), 'utf-8');
 
-  const existingPsychubeNames = new Set(existingPsychubes.map((e) => e.name));
-  const newPsychubeNames = new Set(psychubes.map((p) => p.name));
-  const psychubeAdded = psychubes.filter((p) => !existingPsychubeNames.has(p.name));
-  const psychubeRemoved = existingPsychubes.filter((e) => !newPsychubeNames.has(e.name));
-
-  const psychubeDiff =
-    psychubeAdded.length || psychubeRemoved.length
-      ? `+${psychubeAdded.length} added, -${psychubeRemoved.length} removed`
-      : 'no changes';
+  const { added: psychubeAdded, removed: psychubeRemoved } = diffByKey(
+    existingPsychubes,
+    psychubes,
+    (p) => p.name,
+  );
+  const psychubeDiff = formatDiff(psychubeAdded, psychubeRemoved);
 
   console.log(
     `  Psychubes : ${psychubes.length} total (${psychubeDiff}) — ${psychubeImageCount} images uploaded`,

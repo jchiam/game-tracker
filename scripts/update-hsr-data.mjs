@@ -11,62 +11,28 @@
 //   node scripts/update-hsr-data.mjs --reupload-all     # force reupload all assets
 //   node scripts/update-hsr-data.mjs --reupload-relics  # force reupload relic icons only
 
-import { readFile, writeFile, mkdir, access } from 'fs/promises';
-import { resolve, dirname } from 'path';
-import { fileURLToPath } from 'url';
-import ImageKit, { toFile } from '@imagekit/nodejs';
+import { readFile, writeFile, mkdir } from 'fs/promises';
+import { resolve } from 'path';
+import {
+  ROOT,
+  loadLocalEnv,
+  initImageKit,
+  parseReuploadFlags,
+  fetchJSON,
+  downloadImage,
+  slugify,
+  diffByKey,
+  formatDiff,
+  generatedHeader,
+} from './lib/pipeline.mjs';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(__dirname, '..');
 const STAR_RAIL_RES_BASE = 'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master';
 
-try {
-  process.loadEnvFile(resolve(ROOT, '.env.local'));
-} catch {
-  // No .env.local — rely on environment variables already set (e.g. CI secrets)
-}
+loadLocalEnv();
+const { existsOnImageKit, uploadToImageKit } = initImageKit();
 
-const IMAGEKIT_PRIVATE_KEY =
-  process.env.IMAGEKIT_PRIVATE_KEY ?? process.env.VITE_IMAGEKIT_PRIVATE_KEY ?? '';
-const IMAGEKIT_PUBLIC_KEY =
-  process.env.IMAGEKIT_PUBLIC_KEY ?? process.env.VITE_IMAGEKIT_PUBLIC_KEY ?? '';
-const IMAGEKIT_URL_ENDPOINT =
-  process.env.IMAGEKIT_URL_ENDPOINT ?? process.env.VITE_IMAGEKIT_URL_ENDPOINT ?? '';
-
-const imagekitClient = IMAGEKIT_PRIVATE_KEY
-  ? new ImageKit({
-      privateKey: IMAGEKIT_PRIVATE_KEY,
-      publicKey: IMAGEKIT_PUBLIC_KEY,
-      urlEndpoint: IMAGEKIT_URL_ENDPOINT,
-    })
-  : null;
-
-if (imagekitClient) {
-  console.log('ImageKit uploads enabled');
-} else {
-  console.log('ImageKit uploads skipped (IMAGEKIT_PRIVATE_KEY not set)');
-}
-
-const args = new Set(process.argv.slice(2));
-const reuploadAll = args.has('--reupload-all');
-const reuploadRelics = reuploadAll || args.has('--reupload-relics');
-if (reuploadAll) console.log('Reupload mode: all assets');
-else if (reuploadRelics) console.log('Reupload mode: relics');
-
-async function fetchJSON(url) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
-  return res.json();
-}
-
-function slugify(name) {
-  return name
-    .toLowerCase()
-    .replace(/[•·]/g, '-')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
+const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags(['relics']);
+const reuploadRelics = reuploadFlags.relics;
 
 async function loadExistingCharacters() {
   const filePath = resolve(ROOT, 'src/data/honkai-star-rail/characters.ts');
@@ -105,77 +71,11 @@ async function loadExistingRelicSets() {
   }
 }
 
-async function fileExists(path) {
-  try {
-    await access(path);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
+// Download a binary asset, write it to the local assets dir, and return the buffer.
 async function downloadBinary(url, destPath) {
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const buffer = Buffer.from(await res.arrayBuffer());
+  const buffer = await downloadImage(url);
   await writeFile(destPath, buffer);
   return buffer;
-}
-
-// ─── ImageKit ──────────────────────────────────────────────────────
-
-function toImageKitLocation(localAssetPath) {
-  const normalized = localAssetPath.replace(/\\/g, '/');
-  const assetsIdx = normalized.indexOf('/assets/');
-  if (assetsIdx === -1) return null;
-  const segments = normalized
-    .slice(assetsIdx)
-    .replace(/^\/assets/, '')
-    .split('/');
-  const mapped = segments.map((seg, i) =>
-    i < segments.length - 1 ? seg.replace(/[^a-zA-Z0-9]/g, '_') : seg,
-  );
-  return {
-    fileName: mapped[mapped.length - 1],
-    folder: '/' + mapped.slice(0, -1).filter(Boolean).join('/'),
-  };
-}
-
-async function existsOnImageKit(localAssetPath) {
-  if (!imagekitClient) return false;
-  const loc = toImageKitLocation(localAssetPath);
-  if (!loc) return false;
-  try {
-    const existing = await imagekitClient.assets.list({
-      path: loc.folder,
-      searchQuery: `name = "${loc.fileName}"`,
-      limit: 1,
-    });
-    return existing.length > 0;
-  } catch {
-    return false;
-  }
-}
-
-async function uploadToImageKit(buffer, localAssetPath, mimeType = 'image/webp') {
-  if (!imagekitClient) return;
-  const loc = toImageKitLocation(localAssetPath);
-  if (!loc) {
-    console.warn(`    ImageKit: could not derive asset path from ${localAssetPath}`);
-    return;
-  }
-  try {
-    const uploadable = await toFile(buffer, loc.fileName, { type: mimeType });
-    await imagekitClient.files.upload({
-      file: uploadable,
-      fileName: loc.fileName,
-      folder: loc.folder,
-      useUniqueFileName: false,
-    });
-    console.log(`    Uploaded to ImageKit: ${loc.folder}/${loc.fileName}`);
-  } catch (e) {
-    console.warn(`    ImageKit upload failed: ${e?.message ?? String(e)}`);
-  }
 }
 
 function generateCharactersTs(characters) {
@@ -183,8 +83,7 @@ function generateCharactersTs(characters) {
   const fourStars = characters.filter((c) => c.rarity === 4);
 
   const lines = [
-    '// Auto-generated from StarRailRes — do not edit manually.',
-    '// Run `node scripts/update-hsr-data.mjs` or trigger the GitHub Actions workflow to update.',
+    ...generatedHeader('StarRailRes', 'update-hsr-data.mjs'),
     '',
     'export interface Character {',
     '  id: string;',
@@ -227,8 +126,7 @@ function generateCharactersTs(characters) {
 
 function generateRelicSetsTs(relicSets) {
   const lines = [
-    '// Auto-generated from StarRailRes — do not edit manually.',
-    '// Run `node scripts/update-hsr-data.mjs` or trigger the GitHub Actions workflow to update.',
+    ...generatedHeader('StarRailRes', 'update-hsr-data.mjs'),
     "import { type RelicSet } from './relics';",
     '',
     'export const ALL_RELIC_SETS: RelicSet[] = [',
@@ -304,7 +202,9 @@ async function main() {
   // Pass 2: assign IDs (path-disambiguated for duplicate names) and download images
   for (const c of rawCharacters) {
     const isDuplicate = nameCounts.get(c.name) > 1;
-    const fallbackSlug = isDuplicate ? `${slugify(c.name)}_${slugify(c.path)}` : slugify(c.name);
+    const fallbackSlug = isDuplicate
+      ? `${slugify(c.name, '-')}_${slugify(c.path, '-')}`
+      : slugify(c.name, '-');
     // Prefer name|path lookup for duplicates; fall back to name-only for unique characters
     const id =
       existingIds.get(`${c.name}|${c.path}`) ??
@@ -385,27 +285,19 @@ async function main() {
   await writeFile(charsFilePath, generateCharactersTs(characters), 'utf-8');
   await writeFile(relicsFilePath, generateRelicSetsTs(relicSets), 'utf-8');
 
-  // Diff characters
-  const existingCharKeys = new Set(existingCharEntries.map((c) => `${c.name}|${c.path}`));
-  const newCharKeys = new Set(characters.map((c) => `${c.name}|${c.path}`));
-  const addedChars = characters.filter((c) => !existingCharKeys.has(`${c.name}|${c.path}`));
-  const removedChars = existingCharEntries.filter((c) => !newCharKeys.has(`${c.name}|${c.path}`));
-
-  // Diff relic sets
-  const existingRelicIds = new Set(existingRelicEntries.map((r) => r.id));
-  const newRelicIds = new Set(relicSets.map((r) => r.id));
-  const addedRelics = relicSets.filter((r) => !existingRelicIds.has(r.id));
-  const removedRelics = existingRelicEntries.filter((r) => !newRelicIds.has(r.id));
-
-  // Report
-  const charDiff =
-    addedChars.length || removedChars.length
-      ? `+${addedChars.length} added, -${removedChars.length} removed`
-      : 'no changes';
-  const relicDiff =
-    addedRelics.length || removedRelics.length
-      ? `+${addedRelics.length} added, -${removedRelics.length} removed`
-      : 'no changes';
+  // Diff and report
+  const { added: addedChars, removed: removedChars } = diffByKey(
+    existingCharEntries,
+    characters,
+    (c) => `${c.name}|${c.path}`,
+  );
+  const { added: addedRelics, removed: removedRelics } = diffByKey(
+    existingRelicEntries,
+    relicSets,
+    (r) => r.id,
+  );
+  const charDiff = formatDiff(addedChars, removedChars);
+  const relicDiff = formatDiff(addedRelics, removedRelics);
 
   console.log('\nDone!');
   console.log(
