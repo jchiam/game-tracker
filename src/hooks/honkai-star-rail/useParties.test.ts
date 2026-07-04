@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useParties } from '@/hooks/honkai-star-rail/useParties';
 import type { Session } from '@supabase/supabase-js';
-import type { HsrParty } from '@/types';
+import type { Party } from '@/types';
 
 vi.mock('@/services/honkai-star-rail/partyService', () => ({
   loadParties: vi.fn(),
@@ -37,7 +37,7 @@ const mockSession: Session = {
   expires_at: Math.floor(Date.now() / 1000) + 3600,
 } as Session;
 
-function makeParty(id: string, name: string, overrides: Partial<HsrParty> = {}): HsrParty {
+function makeParty(id: string, name: string, overrides: Partial<Party> = {}): Party {
   return {
     id,
     profileId: 'test-user-123',

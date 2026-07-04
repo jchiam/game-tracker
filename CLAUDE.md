@@ -84,26 +84,27 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 
 **Card class names are canonical** — all games use `.game-card`, `.game-card-header`, `.game-card-image`, `.game-card-overlay`, `.game-card-controls`, `.game-card-body`, `.game-card-name`. Game-specific CSS files only add overrides (padding, hover transforms) and game-unique rules. Never re-declare a rule already in `card.css` or `controls.css`.
 
-**Party class names are canonical too** — HSR, R1999, and N2E render lineups entirely from `party.css` (`.party-card`, `.party-name`, `.party-members-row`, `.slot-avatar`, …) and ship no per-game party CSS. The party favorite toggle is `.party-favorite-btn`, deliberately distinct from the roster card's `.favorite-btn` so route-split stylesheets can never clobber each other. AE keeps its own lighter `endfield-*` party card (Phase-1 scope) but reuses the shared `.icon-btn` action buttons.
+**Party class names are canonical too** — all games render lineups from the shared `PartiesView` module using `party.css` classes (`.party-card`, `.party-name`, `.party-members-row`, `.slot-avatar`, …). The party favorite toggle is `.party-favorite-btn`, deliberately distinct from the roster card's `.favorite-btn` so route-split stylesheets can never clobber each other. AE keeps its intentionally lighter card (Phase-1 scope) via the `endfield` variant class — override rules in `src/pages/arknights-endfield/components/PartiesTab.css` on top of the canonical classes.
 
 ### L3 — Shared Components
 
-| Component         | CSS                   | Purpose                                                            |
-| ----------------- | --------------------- | ------------------------------------------------------------------ |
-| `Modal`           | `Modal.css`           | Base modal + tabs + form-group input/textarea surfaces             |
-| `AddEntityModal`  | `AddEntityModal.css`  | Generic add-entity picker (Fuse search, exclusion, GameBadge rows) |
-| `ProgressSection` | uses `card.css`       | `.progress-section` + `.section-header` + `.section-value` wrapper |
-| `GameBadge`       | uses game CSS         | Badge with `{variant}-badge {variant}-{modifier}` classes          |
-| `StatChip`        | uses `controls.css`   | Compact stat display chip (`.stat-chip`)                           |
-| `AuthGate`        | —                     | Sign-in prompt                                                     |
-| `LoadErrorState`  | —                     | Retry prompt                                                       |
-| `ConfirmCheckbox` | `ConfirmCheckbox.css` | Checkbox with confirmation                                         |
-| `GameSwitcher`    | `GameSwitcher.css`    | Game dropdown                                                      |
-| `Navbar`          | `Navbar.css`          | Top nav                                                            |
-| `SavingToast`     | `SavingToast.css`     | Save indicator                                                     |
-| `ToastContainer`  | `ToastContainer.css`  | Notification system                                                |
+| Component         | CSS                   | Purpose                                                                                                                            |
+| ----------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `Modal`           | `Modal.css`           | Base modal + tabs + form-group input/textarea surfaces                                                                             |
+| `AddEntityModal`  | `AddEntityModal.css`  | Generic add-entity picker (Fuse search, exclusion, GameBadge rows)                                                                 |
+| `PartiesView`     | uses `party.css`      | Shared Party/Lineup view (`src/components/parties/`) — grid, card, editor; per-game `PartiesTab` files are config adapters over it |
+| `ProgressSection` | uses `card.css`       | `.progress-section` + `.section-header` + `.section-value` wrapper                                                                 |
+| `GameBadge`       | uses game CSS         | Badge with `{variant}-badge {variant}-{modifier}` classes                                                                          |
+| `StatChip`        | uses `controls.css`   | Compact stat display chip (`.stat-chip`)                                                                                           |
+| `AuthGate`        | —                     | Sign-in prompt                                                                                                                     |
+| `LoadErrorState`  | —                     | Retry prompt                                                                                                                       |
+| `ConfirmCheckbox` | `ConfirmCheckbox.css` | Checkbox with confirmation                                                                                                         |
+| `GameSwitcher`    | `GameSwitcher.css`    | Game dropdown                                                                                                                      |
+| `Navbar`          | `Navbar.css`          | Top nav                                                                                                                            |
+| `SavingToast`     | `SavingToast.css`     | Save indicator                                                                                                                     |
+| `ToastContainer`  | `ToastContainer.css`  | Notification system                                                                                                                |
 
-Shared modal CSS: `PartyEditorModal.css` (team builder). Per-game `Add*Modal` files are thin config wrappers over the shared `AddEntityModal` (title, entity noun, Fuse `searchKeys`, `getBadges` descriptors) — never re-implement the picker.
+Shared modal CSS: `src/components/parties/PartyEditorModal.css` (team builder). Per-game `Add*Modal` files are thin config wrappers over the shared `AddEntityModal` (title, entity noun, Fuse `searchKeys`, `getBadges` descriptors) — never re-implement the picker. Likewise, per-game `PartiesTab.tsx` files are thin config adapters over the shared `PartiesView` (`PartyViewConfig`: nouns, image resolvers, slot accent class, tier/favorite support, variant class) — never re-implement the party grid, card, or editor.
 
 #### Build-preference primitives
 
@@ -178,14 +179,8 @@ src/
 │       ├── {Entity}Card.test.tsx
 │       ├── Add{Entity}Modal.tsx   # Modal to pick entity from catalog
 │       ├── Add{Entity}Modal.test.tsx
-│       ├── PartyCard.tsx          # Card for a saved party
-│       ├── PartyCard.css
-│       ├── PartyCard.test.tsx
-│       ├── PartyEditorModal.tsx   # Modal to create/edit party
-│       ├── PartyEditorModal.test.tsx
-│       ├── PartiesTab.tsx         # Lineups tab container
-│       ├── PartiesTab.css
-│       └── PartiesTab.test.tsx
+│       ├── PartiesTab.tsx         # Config adapter over shared PartiesView (Lineups tab)
+│       └── PartiesTab.test.tsx    # Config-wiring tests only
 scripts/
 │   └── update-{game}-data.mjs    # Fetches latest entity/equipment data from external sources
 supabase/migrations/

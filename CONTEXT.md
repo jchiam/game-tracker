@@ -43,6 +43,8 @@ Variable-length, ordered stat-preference chains (HSR build preferences, N2E cart
 
 A saved team of tracked entities: a row in `{game_prefix}_parties` plus member rows in `{game_prefix}_party_members`, each member carrying a `slot_index` (0–3, maximum 4 members, enforced by CHECK constraint and `UNIQUE(party_id, slot_index)`). "Lineups" is the UI name for the parties view on each game page. R1999 and N2E parties additionally carry an optional `tier` and an `is_favorited` flag; HSR and AE parties have neither. After a save, the DB is the source of truth: the party hook reloads all parties.
 
+App-side, all games share the single `Party` / `PartyMember` types in `src/types.ts`: a member is `{ entityId, slotIndex }` regardless of game — the per-game DB column name (`character_id`, `arcanist_id`, `operator_id`) is mapped at the party-persistence seam by `memberFromRow` / `memberToRow`, and `tier` / `isFavorited` are optional fields present only for the games whose tables carry them.
+
 ### Party Persistence Factory
 
 The config-driven factory `createPartyPersistence(config)` in `src/services/rosterPersistence.ts` — the single shared implementation of party CRUD. Config supplies: parties table, members table, default party name, member row mappers (`memberFromRow` / `memberToRow`), and optional extras (`extraSelect` / `extraFromRow` / `extraToRow`) for game-specific party columns such as `tier` and `is_favorited`. It produces `loadParties`, `saveParty`, `deleteParty`, and `toggleFavoriteParty`; each game's `partyService.ts` is a thin config adapter re-exporting them (R1999 and N2E additionally re-export `toggleFavoriteParty`). Updating an existing party replaces its members via delete-then-reinsert — the same non-atomic pattern as Preference Rows, documented in the same Known Limitations entry.
@@ -54,6 +56,10 @@ Party error semantics are deliberately **asymmetric**:
 - `deleteParty` and `toggleFavoriteParty` log and **return `false`**.
 
 With the DB disabled: `loadParties` → `[]`, `saveParty` → `null`, `deleteParty` / `toggleFavoriteParty` → `false`, without touching Supabase.
+
+### Party View
+
+The config-driven shared UI module `PartiesView` in `src/components/parties/` — the single implementation of the Lineups view (header, sorted card grid, empty and signed-out states, party card, create/edit editor modal with slot picker). Its per-game adapter is a `PartyViewConfig`: display nouns and placeholders, slot/list image resolvers, an optional slot accent class, `supportsTier` / `supportsFavorite` flags gating the tier selector, tier banner, favorite star, and the favorites-then-tier sort, and an optional variant class for game visual overrides (AE's lighter `endfield` card). The UI-side twin of the Party Persistence Factory: each game's `PartiesTab.tsx` is a thin config adapter over it, exactly as each game's `partyService.ts` is over the factory. View behaviour is tested once against `PartiesView`; per-game tests cover only config wiring.
 
 ### Update Pipeline
 

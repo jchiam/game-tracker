@@ -25,7 +25,7 @@ describe('hsr partyService', () => {
     vi.unstubAllEnvs();
   });
 
-  it('loadParties queries hsr tables and maps character_id to characterId', async () => {
+  it('loadParties queries hsr tables and maps character_id to entityId', async () => {
     const builder = createBuilder({
       data: [
         {
@@ -51,8 +51,8 @@ describe('hsr partyService', () => {
       'id, profile_id, name, notes, created_at, hsr_party_members ( * )',
     );
     expect(result[0].members).toEqual([
-      { characterId: 'acheron', slotIndex: 0 },
-      { characterId: 'blade', slotIndex: 1 },
+      { entityId: 'acheron', slotIndex: 0 },
+      { entityId: 'blade', slotIndex: 1 },
     ]);
   });
 
@@ -64,7 +64,7 @@ describe('hsr partyService', () => {
     );
 
     await service.saveParty('user-1', {
-      members: [{ characterId: 'acheron', slotIndex: 0 }],
+      members: [{ entityId: 'acheron', slotIndex: 0 }],
     });
 
     expect(partyBuilder.insert).toHaveBeenCalledWith({

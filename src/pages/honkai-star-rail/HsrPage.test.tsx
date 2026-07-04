@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { HsrPage } from '@/pages/honkai-star-rail/HsrPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
-import type { HsrTrackedCharacter, HsrParty } from '@/types';
+import type { HsrTrackedCharacter, Party } from '@/types';
 
 vi.mock('@/hooks/honkai-star-rail/useCharacters', () => ({
   useCharacters: vi.fn(),
@@ -36,7 +36,7 @@ function makeChar(id: string, name: string): HsrTrackedCharacter {
   };
 }
 
-function makeParty(id: string, name: string): HsrParty {
+function makeParty(id: string, name: string): Party {
   return {
     id,
     profileId: 'user-1',

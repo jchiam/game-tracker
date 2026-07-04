@@ -51,7 +51,7 @@ describe('n2e partyService', () => {
     );
     expect(result[0].tier).toBe('S');
     expect(result[0].isFavorited).toBe(true);
-    expect(result[0].members).toEqual([{ characterId: 'baicang', slotIndex: 0 }]);
+    expect(result[0].members).toEqual([{ entityId: 'baicang', slotIndex: 0 }]);
   });
 
   it('saveParty writes tier (but not is_favorited) with the N2E default name', async () => {
@@ -63,7 +63,7 @@ describe('n2e partyService', () => {
 
     await service.saveParty('user-1', {
       tier: 'A',
-      members: [{ characterId: 'baicang', slotIndex: 0 }],
+      members: [{ entityId: 'baicang', slotIndex: 0 }],
     });
 
     expect(partyBuilder.insert).toHaveBeenCalledWith({

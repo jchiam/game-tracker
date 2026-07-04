@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { N2ePage } from '@/pages/neverness-to-everness/N2ePage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
-import type { N2ETrackedCharacter, N2EParty } from '@/types';
+import type { N2ETrackedCharacter, Party } from '@/types';
 
 vi.mock('@/hooks/neverness-to-everness/useCharacters', () => ({
   useCharacters: vi.fn(),
@@ -46,7 +46,7 @@ function makeChar(id: string, name: string): N2ETrackedCharacter {
   };
 }
 
-function makeParty(id: string, name: string): N2EParty {
+function makeParty(id: string, name: string): Party {
   return {
     id,
     profileId: 'user-1',

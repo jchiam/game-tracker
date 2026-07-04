@@ -1,12 +1,12 @@
-import type { AeParty, AePartyMember } from '@/types';
+import type { Party, PartyMember } from '@/types';
 import { createPartyPersistence } from '@/services/rosterPersistence';
 
-const persistence = createPartyPersistence<AeParty, AePartyMember>({
+const persistence = createPartyPersistence<Party, PartyMember>({
   partiesTable: 'ae_parties',
   membersTable: 'ae_party_members',
   defaultName: 'New Squad',
-  memberFromRow: (row) => ({ operatorId: row.operator_id, slotIndex: row.slot_index }),
-  memberToRow: (member) => ({ operator_id: member.operatorId, slot_index: member.slotIndex }),
+  memberFromRow: (row) => ({ entityId: row.operator_id, slotIndex: row.slot_index }),
+  memberToRow: (member) => ({ operator_id: member.entityId, slot_index: member.slotIndex }),
 });
 
 export const loadParties = persistence.loadParties;

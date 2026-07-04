@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useParties } from '@/hooks/reverse1999/useParties';
 import type { Session } from '@supabase/supabase-js';
-import type { R1999Party } from '@/types';
+import type { Party } from '@/types';
 
 vi.mock('@/services/reverse1999/partyService', () => ({
   loadParties: vi.fn(),
@@ -39,7 +39,7 @@ const mockSession: Session = {
   expires_at: Math.floor(Date.now() / 1000) + 3600,
 } as Session;
 
-function makeParty(id: string, name: string, overrides: Partial<R1999Party> = {}): R1999Party {
+function makeParty(id: string, name: string, overrides: Partial<Party> = {}): Party {
   return {
     id,
     profileId: 'test-user-123',

@@ -1,12 +1,12 @@
-import type { HsrParty, HsrPartyMember } from '@/types';
+import type { Party, PartyMember } from '@/types';
 import { createPartyPersistence } from '@/services/rosterPersistence';
 
-const persistence = createPartyPersistence<HsrParty, HsrPartyMember>({
+const persistence = createPartyPersistence<Party, PartyMember>({
   partiesTable: 'hsr_parties',
   membersTable: 'hsr_party_members',
   defaultName: 'New Party',
-  memberFromRow: (row) => ({ characterId: row.character_id, slotIndex: row.slot_index }),
-  memberToRow: (member) => ({ character_id: member.characterId, slot_index: member.slotIndex }),
+  memberFromRow: (row) => ({ entityId: row.character_id, slotIndex: row.slot_index }),
+  memberToRow: (member) => ({ character_id: member.entityId, slot_index: member.slotIndex }),
 });
 
 export const loadParties = persistence.loadParties;

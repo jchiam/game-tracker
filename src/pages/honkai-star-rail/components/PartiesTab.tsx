@@ -1,14 +1,28 @@
-import { useState } from 'react';
-import type { HsrParty, HsrPartyMember } from '@/types';
-import type { Character } from '@/data/honkai-star-rail/characters';
 import type { Session } from '@supabase/supabase-js';
-import { PartyCard } from './PartyCard';
-import { PartyEditorModal } from './PartyEditorModal';
+import type { Party, PartyMember } from '@/types';
+import type { Character } from '@/data/honkai-star-rail/characters';
+import { PartiesView, type PartyViewConfig } from '@/components/parties/PartiesView';
+
+const HSR_PARTY_VIEW: PartyViewConfig<Character> = {
+  nouns: {
+    party: 'Party',
+    partiesLower: 'parties',
+    entity: 'character',
+    header: 'Your Lineups',
+    namePlaceholder: 'e.g. Memory of Chaos 12-1',
+    searchPlaceholder: 'Search character...',
+  },
+  resolveSlotImage: (char) => char.imageUrl,
+  resolveListImage: (char) => char.imageUrl,
+  slotAccentClass: (char) => `element-${char.element.toLowerCase()}`,
+  supportsTier: false,
+  supportsFavorite: false,
+};
 
 interface PartiesTabProps {
-  parties: HsrParty[];
+  parties: Party[];
   availableCharacters: Character[];
-  onSaveParty: (party: Partial<HsrParty> & { members: HsrPartyMember[] }) => Promise<string | null>;
+  onSaveParty: (party: Partial<Party> & { members: PartyMember[] }) => Promise<string | null>;
   onDeleteParty: (id: string) => Promise<boolean>;
   session: Session | null;
 }
@@ -20,59 +34,14 @@ export function PartiesTab({
   onDeleteParty,
   session,
 }: PartiesTabProps) {
-  const [editingParty, setEditingParty] = useState<HsrParty | null>(null);
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-
-  if (!session) {
-    return (
-      <div className="empty-state">
-        <p>Please sign in to track your party configurations.</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="parties-tab">
-      <div className="parties-header">
-        <h2>Your Lineups</h2>
-        <button className="primary-action" onClick={() => setIsCreateModalOpen(true)}>
-          Create New Party
-        </button>
-      </div>
-
-      <div className="parties-grid">
-        {parties.length === 0 ? (
-          <div className="empty-state">
-            <p>No parties configured yet. Build your first team!</p>
-          </div>
-        ) : (
-          parties.map((party) => (
-            <PartyCard
-              key={party.id}
-              party={party}
-              availableCharacters={availableCharacters}
-              onEdit={() => setEditingParty(party)}
-              onDelete={() => onDeleteParty(party.id)}
-            />
-          ))
-        )}
-      </div>
-
-      {(isCreateModalOpen || editingParty) && (
-        <PartyEditorModal
-          party={editingParty || undefined}
-          availableCharacters={availableCharacters}
-          onSave={async (partyData) => {
-            await onSaveParty(partyData);
-            setIsCreateModalOpen(false);
-            setEditingParty(null);
-          }}
-          onClose={() => {
-            setIsCreateModalOpen(false);
-            setEditingParty(null);
-          }}
-        />
-      )}
-    </div>
+    <PartiesView
+      config={HSR_PARTY_VIEW}
+      parties={parties}
+      entities={availableCharacters}
+      onSaveParty={onSaveParty}
+      onDeleteParty={onDeleteParty}
+      session={session}
+    />
   );
 }

@@ -1,110 +1,55 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
-import { PartiesTab } from './PartiesTab';
+import { screen, fireEvent } from '@testing-library/react';
+import { PartiesTab } from '@/pages/arknights-endfield/components/PartiesTab';
+import { renderWithProviders, createMockSession } from '@/test/utils';
+import type { Party } from '@/types';
 import { ALL_OPERATORS } from '@/data/arknights-endfield/operators';
-import { createMockSession } from '@/test/mocks/supabase';
-import type { AeParty } from '@/types';
+
+// Config-wiring tests only — the shared view behaviour (slot editing, sorting,
+// modal flows, auth gating) is covered by src/components/parties/PartiesView.test.tsx.
 
 vi.mock('@/lib/imagekit', () => ({
-  getMugshotUrl: (path: string) => path,
-  getAvatarUrl: (path: string) => path,
+  getMugshotUrl: vi.fn((url: string) => `mugshot:${url}`),
+  getAvatarUrl: vi.fn((url: string) => `avatar:${url}`),
 }));
 
-vi.mock('@/utils/toast', () => ({
-  addToast: vi.fn(),
-}));
+const firstOperator = ALL_OPERATORS[0];
 
-function makeParty(overrides: Partial<AeParty> = {}): AeParty {
-  return {
-    id: 'party-1',
-    profileId: 'user-1',
-    name: 'Squad Alpha',
-    notes: null,
-    members: [],
-    createdAt: '2026-01-01T00:00:00Z',
-    ...overrides,
-  };
-}
+const party: Party = {
+  id: 'party-1',
+  profileId: 'user-1',
+  name: 'Squad Alpha',
+  notes: null,
+  members: [{ entityId: firstOperator.id, slotIndex: 0 }],
+  createdAt: '2026-01-01T00:00:00Z',
+};
 
-describe('PartiesTab', () => {
-  const defaultProps = {
-    parties: [] as AeParty[],
-    availableOperators: ALL_OPERATORS,
-    onSaveParty: vi.fn().mockResolvedValue('new-id'),
-    onDeleteParty: vi.fn().mockResolvedValue(true),
-    session: createMockSession(),
-  };
+const defaultProps = {
+  parties: [party],
+  availableOperators: ALL_OPERATORS,
+  onSaveParty: vi.fn().mockResolvedValue('party-1'),
+  onDeleteParty: vi.fn().mockResolvedValue(true),
+  session: createMockSession(),
+};
 
-  it('shows sign-in message when no session', () => {
-    render(<PartiesTab {...defaultProps} session={null} />);
-    expect(screen.getByText(/sign in/i)).toBeInTheDocument();
+describe('PartiesTab (AE config wiring)', () => {
+  it('uses the Squad noun and AE copy, without tier or favorite', () => {
+    renderWithProviders(<PartiesTab {...defaultProps} />);
+    expect(screen.getByText('Your Squads')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Create New Squad' }));
+    expect(screen.getByPlaceholderText(/boss rush/i)).toBeInTheDocument();
+    expect(screen.queryByText('Tier')).not.toBeInTheDocument();
+    expect(screen.queryByTitle('Favourite')).not.toBeInTheDocument();
   });
 
-  it('does not show squad UI when no session', () => {
-    render(<PartiesTab {...defaultProps} session={null} />);
-    expect(screen.queryByText('Your Squads')).not.toBeInTheDocument();
-    expect(screen.queryByText('Create New Squad')).not.toBeInTheDocument();
+  it('applies the endfield variant class to the view root', () => {
+    renderWithProviders(<PartiesTab {...defaultProps} />);
+    expect(document.querySelector('.parties-tab')).toHaveClass('endfield');
   });
 
-  it('shows empty state when no parties', () => {
-    render(<PartiesTab {...defaultProps} />);
-    expect(screen.getByText(/No squads configured/)).toBeInTheDocument();
-  });
-
-  it('renders party cards when parties exist', () => {
-    render(
-      <PartiesTab
-        {...defaultProps}
-        parties={[makeParty({ name: 'Alpha' }), makeParty({ id: 'p2', name: 'Beta' })]}
-      />,
-    );
-    expect(screen.getByText('Alpha')).toBeInTheDocument();
-    expect(screen.getByText('Beta')).toBeInTheDocument();
-  });
-
-  it('shows "Create New Squad" button when authenticated', () => {
-    render(<PartiesTab {...defaultProps} />);
-    expect(screen.getByText('Create New Squad')).toBeInTheDocument();
-  });
-
-  it('opens create modal when create button clicked', () => {
-    render(<PartiesTab {...defaultProps} />);
-    fireEvent.click(screen.getByText('Create New Squad'));
-    expect(screen.getByRole('heading', { name: /create new squad/i })).toBeInTheDocument();
-  });
-
-  it('calls onDeleteParty when a party card delete button clicked', () => {
-    const onDeleteParty = vi.fn().mockResolvedValue(true);
-    render(<PartiesTab {...defaultProps} parties={[makeParty()]} onDeleteParty={onDeleteParty} />);
-    fireEvent.click(screen.getByTitle('Delete Squad'));
-    expect(onDeleteParty).toHaveBeenCalledWith('party-1');
-  });
-
-  it('opens edit modal when a party card edit button clicked', () => {
-    render(<PartiesTab {...defaultProps} parties={[makeParty({ name: 'My Squad' })]} />);
-    fireEvent.click(screen.getByTitle('Edit Squad'));
-    expect(screen.getByRole('heading', { name: /edit squad/i })).toBeInTheDocument();
-  });
-
-  it('closes create modal after saving', async () => {
-    const user = userEvent.setup();
-    const onSaveParty = vi.fn().mockResolvedValue('party-1');
-    render(<PartiesTab {...defaultProps} onSaveParty={onSaveParty} />);
-    fireEvent.click(screen.getByText('Create New Squad'));
-    expect(screen.getByRole('heading', { name: /create new squad/i })).toBeInTheDocument();
-    await user.type(screen.getByPlaceholderText('e.g. Boss Rush Team'), 'New Squad');
-    fireEvent.click(screen.getByText('Save Squad'));
-    await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: /create new squad/i })).not.toBeInTheDocument();
-    });
-  });
-
-  it('closes modal when cancel button clicked', () => {
-    render(<PartiesTab {...defaultProps} />);
-    fireEvent.click(screen.getByText('Create New Squad'));
-    expect(screen.getByRole('heading', { name: /create new squad/i })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }));
-    expect(screen.queryByRole('heading', { name: /create new squad/i })).not.toBeInTheDocument();
+  it('resolves member images through getMugshotUrl without a slot accent', () => {
+    renderWithProviders(<PartiesTab {...defaultProps} />);
+    const img = screen.getByAltText(firstOperator.name);
+    expect(img).toHaveAttribute('src', `mugshot:${firstOperator.imageUrl}`);
   });
 });

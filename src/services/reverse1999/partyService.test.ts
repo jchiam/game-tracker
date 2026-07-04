@@ -51,10 +51,10 @@ describe('r1999 partyService', () => {
     );
     expect(result[0].tier).toBe('S');
     expect(result[0].isFavorited).toBe(true);
-    expect(result[0].members).toEqual([{ arcanistId: 'regulus', slotIndex: 0 }]);
+    expect(result[0].members).toEqual([{ entityId: 'regulus', slotIndex: 0 }]);
   });
 
-  it('saveParty writes tier and is_favorited with the R1999 default name', async () => {
+  it('saveParty writes tier with the R1999 default name and never touches is_favorited', async () => {
     const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
     const memberBuilder = createBuilder({ data: null, error: null });
     mockFrom.mockImplementation((table: string) =>
@@ -63,7 +63,7 @@ describe('r1999 partyService', () => {
 
     await service.saveParty('user-1', {
       tier: 'A',
-      members: [{ arcanistId: 'regulus', slotIndex: 0 }],
+      members: [{ entityId: 'regulus', slotIndex: 0 }],
     });
 
     expect(partyBuilder.insert).toHaveBeenCalledWith({
@@ -71,7 +71,6 @@ describe('r1999 partyService', () => {
       name: 'New Lineup',
       notes: null,
       tier: 'A',
-      is_favorited: false,
     });
     expect(memberBuilder.insert).toHaveBeenCalledWith([
       { party_id: 'new-party-id', arcanist_id: 'regulus', slot_index: 0 },

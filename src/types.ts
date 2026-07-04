@@ -11,6 +11,33 @@ export interface StatPreference {
   orderIndex: number;
 }
 
+/**
+ * One saved Party/Lineup member. `entityId` is the catalog id of the tracked
+ * entity regardless of game (character/arcanist/operator) — the per-game DB
+ * column name is mapped at the party-persistence seam (`memberFromRow` /
+ * `memberToRow`).
+ */
+export interface PartyMember {
+  entityId: string;
+  slotIndex: number; // 0–3
+}
+
+/**
+ * A saved Party/Lineup, shared across all games. `tier` and `isFavorited`
+ * exist only for the games whose party tables carry them (R1999, N2E); they
+ * stay undefined for the rest.
+ */
+export interface Party {
+  id: string;
+  profileId: string;
+  name: string;
+  notes: string | null;
+  tier?: string | null;
+  isFavorited?: boolean;
+  members: PartyMember[];
+  createdAt: string;
+}
+
 export interface HsrTrackedCharacter extends Character {
   dbId?: string;
   isFavorited: boolean;
@@ -43,20 +70,6 @@ export interface HsrCharacterPatch {
   isFavorited?: boolean;
 }
 
-export interface HsrParty {
-  id: string;
-  profileId: string;
-  name: string;
-  notes: string | null;
-  members: HsrPartyMember[];
-  createdAt: string;
-}
-
-export interface HsrPartyMember {
-  characterId: string;
-  slotIndex: number;
-}
-
 export interface R1999TrackedArcanist extends Arcanist {
   dbId?: string;
   isFavorited: boolean;
@@ -79,22 +92,6 @@ export interface R1999ArcanistPatch {
   psychubeLevel?: number;
   psychubeAmplification?: number;
   isFavorited?: boolean;
-}
-
-export interface R1999Party {
-  id: string;
-  profileId: string;
-  name: string;
-  notes: string | null;
-  tier: string | null;
-  isFavorited: boolean;
-  members: R1999PartyMember[];
-  createdAt: string;
-}
-
-export interface R1999PartyMember {
-  arcanistId: string;
-  slotIndex: number; // 0–3
 }
 
 export interface N2ETrackedCharacter extends N2ECharacter {
@@ -139,22 +136,6 @@ export type N2ECartridgePatch = Pick<
   'cartridgeId' | 'cartridgeRarity' | 'cartridgeLevel' | 'cartridgeMainStat' | 'cartridgeSubStats'
 >;
 
-export interface N2EParty {
-  id: string;
-  profileId: string;
-  name: string;
-  notes: string | null;
-  tier: string | null;
-  isFavorited: boolean;
-  members: N2EPartyMember[];
-  createdAt: string;
-}
-
-export interface N2EPartyMember {
-  characterId: string;
-  slotIndex: number; // 0–3
-}
-
 export interface AeTrackedOperator extends AeOperator {
   dbId?: string;
   isFavorited: boolean;
@@ -178,17 +159,3 @@ export interface AeOperatorPatch {
 
 /** Patch shape for the AE operator weapon-equip callback (`onUpdateWeapon`). */
 export type AeWeaponPatch = Pick<AeOperatorPatch, 'weaponName' | 'weaponLevel'>;
-
-export interface AeParty {
-  id: string;
-  profileId: string;
-  name: string;
-  notes: string | null;
-  members: AePartyMember[];
-  createdAt: string;
-}
-
-export interface AePartyMember {
-  operatorId: string;
-  slotIndex: number; // 0–3
-}

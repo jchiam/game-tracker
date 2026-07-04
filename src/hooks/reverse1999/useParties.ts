@@ -1,5 +1,5 @@
 import { type Session } from '@supabase/supabase-js';
-import type { R1999Party, R1999PartyMember } from '@/types';
+import type { Party, PartyMember } from '@/types';
 import {
   loadParties,
   saveParty as apiSaveParty,
@@ -10,7 +10,7 @@ import { useParties as usePartiesBase, makeFavoriteToggle } from '@/hooks/usePar
 
 export function useParties(session: Session | null) {
   const { parties, setParties, partiesRef, isLoading, saveParty, deleteParty, refreshParties } =
-    usePartiesBase<R1999Party, R1999PartyMember>(session, {
+    usePartiesBase<Party, PartyMember>(session, {
       loadParties,
       saveParty: apiSaveParty,
       deleteParty: apiDeleteParty,

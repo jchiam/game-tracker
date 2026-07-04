@@ -1,11 +1,10 @@
 import { useState, useMemo } from 'react';
-import type { R1999Party, R1999PartyMember } from '@/types';
-import type { Arcanist } from '@/data/reverse1999/arcanists';
-import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
+import type { Party, PartyMember } from '@/types';
 import { addToast } from '@/utils/toast';
 import { Modal } from '@/components/Modal';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
-import '@/components/PartyEditorModal.css';
+import type { PartyEntity, PartyViewConfig } from './PartiesView';
+import './PartyEditorModal.css';
 
 const TIER_OPTIONS = (['S+', 'S', 'A', 'B'] as const).map((t) => ({
   value: t,
@@ -13,39 +12,43 @@ const TIER_OPTIONS = (['S+', 'S', 'A', 'B'] as const).map((t) => ({
   modifier: `tier-${t.replace('+', 'plus')}`,
 }));
 
-interface PartyEditorModalProps {
-  party?: R1999Party;
-  availableArcanists: Arcanist[];
-  onSave: (party: Partial<R1999Party> & { members: R1999PartyMember[] }) => Promise<void>;
+interface PartyEditorModalProps<E extends PartyEntity> {
+  config: PartyViewConfig<E>;
+  party?: Party;
+  entities: E[];
+  onSave: (party: Partial<Party> & { members: PartyMember[] }) => Promise<void>;
   onClose: () => void;
 }
 
-export function PartyEditorModal({
+export function PartyEditorModal<E extends PartyEntity>({
+  config,
   party,
-  availableArcanists,
+  entities,
   onSave,
   onClose,
-}: PartyEditorModalProps) {
+}: PartyEditorModalProps<E>) {
   const [name, setName] = useState(party?.name || '');
   const [tier, setTier] = useState<string | null>(party?.tier ?? null);
   const [notes, setNotes] = useState(party?.notes || '');
-  const [members, setMembers] = useState<R1999PartyMember[]>(party?.members || []);
+  const [members, setMembers] = useState<PartyMember[]>(party?.members || []);
   const [searchTerm, setSearchTerm] = useState('');
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
+  const { nouns } = config;
+  const partyLower = nouns.party.toLowerCase();
 
-  const filteredArcanists = useMemo(() => {
-    return availableArcanists.filter(
-      (a) =>
-        a.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !members.some((m) => m.arcanistId === a.id),
+  const filteredEntities = useMemo(() => {
+    return entities.filter(
+      (e) =>
+        e.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !members.some((m) => m.entityId === e.id),
     );
-  }, [availableArcanists, searchTerm, members]);
+  }, [entities, searchTerm, members]);
 
-  const handleSelectArcanist = (arcanistId: string) => {
+  const handleSelectEntity = (entityId: string) => {
     if (activeSlot === null) return;
 
     const newMembers = [...members.filter((m) => m.slotIndex !== activeSlot)];
-    newMembers.push({ arcanistId, slotIndex: activeSlot });
+    newMembers.push({ entityId, slotIndex: activeSlot });
     setMembers(newMembers.sort((a, b) => a.slotIndex - b.slotIndex));
     setActiveSlot(null);
     setSearchTerm('');
@@ -57,13 +60,13 @@ export function PartyEditorModal({
 
   const handleSave = () => {
     if (!name.trim()) {
-      addToast('Please enter a lineup name.', 'warning');
+      addToast(`Please enter a ${partyLower} name.`, 'warning');
       return;
     }
     onSave({
       id: party?.id,
       name,
-      tier,
+      ...(config.supportsTier ? { tier } : {}),
       notes,
       members,
     });
@@ -71,7 +74,7 @@ export function PartyEditorModal({
 
   return (
     <Modal
-      title={party ? 'Edit Lineup' : 'Create New Lineup'}
+      title={party ? `Edit ${nouns.party}` : `Create New ${nouns.party}`}
       onClose={onClose}
       className="party-editor"
       onEscPress={() => {
@@ -88,34 +91,36 @@ export function PartyEditorModal({
             Cancel
           </button>
           <button className="primary-action" onClick={handleSave}>
-            Save Lineup
+            Save {nouns.party}
           </button>
         </>
       }
     >
       <div className="party-editor-body">
         <div className="form-group">
-          <label>Lineup Name</label>
+          <label>{nouns.party} Name</label>
           <input
             type="text"
-            name="lineup-name"
-            placeholder="e.g. Limbo of Ruin 3-3"
+            name={`${partyLower}-name`}
+            placeholder={nouns.namePlaceholder}
             autoFocus
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </div>
 
-        <div className="form-group">
-          <label>Tier</label>
-          <SegmentedButtons
-            className="tier-selector"
-            options={TIER_OPTIONS}
-            value={tier}
-            allowDeselect
-            onChange={setTier}
-          />
-        </div>
+        {config.supportsTier && (
+          <div className="form-group">
+            <label>Tier</label>
+            <SegmentedButtons
+              className="tier-selector"
+              options={TIER_OPTIONS}
+              value={tier}
+              allowDeselect
+              onChange={setTier}
+            />
+          </div>
+        )}
 
         <div className="form-group">
           <label>Notes (Optional)</label>
@@ -131,25 +136,23 @@ export function PartyEditorModal({
           <div className="team-slots">
             {[0, 1, 2, 3].map((slotIndex) => {
               const member = members.find((m) => m.slotIndex === slotIndex);
-              const arcanist = member
-                ? availableArcanists.find((a) => a.id === member.arcanistId)
-                : null;
+              const entity = member ? entities.find((e) => e.id === member.entityId) : null;
 
               return (
                 <div
                   key={slotIndex}
-                  className={`builder-slot ${activeSlot === slotIndex ? 'active' : ''} ${arcanist ? 'occupied' : 'empty'}`}
+                  className={`builder-slot ${activeSlot === slotIndex ? 'active' : ''} ${entity ? 'occupied' : 'empty'}`}
                   onClick={() => setActiveSlot(slotIndex)}
                 >
-                  {arcanist ? (
+                  {entity ? (
                     <>
                       <img
-                        src={getMugshotUrl(arcanist.imageUrl)}
-                        alt={arcanist.name}
+                        src={config.resolveSlotImage(entity)}
+                        alt={entity.name}
                         className="slot-img"
                       />
                       <div className="slot-overlay">
-                        <span className="slot-name">{arcanist.name}</span>
+                        <span className="slot-name">{entity.name}</span>
                       </div>
                       <button
                         className="remove-member-btn"
@@ -177,8 +180,8 @@ export function PartyEditorModal({
               <div className="picker-header">
                 <input
                   type="text"
-                  name="lineup-arcanist-search"
-                  placeholder="Search arcanist..."
+                  name={`${partyLower}-${nouns.entity}-search`}
+                  placeholder={nouns.searchPlaceholder}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   autoFocus
@@ -188,14 +191,14 @@ export function PartyEditorModal({
                 </button>
               </div>
               <div className="picker-list">
-                {filteredArcanists.map((arcanist) => (
+                {filteredEntities.map((entity) => (
                   <div
-                    key={arcanist.id}
+                    key={entity.id}
                     className="picker-item"
-                    onClick={() => handleSelectArcanist(arcanist.id)}
+                    onClick={() => handleSelectEntity(entity.id)}
                   >
-                    <img src={getAvatarUrl(arcanist.imageUrl)} alt={arcanist.name} />
-                    <span>{arcanist.name}</span>
+                    <img src={config.resolveListImage(entity)} alt={entity.name} />
+                    <span>{entity.name}</span>
                   </div>
                 ))}
               </div>

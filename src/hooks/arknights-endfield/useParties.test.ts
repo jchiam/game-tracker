@@ -38,7 +38,7 @@ describe('useParties', () => {
         profileId: 'user-1',
         name: 'Squad A',
         notes: null,
-        members: [{ operatorId: 'ember', slotIndex: 0 }],
+        members: [{ entityId: 'ember', slotIndex: 0 }],
         createdAt: '2026-01-01',
       },
     ]);

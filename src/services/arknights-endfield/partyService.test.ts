@@ -25,7 +25,7 @@ describe('ae partyService', () => {
     vi.unstubAllEnvs();
   });
 
-  it('loadParties queries ae tables and maps operator_id to operatorId', async () => {
+  it('loadParties queries ae tables and maps operator_id to entityId', async () => {
     const builder = createBuilder({
       data: [
         {
@@ -51,8 +51,8 @@ describe('ae partyService', () => {
       'id, profile_id, name, notes, created_at, ae_party_members ( * )',
     );
     expect(result[0].members).toEqual([
-      { operatorId: 'ember', slotIndex: 0 },
-      { operatorId: 'ardelia', slotIndex: 1 },
+      { entityId: 'ember', slotIndex: 0 },
+      { entityId: 'ardelia', slotIndex: 1 },
     ]);
   });
 
@@ -64,7 +64,7 @@ describe('ae partyService', () => {
     );
 
     await service.saveParty('user-1', {
-      members: [{ operatorId: 'ember', slotIndex: 0 }],
+      members: [{ entityId: 'ember', slotIndex: 0 }],
     });
 
     expect(partyBuilder.insert).toHaveBeenCalledWith({

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
 import { ArknightsEndfieldPage } from './ArknightsEndfieldPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
-import type { AeTrackedOperator, AeParty } from '@/types';
+import type { AeTrackedOperator, Party } from '@/types';
 
 vi.mock('@/hooks/arknights-endfield/useOperators', () => ({
   useOperators: vi.fn(),
@@ -40,7 +40,7 @@ function makeOperator(id: string, name: string): AeTrackedOperator {
   };
 }
 
-function makeParty(id: string, name: string): AeParty {
+function makeParty(id: string, name: string): Party {
   return {
     id,
     profileId: 'user-1',
@@ -70,7 +70,7 @@ const defaultOperatorsHook = {
 };
 
 const defaultPartiesHook = {
-  parties: [] as AeParty[],
+  parties: [] as Party[],
   isLoading: false,
   saveParty: vi.fn().mockResolvedValue(null),
   deleteParty: vi.fn().mockResolvedValue(true),

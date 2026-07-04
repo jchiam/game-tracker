@@ -99,7 +99,7 @@ export function useParties<TParty extends { id: string }, TMember>(
  * Snapshots from a ref so the capture survives React's dev-mode double-invoke
  * of state updaters.
  */
-export function makeFavoriteToggle<TParty extends { id: string; isFavorited: boolean }>(
+export function makeFavoriteToggle<TParty extends { id: string; isFavorited?: boolean }>(
   setParties: Dispatch<SetStateAction<TParty[]>>,
   partiesRef: MutableRefObject<TParty[]>,
   persist: (partyId: string, value: boolean) => Promise<boolean>,

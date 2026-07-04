@@ -27,7 +27,7 @@ const sampleParty = {
   notes: null as string | null,
   tier: null as string | null,
   isFavorited: false,
-  members: [] as { characterId: string; slotIndex: number }[],
+  members: [] as { entityId: string; slotIndex: number }[],
   createdAt: new Date().toISOString(),
 };
 

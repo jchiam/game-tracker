@@ -1,10 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { screen, fireEvent } from '@testing-library/react';
 import { PartiesTab } from '@/pages/honkai-star-rail/components/PartiesTab';
 import { renderWithProviders, createMockSession } from '@/test/utils';
-import type { HsrParty } from '@/types';
+import type { Party } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
+
+// Config-wiring tests only — the shared view behaviour (slot editing, sorting,
+// modal flows, auth gating) is covered by src/components/parties/PartiesView.test.tsx.
 
 const availableCharacters: Character[] = [
   {
@@ -16,118 +18,41 @@ const availableCharacters: Character[] = [
   },
 ];
 
-function makeParty(overrides: Partial<HsrParty> = {}): HsrParty {
-  return {
-    id: 'party-1',
-    profileId: 'user-1',
-    name: 'Team Alpha',
-    notes: null,
-    members: [],
-    createdAt: new Date().toISOString(),
-    ...overrides,
-  };
-}
+const party: Party = {
+  id: 'party-1',
+  profileId: 'user-1',
+  name: 'Team Alpha',
+  notes: null,
+  members: [{ entityId: 'acheron', slotIndex: 0 }],
+  createdAt: new Date().toISOString(),
+};
 
 const defaultProps = {
-  parties: [],
+  parties: [party],
   availableCharacters,
   onSaveParty: vi.fn().mockResolvedValue('party-1'),
   onDeleteParty: vi.fn().mockResolvedValue(true),
+  session: createMockSession(),
 };
 
-describe('PartiesTab', () => {
-  it('shows sign-in prompt when there is no session', () => {
-    renderWithProviders(<PartiesTab {...defaultProps} session={null} />);
-    expect(screen.getByText(/please sign in/i)).toBeInTheDocument();
+describe('PartiesTab (HSR config wiring)', () => {
+  it('uses the Party noun and HSR copy, without a tier selector', () => {
+    renderWithProviders(<PartiesTab {...defaultProps} />);
+    expect(screen.getByText('Your Lineups')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+    expect(screen.getByPlaceholderText(/memory of chaos/i)).toBeInTheDocument();
+    expect(screen.queryByText('Tier')).not.toBeInTheDocument();
   });
 
-  it('does not show party UI when there is no session', () => {
-    renderWithProviders(<PartiesTab {...defaultProps} session={null} />);
-    expect(screen.queryByText('Your Lineups')).not.toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: /create new party/i })).not.toBeInTheDocument();
+  it('resolves members from the catalog with raw image paths and element accents', () => {
+    renderWithProviders(<PartiesTab {...defaultProps} />);
+    const img = screen.getByAltText('Acheron');
+    expect(img).toHaveAttribute('src', '/acheron.webp');
+    expect(img.closest('.slot-avatar')).toHaveClass('element-thunder');
   });
 
-  it('shows empty state when session exists but no parties', () => {
-    const session = createMockSession();
-    renderWithProviders(<PartiesTab {...defaultProps} parties={[]} session={session} />);
-    expect(screen.getByText(/no parties configured/i)).toBeInTheDocument();
-  });
-
-  it('renders party cards when parties exist', () => {
-    const session = createMockSession();
-    renderWithProviders(
-      <PartiesTab
-        {...defaultProps}
-        parties={[
-          makeParty({ name: 'Team Alpha' }),
-          makeParty({ id: 'party-2', name: 'Team Beta' }),
-        ]}
-        session={session}
-      />,
-    );
-    expect(screen.getByText('Team Alpha')).toBeInTheDocument();
-    expect(screen.getByText('Team Beta')).toBeInTheDocument();
-  });
-
-  it('shows the "Create New Party" button when authenticated', () => {
-    const session = createMockSession();
-    renderWithProviders(<PartiesTab {...defaultProps} session={session} />);
-    expect(screen.getByRole('button', { name: /create new party/i })).toBeInTheDocument();
-  });
-
-  it('opens the party editor modal when create button is clicked', () => {
-    const session = createMockSession();
-    renderWithProviders(<PartiesTab {...defaultProps} session={session} />);
-    fireEvent.click(screen.getByRole('button', { name: /create new party/i }));
-    expect(screen.getByRole('heading', { name: /create new party/i })).toBeInTheDocument();
-  });
-
-  it('calls onDeleteParty when a party card delete button is clicked', () => {
-    const onDeleteParty = vi.fn().mockResolvedValue(true);
-    const session = createMockSession();
-    renderWithProviders(
-      <PartiesTab
-        {...defaultProps}
-        parties={[makeParty()]}
-        onDeleteParty={onDeleteParty}
-        session={session}
-      />,
-    );
-    fireEvent.click(screen.getByTitle('Delete Party'));
-    expect(onDeleteParty).toHaveBeenCalledWith('party-1');
-  });
-
-  it('opens the edit modal when a party card edit button is clicked', () => {
-    const session = createMockSession();
-    renderWithProviders(
-      <PartiesTab {...defaultProps} parties={[makeParty({ name: 'My Team' })]} session={session} />,
-    );
-    fireEvent.click(screen.getByTitle('Edit Party'));
-    expect(screen.getByRole('heading', { name: /edit party/i })).toBeInTheDocument();
-  });
-
-  it('closes the party editor modal after saving a new party', async () => {
-    const user = userEvent.setup();
-    const session = createMockSession();
-    const onSaveParty = vi.fn().mockResolvedValue('party-1');
-    renderWithProviders(
-      <PartiesTab {...defaultProps} onSaveParty={onSaveParty} session={session} />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: /create new party/i }));
-    expect(screen.getByRole('heading', { name: /create new party/i })).toBeInTheDocument();
-    await user.type(screen.getByPlaceholderText(/memory of chaos/i), 'My Party');
-    fireEvent.click(screen.getByRole('button', { name: /save party/i }));
-    await waitFor(() => {
-      expect(screen.queryByRole('heading', { name: /create new party/i })).not.toBeInTheDocument();
-    });
-  });
-
-  it('closes the party editor modal when the cancel button is clicked', () => {
-    const session = createMockSession();
-    renderWithProviders(<PartiesTab {...defaultProps} session={session} />);
-    fireEvent.click(screen.getByRole('button', { name: /create new party/i }));
-    expect(screen.getByRole('heading', { name: /create new party/i })).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: /^cancel$/i }));
-    expect(screen.queryByRole('heading', { name: /create new party/i })).not.toBeInTheDocument();
+  it('does not render a favorite toggle', () => {
+    renderWithProviders(<PartiesTab {...defaultProps} />);
+    expect(screen.queryByTitle('Favourite')).not.toBeInTheDocument();
   });
 });
