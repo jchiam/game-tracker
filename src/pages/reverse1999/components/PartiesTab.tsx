@@ -3,6 +3,7 @@ import type { Party, PartyMember } from '@/types';
 import type { Arcanist } from '@/data/reverse1999/arcanists';
 import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
 import { PartiesView, type PartyViewConfig } from '@/components/parties/PartiesView';
+import './PartiesTab.css';
 
 const R1999_PARTY_VIEW: PartyViewConfig<Arcanist> = {
   nouns: {

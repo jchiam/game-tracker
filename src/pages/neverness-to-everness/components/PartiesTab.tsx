@@ -3,6 +3,7 @@ import type { Party, PartyMember } from '@/types';
 import type { N2ECharacter } from '@/data/neverness-to-everness/characters';
 import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
 import { PartiesView, type PartyViewConfig } from '@/components/parties/PartiesView';
+import './PartiesTab.css';
 
 const N2E_PARTY_VIEW: PartyViewConfig<N2ECharacter> = {
   nouns: {

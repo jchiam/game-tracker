@@ -1,0 +1,20 @@
+/* Esper accent borders for lineup slot avatars. Scoped to .slot-avatar so
+   the badge-only compound rules in CharacterCard.css keep their own tint. */
+.slot-avatar.esper-anima {
+  border-color: var(--color-n2e-esper-anima);
+}
+.slot-avatar.esper-chaos {
+  border-color: var(--color-n2e-esper-chaos);
+}
+.slot-avatar.esper-cosmos {
+  border-color: var(--color-n2e-esper-cosmos);
+}
+.slot-avatar.esper-incantation {
+  border-color: var(--color-n2e-esper-incantation);
+}
+.slot-avatar.esper-lakshana {
+  border-color: var(--color-n2e-esper-lakshana);
+}
+.slot-avatar.esper-psyche {
+  border-color: var(--color-n2e-esper-psyche);
+}

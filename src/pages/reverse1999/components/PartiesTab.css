@@ -1,0 +1,20 @@
+/* Afflatus accent borders for lineup slot avatars. Scoped to .slot-avatar so
+   the badge-only compound rules in ArcanistCard.css keep their own tint. */
+.slot-avatar.afflatus-plant {
+  border-color: var(--color-r1999-afflatus-plant);
+}
+.slot-avatar.afflatus-star {
+  border-color: var(--color-r1999-afflatus-star);
+}
+.slot-avatar.afflatus-beast {
+  border-color: var(--color-r1999-afflatus-beast);
+}
+.slot-avatar.afflatus-mineral {
+  border-color: var(--color-r1999-afflatus-mineral);
+}
+.slot-avatar.afflatus-intellect {
+  border-color: var(--color-r1999-afflatus-intellect);
+}
+.slot-avatar.afflatus-spirit {
+  border-color: var(--color-r1999-afflatus-spirit);
+}
