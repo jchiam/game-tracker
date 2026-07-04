@@ -58,7 +58,7 @@ The design system is organised in 4 layers. Higher layers build on lower ones.
 
 ```
 L1  Design Tokens     src/styles/design-tokens.json → tokens.css
-L2  Shared Styles     src/styles/card.css, controls.css, animations.css
+L2  Shared Styles     src/styles/card.css, controls.css, party.css, animations.css
 L3  Shared Components src/components/ (Modal, GameSwitcher, AuthGate, …)
 L4  Game Components   src/pages/{game}/components/ (game-unique only)
 ```
@@ -79,9 +79,12 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/styles/card.css`       | `.game-card` wrapper, header, overlay, controls, body, name, `.favorite-btn`, `.remove-btn`, `.edit-toggle-btn`, `.progress-section`, `.section-header`                                  |
 | `src/styles/controls.css`   | `.level-slider`/`.level-value`, `.spinner-dot`, `.stat-chip`, `.toggle-btn`, `.game-select`, `.segmented-buttons`, `.substats-section`/`.substat-row`, `.game-card-image` loading states |
+| `src/styles/party.css`      | Lineups view: `.parties-tab`/`.parties-header`/`.parties-grid`, `.party-card`, `.party-tier-banner`, `.icon-btn`/`.party-favorite-btn`/`.edit-btn`/`.delete-btn`, `.slot-avatar` row     |
 | `src/styles/animations.css` | All shared `@keyframes`                                                                                                                                                                  |
 
 **Card class names are canonical** — all games use `.game-card`, `.game-card-header`, `.game-card-image`, `.game-card-overlay`, `.game-card-controls`, `.game-card-body`, `.game-card-name`. Game-specific CSS files only add overrides (padding, hover transforms) and game-unique rules. Never re-declare a rule already in `card.css` or `controls.css`.
+
+**Party class names are canonical too** — HSR, R1999, and N2E render lineups entirely from `party.css` (`.party-card`, `.party-name`, `.party-members-row`, `.slot-avatar`, …) and ship no per-game party CSS. The party favorite toggle is `.party-favorite-btn`, deliberately distinct from the roster card's `.favorite-btn` so route-split stylesheets can never clobber each other. AE keeps its own lighter `endfield-*` party card (Phase-1 scope) but reuses the shared `.icon-btn` action buttons.
 
 ### L3 — Shared Components
 

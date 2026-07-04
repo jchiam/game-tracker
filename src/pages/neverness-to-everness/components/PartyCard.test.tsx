@@ -58,13 +58,13 @@ describe('PartyCard', () => {
 
   it('renders tier banner when tier is set', () => {
     const { container } = render(<PartyCard party={makeParty({ tier: 'S+' })} {...defaultProps} />);
-    expect(container.querySelector('.n2e-party-tier-banner')).toHaveTextContent('S+');
-    expect(container.querySelector('.n2e-tier-banner-Splus')).toBeInTheDocument();
+    expect(container.querySelector('.party-tier-banner')).toHaveTextContent('S+');
+    expect(container.querySelector('.tier-banner-Splus')).toBeInTheDocument();
   });
 
   it('does not render tier banner when tier is null', () => {
     const { container } = render(<PartyCard party={makeParty()} {...defaultProps} />);
-    expect(container.querySelector('.n2e-party-tier-banner')).not.toBeInTheDocument();
+    expect(container.querySelector('.party-tier-banner')).not.toBeInTheDocument();
   });
 
   it('renders notes when present', () => {
@@ -84,8 +84,8 @@ describe('PartyCard', () => {
 
   it('renders 4 slots with empty placeholders for unfilled slots', () => {
     const { container } = render(<PartyCard party={makeParty()} {...defaultProps} />);
-    expect(container.querySelectorAll('.n2e-slot-item')).toHaveLength(4);
-    expect(container.querySelectorAll('.n2e-empty-plus')).toHaveLength(4);
+    expect(container.querySelectorAll('.slot-item')).toHaveLength(4);
+    expect(container.querySelectorAll('.empty-plus')).toHaveLength(4);
   });
 
   it('calls onEdit when edit button is clicked', () => {
@@ -126,6 +126,6 @@ describe('PartyCard', () => {
     const { container } = render(
       <PartyCard party={makeParty({ isFavorited: true })} {...defaultProps} />,
     );
-    expect(container.querySelector('.n2e-favorite-btn.active')).toBeInTheDocument();
+    expect(container.querySelector('.party-favorite-btn.active')).toBeInTheDocument();
   });
 });

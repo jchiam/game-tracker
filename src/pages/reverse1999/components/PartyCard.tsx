@@ -1,7 +1,6 @@
 import type { R1999Party } from '@/types';
 import type { Arcanist } from '@/data/reverse1999/arcanists';
 import { getMugshotUrl } from '@/lib/imagekit';
-import './PartyCard.css';
 
 interface PartyCardProps {
   party: R1999Party;
@@ -29,7 +28,7 @@ export function PartyCard({
         <h3 className="party-name">{party.name}</h3>
         <div className="party-actions">
           <button
-            className={`icon-btn favorite-btn ${party.isFavorited ? 'active' : ''}`}
+            className={`icon-btn party-favorite-btn ${party.isFavorited ? 'active' : ''}`}
             onClick={() => onToggleFavorite(!party.isFavorited)}
             title={party.isFavorited ? 'Unfavourite' : 'Favourite'}
           >

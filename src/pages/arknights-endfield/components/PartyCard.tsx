@@ -16,10 +16,10 @@ export function PartyCard({ party, availableOperators, onEdit, onDelete }: Party
       <div className="endfield-party-card-header">
         <h3 className="endfield-party-name">{party.name}</h3>
         <div className="endfield-party-actions">
-          <button className="n2e-icon-btn n2e-edit-btn" onClick={onEdit} title="Edit Squad">
+          <button className="icon-btn edit-btn" onClick={onEdit} title="Edit Squad">
             ✎
           </button>
-          <button className="n2e-icon-btn n2e-delete-btn" onClick={onDelete} title="Delete Squad">
+          <button className="icon-btn delete-btn" onClick={onDelete} title="Delete Squad">
             ✕
           </button>
         </div>

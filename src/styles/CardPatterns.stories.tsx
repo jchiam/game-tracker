@@ -103,6 +103,44 @@ export const CollapseMechanism: Story = {
   render: () => <CollapseDemo />,
 };
 
+/**
+ * Canonical party/lineup card from src/styles/party.css — shared by all games'
+ * Lineups view. Tier banner and favorite toggle are optional per game.
+ * The favorite toggle uses `.party-favorite-btn` (not the roster card's
+ * `.favorite-btn`) so the two rule sets can never clobber each other.
+ */
+export const PartyCard: Story = {
+  render: () => (
+    <div className="party-card" style={{ maxWidth: 380 }}>
+      <div className="party-tier-banner tier-banner-S">S</div>
+      <div className="party-card-header">
+        <h3 className="party-name">Party Name</h3>
+        <div className="party-actions">
+          <button className="icon-btn party-favorite-btn active" title="Favourite">
+            &#9733;
+          </button>
+          <button className="icon-btn edit-btn" title="Edit">
+            &#9998;
+          </button>
+          <button className="icon-btn delete-btn" title="Delete">
+            &#10005;
+          </button>
+        </div>
+      </div>
+      <p className="party-notes">Optional notes about the lineup, clamped to two lines.</p>
+      <div className="party-members-row">
+        {[0, 1, 2, 3].map((slot) => (
+          <div key={slot} className="slot-item">
+            <div className="slot-avatar empty">
+              <span className="empty-plus">+</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  ),
+};
+
 export const ProgressSections: Story = {
   render: () => (
     <div style={{ maxWidth: 300 }}>

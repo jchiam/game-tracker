@@ -4,7 +4,6 @@ import type { Character } from '@/data/honkai-star-rail/characters';
 import type { Session } from '@supabase/supabase-js';
 import { PartyCard } from './PartyCard';
 import { PartyEditorModal } from './PartyEditorModal';
-import './PartiesTab.css';
 
 interface PartiesTabProps {
   parties: HsrParty[];

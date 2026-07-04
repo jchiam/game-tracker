@@ -1,7 +1,6 @@
 import type { N2EParty } from '@/types';
 import type { N2ECharacter } from '@/data/neverness-to-everness/characters';
 import { getMugshotUrl } from '@/lib/imagekit';
-import './PartyCard.css';
 
 interface PartyCardProps {
   party: N2EParty;
@@ -19,34 +18,34 @@ export function PartyCard({
   onToggleFavorite,
 }: PartyCardProps) {
   return (
-    <div className="n2e-party-card">
+    <div className="party-card">
       {party.tier && (
-        <div className={`n2e-party-tier-banner n2e-tier-banner-${party.tier.replace('+', 'plus')}`}>
+        <div className={`party-tier-banner tier-banner-${party.tier.replace('+', 'plus')}`}>
           {party.tier}
         </div>
       )}
-      <div className="n2e-party-card-header">
-        <h3 className="n2e-party-name">{party.name}</h3>
-        <div className="n2e-party-actions">
+      <div className="party-card-header">
+        <h3 className="party-name">{party.name}</h3>
+        <div className="party-actions">
           <button
-            className={`n2e-icon-btn n2e-favorite-btn ${party.isFavorited ? 'active' : ''}`}
+            className={`icon-btn party-favorite-btn ${party.isFavorited ? 'active' : ''}`}
             onClick={() => onToggleFavorite(!party.isFavorited)}
             title={party.isFavorited ? 'Unfavourite' : 'Favourite'}
           >
             {party.isFavorited ? '★' : '☆'}
           </button>
-          <button className="n2e-icon-btn n2e-edit-btn" onClick={onEdit} title="Edit Lineup">
+          <button className="icon-btn edit-btn" onClick={onEdit} title="Edit Lineup">
             ✎
           </button>
-          <button className="n2e-icon-btn n2e-delete-btn" onClick={onDelete} title="Delete Lineup">
+          <button className="icon-btn delete-btn" onClick={onDelete} title="Delete Lineup">
             ✕
           </button>
         </div>
       </div>
 
-      {party.notes && <p className="n2e-party-notes">{party.notes}</p>}
+      {party.notes && <p className="party-notes">{party.notes}</p>}
 
-      <div className="n2e-party-members-row">
+      <div className="party-members-row">
         {[0, 1, 2, 3].map((slotIndex) => {
           const member = party.members.find((m) => m.slotIndex === slotIndex);
           const character = member
@@ -54,21 +53,21 @@ export function PartyCard({
             : null;
 
           return (
-            <div key={slotIndex} className="n2e-slot-item">
+            <div key={slotIndex} className="slot-item">
               <div
-                className={`n2e-slot-avatar ${character ? `esper-${character.esperType.toLowerCase()}` : 'empty'}`}
+                className={`slot-avatar ${character ? `esper-${character.esperType.toLowerCase()}` : 'empty'}`}
               >
                 {character ? (
                   <img
                     src={getMugshotUrl(character.imageUrl)}
                     alt={character.name}
-                    className="n2e-char-img"
+                    className="char-img"
                   />
                 ) : (
-                  <span className="n2e-empty-plus">+</span>
+                  <span className="empty-plus">+</span>
                 )}
               </div>
-              {character && <span className="n2e-char-name-small">{character.name}</span>}
+              {character && <span className="char-name-small">{character.name}</span>}
             </div>
           );
         })}

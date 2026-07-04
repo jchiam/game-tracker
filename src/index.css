@@ -3,6 +3,7 @@
 @import './styles/animations.css';
 @import './styles/card.css';
 @import './styles/controls.css';
+@import './styles/party.css';
 
 body {
   margin: 0;

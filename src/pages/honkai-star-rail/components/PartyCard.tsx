@@ -1,6 +1,5 @@
 import type { HsrParty } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
-import './PartyCard.css';
 
 interface PartyCardProps {
   party: HsrParty;

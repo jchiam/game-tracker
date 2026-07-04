@@ -4,7 +4,6 @@ import type { N2ECharacter } from '@/data/neverness-to-everness/characters';
 import type { Session } from '@supabase/supabase-js';
 import { PartyCard } from './PartyCard';
 import { PartyEditorModal } from './PartyEditorModal';
-import './PartiesTab.css';
 
 interface PartiesTabProps {
   parties: N2EParty[];
@@ -35,15 +34,15 @@ export function PartiesTab({
   }
 
   return (
-    <div className="n2e-parties-tab">
-      <div className="n2e-parties-header">
+    <div className="parties-tab">
+      <div className="parties-header">
         <h2>Your Lineups</h2>
         <button className="primary-action" onClick={() => setIsCreateModalOpen(true)}>
           Create New Lineup
         </button>
       </div>
 
-      <div className="n2e-parties-grid">
+      <div className="parties-grid">
         {parties.length === 0 ? (
           <div className="empty-state">
             <p>No lineups configured yet. Build your first team!</p>

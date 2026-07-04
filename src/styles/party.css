@@ -1,4 +1,37 @@
-.n2e-party-card {
+/* ─── Shared party/lineup styles ─────────────────────────────────── */
+/* Canonical look for the Lineups view: tab chrome, party card, tier
+   banner, action icon buttons, member slot row. All games use these
+   class names; game stylesheets contribute only genuine overrides
+   (AE keeps its own lighter `endfield-*` card but reuses `.icon-btn`). */
+
+/* ─── Parties tab chrome ─────────────────────────────────────────── */
+
+.parties-tab {
+  padding-bottom: var(--spacing-xl);
+}
+
+.parties-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.parties-header h2 {
+  font-size: var(--typography-font-size-3xl);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.parties-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: var(--spacing-xl);
+}
+
+/* ─── Party card ─────────────────────────────────────────────────── */
+
+.party-card {
   background: var(--color-bg-surface);
   border: 1px solid var(--color-ui-border);
   border-radius: var(--border-radius-lg);
@@ -12,13 +45,15 @@
   position: relative;
 }
 
-.n2e-party-card:hover {
+.party-card:hover {
   border-color: var(--color-brand-primary);
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
 }
 
-.n2e-party-tier-banner {
+/* ─── Tier banner (games with ranked parties: R1999, N2E) ────────── */
+
+.party-tier-banner {
   position: absolute;
   top: 0;
   right: 0;
@@ -30,41 +65,43 @@
   clip-path: polygon(8px 0%, 100% 0%, 100% 100%, 0% 100%);
 }
 
-.n2e-tier-banner-Splus {
+.tier-banner-Splus {
   color: var(--color-text-primary);
   background: var(--color-tier-splus);
 }
-.n2e-tier-banner-S {
+.tier-banner-S {
   color: var(--color-text-on-primary);
   background: var(--color-tier-s);
 }
-.n2e-tier-banner-A {
+.tier-banner-A {
   color: var(--color-text-primary);
   background: var(--color-tier-a);
 }
-.n2e-tier-banner-B {
+.tier-banner-B {
   color: var(--color-text-primary);
   background: var(--color-tier-b);
 }
 
-.n2e-party-card-header {
+/* ─── Header + actions ───────────────────────────────────────────── */
+
+.party-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-.n2e-party-name {
+.party-name {
   font-size: var(--typography-font-size-xl2);
   color: var(--color-text-primary);
   margin: 0;
 }
 
-.n2e-party-actions {
+.party-actions {
   display: flex;
   gap: var(--spacing-xs);
 }
 
-.n2e-icon-btn {
+.icon-btn {
   background: transparent;
   border: none;
   font-size: var(--typography-font-size-lg);
@@ -76,31 +113,37 @@
   line-height: 1;
 }
 
-.n2e-icon-btn:hover {
+.icon-btn:hover {
   background: rgba(255, 255, 255, 0.05);
   color: var(--color-text-primary);
 }
 
-.n2e-favorite-btn.active {
+/* Named `party-favorite-btn` (not `favorite-btn`) on purpose — the roster
+   card's `.favorite-btn` in card.css is a styled 32px circle; sharing the
+   class would let either rule set clobber the other depending on import
+   order. */
+.party-favorite-btn.active {
   color: var(--color-tier-s);
 }
 
-.n2e-favorite-btn:hover {
+.party-favorite-btn:hover {
   color: var(--color-tier-s);
   background: rgba(255, 215, 0, 0.1);
 }
 
-.n2e-edit-btn:hover {
+.edit-btn:hover {
   color: #7fb3ff;
   background: rgba(127, 179, 255, 0.1);
 }
 
-.n2e-delete-btn:hover {
+.delete-btn:hover {
   color: var(--color-ui-danger);
   background: var(--color-ui-danger-bg);
 }
 
-.n2e-party-notes {
+/* ─── Notes ──────────────────────────────────────────────────────── */
+
+.party-notes {
   font-size: var(--typography-font-size-base);
   color: var(--color-text-secondary);
   margin: 0;
@@ -113,21 +156,23 @@
   overflow: hidden;
 }
 
-.n2e-party-members-row {
+/* ─── Member slots ───────────────────────────────────────────────── */
+
+.party-members-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: var(--spacing-sm);
   margin-top: var(--spacing-sm);
 }
 
-.n2e-slot-item {
+.slot-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: var(--spacing-3);
 }
 
-.n2e-slot-avatar {
+.slot-avatar {
   width: 100%;
   aspect-ratio: 1;
   border-radius: var(--border-radius-md);
@@ -140,17 +185,17 @@
   transition: all var(--transition-fast);
 }
 
-.n2e-slot-avatar.empty {
+.slot-avatar.empty {
   border-style: dashed;
 }
 
-.n2e-char-img {
+.char-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.n2e-char-name-small {
+.char-name-small {
   font-size: var(--typography-font-size-xs);
   color: var(--color-text-secondary);
   text-align: center;
@@ -160,8 +205,14 @@
   width: 100%;
 }
 
-.n2e-empty-plus {
+.empty-plus {
   font-size: var(--typography-font-size-2xl);
   color: var(--color-text-dim);
   opacity: 0.5;
+}
+
+@media (max-width: 480px) {
+  .parties-grid {
+    grid-template-columns: 1fr;
+  }
 }
