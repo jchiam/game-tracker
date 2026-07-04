@@ -40,55 +40,26 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     isLoadError,
     retryLoad,
     pendingSaveCount,
-    queueUpdate,
     queueAction,
     addEntity: addCharacter,
     removeEntity: removeCharacter,
+    makeFieldUpdater,
     filterRoster,
-  } = useRoster<Character, HsrTrackedCharacter>(session, isAuthLoading, {
+  } = useRoster<Character, HsrTrackedCharacter, HsrCharacterPatch>(session, isAuthLoading, {
     allEntities: ALL_CHARACTERS,
     loadFromDB: loadCharactersFromDB,
     insertEntity: insertCharacter,
     deleteEntity: deleteCharacter,
+    updateEntity: updateCharacter,
     createTracked: createTrackedCharacter,
     nounSingular: 'character',
     nounPlural: 'characters',
     fuseKeys: ['name', 'element', 'path'],
   });
 
-  const updateCharacterLevel = (id: string, level: number) => {
-    const validLevel = Math.min(80, Math.max(1, level));
-    setTrackedCharacters((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, level: validLevel } : c)),
-    );
-    const char = trackedCharactersRef.current.find((c) => c.id === id);
-    if (char?.dbId)
-      queueUpdate(char.dbId, { level: validLevel } satisfies HsrCharacterPatch, (p) =>
-        updateCharacter(char.dbId!, p),
-      );
-  };
-
-  const toggleCharacterTraces = (id: string, value: boolean) => {
-    setTrackedCharacters((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, tracesAttained: value } : c)),
-    );
-    const char = trackedCharactersRef.current.find((c) => c.id === id);
-    if (char?.dbId)
-      queueUpdate(char.dbId, { tracesAttained: value } satisfies HsrCharacterPatch, (p) =>
-        updateCharacter(char.dbId!, p),
-      );
-  };
-
-  const toggleFavoriteCharacter = (id: string, value: boolean) => {
-    setTrackedCharacters((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isFavorited: value } : c)),
-    );
-    const char = trackedCharactersRef.current.find((c) => c.id === id);
-    if (char?.dbId)
-      queueUpdate(char.dbId, { isFavorited: value } satisfies HsrCharacterPatch, (p) =>
-        updateCharacter(char.dbId!, p),
-      );
-  };
+  const updateCharacterLevel = makeFieldUpdater('level', { clamp: [1, 80] });
+  const toggleCharacterTraces = makeFieldUpdater('tracesAttained');
+  const toggleFavoriteCharacter = makeFieldUpdater('isFavorited');
 
   const saveRelicData = async (
     editingRelic: { charId: string; slot: keyof HsrTrackedCharacter['relics'] },

@@ -23,11 +23,20 @@ export interface RosterTracked {
   isFavorited: boolean;
 }
 
-export interface RosterConfig<TBase extends RosterBase, TTracked extends RosterTracked> {
+export interface RosterConfig<
+  TBase extends RosterBase,
+  TTracked extends RosterTracked,
+  TPatch extends Partial<TTracked> = Partial<TTracked>,
+> {
   allEntities: TBase[];
   loadFromDB: (userId: string) => Promise<TTracked[]>;
   insertEntity: (userId: string, entityId: string) => Promise<string | null>;
   deleteEntity: (dbId: string) => Promise<void>;
+  /**
+   * Persist a partial update for one tracked row. Required for `applyPatch` /
+   * `makeFieldUpdater`; without it patches stay local-only.
+   */
+  updateEntity?: (dbId: string, patch: TPatch) => Promise<void>;
   /** Build the optimistic tracked entity from its base record. */
   createTracked: (base: TBase) => TTracked;
   /** Noun used in toast messages, e.g. "character" / "characters". */
@@ -37,6 +46,13 @@ export interface RosterConfig<TBase extends RosterBase, TTracked extends RosterT
   fuseKeys: string[];
 }
 
+export interface FieldUpdaterOptions<V> {
+  /** Inclusive [min, max] applied when the incoming value is a number. */
+  clamp?: [number, number];
+  /** Normalize the incoming value before it is stored and saved (e.g. dedupe a list). */
+  transform?: (value: V) => V;
+}
+
 /**
  * Shared roster lifecycle for the per-game tracking hooks. Concentrates the
  * load effect, optimistic add/remove with rollback, the in-flight insert dedup,
@@ -44,12 +60,13 @@ export interface RosterConfig<TBase extends RosterBase, TTracked extends RosterT
  * primitive. Per-game hooks layer their typed field updaters on top, calling
  * the returned `queueUpdate` / `queueAction`.
  */
-export function useRoster<TBase extends RosterBase, TTracked extends RosterTracked>(
-  session: Session | null,
-  isAuthLoading: boolean,
-  config: RosterConfig<TBase, TTracked>,
-) {
-  const { allEntities, loadFromDB, insertEntity, deleteEntity, createTracked } = config;
+export function useRoster<
+  TBase extends RosterBase,
+  TTracked extends RosterTracked,
+  TPatch extends Partial<TTracked> = Partial<TTracked>,
+>(session: Session | null, isAuthLoading: boolean, config: RosterConfig<TBase, TTracked, TPatch>) {
+  const { allEntities, loadFromDB, insertEntity, deleteEntity, updateEntity, createTracked } =
+    config;
   const [availableEntities] = useState<TBase[]>(allEntities);
   const [trackedEntities, setTrackedEntities] = useState<TTracked[]>([]);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -139,6 +156,40 @@ export function useRoster<TBase extends RosterBase, TTracked extends RosterTrack
   };
 
   /**
+   * Optimistic partial update for one tracked row: set state, then debounce the
+   * DB write through `queueUpdate` (merged per dbId). Rows without a `dbId`
+   * (insert still in flight) update locally only — same contract the per-game
+   * hand-written updaters had.
+   */
+  const applyPatch = (id: string, patch: TPatch) => {
+    setTrackedEntities((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
+    const row = trackedRef.current.find((t) => t.id === id);
+    if (row?.dbId && updateEntity) {
+      queueUpdate(row.dbId, patch, (merged) => updateEntity(row.dbId!, merged as TPatch));
+    }
+  };
+
+  /**
+   * Single-field updater factory over `applyPatch`. Clamp bounds and value
+   * transforms live here as config so per-game hooks declare updaters as data:
+   * `makeFieldUpdater('level', { clamp: [1, 80] })`.
+   */
+  const makeFieldUpdater =
+    <K extends keyof TTracked & keyof TPatch & string>(
+      field: K,
+      options?: FieldUpdaterOptions<TTracked[K]>,
+    ) =>
+    (id: string, value: TTracked[K]) => {
+      let next = value;
+      if (options?.clamp && typeof next === 'number') {
+        const [min, max] = options.clamp;
+        next = Math.min(max, Math.max(min, next)) as TTracked[K];
+      }
+      if (options?.transform) next = options.transform(next);
+      applyPatch(id, { [field]: next } as unknown as TPatch);
+    };
+
+  /**
    * Fuse search (when a term is present) followed by favorited-first ordering
    * with an alphabetical tiebreak. A per-game `secondaryCompare` slots between
    * the favorited check and the alpha fallback to express SCORE / LEVEL sorts.
@@ -183,6 +234,8 @@ export function useRoster<TBase extends RosterBase, TTracked extends RosterTrack
     queueAction,
     addEntity,
     removeEntity,
+    applyPatch,
+    makeFieldUpdater,
     filterRoster,
   };
 }

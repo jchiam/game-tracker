@@ -331,6 +331,90 @@ describe('useRoster', () => {
     });
   });
 
+  describe('applyPatch / makeFieldUpdater', () => {
+    let mockUpdateEntity: Mock<(dbId: string, patch: Partial<TestTracked>) => Promise<void>>;
+
+    beforeEach(() => {
+      mockUpdateEntity = vi
+        .fn<(dbId: string, patch: Partial<TestTracked>) => Promise<void>>()
+        .mockResolvedValue(undefined);
+      config.updateEntity = mockUpdateEntity;
+      mockLoadFromDB.mockResolvedValue([
+        { id: 'char-1', name: 'Char One', isFavorited: false, dbId: 'db-id-1', extraValue: 0 },
+        { id: 'char-2', name: 'Char Two', isFavorited: false, extraValue: 0 }, // no dbId yet
+      ]);
+    });
+
+    it('applies patch optimistically and flushes it to updateEntity', async () => {
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      act(() => {
+        result.current.applyPatch('char-1', { extraValue: 42, isFavorited: true });
+      });
+
+      expect(result.current.trackedEntities[0]).toMatchObject({
+        extraValue: 42,
+        isFavorited: true,
+      });
+      expect(mockUpdateEntity).toHaveBeenCalledWith('db-id-1', {
+        extraValue: 42,
+        isFavorited: true,
+      });
+    });
+
+    it('updates locally but skips the DB write when the row has no dbId', async () => {
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      act(() => {
+        result.current.applyPatch('char-2', { extraValue: 7 });
+      });
+
+      expect(result.current.trackedEntities[1].extraValue).toBe(7);
+      expect(mockUpdateEntity).not.toHaveBeenCalled();
+    });
+
+    it('updates locally but skips the DB write when updateEntity is not configured', async () => {
+      delete config.updateEntity;
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      act(() => {
+        result.current.applyPatch('char-1', { extraValue: 9 });
+      });
+
+      expect(result.current.trackedEntities[0].extraValue).toBe(9);
+      expect(mockUpdateEntity).not.toHaveBeenCalled();
+    });
+
+    it('makeFieldUpdater clamps numeric values to the configured bounds', async () => {
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      const updateExtra = result.current.makeFieldUpdater('extraValue', { clamp: [1, 80] });
+      act(() => updateExtra('char-1', 999));
+      expect(result.current.trackedEntities[0].extraValue).toBe(80);
+      expect(mockUpdateEntity).toHaveBeenLastCalledWith('db-id-1', { extraValue: 80 });
+
+      act(() => updateExtra('char-1', -5));
+      expect(result.current.trackedEntities[0].extraValue).toBe(1);
+    });
+
+    it('makeFieldUpdater applies the configured transform before saving', async () => {
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      const updateName = result.current.makeFieldUpdater('name', {
+        transform: (value) => value.trim(),
+      });
+      act(() => updateName('char-1', '  Padded  '));
+
+      expect(result.current.trackedEntities[0].name).toBe('Padded');
+      expect(mockUpdateEntity).toHaveBeenCalledWith('db-id-1', { name: 'Padded' });
+    });
+  });
+
   describe('filterRoster', () => {
     it('filters elements via Fuse.js search', async () => {
       mockLoadFromDB.mockResolvedValue([

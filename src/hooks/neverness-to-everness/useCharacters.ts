@@ -45,29 +45,23 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     queueAction,
     addEntity: addCharacter,
     removeEntity: removeCharacter,
+    applyPatch,
+    makeFieldUpdater,
     filterRoster,
-  } = useRoster<N2ECharacter, N2ETrackedCharacter>(session, isAuthLoading, {
+  } = useRoster<N2ECharacter, N2ETrackedCharacter, N2ECharacterPatch>(session, isAuthLoading, {
     allEntities: ALL_CHARACTERS,
     loadFromDB: loadCharactersFromDB,
     insertEntity: insertCharacter,
     deleteEntity: deleteCharacter,
+    updateEntity: updateCharacter,
     createTracked: createTrackedCharacter,
     nounSingular: 'character',
     nounPlural: 'characters',
     fuseKeys: ['name', 'esperType', 'arcType', 'roles'],
   });
 
-  const updateCharacterLevel = (id: string, level: number) => {
-    const validLevel = Math.min(90, Math.max(1, level));
-    setTrackedCharacters((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, level: validLevel } : c)),
-    );
-    const char = trackedCharactersRef.current.find((c) => c.id === id);
-    if (char?.dbId)
-      queueUpdate(char.dbId, { level: validLevel } satisfies N2ECharacterPatch, (p) =>
-        updateCharacter(char.dbId!, p),
-      );
-  };
+  const updateCharacterLevel = makeFieldUpdater('level', { clamp: [1, 90] });
+  const toggleFavoriteCharacter = makeFieldUpdater('isFavorited');
 
   const toggleAwakeningSlot = (id: string, slotIndex: number) => {
     setTrackedCharacters((prev) =>
@@ -88,36 +82,10 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     }
   };
 
-  const updateArc = (id: string, arcId: string | null, arcLevel: number, arcTier: number) => {
-    setTrackedCharacters((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, arcId, arcLevel, arcTier } : c)),
-    );
-    const char = trackedCharactersRef.current.find((c) => c.id === id);
-    if (char?.dbId)
-      queueUpdate(char.dbId, { arcId, arcLevel, arcTier } satisfies N2ECharacterPatch, (p) =>
-        updateCharacter(char.dbId!, p),
-      );
-  };
+  const updateArc = (id: string, arcId: string | null, arcLevel: number, arcTier: number) =>
+    applyPatch(id, { arcId, arcLevel, arcTier });
 
-  const updateCartridge = (id: string, patch: N2ECartridgePatch) => {
-    setTrackedCharacters((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-    const char = trackedCharactersRef.current.find((c) => c.id === id);
-    if (char?.dbId)
-      queueUpdate(char.dbId, patch satisfies N2ECharacterPatch, (p) =>
-        updateCharacter(char.dbId!, p),
-      );
-  };
-
-  const toggleFavoriteCharacter = (id: string, value: boolean) => {
-    setTrackedCharacters((prev) =>
-      prev.map((c) => (c.id === id ? { ...c, isFavorited: value } : c)),
-    );
-    const char = trackedCharactersRef.current.find((c) => c.id === id);
-    if (char?.dbId)
-      queueUpdate(char.dbId, { isFavorited: value } satisfies N2ECharacterPatch, (p) =>
-        updateCharacter(char.dbId!, p),
-      );
-  };
+  const updateCartridge = (id: string, patch: N2ECartridgePatch) => applyPatch(id, patch);
 
   const saveCartridgePreferences = (
     id: string,

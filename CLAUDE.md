@@ -4,7 +4,7 @@ Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Curren
 
 ## Domain Language
 
-[`CONTEXT.md`](CONTEXT.md) at the repo root is the canonical domain-language glossary: the games and their per-game entity nouns, Tracked Entity, Catalog, the data-flow model, Roster Persistence, Extras Adapter, Preference Rows, Party/Lineup, the Party Persistence Factory and its error semantics, and the Update Pipeline. Definitions live there; this file keeps the operational instructions. Consult `CONTEXT.md` for terminology in architecture reviews, specs, and naming discussions.
+[`CONTEXT.md`](CONTEXT.md) at the repo root is the canonical domain-language glossary: the games and their per-game entity nouns, Tracked Entity, Catalog, the data-flow model, Roster Persistence, Extras Adapter, Preference Rows, the Field Updater, Party/Lineup, the Party Persistence Factory and its error semantics, and the Update Pipeline. Definitions live there; this file keeps the operational instructions. Consult `CONTEXT.md` for terminology in architecture reviews, specs, and naming discussions.
 
 ## Tech Stack
 
@@ -195,7 +195,7 @@ supabase/migrations/
 
 2. **Service layer** (`src/services/{game}/`): Thin config adapter over the shared roster-persistence core (`src/services/rosterPersistence.ts`). Each game's `{entity}Service.ts` calls `createRosterPersistence(config)` and re-exports the produced functions as `load{Entities}FromDB`, `insert{Entity}`, `delete{Entity}`, `update{Entity}`; `partyService.ts` calls `createPartyPersistence(config)` and re-exports `loadParties`, `saveParty`, `deleteParty` (+ `toggleFavoriteParty` for R1999/N2E). Game-specific write functions (`upsertRelic`, `saveBuildPrefs`, `saveCartridgePreferences`, …) stay as per-game exports; preference-chain savers delegate to the shared `savePreferenceRows` helper. The core owns `DB_ENABLED` early-return, profile upsert, and error handling. Config shapes, the `extras` seam, and party error semantics are defined in `CONTEXT.md` (Roster Persistence, Extras Adapter, Preference Rows, Party Persistence Factory).
 
-3. **Hook layer** (`src/hooks/{game}/`): React state management. Loads from DB on session change. Optimistic updates with rollback on error. Uses `usePendingSaves` for debounced saves. Exposes `getFilteredRoster` (Fuse.js search) and individual field update functions.
+3. **Hook layer** (`src/hooks/{game}/`): React state management over the shared `useRoster` skeleton. Loads from DB on session change. Optimistic updates with rollback on error. Uses `usePendingSaves` for debounced saves. Plain field/patch updaters are declared as data via the shared `makeFieldUpdater` / `applyPatch` (Field Updater in `CONTEXT.md`) — never hand-write the optimistic set / ref lookup / dbId-guard / queue mechanics for them; only updaters that read current state (N2E awakening) or write through `queueAction` (relics, preference chains) get custom bodies. Exposes `getFilteredRoster` (Fuse.js search).
 
 4. **Page layer** (`src/pages/{game}/`): Composes hooks + components. Two views: "Roster" (entity cards grid) and "Lineups" (party tab). Handles auth gating, loading/error states, search, sort.
 
