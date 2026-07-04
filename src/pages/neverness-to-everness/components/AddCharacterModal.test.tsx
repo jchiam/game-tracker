@@ -1,12 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { AddCharacterModal } from '@/pages/neverness-to-everness/components/AddCharacterModal';
 import type { N2ECharacter } from '@/data/neverness-to-everness/characters';
 import type { N2ETrackedCharacter } from '@/types';
 
 vi.mock('@/lib/imagekit', () => ({
-  getAvatarUrl: vi.fn((url: string) => url),
+  getAvatarUrl: (path: string) => path,
 }));
+
+// Config-wiring tests only — generic picker behaviour (search mechanics, empty
+// state, image fallback) is covered by AddEntityModal.test.tsx.
 
 const sampleChars: N2ECharacter[] = [
   {
@@ -19,155 +23,65 @@ const sampleChars: N2ECharacter[] = [
     imageUrl: '/baicang.webp',
   },
   {
-    id: 'jade',
-    name: 'Jade',
-    rarity: 'A',
-    esperType: 'Cosmos',
-    arcType: 'Solid',
-    roles: ['Support'],
-    imageUrl: '/jade.webp',
-  },
-  {
-    id: 'zuri',
-    name: 'Zuri',
+    id: 'nanally',
+    name: 'Nanally',
     rarity: 'S',
-    esperType: 'Psyche',
-    arcType: 'Fluid',
-    roles: ['Healer'],
-    imageUrl: '/zuri.webp',
+    esperType: 'Strength',
+    arcType: 'Condensate',
+    roles: ['Support', 'Healer'],
+    imageUrl: '/nanally.webp',
   },
 ];
 
-const trackedChar: N2ETrackedCharacter = {
-  id: 'baicang',
-  name: 'Baicang',
-  rarity: 'S',
-  esperType: 'Incantation',
-  arcType: 'Burst',
-  roles: ['DPS'],
-  imageUrl: '/baicang.webp',
-  isFavorited: false,
-  level: 1,
-  awakening: [false, false, false, false, false, false],
-  arcId: null,
-  arcLevel: 1,
-  arcTier: 1,
-  cartridgeId: null,
-  cartridgeRarity: null,
-  cartridgeLevel: 0,
-  cartridgeMainStat: null,
-  cartridgeSubStats: [],
-  cartridgePreferences: { cartridgeId: null, mainStats: [], subStats: [] },
-};
-
 const defaultProps = {
+  availableCharacters: sampleChars,
+  trackedCharacters: [] as N2ETrackedCharacter[],
   onAddCharacter: vi.fn(),
   onClose: vi.fn(),
 };
 
-describe('AddCharacterModal', () => {
-  it('renders modal with title', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={sampleChars}
-        trackedCharacters={[]}
-        {...defaultProps}
-      />,
-    );
+describe('AddCharacterModal (N2E)', () => {
+  it('renders the N2E title and espers', () => {
+    render(<AddCharacterModal {...defaultProps} />);
     expect(screen.getByRole('heading', { name: /add esper/i })).toBeInTheDocument();
+    expect(screen.getByText('Baicang')).toBeInTheDocument();
   });
 
-  it('shows untracked characters sorted alphabetically', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={sampleChars}
-        trackedCharacters={[]}
-        {...defaultProps}
-      />,
+  it('renders esper and arc badges with N2E modifier classes', () => {
+    render(<AddCharacterModal {...defaultProps} />);
+    expect(screen.getByText('Incantation').className).toBe(
+      'game-badge esper-badge esper-incantation',
     );
-    const names = screen.getAllByText(/^(Baicang|Jade|Zuri)$/);
-    expect(names[0]).toHaveTextContent('Baicang');
-    expect(names[1]).toHaveTextContent('Jade');
-    expect(names[2]).toHaveTextContent('Zuri');
+    expect(screen.getByText('Burst').className).toBe('game-badge arc-badge arc-burst');
   });
 
-  it('excludes already-tracked characters', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={sampleChars}
-        trackedCharacters={[trackedChar]}
-        {...defaultProps}
-      />,
-    );
+  it('excludes tracked espers by id', () => {
+    const tracked = [
+      {
+        ...sampleChars[0],
+        dbId: 'db-1',
+        isFavorited: false,
+        level: 40,
+      },
+    ] as N2ETrackedCharacter[];
+    render(<AddCharacterModal {...defaultProps} trackedCharacters={tracked} />);
     expect(screen.queryByText('Baicang')).not.toBeInTheDocument();
-    expect(screen.getByText('Jade')).toBeInTheDocument();
+    expect(screen.getByText('Nanally')).toBeInTheDocument();
   });
 
-  it('filters characters by search term', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={sampleChars}
-        trackedCharacters={[]}
-        {...defaultProps}
-      />,
-    );
-    fireEvent.change(screen.getByPlaceholderText(/search espers/i), {
-      target: { value: 'Jade' },
-    });
-    expect(screen.getByText('Jade')).toBeInTheDocument();
+  it('searches by role (secondary search key)', async () => {
+    const user = userEvent.setup();
+    render(<AddCharacterModal {...defaultProps} />);
+    await user.type(screen.getByPlaceholderText('Search espers...'), 'Healer');
+    expect(screen.getByText('Nanally')).toBeInTheDocument();
     expect(screen.queryByText('Baicang')).not.toBeInTheDocument();
   });
 
-  it('shows no results message when search matches nothing', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={sampleChars}
-        trackedCharacters={[]}
-        {...defaultProps}
-      />,
-    );
-    fireEvent.change(screen.getByPlaceholderText(/search espers/i), {
-      target: { value: 'zzzzz' },
-    });
-    expect(screen.getByText(/no espers found/i)).toBeInTheDocument();
-  });
-
-  it('calls onAddCharacter when a character is clicked', () => {
+  it('passes the full esper to onAddCharacter', async () => {
+    const user = userEvent.setup();
     const onAddCharacter = vi.fn();
-    render(
-      <AddCharacterModal
-        availableCharacters={sampleChars}
-        trackedCharacters={[]}
-        {...defaultProps}
-        onAddCharacter={onAddCharacter}
-      />,
-    );
-    fireEvent.click(screen.getByText('Jade'));
-    expect(onAddCharacter).toHaveBeenCalledWith(sampleChars[1]);
-  });
-
-  it('renders esper type and arc type badges', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={[sampleChars[0]]}
-        trackedCharacters={[]}
-        {...defaultProps}
-      />,
-    );
-    expect(screen.getByText('Incantation')).toBeInTheDocument();
-    expect(screen.getByText('Burst')).toBeInTheDocument();
-  });
-
-  it('falls back to ui-avatars on image error', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={[sampleChars[0]]}
-        trackedCharacters={[]}
-        {...defaultProps}
-      />,
-    );
-    const img = screen.getByAltText('Baicang');
-    fireEvent.error(img);
-    expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
+    render(<AddCharacterModal {...defaultProps} onAddCharacter={onAddCharacter} />);
+    await user.click(screen.getByText('Baicang'));
+    expect(onAddCharacter).toHaveBeenCalledWith(sampleChars[0]);
   });
 });

@@ -1,9 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AddCharacterModal } from '@/pages/honkai-star-rail/components/AddCharacterModal';
 import type { Character } from '@/data/honkai-star-rail/characters';
 import type { HsrTrackedCharacter } from '@/types';
+
+vi.mock('@/lib/imagekit', () => ({
+  getAvatarUrl: (path: string) => path,
+}));
+
+// Config-wiring tests only — generic picker behaviour (search mechanics, empty
+// state, image fallback) is covered by AddEntityModal.test.tsx.
 
 const availableCharacters: Character[] = [
   {
@@ -13,40 +20,30 @@ const availableCharacters: Character[] = [
     path: 'Nihility',
     imageUrl: '/acheron.webp',
   },
-  { id: 'blade', name: 'Blade', element: 'Wind', path: 'Destruction', imageUrl: '/blade.webp' },
-  { id: 'kafka', name: 'Kafka', element: 'Thunder', path: 'Nihility', imageUrl: '/kafka.webp' },
+  { id: 'seele', name: 'Seele', element: 'Quantum', path: 'The Hunt', imageUrl: '/seele.webp' },
 ];
 
-const emptyTracked: HsrTrackedCharacter[] = [];
+const defaultProps = {
+  availableCharacters,
+  trackedCharacters: [] as HsrTrackedCharacter[],
+  onAddCharacter: vi.fn(),
+  onClose: vi.fn(),
+};
 
 describe('AddCharacterModal', () => {
-  it('renders the modal title', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
+  it('renders the HSR title and characters', () => {
+    render(<AddCharacterModal {...defaultProps} />);
     expect(screen.getByRole('heading', { name: /add character/i })).toBeInTheDocument();
-  });
-
-  it('renders all available characters', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
     expect(screen.getByText('Acheron')).toBeInTheDocument();
-    expect(screen.getByText('Blade')).toBeInTheDocument();
-    expect(screen.getByText('Kafka')).toBeInTheDocument();
   });
 
-  it('filters out already-tracked characters', () => {
+  it('renders element and path badges, munging path whitespace to a dashed modifier', () => {
+    render(<AddCharacterModal {...defaultProps} />);
+    expect(screen.getByText('Thunder').className).toBe('game-badge element-badge element-thunder');
+    expect(screen.getByText('The Hunt').className).toBe('game-badge path-badge path-the-hunt');
+  });
+
+  it('excludes tracked characters by id', () => {
     const tracked = [
       {
         ...availableCharacters[0],
@@ -58,186 +55,24 @@ describe('AddCharacterModal', () => {
         buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] },
       },
     ] as HsrTrackedCharacter[];
-    render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={tracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
+    render(<AddCharacterModal {...defaultProps} trackedCharacters={tracked} />);
     expect(screen.queryByText('Acheron')).not.toBeInTheDocument();
-    expect(screen.getByText('Blade')).toBeInTheDocument();
+    expect(screen.getByText('Seele')).toBeInTheDocument();
   });
 
-  it('filters characters by search input', async () => {
+  it('searches by path (secondary search key)', async () => {
     const user = userEvent.setup();
-    render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    await user.type(screen.getByPlaceholderText(/search/i), 'Kafka');
-    expect(screen.getByText('Kafka')).toBeInTheDocument();
-    expect(screen.queryByText('Acheron')).not.toBeInTheDocument();
-    expect(screen.queryByText('Blade')).not.toBeInTheDocument();
+    render(<AddCharacterModal {...defaultProps} />);
+    await user.type(screen.getByPlaceholderText('Search characters...'), 'Nihility');
+    expect(screen.getByText('Acheron')).toBeInTheDocument();
+    expect(screen.queryByText('Seele')).not.toBeInTheDocument();
   });
 
-  it('shows no-results message when search finds nothing', async () => {
+  it('passes the full character to onAddCharacter', async () => {
     const user = userEvent.setup();
-    render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    await user.type(screen.getByPlaceholderText(/search/i), 'zzznomatch');
-    expect(screen.getByText(/no characters found/i)).toBeInTheDocument();
-  });
-
-  it('calls onAddCharacter when a character is clicked', () => {
     const onAddCharacter = vi.fn();
-    render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={onAddCharacter}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByText('Blade'));
-    expect(onAddCharacter).toHaveBeenCalledWith(availableCharacters[1]);
-  });
-
-  it('calls onClose when the close button is clicked', () => {
-    const onClose = vi.fn();
-    render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={onClose}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: '✕' }));
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('calls onClose when the overlay is clicked', () => {
-    const onClose = vi.fn();
-    const { container } = render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={onClose}
-      />,
-    );
-    fireEvent.mouseDown(container.querySelector('.modal-overlay')!);
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not call onClose when modal content is clicked', () => {
-    const onClose = vi.fn();
-    const { container } = render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={onClose}
-      />,
-    );
-    fireEvent.click(container.querySelector('.modal-content')!);
-    expect(onClose).not.toHaveBeenCalled();
-  });
-
-  it('falls back to ui-avatars when a character list image fails to load', () => {
-    render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const img = screen.getByAltText('Acheron');
-    fireEvent.error(img);
-    expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
-  });
-
-  it('shows empty state when all available characters are already tracked', () => {
-    const allTracked = availableCharacters.map((c) => ({
-      ...c,
-      dbId: `db-${c.id}`,
-      isFavorited: false,
-      level: 60,
-      tracesAttained: false,
-      relics: { head: null, hands: null, body: null, feet: null, sphere: null, rope: null },
-      buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] },
-    })) as HsrTrackedCharacter[];
-    render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={allTracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    expect(screen.getByText(/no characters found/i)).toBeInTheDocument();
-  });
-
-  it('renders characters in alphabetical order', () => {
-    const unordered: Character[] = [
-      { id: 'z-char', name: 'Zephyr', element: 'Wind', path: 'Hunt', imageUrl: '/z.webp' },
-      {
-        id: 'a-char',
-        name: 'Aglaea',
-        element: 'Lightning',
-        path: 'Remembrance',
-        imageUrl: '/a.webp',
-      },
-      { id: 'm-char', name: 'March', element: 'Ice', path: 'Preservation', imageUrl: '/m.webp' },
-    ];
-    const { container } = render(
-      <AddCharacterModal
-        availableCharacters={unordered}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const names = Array.from(container.querySelectorAll('.modal-list-name')).map(
-      (el) => el.textContent,
-    );
-    expect(names).toEqual(['Aglaea', 'March', 'Zephyr']);
-  });
-
-  it('element badge has the correct CSS class for the character element', () => {
-    const { container } = render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    expect(container.querySelector('.element-badge.element-thunder')).toBeInTheDocument();
-  });
-
-  it('path badge has the correct CSS class for the character path', () => {
-    const { container } = render(
-      <AddCharacterModal
-        availableCharacters={availableCharacters}
-        trackedCharacters={emptyTracked}
-        onAddCharacter={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    expect(container.querySelector('.path-badge.path-nihility')).toBeInTheDocument();
+    render(<AddCharacterModal {...defaultProps} onAddCharacter={onAddCharacter} />);
+    await user.click(screen.getByText('Acheron'));
+    expect(onAddCharacter).toHaveBeenCalledWith(availableCharacters[0]);
   });
 });

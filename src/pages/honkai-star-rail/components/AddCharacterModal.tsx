@@ -1,8 +1,6 @@
 import type { Character } from '@/data/honkai-star-rail/characters';
 import type { HsrTrackedCharacter } from '@/types';
-import { useState } from 'react';
-import { Modal } from '@/components/Modal';
-import '@/components/AddEntityModal.css';
+import { AddEntityModal } from '@/components/AddEntityModal';
 
 interface AddCharacterModalProps {
   availableCharacters: Character[];
@@ -17,70 +15,27 @@ export function AddCharacterModal({
   onAddCharacter,
   onClose,
 }: AddCharacterModalProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredAvailableCharacters = availableCharacters
-    .filter(
-      (char) =>
-        !trackedCharacters.some((tracked) => tracked.name === char.name) &&
-        char.name.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    .sort((a, b) => a.name.localeCompare(b.name));
-
   return (
-    <Modal title="Add Character" onClose={onClose}>
-      <div className="modal-search">
-        <input
-          type="text"
-          name="add-character-search"
-          placeholder="Search characters..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          autoFocus
-        />
-      </div>
-
-      <div className="modal-list">
-        {filteredAvailableCharacters.length > 0 ? (
-          filteredAvailableCharacters.map((char) => (
-            <div key={char.id} className="modal-list-item" onClick={() => onAddCharacter(char)}>
-              <div className="modal-list-info">
-                <div className="modal-list-img-wrapper">
-                  <img
-                    src={char.imageUrl}
-                    alt={char.name}
-                    className="modal-list-img"
-                    onError={(e) => {
-                      const target = e.target as HTMLImageElement;
-                      target.src = `https://ui-avatars.com/api/?name=${char.name.replace(' ', '+')}&background=1a1a1a&color=fff`;
-                    }}
-                  />
-                </div>
-                <div className="modal-list-details">
-                  <span className="modal-list-name">{char.name}</span>
-                  <div className="modal-list-tags">
-                    <span
-                      className={`game-badge element-badge element-${char.element.toLowerCase()}`}
-                    >
-                      {char.element}
-                    </span>
-                    {char.path && (
-                      <span
-                        className={`game-badge path-badge path-${char.path.toLowerCase().replace(/\s+/g, '-')}`}
-                      >
-                        {char.path}
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-              <button className="add-btn">+</button>
-            </div>
-          ))
-        ) : (
-          <div className="no-results">No characters found matching "{searchTerm}"</div>
-        )}
-      </div>
-    </Modal>
+    <AddEntityModal
+      title="Add Character"
+      entityNoun="characters"
+      available={availableCharacters}
+      tracked={trackedCharacters}
+      searchKeys={['name', 'element', 'path']}
+      getBadges={(char) => [
+        { label: char.element, variant: 'element', modifier: char.element.toLowerCase() },
+        ...(char.path
+          ? [
+              {
+                label: char.path,
+                variant: 'path',
+                modifier: char.path.toLowerCase().replace(/\s+/g, '-'),
+              },
+            ]
+          : []),
+      ]}
+      onAdd={onAddCharacter}
+      onClose={onClose}
+    />
   );
 }

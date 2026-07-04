@@ -1,11 +1,16 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AddArcanistModal } from '@/pages/reverse1999/components/AddArcanistModal';
 import type { Arcanist } from '@/data/reverse1999/arcanists';
 import type { R1999TrackedArcanist } from '@/types';
 
-// ImageKit not configured in tests — getAvatarUrl returns the path unchanged.
+vi.mock('@/lib/imagekit', () => ({
+  getAvatarUrl: (path: string) => path,
+}));
+
+// Config-wiring tests only — generic picker behaviour (search mechanics, empty
+// state, image fallback) is covered by AddEntityModal.test.tsx.
 
 const availableArcanists: Arcanist[] = [
   {
@@ -22,156 +27,67 @@ const availableArcanists: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/regulus.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
-    id: 'vertin',
-    name: 'Vertin',
-    afflatus: 'Star',
-    damageType: 'Reality',
-    imageUrl: '/vertin.webp',
+    id: 'druvis-iii',
+    name: 'Druvis III',
+    afflatus: 'Plant',
+    damageType: 'Mental',
+    imageUrl: '/druvis.webp',
     hasEuphoria: false,
   },
 ];
 
-const emptyTracked: R1999TrackedArcanist[] = [];
+const defaultProps = {
+  availableArcanists,
+  trackedArcanists: [] as R1999TrackedArcanist[],
+  onAddArcanist: vi.fn(),
+  onClose: vi.fn(),
+};
 
 describe('AddArcanistModal', () => {
-  it('renders the modal title', () => {
-    render(
-      <AddArcanistModal
-        availableArcanists={availableArcanists}
-        trackedArcanists={emptyTracked}
-        onAddArcanist={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
+  it('renders the R1999 title and arcanists', () => {
+    render(<AddArcanistModal {...defaultProps} />);
     expect(screen.getByRole('heading', { name: /add arcanist/i })).toBeInTheDocument();
-  });
-
-  it('renders all available arcanists', () => {
-    render(
-      <AddArcanistModal
-        availableArcanists={availableArcanists}
-        trackedArcanists={emptyTracked}
-        onAddArcanist={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    expect(screen.getByText('37')).toBeInTheDocument();
     expect(screen.getByText('Regulus')).toBeInTheDocument();
-    expect(screen.getByText('Vertin')).toBeInTheDocument();
   });
 
-  it('filters out already-tracked arcanists', () => {
+  it('renders afflatus and damage badges with R1999 modifier classes', () => {
+    render(<AddArcanistModal {...defaultProps} />);
+    expect(screen.getByText('Plant').className).toBe('game-badge afflatus-badge afflatus-plant');
+    expect(screen.getAllByText('Mental')[0].className).toBe(
+      'game-badge damage-badge damage-mental',
+    );
+  });
+
+  it('excludes tracked arcanists by id', () => {
     const tracked = [
       {
         ...availableArcanists[1],
         dbId: 'db-1',
         isFavorited: false,
-        level: 40,
-        portraitLevel: 2,
-        resonanceLevel: 5,
-        euphoriaStage: 0,
-        psychubeName: null,
-        psychubeLevel: 1,
-        psychubeAmplification: 1,
+        level: 30,
       },
     ] as R1999TrackedArcanist[];
-    render(
-      <AddArcanistModal
-        availableArcanists={availableArcanists}
-        trackedArcanists={tracked}
-        onAddArcanist={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
+    render(<AddArcanistModal {...defaultProps} trackedArcanists={tracked} />);
     expect(screen.queryByText('Regulus')).not.toBeInTheDocument();
     expect(screen.getByText('37')).toBeInTheDocument();
   });
 
-  it('filters arcanists by search input', async () => {
+  it('searches by afflatus (secondary search key)', async () => {
     const user = userEvent.setup();
-    render(
-      <AddArcanistModal
-        availableArcanists={availableArcanists}
-        trackedArcanists={emptyTracked}
-        onAddArcanist={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    await user.type(screen.getByPlaceholderText(/search/i), 'Vertin');
-    expect(screen.getByText('Vertin')).toBeInTheDocument();
+    render(<AddArcanistModal {...defaultProps} />);
+    await user.type(screen.getByPlaceholderText('Search arcanists...'), 'Plant');
+    expect(screen.getByText('Druvis III')).toBeInTheDocument();
     expect(screen.queryByText('Regulus')).not.toBeInTheDocument();
   });
 
-  it('shows no-results message when search finds nothing', async () => {
+  it('passes the full arcanist to onAddArcanist', async () => {
     const user = userEvent.setup();
-    render(
-      <AddArcanistModal
-        availableArcanists={availableArcanists}
-        trackedArcanists={emptyTracked}
-        onAddArcanist={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    await user.type(screen.getByPlaceholderText(/search/i), 'zzznomatch');
-    expect(screen.getByText(/no arcanists found/i)).toBeInTheDocument();
-  });
-
-  it('calls onAddArcanist when an arcanist is clicked', () => {
     const onAddArcanist = vi.fn();
-    render(
-      <AddArcanistModal
-        availableArcanists={availableArcanists}
-        trackedArcanists={emptyTracked}
-        onAddArcanist={onAddArcanist}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByText('Regulus'));
+    render(<AddArcanistModal {...defaultProps} onAddArcanist={onAddArcanist} />);
+    await user.click(screen.getByText('Regulus'));
     expect(onAddArcanist).toHaveBeenCalledWith(availableArcanists[1]);
-  });
-
-  it('calls onClose when close button is clicked', () => {
-    const onClose = vi.fn();
-    render(
-      <AddArcanistModal
-        availableArcanists={availableArcanists}
-        trackedArcanists={emptyTracked}
-        onAddArcanist={vi.fn()}
-        onClose={onClose}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: '✕' }));
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('calls onClose when overlay is clicked', () => {
-    const onClose = vi.fn();
-    const { container } = render(
-      <AddArcanistModal
-        availableArcanists={availableArcanists}
-        trackedArcanists={emptyTracked}
-        onAddArcanist={vi.fn()}
-        onClose={onClose}
-      />,
-    );
-    fireEvent.mouseDown(container.querySelector('.modal-overlay')!);
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('falls back to ui-avatars when an arcanist list image fails to load', () => {
-    render(
-      <AddArcanistModal
-        availableArcanists={availableArcanists}
-        trackedArcanists={emptyTracked}
-        onAddArcanist={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const img = screen.getByAltText('Regulus');
-    fireEvent.error(img);
-    expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
   });
 });

@@ -84,6 +84,7 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 | Component         | CSS                   | Purpose                                                            |
 | ----------------- | --------------------- | ------------------------------------------------------------------ |
 | `Modal`           | `Modal.css`           | Base modal + tabs + form-group input/textarea surfaces             |
+| `AddEntityModal`  | `AddEntityModal.css`  | Generic add-entity picker (Fuse search, exclusion, GameBadge rows) |
 | `ProgressSection` | uses `card.css`       | `.progress-section` + `.section-header` + `.section-value` wrapper |
 | `GameBadge`       | uses game CSS         | Badge with `{variant}-badge {variant}-{modifier}` classes          |
 | `StatChip`        | uses `controls.css`   | Compact stat display chip (`.stat-chip`)                           |
@@ -95,7 +96,7 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 | `SavingToast`     | `SavingToast.css`     | Save indicator                                                     |
 | `ToastContainer`  | `ToastContainer.css`  | Notification system                                                |
 
-Shared modal CSS: `AddEntityModal.css` (list patterns), `PartyEditorModal.css` (team builder).
+Shared modal CSS: `PartyEditorModal.css` (team builder). Per-game `Add*Modal` files are thin config wrappers over the shared `AddEntityModal` (title, entity noun, Fuse `searchKeys`, `getBadges` descriptors) — never re-implement the picker.
 
 #### Build-preference primitives
 
@@ -301,7 +302,7 @@ Reuse these existing shared components — don't recreate them:
 - `LoadErrorState` — retry button for failed DB loads
 - `SavingToast` — shows when pendingSaveCount > 0
 - `Modal` — base modal with overlay, close button, keyboard handling
-- `AddEntityModal.css` — shared modal styles for entity-picker modals
+- `AddEntityModal` — generic entity-picker modal; per-game `Add*Modal` files are config wrappers over it
 - `ConfirmCheckbox` — checkbox with confirmation dialog
 - `GameSwitcher` — dropdown to switch between games (auto-hides on selection page)
 - `usePendingSaves` — debounced save queue hook (shared across all games)

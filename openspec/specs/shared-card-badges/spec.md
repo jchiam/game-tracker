@@ -43,18 +43,6 @@ per-variant color selectors (e.g. `.path-badge.path-destruction`) continue to ma
 - **THEN** the span has classes `game-badge`, `afflatus-badge`, and `afflatus-plant`, and the
   compound color rule `.afflatus-badge.afflatus-plant` applies
 
-### Requirement: Directly-rendered badges include the base class
-
-Badge spans rendered without the `GameBadge` component SHALL include the `game-badge` class so
-they inherit the same base appearance — specifically the HSR and AE element badges in the
-character/operator picker modals.
-
-#### Scenario: Picker-modal element badge inherits the base
-
-- **WHEN** `AddCharacterModal` or `AddOperatorModal` renders an element badge by hand
-- **THEN** the span's class list begins with `game-badge` followed by `{variant}-badge` and
-  `{variant}-{modifier}`, and the badge renders with the canonical pill base
-
 ### Requirement: All `GameBadge` variants render the canonical tinted pill
 
 Every `GameBadge` variant SHALL render as the canonical tinted-glass pill — including HSR element
