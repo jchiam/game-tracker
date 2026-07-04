@@ -1,15 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-
-function createBuilder(result: { data: any; error: any } = { data: null, error: null }) {
-  const builder: Record<string, any> = {};
-  for (const method of ['select', 'eq', 'insert', 'update', 'delete', 'upsert', 'order']) {
-    builder[method] = vi.fn().mockReturnValue(builder);
-  }
-  builder.single = vi.fn().mockResolvedValue(result);
-  builder.then = (onFulfilled: any, onRejected: any) =>
-    Promise.resolve(result).then(onFulfilled, onRejected);
-  return builder;
-}
+import { createBuilder } from '@/test/mocks/supabase';
 
 interface TestBase {
   id: string;

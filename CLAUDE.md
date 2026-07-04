@@ -234,7 +234,7 @@ Reference implementation: Reverse: 1999 (`src/hooks/reverse1999/useArcanists.ts`
 ### Testing Conventions
 
 - Tests colocated next to source: `Foo.tsx` → `Foo.test.tsx`. E2e tests in `tests/`.
-- Service tests: mock `@/lib/supabase` via `vi.doMock`. Test both DB-disabled (returns empty/null) and DB-enabled (correct table queries, error handling) paths.
+- Service tests: mock `@/lib/supabase` via `vi.doMock`, using the shared `createBuilder` query-builder mock from `src/test/mocks/supabase.ts`. Generic CRUD behaviour (DB-disabled paths, error handling, catalog merge) is tested once in `src/services/rosterPersistence.test.ts`; per-game service tests cover only config wiring (load mapping, column map, insert defaults) and game-specific write functions.
 - Component tests: use `@testing-library/react` `render` with mock data fixtures.
 - Use `vi.fn()` for mocks; `userEvent.setup()` for user interactions.
 - Use `src/test/mocks/supabase.ts` helpers (`createMockSession`, `createMockUser`) for auth fixtures.

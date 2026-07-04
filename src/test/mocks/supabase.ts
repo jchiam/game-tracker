@@ -2,6 +2,35 @@ import { vi } from 'vitest';
 import type { Session, User } from '@supabase/supabase-js';
 
 /**
+ * Create a chainable Supabase query-builder mock.
+ * Methods like .select(), .eq(), .update() etc. all return the same builder (for chaining).
+ * The builder is directly awaitable via .then (resolves to the provided result);
+ * .single() returns a Promise resolving to the same result.
+ */
+export function createBuilder(result: { data: any; error: any } = { data: null, error: null }) {
+  const builder: Record<string, any> = {};
+  for (const method of [
+    'select',
+    'eq',
+    'insert',
+    'update',
+    'delete',
+    'upsert',
+    'match',
+    'order',
+    'filter',
+    'gte',
+    'lte',
+  ]) {
+    builder[method] = vi.fn().mockReturnValue(builder);
+  }
+  builder.single = vi.fn().mockResolvedValue(result);
+  builder.then = (onFulfilled: any, onRejected: any) =>
+    Promise.resolve(result).then(onFulfilled, onRejected);
+  return builder;
+}
+
+/**
  * Create a mock Supabase User fixture.
  */
 export function createMockUser(overrides: Partial<User> = {}): User {
