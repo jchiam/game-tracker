@@ -27,6 +27,11 @@
 .game-card:nth-child(4) {
   animation-delay: 0.4s;
 }
+/* Saturate the stagger — without this cap, cards 5+ fall back to
+   animation-delay 0 and pop in before cards 1-4 have entered. */
+.game-card:nth-child(n + 5) {
+  animation-delay: 0.5s;
+}
 
 .game-card:hover {
   border-color: var(--color-brand-primary);

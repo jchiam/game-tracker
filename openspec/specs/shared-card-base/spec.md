@@ -55,6 +55,13 @@ rule on a shared class is resolved by load order and leaks across games.
 - **THEN** they animate in via the shared `fade-in-up` with staggered `:nth-child` delays, and on
   hover the shared rule lifts the border to `--color-brand-primary` and scales `.game-card-image`
 
+#### Scenario: Stagger saturates beyond the delay ladder
+
+- **WHEN** a grid renders more cards than the stagger ladder has explicit `:nth-child` delay rungs
+- **THEN** every card beyond the ladder takes a saturating `:nth-child(n + …)` delay at least as
+  long as the final rung, so no later card ever animates in before an earlier one (an uncapped
+  ladder leaves later cards at `animation-delay: 0`, making them pop in first)
+
 ### Requirement: Canonical card header buttons defined once
 
 The three header buttons SHALL be defined exactly once, in `src/styles/card.css`: `.favorite-btn`,
