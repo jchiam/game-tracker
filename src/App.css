@@ -46,42 +46,35 @@
   border-color: var(--color-brand-primary);
 }
 
-/* Element colours (shared across HSR views — element badge AND party
-   slot-avatar border). These standalone rules set text colour + the avatar's
-   coloured border only; they intentionally carry NO background so the
-   slot-avatar keeps its own fill. The badge's canonical tint is added by the
-   compound `.element-badge.element-*` rules below. */
+/* Element text colours (HSR badge glyph/text). Colour only — the party
+   slot-avatar's coloured border lives in the compound `.slot-avatar.element-*`
+   rules (pages/honkai-star-rail/components/PartiesTab.css), where specificity
+   beats the base `.slot-avatar` border instead of relying on stylesheet load
+   order. The badge's border + tint come from the compound
+   `.element-badge.element-*` rules below. */
 .element-lightning {
   color: var(--color-hsr-element-lightning);
-  border: 1px solid color-mix(in srgb, var(--color-hsr-element-lightning) 55%, transparent);
 }
 .element-imaginary {
   color: var(--color-hsr-element-imaginary);
-  border: 1px solid color-mix(in srgb, var(--color-hsr-element-imaginary) 30%, transparent);
 }
 .element-fire {
   color: var(--color-hsr-element-fire);
-  border: 1px solid color-mix(in srgb, var(--color-hsr-element-fire) 30%, transparent);
 }
 .element-ice {
   color: var(--color-hsr-element-ice);
-  border: 1px solid color-mix(in srgb, var(--color-hsr-element-ice) 30%, transparent);
 }
 .element-quantum {
   color: var(--color-hsr-element-quantum);
-  border: 1px solid color-mix(in srgb, var(--color-hsr-element-quantum) 40%, transparent);
 }
 .element-wind {
   color: var(--color-hsr-element-wind);
-  border: 1px solid color-mix(in srgb, var(--color-hsr-element-wind) 30%, transparent);
 }
 .element-physical {
   color: var(--color-hsr-element-physical);
-  border: 1px solid color-mix(in srgb, var(--color-hsr-element-physical) 30%, transparent);
 }
 .element-thunder {
   color: var(--color-hsr-element-thunder);
-  border: 1px solid color-mix(in srgb, var(--color-hsr-element-thunder) 55%, transparent);
 }
 
 /* Element badge tint — canonical pill fill, scoped to the badge so it does not

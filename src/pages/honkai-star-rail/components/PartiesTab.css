@@ -1,0 +1,26 @@
+/* Element accent borders for lineup slot avatars. Compound-scoped to
+   .slot-avatar (like the R1999 afflatus / N2E esper accents) so they beat the
+   base .slot-avatar border by specificity — the old standalone .element-*
+   border in App.css only won by stylesheet load order. Border mix percentages
+   preserved from that rule (thunder 55%, quantum 40%, rest 30%). */
+.slot-avatar.element-thunder {
+  border-color: color-mix(in srgb, var(--color-hsr-element-thunder) 55%, transparent);
+}
+.slot-avatar.element-imaginary {
+  border-color: color-mix(in srgb, var(--color-hsr-element-imaginary) 30%, transparent);
+}
+.slot-avatar.element-fire {
+  border-color: color-mix(in srgb, var(--color-hsr-element-fire) 30%, transparent);
+}
+.slot-avatar.element-ice {
+  border-color: color-mix(in srgb, var(--color-hsr-element-ice) 30%, transparent);
+}
+.slot-avatar.element-quantum {
+  border-color: color-mix(in srgb, var(--color-hsr-element-quantum) 40%, transparent);
+}
+.slot-avatar.element-wind {
+  border-color: color-mix(in srgb, var(--color-hsr-element-wind) 30%, transparent);
+}
+.slot-avatar.element-physical {
+  border-color: color-mix(in srgb, var(--color-hsr-element-physical) 30%, transparent);
+}

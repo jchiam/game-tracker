@@ -7,6 +7,8 @@ import './PartyEditorModal.css';
 import '@/components/Modal.css';
 import '@/styles/party.css';
 import '@/App.css';
+// Slot accent borders live with the HSR adapter, not App.css.
+import '@/pages/honkai-star-rail/components/PartiesTab.css';
 
 interface DemoEntity {
   id: string;

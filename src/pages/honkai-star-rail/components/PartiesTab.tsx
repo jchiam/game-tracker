@@ -2,6 +2,7 @@ import type { Session } from '@supabase/supabase-js';
 import type { Party, PartyMember } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
 import { PartiesView, type PartyViewConfig } from '@/components/parties/PartiesView';
+import './PartiesTab.css';
 
 const HSR_PARTY_VIEW: PartyViewConfig<Character> = {
   nouns: {
