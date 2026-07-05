@@ -93,6 +93,25 @@ SHALL NOT be introduced.
 - **WHEN** CSS needs the medium border radius
 - **THEN** it uses `--border-radius-md`, never a `--radius-md` alias
 
+### Requirement: Transitions enumerate their animated properties
+
+CSS `transition` declarations SHALL enumerate the specific properties their state variants
+actually change (e.g. `transition: color var(--transition-fast), border-color
+var(--transition-fast)`); the keyword `all` SHALL NOT be used. `transition: all` silently animates
+every mutated property — including layout-affecting ones a later edit introduces — causing
+unintended repaints and jank the author never reviewed.
+
+#### Scenario: Hover rule transitions only what changes
+
+- **WHEN** a selector's `:hover`/`.active`/`:focus` variants change only `color` and `background`
+- **THEN** its `transition` lists exactly `color` and `background`, not `all`
+
+#### Scenario: New animated property is added deliberately
+
+- **WHEN** a later edit makes a state variant change an additional property (e.g. `transform`)
+- **THEN** that property is appended to the `transition` list explicitly, keeping the animated
+  set reviewed and intentional
+
 ### Requirement: Duration and transition tokens are distinct
 
 `--duration-*` tokens SHALL be used for `animation` durations (time only); `--transition-*` tokens

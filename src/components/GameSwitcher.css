@@ -12,7 +12,10 @@
   align-items: center;
   gap: var(--spacing-sm);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
   color: var(--color-text-primary);
 }
 
@@ -90,7 +93,9 @@
   text-decoration: none;
   color: var(--color-text-primary);
   border-radius: var(--border-radius-md);
-  transition: all var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
   position: relative;
 }
 
@@ -150,7 +155,9 @@
   color: var(--color-text-secondary);
   text-decoration: none;
   border-radius: var(--border-radius-md);
-  transition: all var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
 }
 
 .back-link:hover {

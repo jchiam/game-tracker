@@ -18,13 +18,18 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .relic-icon {
   font-size: var(--typography-font-size-sm);
   color: rgba(255, 255, 255, 0.2);
-  transition: all var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    filter var(--transition-fast);
 }
 
 .relic-icon.planar {
@@ -95,7 +100,11 @@
   justify-content: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-  transition: all var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
 }
 
 .score-badge.tier-s {

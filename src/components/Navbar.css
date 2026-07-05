@@ -39,7 +39,9 @@
   background-clip: text;
   -webkit-text-fill-color: transparent;
   text-decoration: none;
-  transition: all var(--transition-normal);
+  transition:
+    filter var(--transition-normal),
+    transform var(--transition-normal);
   cursor: pointer;
 }
 

@@ -146,7 +146,11 @@
   background: rgba(255, 255, 255, 0.03);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
   text-align: center;
 }
 
@@ -185,7 +189,11 @@
   background-color: var(--color-input-surface);
   color: var(--color-text-primary);
   outline: none;
-  transition: all var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    background-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
   box-sizing: border-box;
   cursor: pointer;
   appearance: none;
@@ -260,7 +268,10 @@
   color: var(--color-text-primary);
   font-family: var(--typography-font-family-base);
   font-size: var(--typography-font-size-md);
-  transition: all var(--transition-fast);
+  transition:
+    border-color var(--transition-fast),
+    background var(--transition-fast),
+    box-shadow var(--transition-fast);
   box-sizing: border-box;
   width: 100%;
 }
@@ -283,7 +294,9 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast);
   padding: 0;
 }
 
@@ -299,7 +312,10 @@
   padding: var(--spacing-5);
   border-radius: var(--border-radius-md);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .add-substat-btn:hover {
