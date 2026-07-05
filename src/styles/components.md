@@ -693,7 +693,9 @@ richer edit mode with portrait levels, resonance, euphoria, psychube, and amplif
 
 All controls use the canonical primitives from `controls.css`; the only R1999-local
 control rules are the `.portrait-reset` modifier and the `.portrait-row` /
-`.euphoria-row` / `.amplification-row` layout wrappers.
+`.euphoria-row` layout wrappers. The amplify row is a bare `.section-sublabel` +
+`SegmentedButtons` inside the Psychube `ProgressSection` (column flow, full-width),
+matching N2E's Arc "Tier" sub-control.
 
 ```html
 <div class="game-card">

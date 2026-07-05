@@ -37,14 +37,6 @@
   gap: var(--spacing-3);
 }
 
-/* Psychube Amplification */
-.amplification-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-2);
-}
-
 /* ─── Badges ────────────────────────────────────────────────────── */
 
 /* Base appearance from the canonical `.game-badge` pill (card.css);

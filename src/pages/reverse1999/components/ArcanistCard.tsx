@@ -195,16 +195,14 @@ export function ArcanistCard({
               max={60}
               onChange={(n) => onUpdatePsychube(arcanist.id!, arcanist.psychubeName, n)}
             />
-            <div className="amplification-row">
-              <span className="section-sublabel">Amplify</span>
-              <SegmentedButtons
-                options={AMPLIFICATION_OPTIONS}
-                value={String(arcanist.psychubeAmplification)}
-                coloring="investment"
-                size="compact"
-                onChange={(v) => onUpdatePsychubeAmplification(arcanist.id!, Number(v))}
-              />
-            </div>
+            <span className="section-sublabel">Amplify</span>
+            <SegmentedButtons
+              options={AMPLIFICATION_OPTIONS}
+              value={String(arcanist.psychubeAmplification)}
+              coloring="investment"
+              size="compact"
+              onChange={(v) => onUpdatePsychubeAmplification(arcanist.id!, Number(v))}
+            />
           </ProgressSection>
         </>
       }
