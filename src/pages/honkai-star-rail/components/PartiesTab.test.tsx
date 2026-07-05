@@ -8,6 +8,11 @@ import type { Character } from '@/data/honkai-star-rail/characters';
 // Config-wiring tests only — the shared view behaviour (slot editing, sorting,
 // modal flows, auth gating) is covered by src/components/parties/PartiesView.test.tsx.
 
+vi.mock('@/lib/imagekit', () => ({
+  getMugshotUrl: vi.fn((url: string) => `mugshot:${url}`),
+  getAvatarUrl: vi.fn((url: string) => `avatar:${url}`),
+}));
+
 const availableCharacters: Character[] = [
   {
     id: 'acheron',
@@ -54,10 +59,10 @@ describe('PartiesTab (HSR config wiring)', () => {
     expect(defaultProps.onToggleFavorite).toHaveBeenCalledWith('party-1', true);
   });
 
-  it('resolves members from the catalog with raw image paths and element accents', () => {
+  it('resolves member images through getMugshotUrl with the element accent', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
     const img = screen.getByAltText('Acheron');
-    expect(img).toHaveAttribute('src', '/acheron.webp');
+    expect(img).toHaveAttribute('src', 'mugshot:/acheron.webp');
     expect(img.closest('.slot-avatar')).toHaveClass('element-thunder');
   });
 });

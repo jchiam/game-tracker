@@ -1,6 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import type { Party, PartyMember } from '@/types';
 import type { Character } from '@/data/honkai-star-rail/characters';
+import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
 import { PartiesView, type PartyViewConfig } from '@/components/parties/PartiesView';
 import './PartiesTab.css';
 
@@ -13,8 +14,8 @@ const HSR_PARTY_VIEW: PartyViewConfig<Character> = {
     namePlaceholder: 'e.g. Memory of Chaos 12-1',
     searchPlaceholder: 'Search character...',
   },
-  resolveSlotImage: (char) => char.imageUrl,
-  resolveListImage: (char) => char.imageUrl,
+  resolveSlotImage: (char) => getMugshotUrl(char.imageUrl),
+  resolveListImage: (char) => getAvatarUrl(char.imageUrl),
   slotAccentClass: (char) => `element-${char.element.toLowerCase()}`,
   supportsTier: true,
   supportsFavorite: true,
