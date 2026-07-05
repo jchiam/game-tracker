@@ -12,21 +12,23 @@ test.describe('Selection Page UI and Behavior', () => {
     await expect(brand).toHaveAttribute('href', '/');
   });
 
-  test('should display all four game cards', async ({ page }) => {
+  test('should display all five game cards', async ({ page }) => {
     const hsrCard = page.locator('.selection-card', { hasText: 'Honkai Star Rail' });
     const r1999Card = page.locator('.selection-card', { hasText: 'Reverse: 1999' });
     const n2eCard = page.locator('.selection-card', { hasText: 'Neverness to Everness' });
     const endfieldCard = page.locator('.selection-card', { hasText: 'Arknights: Endfield' });
+    const p5xCard = page.locator('.selection-card', { hasText: 'Persona 5: The Phantom X' });
 
     await expect(hsrCard).toBeVisible();
     await expect(r1999Card).toBeVisible();
     await expect(n2eCard).toBeVisible();
     await expect(endfieldCard).toBeVisible();
+    await expect(p5xCard).toBeVisible();
   });
 
   test('should show "Requires Login" badge on game cards', async ({ page }) => {
     const loginBadges = page.locator('.requires-login-badge');
-    await expect(loginBadges).toHaveCount(4);
+    await expect(loginBadges).toHaveCount(5);
     await expect(loginBadges.first()).toContainText('Requires Login');
   });
 
@@ -42,12 +44,13 @@ test.describe('Selection Page UI and Behavior', () => {
 
   test('should show character images in cards', async ({ page }) => {
     const images = page.locator('.game-character-image');
-    await expect(images).toHaveCount(4);
+    await expect(images).toHaveCount(5);
 
     const hsrImage = images.nth(0);
     const r1999Image = images.nth(1);
     const n2eImage = images.nth(2);
     const endfieldImage = images.nth(3);
+    const p5xImage = images.nth(4);
 
     await expect(hsrImage).toHaveAttribute(
       'src',
@@ -61,6 +64,10 @@ test.describe('Selection Page UI and Behavior', () => {
     await expect(endfieldImage).toHaveAttribute(
       'src',
       /\/assets\/arknights-endfield\/selection-cover\.png/,
+    );
+    await expect(p5xImage).toHaveAttribute(
+      'src',
+      /\/assets\/persona-5-phantom-x\/selection-cover\.png/,
     );
   });
 });

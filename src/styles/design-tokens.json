@@ -103,6 +103,28 @@
       "weaponHandcannon": { "$value": "#f5d68a", "$type": "color" },
       "weaponArtsUnit": { "$value": "#c9a8f8", "$type": "color" }
     },
+    "p5x": {
+      "elementPhysical": { "$value": "#bcbcbc", "$type": "color" },
+      "elementGun": { "$value": "#f5b080", "$type": "color" },
+      "elementFire": { "$value": "#f84f36", "$type": "color" },
+      "elementIce": { "$value": "#47c7fd", "$type": "color" },
+      "elementElectric": { "$value": "#f5d68a", "$type": "color" },
+      "elementWind": { "$value": "#5bc89f", "$type": "color" },
+      "elementPsychokinesis": { "$value": "#f0a0b8", "$type": "color" },
+      "elementNuclear": { "$value": "#7fe4d0", "$type": "color" },
+      "elementBless": { "$value": "#f5f0c0", "$type": "color" },
+      "elementCurse": { "$value": "#c9a8f8", "$type": "color" },
+      "elementAlmighty": { "$value": "#d0c8a0", "$type": "color" },
+      "elementNone": { "$value": "#9a9a9a", "$type": "color" },
+      "roleSingleTarget": { "$value": "#ff9090", "$type": "color" },
+      "roleMultiTarget": { "$value": "#f5b080", "$type": "color" },
+      "roleBuffer": { "$value": "#90e09a", "$type": "color" },
+      "roleDebuffer": { "$value": "#c9a8f8", "$type": "color" },
+      "roleHealer": { "$value": "#90d0f0", "$type": "color" },
+      "roleTank": { "$value": "#8ab8f5", "$type": "color" },
+      "roleNavigator": { "$value": "#f0a8d8", "$type": "color" },
+      "roleVirtuoso": { "$value": "#f5d68a", "$type": "color" }
+    },
     "r1999": {
       "afflatusPlant": { "$value": "#90e09a", "$type": "color" },
       "afflatusStar": { "$value": "#f5d68a", "$type": "color" },

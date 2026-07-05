@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { SelectionPage } from '@/pages/SelectionPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
+import { GAMES } from '@/lib/games';
 
 describe('SelectionPage', () => {
   it('shows loading state when isAuthLoading is true', () => {
@@ -31,7 +32,7 @@ describe('SelectionPage', () => {
       <SelectionPage session={null} isAuthLoading={false} signInWithGoogle={vi.fn()} />,
     );
     const badges = screen.getAllByText('Requires Login');
-    expect(badges.length).toBe(4);
+    expect(badges.length).toBe(GAMES.length);
   });
 
   it('does not show "Requires Login" badge when session exists', () => {

@@ -3,6 +3,7 @@ import { type EquippedRelic } from '@/data/honkai-star-rail/relics';
 import { type Arcanist } from '@/data/reverse1999/arcanists';
 import { type N2ECharacter } from '@/data/neverness-to-everness/characters';
 import { type AeOperator } from '@/data/arknights-endfield/operators';
+import { type P5xThief } from '@/data/persona-5-phantom-x/thieves';
 
 /** One entry in a build/cartridge stat-preference priority chain. */
 export interface StatPreference {
@@ -159,3 +160,17 @@ export interface AeOperatorPatch {
 
 /** Patch shape for the AE operator weapon-equip callback (`onUpdateWeapon`). */
 export type AeWeaponPatch = Pick<AeOperatorPatch, 'weaponName' | 'weaponLevel'>;
+
+export interface P5xTrackedThief extends P5xThief {
+  dbId?: string;
+  isFavorited: boolean;
+  level: number; // 1–80 (live cap)
+  awareness: number; // 0–6 (A0–A6 duplicate ranks)
+}
+
+/** Typed partial update for a P5X tracked thief row (camelCase keys). */
+export interface P5xThiefPatch {
+  level?: number;
+  awareness?: number;
+  isFavorited?: boolean;
+}

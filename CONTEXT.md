@@ -4,12 +4,13 @@ Canonical glossary of the domain concepts used across this codebase, its openspe
 
 ## The Games
 
-| Game                  | Short ID | Directory name          | Primary entity noun | Game-specific concepts                                                                                                       |
-| --------------------- | -------- | ----------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Honkai Star Rail      | `hsr`    | `honkai-star-rail`      | **character**       | Relics (equippable, with substats), build preferences, relic scoring                                                         |
-| Reverse: 1999         | `r1999`  | `reverse1999`           | **arcanist**        | Psychubes, afflatus; parties support `tier` and favorite toggle                                                              |
-| Neverness to Everness | `n2e`    | `neverness-to-everness` | **character**       | Espers (`esperType` on each character), cartridges + cartridge preferences, arcs; parties support `tier` and favorite toggle |
-| Arknights: Endfield   | `ae`     | `arknights-endfield`    | **operator**        | Weapons; Phase-1 scope is roster + parties; catalog is hand-authored (see Update Pipeline)                                   |
+| Game                     | Short ID | Directory name          | Primary entity noun | Game-specific concepts                                                                                                       |
+| ------------------------ | -------- | ----------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| Honkai Star Rail         | `hsr`    | `honkai-star-rail`      | **character**       | Relics (equippable, with substats), build preferences, relic scoring                                                         |
+| Reverse: 1999            | `r1999`  | `reverse1999`           | **arcanist**        | Psychubes, afflatus; parties support `tier` and favorite toggle                                                              |
+| Neverness to Everness    | `n2e`    | `neverness-to-everness` | **character**       | Espers (`esperType` on each character), cartridges + cartridge preferences, arcs; parties support `tier` and favorite toggle |
+| Arknights: Endfield      | `ae`     | `arknights-endfield`    | **operator**        | Weapons; Phase-1 scope is roster + parties; catalog is hand-authored (see Update Pipeline)                                   |
+| Persona 5: The Phantom X | `p5x`    | `persona-5-phantom-x`   | **thief**           | Awareness (A0–A6 duplicate ranks), bound Persona per thief (`personaName`), codename; Phase-1 scope is roster + parties      |
 
 Each game is a self-contained module under `src/data/{game}/`, `src/services/{game}/`, `src/hooks/{game}/`, `src/pages/{game}/`, with shared code in `src/components/`, `src/lib/`, `src/utils/`, `src/types.ts`.
 
@@ -53,13 +54,13 @@ Variable-length, ordered stat-preference chains (HSR build preferences, N2E cart
 
 ### Party / Lineup
 
-A saved team of tracked entities: a row in `{game_prefix}_parties` plus member rows in `{game_prefix}_party_members`, each member carrying a `slot_index` (0–3, maximum 4 members, enforced by CHECK constraint and `UNIQUE(party_id, slot_index)`). "Lineups" is the UI name for the parties view on each game page. R1999 and N2E parties additionally carry an optional `tier` and an `is_favorited` flag; HSR and AE parties have neither. After a save, the DB is the source of truth: the party hook reloads all parties.
+A saved team of tracked entities: a row in `{game_prefix}_parties` plus member rows in `{game_prefix}_party_members`, each member carrying a `slot_index` (0–3, maximum 4 members, enforced by CHECK constraint and `UNIQUE(party_id, slot_index)`). "Lineups" is the UI name for the parties view on each game page. All games' parties carry an optional `tier` and an `is_favorited` flag. After a save, the DB is the source of truth: the party hook reloads all parties.
 
-App-side, all games share the single `Party` / `PartyMember` types in `src/types.ts`: a member is `{ entityId, slotIndex }` regardless of game — the per-game DB column name (`character_id`, `arcanist_id`, `operator_id`) is mapped at the party-persistence seam by `memberFromRow` / `memberToRow`, and `tier` / `isFavorited` are optional fields present only for the games whose tables carry them.
+App-side, all games share the single `Party` / `PartyMember` types in `src/types.ts`: a member is `{ entityId, slotIndex }` regardless of game — the per-game DB column name (`character_id`, `arcanist_id`, `operator_id`, `thief_id`) is mapped at the party-persistence seam by `memberFromRow` / `memberToRow`, and `tier` / `isFavorited` are optional fields present only for the games whose tables carry them.
 
 ### Party Persistence Factory
 
-The config-driven factory `createPartyPersistence(config)` in `src/services/rosterPersistence.ts` — the single shared implementation of party CRUD. Config supplies: parties table, members table, default party name, member row mappers (`memberFromRow` / `memberToRow`), and optional extras (`extraSelect` / `extraFromRow` / `extraToRow`) for game-specific party columns such as `tier` and `is_favorited`. It produces `loadParties`, `saveParty`, `deleteParty`, and `toggleFavoriteParty`; each game's `partyService.ts` is a thin config adapter re-exporting them (R1999 and N2E additionally re-export `toggleFavoriteParty`). Updating an existing party replaces its members via delete-then-reinsert — the same non-atomic pattern as Preference Rows, documented in the same Known Limitations entry.
+The config-driven factory `createPartyPersistence(config)` in `src/services/rosterPersistence.ts` — the single shared implementation of party CRUD. Config supplies: parties table, members table, default party name, member row mappers (`memberFromRow` / `memberToRow`), and optional extras (`extraSelect` / `extraFromRow` / `extraToRow`) for game-specific party columns such as `tier` and `is_favorited`. It produces `loadParties`, `saveParty`, `deleteParty`, and `toggleFavoriteParty`; each game's `partyService.ts` is a thin config adapter re-exporting them. Updating an existing party replaces its members via delete-then-reinsert — the same non-atomic pattern as Preference Rows, documented in the same Known Limitations entry.
 
 Party error semantics are deliberately **asymmetric**:
 

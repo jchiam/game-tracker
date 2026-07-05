@@ -1,0 +1,136 @@
+/* Card body layout (padding + name margin) is the canonical default in card.css;
+   P5X matches it and contributes no body rule. */
+
+/* Bound-Persona static line: informational, not an investment signal. */
+.persona-line {
+  opacity: 0.75;
+  font-style: italic;
+}
+
+/* P5X badge colours. Base appearance comes from the canonical `.game-badge`
+   pill (card.css); only the per-variant tint + text colour live here —
+   fill/border derive from the variant token via color-mix at the canonical
+   25% fill / 60% border. Modifiers are the verbatim Prydwen values slugged
+   (e.g. "Single-target" → single-target). */
+
+/* Role */
+.p5x-role-single-target {
+  color: var(--color-p5x-role-single-target);
+  background: color-mix(in srgb, var(--color-p5x-role-single-target) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-role-single-target) 60%, transparent);
+}
+
+.p5x-role-multi-target {
+  color: var(--color-p5x-role-multi-target);
+  background: color-mix(in srgb, var(--color-p5x-role-multi-target) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-role-multi-target) 60%, transparent);
+}
+
+.p5x-role-buffer {
+  color: var(--color-p5x-role-buffer);
+  background: color-mix(in srgb, var(--color-p5x-role-buffer) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-role-buffer) 60%, transparent);
+}
+
+.p5x-role-debuffer {
+  color: var(--color-p5x-role-debuffer);
+  background: color-mix(in srgb, var(--color-p5x-role-debuffer) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-role-debuffer) 60%, transparent);
+}
+
+.p5x-role-healer {
+  color: var(--color-p5x-role-healer);
+  background: color-mix(in srgb, var(--color-p5x-role-healer) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-role-healer) 60%, transparent);
+}
+
+.p5x-role-tank {
+  color: var(--color-p5x-role-tank);
+  background: color-mix(in srgb, var(--color-p5x-role-tank) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-role-tank) 60%, transparent);
+}
+
+.p5x-role-navigator {
+  color: var(--color-p5x-role-navigator);
+  background: color-mix(in srgb, var(--color-p5x-role-navigator) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-role-navigator) 60%, transparent);
+}
+
+.p5x-role-virtuoso {
+  color: var(--color-p5x-role-virtuoso);
+  background: color-mix(in srgb, var(--color-p5x-role-virtuoso) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-role-virtuoso) 60%, transparent);
+}
+
+/* Element */
+.p5x-element-physical {
+  color: var(--color-p5x-element-physical);
+  background: color-mix(in srgb, var(--color-p5x-element-physical) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-physical) 60%, transparent);
+}
+
+.p5x-element-gun {
+  color: var(--color-p5x-element-gun);
+  background: color-mix(in srgb, var(--color-p5x-element-gun) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-gun) 60%, transparent);
+}
+
+.p5x-element-fire {
+  color: var(--color-p5x-element-fire);
+  background: color-mix(in srgb, var(--color-p5x-element-fire) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-fire) 60%, transparent);
+}
+
+.p5x-element-ice {
+  color: var(--color-p5x-element-ice);
+  background: color-mix(in srgb, var(--color-p5x-element-ice) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-ice) 60%, transparent);
+}
+
+.p5x-element-electric {
+  color: var(--color-p5x-element-electric);
+  background: color-mix(in srgb, var(--color-p5x-element-electric) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-electric) 60%, transparent);
+}
+
+.p5x-element-wind {
+  color: var(--color-p5x-element-wind);
+  background: color-mix(in srgb, var(--color-p5x-element-wind) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-wind) 60%, transparent);
+}
+
+.p5x-element-psychokinesis {
+  color: var(--color-p5x-element-psychokinesis);
+  background: color-mix(in srgb, var(--color-p5x-element-psychokinesis) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-psychokinesis) 60%, transparent);
+}
+
+.p5x-element-nuclear {
+  color: var(--color-p5x-element-nuclear);
+  background: color-mix(in srgb, var(--color-p5x-element-nuclear) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-nuclear) 60%, transparent);
+}
+
+.p5x-element-bless {
+  color: var(--color-p5x-element-bless);
+  background: color-mix(in srgb, var(--color-p5x-element-bless) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-bless) 60%, transparent);
+}
+
+.p5x-element-curse {
+  color: var(--color-p5x-element-curse);
+  background: color-mix(in srgb, var(--color-p5x-element-curse) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-curse) 60%, transparent);
+}
+
+.p5x-element-almighty {
+  color: var(--color-p5x-element-almighty);
+  background: color-mix(in srgb, var(--color-p5x-element-almighty) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-almighty) 60%, transparent);
+}
+
+.p5x-element-none {
+  color: var(--color-p5x-element-none);
+  background: color-mix(in srgb, var(--color-p5x-element-none) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-element-none) 60%, transparent);
+}

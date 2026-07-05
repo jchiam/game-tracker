@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { GAMES } from '@/lib/games';
 
 describe('GAMES registry', () => {
-  it('contains the four tracked games', () => {
-    expect(GAMES.map((g) => g.id)).toEqual(['hsr', 'r1999', 'n2e', 'ae']);
+  it('contains the five tracked games', () => {
+    expect(GAMES.map((g) => g.id)).toEqual(['hsr', 'r1999', 'n2e', 'ae', 'p5x']);
   });
 
   it('has unique ids and paths', () => {

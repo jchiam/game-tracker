@@ -188,6 +188,10 @@ button {
   background: linear-gradient(135deg, #0a1a2e 0%, #1b2d4e 50%, #0a0a1a 100%);
 }
 
+.selection-card-header.bg-p5x-sel {
+  background: linear-gradient(135deg, #2e0a0a 0%, #4e1b1b 50%, #0a0a1a 100%);
+}
+
 .game-character-image {
   position: absolute;
   top: 0;

@@ -70,9 +70,14 @@ The system SHALL enforce slot index constraints per game when saving party membe
 - **WHEN** saving an N2E party
 - **THEN** member slot indices are in range 0–3 (maximum 4 members)
 
+#### Scenario: P5X party slots
+
+- **WHEN** saving a P5X party
+- **THEN** member slot indices are in range 0–3 (maximum 4 members)
+
 ### Requirement: Party favorite toggle
 
-The system SHALL allow toggling the favorite status of a party optimistically, reverting on failure. This capability is available for all games (HSR, R1999, N2E, AE).
+The system SHALL allow toggling the favorite status of a party optimistically, reverting on failure. This capability is available for all games (HSR, R1999, N2E, AE, P5X).
 
 #### Scenario: Favorite toggled successfully
 
@@ -86,7 +91,7 @@ The system SHALL allow toggling the favorite status of a party optimistically, r
 
 ### Requirement: Party tier field
 
-The system SHALL support an optional tier field on parties for all games (HSR, R1999, N2E, AE). Tier is one of S+/S/A/B or null.
+The system SHALL support an optional tier field on parties for all games (HSR, R1999, N2E, AE, P5X). Tier is one of S+/S/A/B or null.
 
 #### Scenario: Tier saved with party
 

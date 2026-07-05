@@ -13,9 +13,12 @@ test.describe('Cross-Game Navigation', () => {
 
     await page.goto('/arknights-endfield');
     await expect(page.locator('h1')).toContainText('Arknights: Endfield');
+
+    await page.goto('/persona-5-phantom-x');
+    await expect(page.locator('h1')).toContainText('Persona 5: The Phantom X');
   });
 
-  test('should switch between all four games via game switcher', async ({ page }) => {
+  test('should switch between all five games via game switcher', async ({ page }) => {
     await page.goto('/honkai-star-rail');
     await expect(page.locator('h1')).toContainText('Honkai Star Rail');
 
@@ -33,6 +36,11 @@ test.describe('Cross-Game Navigation', () => {
     await page.click('.dropdown-item:has-text("Arknights: Endfield")');
     await expect(page).toHaveURL(/\/arknights-endfield/);
     await expect(page.locator('h1')).toContainText('Arknights: Endfield');
+
+    await page.click('.switcher-trigger');
+    await page.click('.dropdown-item:has-text("Persona 5: The Phantom X")');
+    await expect(page).toHaveURL(/\/persona-5-phantom-x/);
+    await expect(page.locator('h1')).toContainText('Persona 5: The Phantom X');
 
     await page.click('.switcher-trigger');
     await page.click('.dropdown-item:has-text("Honkai Star Rail")');
