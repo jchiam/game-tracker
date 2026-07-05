@@ -137,7 +137,14 @@ for the caller's counters and missing-asset lists.
 
 Each game SHALL have a `.github/workflows/update-{game}-data.yml` that runs on a weekly `schedule`
 cron and on manual `workflow_dispatch`, executes the update script, formats the result, and opens
-a pull request only when the run produced changes.
+a pull request only when the run produced changes. The run step SHALL provide the `IMAGEKIT_*`
+secrets (`IMAGEKIT_PRIVATE_KEY`, `IMAGEKIT_PUBLIC_KEY`, `IMAGEKIT_URL_ENDPOINT`) as environment
+variables — without them the script's credential-missing skip path silently disables uploads in CI.
+
+#### Scenario: CI run uploads assets
+
+- **WHEN** the workflow executes the update script
+- **THEN** the run step's environment carries the `IMAGEKIT_*` secrets, so new assets upload instead of being silently skipped
 
 #### Scenario: Weekly run with changes
 
