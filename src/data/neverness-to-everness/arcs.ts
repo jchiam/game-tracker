@@ -179,6 +179,20 @@ export const ALL_ARCS: N2EArc[] = [
     arcType: 'Liquid',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_BlackBook.webp',
   },
+  {
+    id: 'fork_LunarPhase',
+    name: '穿过胭红蜃景',
+    rarity: 'S',
+    arcType: 'Synthesis',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_LunarPhase.webp',
+  },
+  {
+    id: 'fork_Door',
+    name: '错误的门',
+    rarity: 'S',
+    arcType: 'Liquid',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_Door.webp',
+  },
   // A-Rank
   {
     id: 'fork_koinobori',
