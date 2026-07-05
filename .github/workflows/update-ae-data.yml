@@ -1,0 +1,57 @@
+name: Update AE
+
+on:
+  schedule:
+    - cron: '0 0 * * 0' # Every Sunday at 00:00 UTC
+  workflow_dispatch: # Allow manual trigger
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+
+      - name: Install dependencies
+        run: npm ci --legacy-peer-deps
+
+      - name: Run update script
+        env:
+          IMAGEKIT_PRIVATE_KEY: ${{ secrets.IMAGEKIT_PRIVATE_KEY }}
+          IMAGEKIT_PUBLIC_KEY: ${{ secrets.IMAGEKIT_PUBLIC_KEY }}
+          IMAGEKIT_URL_ENDPOINT: ${{ secrets.IMAGEKIT_URL_ENDPOINT }}
+        run: node scripts/update-ae-data.mjs
+
+      - name: Format generated files
+        run: npm run format
+
+      - name: Check for changes
+        id: changes
+        run: |
+          git diff --quiet && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Create PR
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          BRANCH="chore/update-ae-data-$(date -u +%Y%m%d)"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git checkout -b "$BRANCH"
+          git add -A
+          git commit -m "chore: update Arknights Endfield operator data"
+          git push --no-verify origin "$BRANCH"
+          gh pr create \
+            --title "chore: update Arknights Endfield operator data" \
+            --body "Automated weekly update of the Arknights: Endfield operator catalog and portrait assets from [Prydwen](https://www.prydwen.gg/arknights-endfield)." \
+            --base main \
+            --head "$BRANCH"

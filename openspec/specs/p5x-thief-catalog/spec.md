@@ -1,8 +1,8 @@
 ## Purpose
 
 Generated catalog of Persona 5: The Phantom X (P5X) Thieves, consumed at runtime via
-`ALL_THIEVES`. Unlike AE's hand-authored catalog, P5X has a structured community data
-source — Prydwen's Gatsby page-data JSON endpoints — so the catalog follows the
+`ALL_THIEVES`. P5X has a structured community data
+source — Prydwen's Gatsby page-data JSON endpoints (also consumed by the AE pipeline) — so the catalog follows the
 HSR/R1999 model: an automated update script regenerates the data file and seeds
 portraits to ImageKit, and a weekly GitHub Actions workflow auto-creates a PR when
 the source changes.

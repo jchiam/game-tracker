@@ -8,9 +8,9 @@ Static, hand-authored catalog of Arknights: Endfield weapons (`ALL_WEAPONS`). De
 
 The system SHALL maintain a static catalog of AE weapons in
 `src/data/arknights-endfield/weapons.ts`, exporting an `AeWeapon` interface and a
-`const ALL_WEAPONS: AeWeapon[]`. Like `operators.ts`, this file is hand-authored
-(no structured AE data source exists yet) and its header SHALL state that it is
-manually maintained.
+`const ALL_WEAPONS: AeWeapon[]`. This file is hand-authored — the only remaining
+hand-authored catalog now that `operators.ts` is generated (no structured weapon
+source exists yet) — and its header SHALL state that it is manually maintained.
 
 Each entry SHALL have the fields: `id` (string, kebab-case slug), `name` (string,
 display name), `rarity` (numeric star rating), and `type` (string — the weapon

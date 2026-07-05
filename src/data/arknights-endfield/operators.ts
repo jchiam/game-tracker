@@ -1,8 +1,5 @@
-// Hand-authored operator catalog for Arknights: Endfield.
-// Manually maintained — no stable structured data source exists yet. When editing,
-// follow the documented procedure in openspec/specs/ae-operator-catalog/spec.md and
-// keep the `OPERATORS` id array in scripts/seed-ae-images.mjs in sync with ALL_OPERATORS.
-// Automating this is tracked by the `add-ae-data-pipeline` change (future update-ae-data.mjs).
+// Auto-generated from Prydwen (prydwen.gg/arknights-endfield) — do not edit manually.
+// Run `node scripts/update-ae-data.mjs` or trigger the GitHub Actions workflow to update.
 
 export interface AeOperator {
   id: string;
