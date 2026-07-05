@@ -54,20 +54,23 @@ test.describe('Selection Page UI and Behavior', () => {
 
     await expect(hsrImage).toHaveAttribute(
       'src',
-      /\/assets\/honkai-star-rail\/selection-cover\.png/,
+      /\/assets\/honkai-star-rail\/selection-cover\.webp/,
     );
-    await expect(r1999Image).toHaveAttribute('src', /\/assets\/reverse-1999\/selection-cover\.jpg/);
+    await expect(r1999Image).toHaveAttribute(
+      'src',
+      /\/assets\/reverse-1999\/selection-cover\.webp/,
+    );
     await expect(n2eImage).toHaveAttribute(
       'src',
-      /\/assets\/neverness-to-everness\/selection-cover\.png/,
+      /\/assets\/neverness-to-everness\/selection-cover\.webp/,
     );
     await expect(endfieldImage).toHaveAttribute(
       'src',
-      /\/assets\/arknights-endfield\/selection-cover\.png/,
+      /\/assets\/arknights-endfield\/selection-cover\.webp/,
     );
     await expect(p5xImage).toHaveAttribute(
       'src',
-      /\/assets\/persona-5-phantom-x\/selection-cover\.png/,
+      /\/assets\/persona-5-phantom-x\/selection-cover\.webp/,
     );
   });
 });

@@ -78,7 +78,7 @@ The update script SHALL upload each downloaded relic icon to ImageKit at `/honka
 
 ### Requirement: Local HSR image files removed from repo
 
-After ImageKit upload is confirmed, `public/assets/honkai-star-rail/characters/` and `public/assets/honkai-star-rail/relics/` SHALL be deleted from the repository. `public/assets/honkai-star-rail/selection-cover.png` SHALL be retained.
+After ImageKit upload is confirmed, `public/assets/honkai-star-rail/characters/` and `public/assets/honkai-star-rail/relics/` SHALL be deleted from the repository. The selection cover (`public/assets/honkai-star-rail/selection-cover.webp`) SHALL be retained.
 
 #### Scenario: Characters directory removed
 
@@ -93,4 +93,4 @@ After ImageKit upload is confirmed, `public/assets/honkai-star-rail/characters/`
 #### Scenario: Selection cover retained
 
 - **WHEN** migration is complete
-- **THEN** `public/assets/honkai-star-rail/selection-cover.png` still exists
+- **THEN** the selection cover (`public/assets/honkai-star-rail/selection-cover.webp`) still exists

@@ -42,7 +42,7 @@ export const GAMES: Game[] = [
     description: 'Track trailblazers, relics, and warp progress.',
     icon: '/assets/icons/hsr-icon.webp',
     color: '#00ccff',
-    coverImage: '/assets/honkai-star-rail/selection-cover.png',
+    coverImage: '/assets/honkai-star-rail/selection-cover.webp',
     bgClass: 'bg-honkai-star-rail-sel',
     Page: lazy(() =>
       import('@/pages/honkai-star-rail/HsrPage').then((m) => ({ default: m.HsrPage })),
@@ -56,7 +56,7 @@ export const GAMES: Game[] = [
     description: 'Track arcanists, psychubes, and wilderness materials.',
     icon: '/assets/icons/r1999-icon.png',
     color: '#deb887',
-    coverImage: '/assets/reverse-1999/selection-cover.jpg',
+    coverImage: '/assets/reverse-1999/selection-cover.webp',
     bgClass: 'bg-r1999-sel',
     Page: lazy(() =>
       import('@/pages/reverse1999/Reverse1999Page').then((m) => ({ default: m.Reverse1999Page })),
@@ -70,7 +70,7 @@ export const GAMES: Game[] = [
     description: 'Track espers, awakenings, and team compositions.',
     icon: '/assets/icons/n2e-icon.png',
     color: '#7b2dff',
-    coverImage: '/assets/neverness-to-everness/selection-cover.png',
+    coverImage: '/assets/neverness-to-everness/selection-cover.webp',
     bgClass: 'bg-n2e-sel',
     Page: lazy(() =>
       import('@/pages/neverness-to-everness/N2ePage').then((m) => ({ default: m.N2ePage })),
@@ -84,7 +84,7 @@ export const GAMES: Game[] = [
     description: 'Track operators, levels, and squad compositions.',
     icon: '/assets/icons/endfield-icon.png',
     color: '#47c7fd',
-    coverImage: '/assets/arknights-endfield/selection-cover.png',
+    coverImage: '/assets/arknights-endfield/selection-cover.webp',
     bgClass: 'bg-ae-sel',
     Page: lazy(() =>
       import('@/pages/arknights-endfield/ArknightsEndfieldPage').then((m) => ({
@@ -100,7 +100,7 @@ export const GAMES: Game[] = [
     description: 'Track thieves, awareness, and team compositions.',
     icon: '/assets/icons/p5x-icon.png',
     color: '#f84f36',
-    coverImage: '/assets/persona-5-phantom-x/selection-cover.png',
+    coverImage: '/assets/persona-5-phantom-x/selection-cover.webp',
     bgClass: 'bg-p5x-sel',
     Page: lazy(() =>
       import('@/pages/persona-5-phantom-x/P5xPage').then((m) => ({ default: m.P5xPage })),

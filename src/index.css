@@ -206,8 +206,16 @@ button {
   filter: drop-shadow(0 0 20px rgba(0, 0, 0, 0.8));
 }
 
-.selection-card-header.bg-r1999-sel .game-character-image {
-  object-position: center top;
+.selection-card-header.bg-honkai-star-rail-sel .game-character-image,
+.selection-card-header.bg-r1999-sel .game-character-image,
+.selection-card-header.bg-n2e-sel .game-character-image {
+  object-fit: cover;
+  object-position: center;
+}
+
+.selection-card-header.bg-p5x-sel .game-character-image {
+  object-fit: cover;
+  object-position: left top;
 }
 
 .selection-card:hover .game-character-image {
