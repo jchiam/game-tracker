@@ -149,12 +149,15 @@ button {
   overflow: hidden;
 }
 
+/* Header backgrounds are game-tinted gradients, self-hosted by definition.
+   Never hotlink external art here — the CSP img-src allowlist blocks foreign
+   origins in production (the old hoyolab/prydwen URLs were dead AND blocked). */
 .selection-card-header.bg-honkai-star-rail-sel {
-  background-image: url('https://upload-os-bbs.hoyolab.com/upload/2023/04/23/94776100/98bda9142f1cf4e3328e3705a1cb36cf_4167389445173163155.jpg?x-oss-process=image/resize,s_1000/quality,q_80/auto-orient,0/interlace,1/format,jpg');
+  background: linear-gradient(135deg, #0a1e2e 0%, #16405a 50%, #0a0a1a 100%);
 }
 
 .selection-card-header.bg-r1999-sel {
-  background-image: url('https://www.prydwen.gg/static/fcd1174cd08e75db740f90e386055d72/31336/rv_meta.webp');
+  background: linear-gradient(135deg, #2e230a 0%, #4e3d1b 50%, #0a0a1a 100%);
 }
 
 .selection-card-header.bg-n2e-sel {
