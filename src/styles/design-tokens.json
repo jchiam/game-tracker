@@ -10,7 +10,7 @@
     "text": {
       "primary": { "$value": "#f0f0f5", "$type": "color" },
       "secondary": { "$value": "#a0a0b5", "$type": "color" },
-      "dim": { "$value": "rgba(160,160,181,0.5)", "$type": "color" },
+      "dim": { "$value": "#8a8aa0", "$type": "color" },
       "onPrimary": { "$value": "#000000", "$type": "color" }
     },
     "brand": {

@@ -35,6 +35,29 @@ glass/overlay `rgba()` fills, which carry no token hue (documented in CLAUDE.md)
 - **THEN** it references a `--color-*`, `--spacing-*`, `--border-radius-*`, `--shadow-*`,
   `--transition-*`, `--duration-*`, or `--z-index-*` token
 
+### Requirement: Text-role tokens meet WCAG AA contrast
+
+Readable-text tokens SHALL meet WCAG AA: `--color-text-primary`, `--color-text-secondary`, and
+`--color-text-dim` SHALL each yield a contrast ratio of at least 4.5:1 (normal text) against
+every app surface they render on (`--color-bg-base`, `--color-bg-surface`, `--color-bg-elevated`,
+`--color-bg-surface-hover`, each composited over the base background). "Dim" is a de-emphasis step
+below secondary, not a licence to drop below AA — de-emphasis SHALL be expressed by choosing a
+lower-contrast-but-still-AA colour, not by alpha that lands under 4.5:1. Purely decorative glyphs
+(dashed-slot plus signs, separator dots) MAY render below AA via an explicit local `opacity`,
+keeping the token itself compliant.
+
+#### Scenario: Dim text on an elevated surface
+
+- **WHEN** de-emphasised text (inactive tab, preference label, placeholder hint) uses
+  `--color-text-dim` on a modal or card surface
+- **THEN** its computed contrast against that surface is ≥ 4.5:1
+
+#### Scenario: Decorative glyph opts down locally
+
+- **WHEN** a purely decorative glyph (e.g. an empty-slot `+`) should read fainter than AA
+- **THEN** the rule applies a local `opacity` on top of the compliant token rather than
+  introducing a sub-AA colour token
+
 ### Requirement: tokens.css is generated, never hand-edited
 
 `src/styles/tokens.css` SHALL be compiled from `src/styles/design-tokens.json` by Style Dictionary
