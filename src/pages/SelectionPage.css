@@ -21,12 +21,20 @@
   margin-bottom: var(--spacing-xl);
 }
 
+/* Widen past the 1200px .main-content shell so the grid fits 3 columns at
+   roughly the same card width as the old 2-column layout. Selection page only —
+   roster pages keep the standard shell. */
+.selection-content {
+  max-width: 1400px;
+}
+
 .selection-grid {
   display: grid;
   gap: var(--spacing-xl);
-  max-width: 900px;
+  max-width: 1400px;
   margin: 0 auto;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  /* 360px min track caps auto-fit at 3 columns: a 4th needs 4×360 + 3 gaps ≈ 1536px > 1400px. */
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
 }
 
 .selection-empty {

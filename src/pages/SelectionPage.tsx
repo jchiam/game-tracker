@@ -29,7 +29,10 @@ export function SelectionPage({ session, isAuthLoading, signInWithGoogle }: Sele
   }
 
   return (
-    <main className="main-content" style={{ minHeight: '100vh', padding: 'var(--spacing-xl)' }}>
+    <main
+      className="main-content selection-content"
+      style={{ minHeight: '100vh', padding: 'var(--spacing-xl)' }}
+    >
       <header className="selection-hero">
         <h1 className="selection-title">Select Game</h1>
         <p className="selection-subtitle">
