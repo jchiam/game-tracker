@@ -1,29 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(openspec *)",
-      "Bash(npx openspec *)",
-      "Bash(npx prettier *)",
-      "Bash(npm test *)",
-      "Bash(npm run lint *)",
-      "Bash(npm run build *)",
-      "PowerShell(openspec *)",
-      "PowerShell(npx openspec *)",
-      "PowerShell(npx prettier *)",
-      "PowerShell(npm test *)",
-      "PowerShell(npm run lint *)",
-      "PowerShell(npm run build *)"
+      "Bash(openspec*)",
+      "Bash(npx openspec*)",
+      "Bash(npx prettier*)",
+      "Bash(npx vitest*)",
+      "Bash(npm test*)",
+      "Bash(npm run lint*)",
+      "Bash(npm run format*)",
+      "Bash(npm run build*)"
     ]
   },
   "hooks": {
     "PreToolUse": [
       {
-        "matcher": "Skill",
+        "matcher": "caveman-commit|caveman__caveman-commit",
         "hooks": [
           {
             "type": "command",
             "command": "npm run format && npx eslint --fix .",
-            "if": "Skill(caveman:caveman-commit)",
             "timeout": 60,
             "statusMessage": "Auto-fixing lint and formatting..."
           }
