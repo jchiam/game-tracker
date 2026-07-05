@@ -335,6 +335,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/the_fluttering_moment.webp',
   },
   {
+    name: "The Riddle's Limit",
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/the_riddle_s_limit.webp',
+  },
+  {
     name: 'The Third Commitment',
     rarity: 6,
     tag: 'None',
