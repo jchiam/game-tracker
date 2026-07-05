@@ -42,6 +42,18 @@ describe('GameCardShell', () => {
     expect(container.querySelector('.game-card-edit-body-inner')).toHaveTextContent('edit-slot');
   });
 
+  it('wraps the summary content in the measured inner element', () => {
+    // Both height budgets must be measured from never-clipped inner wrappers —
+    // measuring the outer (max-height-capped) element mid-transition shrank
+    // the reopen budget and clipped the static line after an edit cycle.
+    const { container } = render(<GameCardShell {...defaultProps} />);
+    const inner = container.querySelector('.game-card-static-summary-inner');
+    expect(inner).not.toBeNull();
+    expect(inner!.parentElement).toHaveClass('game-card-static-summary');
+    expect(inner!.querySelector('.game-card-static-stats')).not.toBeNull();
+    expect(inner!.querySelector('.game-card-static-line')).not.toBeNull();
+  });
+
   it('renders headerExtra next to the edit toggle', () => {
     const { container } = render(
       <GameCardShell {...defaultProps} headerExtra={<span>extra-slot</span>} />,

@@ -6,7 +6,7 @@ A single canonical card collapse/expand mechanism, defined once in `src/styles/c
 
 ### Requirement: Canonical collapse mechanism in shared card styles
 
-The card collapse/expand mechanism SHALL be defined exactly once, in `src/styles/card.css`, using canonical `.game-card-*` class names: `.game-card-static-summary`, `.game-card-static-stats`, `.game-card-static-line`, `.game-card-edit-body`, and `.game-card-edit-body-inner`. Game-specific card stylesheets SHALL NOT re-declare the structural rules of this mechanism (layout, overflow, transition, or the `.is-editing` selectors); they MAY only set the per-game height budgets and game-unique content styles.
+The card collapse/expand mechanism SHALL be defined exactly once, in `src/styles/card.css`, using canonical `.game-card-*` class names: `.game-card-static-summary`, `.game-card-static-summary-inner`, `.game-card-static-stats`, `.game-card-static-line`, `.game-card-edit-body`, and `.game-card-edit-body-inner`. Game-specific card stylesheets SHALL NOT re-declare the structural rules of this mechanism (layout, overflow, transition, or the `.is-editing` selectors); they MAY only set the per-game height budgets and game-unique content styles.
 
 #### Scenario: Mechanism lives in the global stylesheet
 
@@ -34,12 +34,14 @@ When a card body carries the `.is-editing` class, the static summary SHALL colla
 
 ### Requirement: Height budgets measured from content by the card shell
 
-The collapsed-summary and expanded-edit-body maximum heights SHALL be controlled by the CSS custom properties `--game-card-summary-max-height` and `--game-card-edit-max-height`. `card.css` SHALL provide default values. The shared `GameCardShell` (`shared-ui-components`) SHALL measure both budgets from the card's rendered content (`scrollHeight` of the static summary and of the edit-body inner wrapper) in a layout effect after every render, and SHALL set them as **inline custom properties on the card root element** — NOT via a shared `.game-card { … }` rule in route-split CSS. Inline custom properties are element-scoped, so budgets cannot leak across games regardless of which route stylesheets are loaded; a `.game-card { … }` rule in one game's route-split CSS persists after navigation and would otherwise apply to every card on the page. Because budgets are measured, no game SHALL hardcode per-game budget constants; conditional slot content (target-build displays, preference rows) can never clip the bottom, and the expand transition never animates far past the real content height. The summary budget SHALL be measured only while the card is not editing: the collapsed summary loses its padding, so a mid-collapse measurement would shrink the reopen budget.
+The collapsed-summary and expanded-edit-body maximum heights SHALL be controlled by the CSS custom properties `--game-card-summary-max-height` and `--game-card-edit-max-height`. `card.css` SHALL provide default values. The shared `GameCardShell` (`shared-ui-components`) SHALL measure both budgets from the card's rendered content in a layout effect after every render, and SHALL set them as **inline custom properties on the card root element** — NOT via a shared `.game-card { … }` rule in route-split CSS. Inline custom properties are element-scoped, so budgets cannot leak across games regardless of which route stylesheets are loaded; a `.game-card { … }` rule in one game's route-split CSS persists after navigation and would otherwise apply to every card on the page. Because budgets are measured, no game SHALL hardcode per-game budget constants; conditional slot content (target-build displays, preference rows) can never clip the bottom, and the expand transition never animates far past the real content height.
+
+Both measurements SHALL target a never-clipped inner wrapper (`scrollHeight` of `.game-card-static-summary-inner` and of `.game-card-edit-body-inner`) rather than the outer height-capped elements. The outer elements own only the `max-height` clip and its transition; all content layout (flex, gap, padding) lives on the inner wrappers. This makes the measurement correct at any moment — including mid-transition — so no measurement-timing guard is needed: measuring the outer summary element while it reopened from edit mode returned a shrunken height (its padding was still animating from the collapsed state), which permanently under-sized the budget and clipped the summary's static line.
 
 #### Scenario: Budgets track measured content
 
 - **WHEN** any game's card renders, including conditional edit sections of varying height
-- **THEN** the shell writes `--game-card-summary-max-height` and `--game-card-edit-max-height` inline on the card root from the measured content, and the canonical rules in `card.css` consume those values via the cascade into the card's descendants — the expanded edit body neither clips its content nor animates far past it
+- **THEN** the shell writes `--game-card-summary-max-height` and `--game-card-edit-max-height` inline on the card root from the measured inner-wrapper content, and the canonical rules in `card.css` consume those values via the cascade into the card's descendants — the expanded edit body neither clips its content nor animates far past it
 
 #### Scenario: Budgets do not leak across games after navigation
 
@@ -51,7 +53,12 @@ The collapsed-summary and expanded-edit-body maximum heights SHALL be controlled
 - **WHEN** the game card components are searched for inline `--game-card-summary-max-height` / `--game-card-edit-max-height` values or per-game measurement code
 - **THEN** none exists outside `GameCardShell`; every game's budgets come from the shell's measurement
 
-#### Scenario: Summary budget survives the collapse
+#### Scenario: Summary reopens at full height after an edit cycle
 
-- **WHEN** a card enters edit mode and its collapsed summary shrinks to zero height
-- **THEN** the shell does not re-measure the summary while editing, so the previously measured (expanded) budget is retained and the summary reopens to its full height
+- **WHEN** a card enters edit mode and later exits it (expand then collapse of the edit body)
+- **THEN** the reopened summary's height budget equals its measured content height — the stat-chip row and the static line are fully visible, not clipped shorter than before the edit cycle
+
+#### Scenario: Measurement immune to transition state
+
+- **WHEN** the shell's layout effect runs while the summary's reopen transition is still in flight
+- **THEN** the measured `scrollHeight` of `.game-card-static-summary-inner` equals the summary's settled content height, because the inner wrapper is never height-capped and carries no animating padding

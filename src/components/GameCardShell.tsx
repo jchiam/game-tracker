@@ -51,18 +51,21 @@ export function GameCardShell({
   // (target-build displays, preference rows) can never clip the bottom. Budgets
   // are written straight to the card's CSS custom properties (no state, no
   // re-render) after every render, since slot content can change height freely.
-  // The summary is only measured while expanded: collapsed it loses its padding,
-  // so a mid-collapse measurement would shrink the reopen budget.
+  // Both measurements target an inner wrapper that carries the content's layout
+  // (padding, gap) and is never itself height-capped — the outer element owns
+  // the max-height clip, so its scrollHeight lies mid-transition (measuring the
+  // summary while it reopened from edit mode used to shrink the budget and clip
+  // the static line).
   const cardRef = useRef<HTMLDivElement>(null);
-  const summaryRef = useRef<HTMLDivElement>(null);
+  const summaryInnerRef = useRef<HTMLDivElement>(null);
   const editInnerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const card = cardRef.current;
     if (!card) return;
-    if (!isEditing && summaryRef.current) {
+    if (summaryInnerRef.current) {
       card.style.setProperty(
         '--game-card-summary-max-height',
-        `${summaryRef.current.scrollHeight}px`,
+        `${summaryInnerRef.current.scrollHeight}px`,
       );
     }
     if (editInnerRef.current) {
@@ -133,9 +136,11 @@ export function GameCardShell({
       <div className={`game-card-body ${isEditing ? 'is-editing' : ''}`}>
         <h3 className="game-card-name">{name}</h3>
 
-        <div className="game-card-static-summary" ref={summaryRef}>
-          <div className="game-card-static-stats">{summaryStats}</div>
-          <div className="game-card-static-line">{summaryLine}</div>
+        <div className="game-card-static-summary">
+          <div className="game-card-static-summary-inner" ref={summaryInnerRef}>
+            <div className="game-card-static-stats">{summaryStats}</div>
+            <div className="game-card-static-line">{summaryLine}</div>
+          </div>
         </div>
 
         <div className="game-card-edit-body" aria-hidden={!isEditing}>

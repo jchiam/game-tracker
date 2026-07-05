@@ -116,10 +116,12 @@ card root (`--game-card-summary-max-height`, `--game-card-edit-max-height`).
 
   <!-- collapses to height 0 when .is-editing -->
   <div class="game-card-static-summary">
-    <div class="game-card-static-stats">
-      <!-- StatChips colored by investment (see below) -->
+    <div class="game-card-static-summary-inner">
+      <div class="game-card-static-stats">
+        <!-- StatChips colored by investment (see below) -->
+      </div>
+      <div class="game-card-static-line">Equipped Gear · Lv 60 · A5</div>
     </div>
-    <div class="game-card-static-line">Equipped Gear · Lv 60 · A5</div>
   </div>
 
   <!-- expands from height 0 when .is-editing -->
@@ -133,14 +135,15 @@ card root (`--game-card-summary-max-height`, `--game-card-edit-max-height`).
 </div>
 ```
 
-| Class                        | Description                                         |
-| ---------------------------- | --------------------------------------------------- |
-| `.game-card-static-summary`  | Collapsed read-only summary (chips row + one-liner) |
-| `.game-card-static-stats`    | Row of `StatChip`s (`.stat-chip`)                   |
-| `.game-card-static-line`     | Single-line equip digest (truncates with ellipsis)  |
-| `.game-card-edit-body`       | Editing container, height-animated open/closed      |
-| `.game-card-edit-body-inner` | Edit-body content wrapper                           |
-| `.edit-toggle-btn`           | ✎ toggle that flips `.is-editing`                   |
+| Class                             | Description                                                                   |
+| --------------------------------- | ----------------------------------------------------------------------------- |
+| `.game-card-static-summary`       | Collapsed read-only summary — outer height-clip element                       |
+| `.game-card-static-summary-inner` | Summary content wrapper (flex, gap, padding) — measured for the height budget |
+| `.game-card-static-stats`         | Row of `StatChip`s (`.stat-chip`)                                             |
+| `.game-card-static-line`          | Single-line equip digest (truncates with ellipsis)                            |
+| `.game-card-edit-body`            | Editing container, height-animated open/closed                                |
+| `.game-card-edit-body-inner`      | Edit-body content wrapper                                                     |
+| `.edit-toggle-btn`                | ✎ toggle that flips `.is-editing`                                             |
 
 **Tokens used:** `--spacing-3`, `--spacing-md`, `--spacing-lg`, `--typography-font-size-sm`, `--color-text-secondary`
 
@@ -604,11 +607,13 @@ badges in `.game-card-badges`:
   <div class="game-card-body is-editing">
     <h3 class="game-card-name">Seele</h3>
     <div class="game-card-static-summary">
-      <div class="game-card-static-stats">
-        <span class="stat-chip">Lv 80</span>
-        <span class="stat-chip">Relics 6/6</span>
+      <div class="game-card-static-summary-inner">
+        <div class="game-card-static-stats">
+          <span class="stat-chip">Lv 80</span>
+          <span class="stat-chip">Relics 6/6</span>
+        </div>
+        <div class="game-card-static-line">Glamoth 4 · Space Sealing 2</div>
       </div>
-      <div class="game-card-static-line">Glamoth 4 · Space Sealing 2</div>
     </div>
     <div class="game-card-edit-body">
       <div class="game-card-edit-body-inner">
@@ -719,12 +724,14 @@ matching N2E's Arc "Tier" sub-control.
   <div class="game-card-body is-editing">
     <h3 class="game-card-name">Vertin</h3>
     <div class="game-card-static-summary">
-      <div class="game-card-static-stats">
-        <span class="stat-chip">Lv 60</span>
-        <span class="stat-chip">P2</span>
-        <span class="stat-chip">R10</span>
+      <div class="game-card-static-summary-inner">
+        <div class="game-card-static-stats">
+          <span class="stat-chip">Lv 60</span>
+          <span class="stat-chip">P2</span>
+          <span class="stat-chip">R10</span>
+        </div>
+        <div class="game-card-static-line">His Bounden Duty · Lv 60 · A5</div>
       </div>
-      <div class="game-card-static-line">His Bounden Duty · Lv 60 · A5</div>
     </div>
     <div class="game-card-edit-body">
       <div class="game-card-edit-body-inner">

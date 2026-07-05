@@ -176,24 +176,28 @@
    set as custom properties on `.game-card`; games must not re-declare these
    structural rules or hardcode budget values. */
 
+/* The outer element only clips; all content layout (flex, gap, padding) lives
+   on the inner wrapper so GameCardShell can measure its scrollHeight at any
+   moment — including mid-transition — without the max-height clip or an
+   animating padding shrinking the measured budget. */
 .game-card-static-summary {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-  padding-bottom: var(--spacing-md);
   overflow: hidden;
   max-height: var(--game-card-summary-max-height, 200px);
   transition:
     opacity 0.2s ease,
-    max-height 0.3s ease,
-    padding 0.3s ease;
+    max-height 0.3s ease;
+}
+
+.game-card-static-summary-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+  padding-bottom: var(--spacing-md);
 }
 
 .game-card-body.is-editing .game-card-static-summary {
   max-height: 0;
   opacity: 0;
-  padding-top: 0;
-  padding-bottom: 0;
   pointer-events: none;
 }
 

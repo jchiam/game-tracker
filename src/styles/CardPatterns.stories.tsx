@@ -68,11 +68,13 @@ function CollapseDemo() {
         <h3 className="game-card-name">Character Name</h3>
 
         <div className="game-card-static-summary">
-          <div className="game-card-static-stats">
-            <span className="stat-chip">Lv 80</span>
-            <span className="stat-chip">P5</span>
+          <div className="game-card-static-summary-inner">
+            <div className="game-card-static-stats">
+              <span className="stat-chip">Lv 80</span>
+              <span className="stat-chip">P5</span>
+            </div>
+            <div className="game-card-static-line">Equipped Item · Lv 60 · A5</div>
           </div>
-          <div className="game-card-static-line">Equipped Item · Lv 60 · A5</div>
         </div>
 
         <div className="game-card-edit-body" aria-hidden={!editing}>
