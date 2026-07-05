@@ -46,15 +46,17 @@ per-variant color selectors (e.g. `.path-badge.path-destruction`) continue to ma
 ### Requirement: All `GameBadge` variants render the canonical tinted pill
 
 Every `GameBadge` variant SHALL render as the canonical tinted-glass pill — including HSR element
-and the AE class/element/weapon variants: bold, uppercase, blurred, with a per-variant fill of
-`rgba(hue, 0.25)` and border of `rgba(hue, 0.6)`. No `GameBadge` variant SHALL render as a flat
-dark chip or with a faint (`0.15` / `0.3`) fill.
+and the AE class/element/weapon variants: bold, uppercase, blurred, with a per-variant fill and
+border derived from the variant's colour token via `color-mix(in srgb, var(--token) 25%,
+transparent)` (fill) and `60%` (border). No `GameBadge` variant SHALL render as a flat dark chip,
+with a faint (`15%` / `30%`) fill, or with its hue hardcoded as an `rgba()` literal.
 
 #### Scenario: AE operator badges match the canonical pill
 
 - **WHEN** an AE operator card renders its class / element / weapon badges
-- **THEN** each is bold, uppercase, and blurred with a `rgba(hue, 0.25)` fill and `rgba(hue, 0.6)`
-  border — visually consistent with the HSR path, R1999 afflatus, and N2E esper pills
+- **THEN** each is bold, uppercase, and blurred with a 25% token-tint fill and 60% token-tint
+  border (via `color-mix`) — visually consistent with the HSR path, R1999 afflatus, and N2E esper
+  pills
 
 #### Scenario: HSR element badge matches the path badge beside it
 
@@ -68,14 +70,3 @@ dark chip or with a faint (`0.15` / `0.3`) fill.
   border
 - **THEN** it keeps its original border and fill — the canonical badge tint is scoped to the
   compound `.element-badge.element-{element}` selector and does not bleed into the avatar
-
-### Requirement: Canonical-variant badges are visually unchanged
-
-The five already-canonical variants SHALL NOT change appearance when the badge base moves to
-`.game-badge` — HSR `path`, R1999 `afflatus` / `damage`, and N2E `esper` / `arc`.
-
-#### Scenario: Path, afflatus, damage, esper, arc pills render unchanged
-
-- **WHEN** an HSR, R1999, or N2E card is rendered after the migration
-- **THEN** its path / afflatus / damage / esper / arc pills look identical to before (same
-  padding, radius, weight, uppercase, blur, fill, and border)

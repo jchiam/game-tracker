@@ -64,8 +64,9 @@ tight line-height, `white-space: nowrap`. The shared `GameBadge` component emits
 modals) include `game-badge` in their class string too.
 
 Per-game stylesheets contribute **only** the per-variant colour rule — text colour plus a tinted
-fill `rgba(hue, 0.25)` and border `rgba(hue, 0.6)`. They never re-declare the base. (The rgba
-fills stay literal — see the "rgba() badge backgrounds" known gap.)
+fill and border derived from the same variant token via
+`color-mix(in srgb, var(--token) 25%, transparent)` (fill) and `60%` (border). They never
+re-declare the base, and never hardcode the hue as an rgba() literal.
 
 ### Element Badge (HSR)
 
@@ -219,7 +220,7 @@ Dropdown selector for switching between tracked games. Animated with `slideIn` k
 </div>
 ```
 
-**Tokens used:** `--color-brand-primary`, `--color-brand-primary-rgb`, `--color-bg-elevated`, `--shadow-lg`, `--border-radius-lg`, `--transition-fast`, `--z-index-modal`
+**Tokens used:** `--color-brand-primary`, `--color-focus-glow`, `--color-bg-elevated`, `--shadow-lg`, `--border-radius-lg`, `--transition-fast`, `--z-index-modal`
 
 ---
 

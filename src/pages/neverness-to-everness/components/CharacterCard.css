@@ -16,60 +16,60 @@
 
 /* Esper type badges */
 .esper-badge.esper-anima {
-  background: rgba(200, 120, 60, 0.25);
-  border-color: rgba(200, 120, 60, 0.6);
+  background: color-mix(in srgb, var(--color-n2e-esper-anima) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-esper-anima) 60%, transparent);
   color: var(--color-n2e-esper-anima);
 }
 .esper-badge.esper-chaos {
-  background: rgba(147, 112, 219, 0.25);
-  border-color: rgba(147, 112, 219, 0.6);
+  background: color-mix(in srgb, var(--color-n2e-esper-chaos) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-esper-chaos) 60%, transparent);
   color: var(--color-n2e-esper-chaos);
 }
 .esper-badge.esper-cosmos {
-  background: rgba(100, 180, 220, 0.25);
-  border-color: rgba(100, 180, 220, 0.6);
+  background: color-mix(in srgb, var(--color-n2e-esper-cosmos) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-esper-cosmos) 60%, transparent);
   color: var(--color-n2e-esper-cosmos);
 }
 .esper-badge.esper-incantation {
-  background: rgba(212, 175, 55, 0.25);
-  border-color: rgba(212, 175, 55, 0.6);
+  background: color-mix(in srgb, var(--color-n2e-esper-incantation) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-esper-incantation) 60%, transparent);
   color: var(--color-n2e-esper-incantation);
 }
 .esper-badge.esper-lakshana {
-  background: rgba(70, 170, 80, 0.25);
-  border-color: rgba(70, 170, 80, 0.6);
+  background: color-mix(in srgb, var(--color-n2e-esper-lakshana) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-esper-lakshana) 60%, transparent);
   color: var(--color-n2e-esper-lakshana);
 }
 .esper-badge.esper-psyche {
-  background: rgba(220, 80, 120, 0.25);
-  border-color: rgba(220, 80, 120, 0.6);
+  background: color-mix(in srgb, var(--color-n2e-esper-psyche) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-esper-psyche) 60%, transparent);
   color: var(--color-n2e-esper-psyche);
 }
 
 /* Arc type badges */
 .arc-badge.arc-gas {
-  background: rgba(100, 200, 160, 0.2);
-  border-color: rgba(100, 200, 160, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-arc-gas) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-arc-gas) 50%, transparent);
   color: var(--color-n2e-arc-gas);
 }
 .arc-badge.arc-liquid {
-  background: rgba(80, 140, 220, 0.2);
-  border-color: rgba(80, 140, 220, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-arc-liquid) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-arc-liquid) 50%, transparent);
   color: var(--color-n2e-arc-liquid);
 }
 .arc-badge.arc-plasma {
-  background: rgba(220, 100, 60, 0.2);
-  border-color: rgba(220, 100, 60, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-arc-plasma) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-arc-plasma) 50%, transparent);
   color: var(--color-n2e-arc-plasma);
 }
 .arc-badge.arc-solid {
-  background: rgba(180, 160, 120, 0.2);
-  border-color: rgba(180, 160, 120, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-arc-solid) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-arc-solid) 50%, transparent);
   color: var(--color-n2e-arc-solid);
 }
 .arc-badge.arc-synthesis {
-  background: rgba(180, 120, 200, 0.2);
-  border-color: rgba(180, 120, 200, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-arc-synthesis) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-arc-synthesis) 50%, transparent);
   color: var(--color-n2e-arc-synthesis);
 }
 
@@ -116,9 +116,9 @@
 }
 
 .cartridge-slot.active {
-  background: rgba(212, 175, 55, 0.08);
-  border-color: rgba(212, 175, 55, 0.4);
-  box-shadow: 0 0 8px rgba(212, 175, 55, 0.1) inset;
+  background: color-mix(in srgb, var(--color-brand-primary) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-brand-primary) 40%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-brand-primary) 10%, transparent) inset;
 }
 
 .cartridge-slot-info {
@@ -140,20 +140,20 @@
 }
 
 .cartridge-rarity-badge.rarity-s {
-  background: rgba(212, 175, 55, 0.2);
-  border-color: rgba(212, 175, 55, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-rarity-s) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-rarity-s) 50%, transparent);
   color: var(--color-n2e-rarity-s);
 }
 
 .cartridge-rarity-badge.rarity-a {
-  background: rgba(147, 112, 219, 0.2);
-  border-color: rgba(147, 112, 219, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-rarity-a) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-rarity-a) 50%, transparent);
   color: var(--color-n2e-rarity-a);
 }
 
 .cartridge-rarity-badge.rarity-b {
-  background: rgba(100, 180, 220, 0.2);
-  border-color: rgba(100, 180, 220, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-rarity-b) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-rarity-b) 50%, transparent);
   color: var(--color-n2e-rarity-b);
 }
 
@@ -225,32 +225,32 @@
 }
 
 .cartridge-score-badge.grade-s {
-  background: rgba(64, 200, 160, 0.15);
-  border-color: rgba(64, 200, 160, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-score-grade-s) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-score-grade-s) 50%, transparent);
   color: var(--color-n2e-score-grade-s);
 }
 
 .cartridge-score-badge.grade-a {
-  background: rgba(212, 175, 55, 0.15);
-  border-color: rgba(212, 175, 55, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-score-grade-a) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-score-grade-a) 50%, transparent);
   color: var(--color-n2e-score-grade-a);
 }
 
 .cartridge-score-badge.grade-b {
-  background: rgba(200, 128, 64, 0.15);
-  border-color: rgba(200, 128, 64, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-score-grade-b) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-score-grade-b) 50%, transparent);
   color: var(--color-n2e-score-grade-b);
 }
 
 .cartridge-score-badge.grade-c {
-  background: rgba(180, 140, 100, 0.15);
-  border-color: rgba(180, 140, 100, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-score-grade-c) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-score-grade-c) 50%, transparent);
   color: var(--color-n2e-score-grade-c);
 }
 
 .cartridge-score-badge.grade-d {
-  background: rgba(138, 96, 80, 0.15);
-  border-color: rgba(138, 96, 80, 0.5);
+  background: color-mix(in srgb, var(--color-n2e-score-grade-d) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-n2e-score-grade-d) 50%, transparent);
   color: var(--color-n2e-score-grade-d);
 }
 

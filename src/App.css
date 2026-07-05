@@ -53,35 +53,35 @@
    compound `.element-badge.element-*` rules below. */
 .element-lightning {
   color: var(--color-hsr-element-lightning);
-  border: 1px solid rgba(217, 122, 254, 0.55);
+  border: 1px solid color-mix(in srgb, var(--color-hsr-element-lightning) 55%, transparent);
 }
 .element-imaginary {
   color: var(--color-hsr-element-imaginary);
-  border: 1px solid rgba(244, 210, 88, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-hsr-element-imaginary) 30%, transparent);
 }
 .element-fire {
   color: var(--color-hsr-element-fire);
-  border: 1px solid rgba(248, 79, 54, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-hsr-element-fire) 30%, transparent);
 }
 .element-ice {
   color: var(--color-hsr-element-ice);
-  border: 1px solid rgba(71, 199, 253, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-hsr-element-ice) 30%, transparent);
 }
 .element-quantum {
   color: var(--color-hsr-element-quantum);
-  border: 1px solid rgba(120, 100, 170, 0.4);
+  border: 1px solid color-mix(in srgb, var(--color-hsr-element-quantum) 40%, transparent);
 }
 .element-wind {
   color: var(--color-hsr-element-wind);
-  border: 1px solid rgba(91, 200, 159, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-hsr-element-wind) 30%, transparent);
 }
 .element-physical {
   color: var(--color-hsr-element-physical);
-  border: 1px solid rgba(188, 188, 188, 0.3);
+  border: 1px solid color-mix(in srgb, var(--color-hsr-element-physical) 30%, transparent);
 }
 .element-thunder {
   color: var(--color-hsr-element-thunder);
-  border: 1px solid rgba(217, 122, 254, 0.55);
+  border: 1px solid color-mix(in srgb, var(--color-hsr-element-thunder) 55%, transparent);
 }
 
 /* Element badge tint — canonical pill fill, scoped to the badge so it does not
@@ -89,32 +89,32 @@
    (e.g. `.path-badge.path-*`). Base appearance comes from `.game-badge`. */
 .element-badge.element-lightning,
 .element-badge.element-thunder {
-  background: rgba(217, 122, 254, 0.25);
-  border-color: rgba(217, 122, 254, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-element-lightning) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-element-lightning) 60%, transparent);
 }
 .element-badge.element-imaginary {
-  background: rgba(244, 210, 88, 0.25);
-  border-color: rgba(244, 210, 88, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-element-imaginary) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-element-imaginary) 60%, transparent);
 }
 .element-badge.element-fire {
-  background: rgba(248, 79, 54, 0.25);
-  border-color: rgba(248, 79, 54, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-element-fire) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-element-fire) 60%, transparent);
 }
 .element-badge.element-ice {
-  background: rgba(71, 199, 253, 0.25);
-  border-color: rgba(71, 199, 253, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-element-ice) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-element-ice) 60%, transparent);
 }
 .element-badge.element-quantum {
-  background: rgba(120, 100, 170, 0.25);
-  border-color: rgba(120, 100, 170, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-element-quantum) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-element-quantum) 60%, transparent);
 }
 .element-badge.element-wind {
-  background: rgba(91, 200, 159, 0.25);
-  border-color: rgba(91, 200, 159, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-element-wind) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-element-wind) 60%, transparent);
 }
 .element-badge.element-physical {
-  background: rgba(188, 188, 188, 0.25);
-  border-color: rgba(188, 188, 188, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-element-physical) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-element-physical) 60%, transparent);
 }
 
 /* fade-in-up defined in src/styles/animations.css */

@@ -20,7 +20,7 @@
 .switcher-trigger.active {
   background: rgba(255, 255, 255, 0.1);
   border-color: var(--color-brand-primary);
-  box-shadow: 0 0 10px rgba(var(--color-brand-primary-rgb), 0.2);
+  box-shadow: 0 0 10px var(--color-focus-glow);
 }
 
 .current-game-icon-container {
@@ -100,7 +100,7 @@
 }
 
 .dropdown-item.active {
-  background: rgba(var(--color-brand-primary-rgb), 0.1);
+  background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
 }
 
 .game-icon-container {

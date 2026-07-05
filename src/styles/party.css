@@ -128,12 +128,12 @@
 
 .party-favorite-btn:hover {
   color: var(--color-tier-s);
-  background: rgba(255, 215, 0, 0.1);
+  background: color-mix(in srgb, var(--color-tier-s) 10%, transparent);
 }
 
 .edit-btn:hover {
-  color: #7fb3ff;
-  background: rgba(127, 179, 255, 0.1);
+  color: var(--color-tier-a);
+  background: color-mix(in srgb, var(--color-tier-a) 10%, transparent);
 }
 
 .delete-btn:hover {

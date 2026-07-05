@@ -23,103 +23,104 @@
 
 /* Endfield badge colours. Base appearance comes from the canonical
    `.game-badge` pill (card.css); only the per-variant tint + text colour
-   live here, at the canonical 0.25 fill / 0.6 border opacity. */
+   live here — fill/border derive from the variant token via color-mix at
+   the canonical 25% fill / 60% border. */
 
 /* Class */
 .ae-class-caster {
   color: var(--color-ae-class-caster);
-  background: rgba(201, 168, 248, 0.25);
-  border-color: rgba(201, 168, 248, 0.6);
+  background: color-mix(in srgb, var(--color-ae-class-caster) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-class-caster) 60%, transparent);
 }
 
 .ae-class-defender {
   color: var(--color-ae-class-defender);
-  background: rgba(138, 184, 245, 0.25);
-  border-color: rgba(138, 184, 245, 0.6);
+  background: color-mix(in srgb, var(--color-ae-class-defender) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-class-defender) 60%, transparent);
 }
 
 .ae-class-guard {
   color: var(--color-ae-class-guard);
-  background: rgba(255, 144, 144, 0.25);
-  border-color: rgba(255, 144, 144, 0.6);
+  background: color-mix(in srgb, var(--color-ae-class-guard) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-class-guard) 60%, transparent);
 }
 
 .ae-class-striker {
   color: var(--color-ae-class-striker);
-  background: rgba(245, 214, 138, 0.25);
-  border-color: rgba(245, 214, 138, 0.6);
+  background: color-mix(in srgb, var(--color-ae-class-striker) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-class-striker) 60%, transparent);
 }
 
 .ae-class-supporter {
   color: var(--color-ae-class-supporter);
-  background: rgba(144, 224, 154, 0.25);
-  border-color: rgba(144, 224, 154, 0.6);
+  background: color-mix(in srgb, var(--color-ae-class-supporter) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-class-supporter) 60%, transparent);
 }
 
 .ae-class-vanguard {
   color: var(--color-ae-class-vanguard);
-  background: rgba(245, 176, 128, 0.25);
-  border-color: rgba(245, 176, 128, 0.6);
+  background: color-mix(in srgb, var(--color-ae-class-vanguard) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-class-vanguard) 60%, transparent);
 }
 
 /* Element */
 .ae-element-physical {
   color: var(--color-ae-element-physical);
-  background: rgba(188, 188, 188, 0.25);
-  border-color: rgba(188, 188, 188, 0.6);
+  background: color-mix(in srgb, var(--color-ae-element-physical) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-element-physical) 60%, transparent);
 }
 
 .ae-element-cryo {
   color: var(--color-ae-element-cryo);
-  background: rgba(71, 199, 253, 0.25);
-  border-color: rgba(71, 199, 253, 0.6);
+  background: color-mix(in srgb, var(--color-ae-element-cryo) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-element-cryo) 60%, transparent);
 }
 
 .ae-element-electric {
   color: var(--color-ae-element-electric);
-  background: rgba(217, 122, 254, 0.25);
-  border-color: rgba(217, 122, 254, 0.6);
+  background: color-mix(in srgb, var(--color-ae-element-electric) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-element-electric) 60%, transparent);
 }
 
 .ae-element-heat {
   color: var(--color-ae-element-heat);
-  background: rgba(248, 79, 54, 0.25);
-  border-color: rgba(248, 79, 54, 0.6);
+  background: color-mix(in srgb, var(--color-ae-element-heat) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-element-heat) 60%, transparent);
 }
 
 .ae-element-nature {
   color: var(--color-ae-element-nature);
-  background: rgba(91, 200, 159, 0.25);
-  border-color: rgba(91, 200, 159, 0.6);
+  background: color-mix(in srgb, var(--color-ae-element-nature) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-element-nature) 60%, transparent);
 }
 
 /* Weapon */
 .ae-weapon-sword {
   color: var(--color-ae-weapon-sword);
-  background: rgba(240, 168, 216, 0.25);
-  border-color: rgba(240, 168, 216, 0.6);
+  background: color-mix(in srgb, var(--color-ae-weapon-sword) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-weapon-sword) 60%, transparent);
 }
 
 .ae-weapon-greatsword {
   color: var(--color-ae-weapon-greatsword);
-  background: rgba(245, 176, 128, 0.25);
-  border-color: rgba(245, 176, 128, 0.6);
+  background: color-mix(in srgb, var(--color-ae-weapon-greatsword) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-weapon-greatsword) 60%, transparent);
 }
 
 .ae-weapon-polearm {
   color: var(--color-ae-weapon-polearm);
-  background: rgba(144, 208, 240, 0.25);
-  border-color: rgba(144, 208, 240, 0.6);
+  background: color-mix(in srgb, var(--color-ae-weapon-polearm) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-weapon-polearm) 60%, transparent);
 }
 
 .ae-weapon-handcannon {
   color: var(--color-ae-weapon-handcannon);
-  background: rgba(245, 214, 138, 0.25);
-  border-color: rgba(245, 214, 138, 0.6);
+  background: color-mix(in srgb, var(--color-ae-weapon-handcannon) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-weapon-handcannon) 60%, transparent);
 }
 
 .ae-weapon-arts-unit {
   color: var(--color-ae-weapon-arts-unit);
-  background: rgba(201, 168, 248, 0.25);
-  border-color: rgba(201, 168, 248, 0.6);
+  background: color-mix(in srgb, var(--color-ae-weapon-arts-unit) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-ae-weapon-arts-unit) 60%, transparent);
 }

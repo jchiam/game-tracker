@@ -50,44 +50,44 @@
 /* Base appearance from the canonical `.game-badge` pill (card.css);
    only the per-afflatus / per-damage colours live here. */
 .afflatus-badge.afflatus-plant {
-  background: rgba(70, 170, 80, 0.25);
-  border-color: rgba(70, 170, 80, 0.6);
+  background: color-mix(in srgb, var(--color-r1999-afflatus-plant) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-r1999-afflatus-plant) 60%, transparent);
   color: var(--color-r1999-afflatus-plant);
 }
 .afflatus-badge.afflatus-star {
-  background: rgba(212, 175, 55, 0.25);
-  border-color: rgba(212, 175, 55, 0.6);
+  background: color-mix(in srgb, var(--color-r1999-afflatus-star) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-r1999-afflatus-star) 60%, transparent);
   color: var(--color-r1999-afflatus-star);
 }
 .afflatus-badge.afflatus-beast {
-  background: rgba(200, 120, 60, 0.25);
-  border-color: rgba(200, 120, 60, 0.6);
+  background: color-mix(in srgb, var(--color-r1999-afflatus-beast) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-r1999-afflatus-beast) 60%, transparent);
   color: var(--color-r1999-afflatus-beast);
 }
 .afflatus-badge.afflatus-mineral {
-  background: rgba(130, 160, 200, 0.25);
-  border-color: rgba(130, 160, 200, 0.6);
+  background: color-mix(in srgb, var(--color-r1999-afflatus-mineral) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-r1999-afflatus-mineral) 60%, transparent);
   color: var(--color-r1999-afflatus-mineral);
 }
 .afflatus-badge.afflatus-intellect {
-  background: rgba(147, 112, 219, 0.25);
-  border-color: rgba(147, 112, 219, 0.6);
+  background: color-mix(in srgb, var(--color-r1999-afflatus-intellect) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-r1999-afflatus-intellect) 60%, transparent);
   color: var(--color-r1999-afflatus-intellect);
 }
 .afflatus-badge.afflatus-spirit {
-  background: rgba(100, 180, 220, 0.25);
-  border-color: rgba(100, 180, 220, 0.6);
+  background: color-mix(in srgb, var(--color-r1999-afflatus-spirit) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-r1999-afflatus-spirit) 60%, transparent);
   color: var(--color-r1999-afflatus-spirit);
 }
 
 .damage-badge.damage-mental {
-  background: rgba(147, 112, 219, 0.2);
-  border-color: rgba(147, 112, 219, 0.5);
+  background: color-mix(in srgb, var(--color-r1999-damage-mental) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-r1999-damage-mental) 50%, transparent);
   color: var(--color-r1999-damage-mental);
 }
 .damage-badge.damage-reality,
 .damage-badge.damage-real {
-  background: rgba(212, 175, 55, 0.2);
-  border-color: rgba(212, 175, 55, 0.5);
+  background: color-mix(in srgb, var(--color-r1999-damage-reality) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-r1999-damage-reality) 50%, transparent);
   color: var(--color-r1999-damage-reality);
 }

@@ -71,7 +71,7 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 - **Game-specific colours** — Live under `color.{gameId}` in `design-tokens.json` (e.g., `color.hsr`, `color.r1999`, `color.n2e`).
 - **Duration vs Transition tokens** — `--duration-*` for `animation` durations, `--transition-*` for CSS `transition` properties. Duration = time only; transition = time + easing.
 - **Canonical names only** — `--color-brand-primary` not `--color-primary`, `--border-radius-md` not `--radius-md`.
-- **Known gap: rgba() badge backgrounds** — Badge `background` and `border-color` use `rgba(base, opacity)` because tokens can't express "same hue at X% opacity" yet. The text `color:` must still use a token.
+- **Derived opacity via color-mix()** — When a rule needs "token hue at X% opacity" (badge fills/borders, tinted active states), write `color-mix(in srgb, var(--token) X%, transparent)` — never hardcode the hue as an `rgba()` literal. Badge convention: fill 25% / border 60% (20%/50% for the compact damage/arc/rarity badges). Neutral white/black overlay rgba() values (no token hue) stay literal.
 
 ### L2 — Shared Styles
 

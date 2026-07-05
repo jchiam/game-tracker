@@ -24,11 +24,11 @@
   background: var(--color-brand-primary-muted);
   border-color: var(--color-brand-primary);
   color: var(--color-brand-primary);
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 0 10px var(--color-focus-glow);
 }
 
 .confirm-checkbox.confirming {
-  background: rgba(255, 107, 107, 0.1);
+  background: color-mix(in srgb, var(--color-ui-warning) 10%, transparent);
   border-color: var(--color-ui-warning);
   color: var(--color-ui-warning);
   animation: pulse-warn 1s infinite alternate;

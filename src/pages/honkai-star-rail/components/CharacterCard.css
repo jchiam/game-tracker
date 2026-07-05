@@ -29,7 +29,7 @@
 
 .relic-icon.planar {
   font-size: var(--typography-font-size-xl);
-  color: rgba(212, 175, 55, 0.4);
+  color: color-mix(in srgb, var(--color-brand-primary) 40%, transparent);
 }
 
 .relic-icon.cavern {
@@ -42,7 +42,7 @@
 }
 
 .relic-slot.active {
-  background: rgba(212, 175, 55, 0.1);
+  background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
   border-color: var(--color-brand-primary);
   box-shadow: var(--shadow-inset-glow);
 }
@@ -99,7 +99,7 @@
 }
 
 .score-badge.tier-s {
-  background: rgba(212, 175, 55, 0.2);
+  background: color-mix(in srgb, var(--color-brand-primary) 20%, transparent);
   border: 1px solid var(--color-brand-primary);
   color: var(--color-text-primary);
   box-shadow:
@@ -115,11 +115,11 @@
 }
 
 .score-badge.tier-a {
-  background: rgba(147, 112, 219, 0.2);
+  background: color-mix(in srgb, var(--color-hsr-score-tier-a) 20%, transparent);
   border: 1px solid var(--color-hsr-score-tier-a);
   color: var(--color-hsr-score-tier-a-text);
   box-shadow:
-    0 0 8px rgba(147, 112, 219, 0.5) inset,
+    0 0 8px color-mix(in srgb, var(--color-hsr-score-tier-a) 50%, transparent) inset,
     0 2px 10px rgba(0, 0, 0, 0.5);
 }
 
@@ -202,47 +202,47 @@
    only the per-path colours live here. */
 /* Per-path colours */
 .path-badge.path-destruction {
-  background: rgba(200, 60, 60, 0.25);
-  border-color: rgba(200, 60, 60, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-path-destruction) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-path-destruction) 60%, transparent);
   color: var(--color-hsr-path-destruction);
 }
 .path-badge.path-the-hunt {
-  background: rgba(212, 175, 55, 0.25);
-  border-color: rgba(212, 175, 55, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-path-the-hunt) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-path-the-hunt) 60%, transparent);
   color: var(--color-hsr-path-the-hunt);
 }
 .path-badge.path-erudition {
-  background: rgba(70, 180, 160, 0.25);
-  border-color: rgba(70, 180, 160, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-path-erudition) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-path-erudition) 60%, transparent);
   color: var(--color-hsr-path-erudition);
 }
 .path-badge.path-harmony {
-  background: rgba(220, 120, 180, 0.25);
-  border-color: rgba(220, 120, 180, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-path-harmony) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-path-harmony) 60%, transparent);
   color: var(--color-hsr-path-harmony);
 }
 .path-badge.path-nihility {
-  background: rgba(130, 80, 200, 0.25);
-  border-color: rgba(130, 80, 200, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-path-nihility) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-path-nihility) 60%, transparent);
   color: var(--color-hsr-path-nihility);
 }
 .path-badge.path-preservation {
-  background: rgba(60, 120, 220, 0.25);
-  border-color: rgba(60, 120, 220, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-path-preservation) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-path-preservation) 60%, transparent);
   color: var(--color-hsr-path-preservation);
 }
 .path-badge.path-abundance {
-  background: rgba(70, 170, 80, 0.25);
-  border-color: rgba(70, 170, 80, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-path-abundance) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-path-abundance) 60%, transparent);
   color: var(--color-hsr-path-abundance);
 }
 .path-badge.path-remembrance {
-  background: rgba(80, 200, 230, 0.25);
-  border-color: rgba(80, 200, 230, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-path-remembrance) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-path-remembrance) 60%, transparent);
   color: var(--color-hsr-path-remembrance);
 }
 .path-badge.path-elation {
-  background: rgba(255, 160, 40, 0.25);
-  border-color: rgba(255, 160, 40, 0.6);
+  background: color-mix(in srgb, var(--color-hsr-path-elation) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-hsr-path-elation) 60%, transparent);
   color: var(--color-hsr-path-elation);
 }

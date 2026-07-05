@@ -16,8 +16,10 @@ rules for using tokens, not an enumeration of token values.
 Component CSS SHALL reference design tokens for all colour, spacing, radius, shadow, transition,
 duration, and z-index values rather than hardcoded literals. When a needed token does not exist,
 it SHALL be added to `src/styles/design-tokens.json` first and compiled before use — never
-introduced as a one-off literal. The only sanctioned literal exceptions are the glass/overlay
-`rgba()` fills the token layer cannot yet express (documented in CLAUDE.md).
+introduced as a one-off literal. When a rule needs a token's hue at reduced opacity, it SHALL
+derive it via `color-mix(in srgb, var(--token) X%, transparent)` rather than hardcoding an
+`rgba()` literal. The only sanctioned literal exceptions are the neutral (white/black)
+glass/overlay `rgba()` fills, which carry no token hue (documented in CLAUDE.md).
 
 #### Scenario: New value needs a token
 

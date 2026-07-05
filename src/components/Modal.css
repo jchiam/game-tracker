@@ -174,7 +174,7 @@
 /* ─── Danger secondary action ────────────────────────────────────── */
 
 .secondary-action.danger {
-  border-color: rgba(255, 77, 79, 0.5);
+  border-color: color-mix(in srgb, var(--color-ui-danger) 50%, transparent);
   color: var(--color-ui-danger);
 }
 
@@ -182,7 +182,7 @@
   background: var(--color-ui-danger);
   color: var(--color-text-primary);
   border-color: var(--color-ui-danger);
-  box-shadow: 0 0 10px rgba(255, 77, 79, 0.3);
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-ui-danger) 30%, transparent);
 }
 
 /* ─── Preferences tab ────────────────────────────────────────────── */

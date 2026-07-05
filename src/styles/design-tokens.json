@@ -15,7 +15,6 @@
     },
     "brand": {
       "primary": { "$value": "#d4af37", "$type": "color" },
-      "primaryRgb": { "$value": "212, 175, 55", "$type": "other" },
       "primaryGlow": { "$value": "rgba(212,175,55,0.4)", "$type": "color" },
       "primaryMuted": { "$value": "rgba(212,175,55,0.15)", "$type": "color" },
       "accent": { "$value": "#8b5cf6", "$type": "color" }
