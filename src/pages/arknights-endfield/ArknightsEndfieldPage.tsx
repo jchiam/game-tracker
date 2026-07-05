@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
 import { useOperators } from '@/hooks/arknights-endfield/useOperators';
 import { useParties } from '@/hooks/arknights-endfield/useParties';
+import { useRosterView } from '@/hooks/useRosterView';
 import { OperatorCard } from './components/OperatorCard';
 import { AddOperatorModal } from './components/AddOperatorModal';
 import { PartiesTab } from './components/PartiesTab';
@@ -38,15 +38,17 @@ export function ArknightsEndfieldPage({
 
   const { parties, saveParty, deleteParty } = useParties(session);
 
-  const [view, setView] = useState<'roster' | 'second'>('roster');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'ALPHA' | 'LEVEL'>('ALPHA');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const filteredRoster = useMemo(
-    () => getFilteredRoster(searchTerm, sortBy),
-    [getFilteredRoster, searchTerm, sortBy],
-  );
+  const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
+    useRosterView({
+      sortModes: [
+        { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+        { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+      ],
+      searchPlaceholder: 'Search by name, class, element, or weapon...',
+      addTitle: 'Add Operator',
+      addDisabled: isLoadError,
+      filterRoster: getFilteredRoster,
+    });
 
   return (
     <RosterPageLayout
@@ -65,21 +67,9 @@ export function ArknightsEndfieldPage({
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No operators tracked yet. Use the + button to begin!"
       noMatchMessage="No operators match your search."
-      search={{
-        value: searchTerm,
-        placeholder: 'Search by name, class, element, or weapon...',
-        onChange: setSearchTerm,
-      }}
-      sort={{
-        active: sortBy === 'ALPHA',
-        label: sortBy === 'ALPHA' ? 'AZ' : 'Lv',
-        title:
-          sortBy === 'ALPHA'
-            ? 'Sorted alphabetically — click to sort by Level'
-            : 'Sorted by Level — click to sort alphabetically',
-        onToggle: () => setSortBy((prev) => (prev === 'ALPHA' ? 'LEVEL' : 'ALPHA')),
-      }}
-      add={{ title: 'Add Operator', onClick: () => setIsModalOpen(true), disabled: isLoadError }}
+      search={search}
+      sort={sort}
+      add={add}
       cards={filteredRoster.map((operator) => (
         <OperatorCard
           key={operator.id}
@@ -104,15 +94,15 @@ export function ArknightsEndfieldPage({
       }
       pendingSaveCount={pendingSaveCount}
     >
-      {isModalOpen && session && (
+      {isAddModalOpen && session && (
         <AddOperatorModal
           availableOperators={availableOperators}
           trackedOperators={trackedOperators}
           onAddOperator={(operator) => {
             addOperator(operator);
-            setIsModalOpen(false);
+            closeAddModal();
           }}
-          onClose={() => setIsModalOpen(false)}
+          onClose={closeAddModal}
         />
       )}
     </RosterPageLayout>

@@ -4,7 +4,7 @@ Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Curren
 
 ## Domain Language
 
-[`CONTEXT.md`](CONTEXT.md) at the repo root is the canonical domain-language glossary: the games and their per-game entity nouns, Tracked Entity, Catalog, the data-flow model, Roster Persistence, Extras Adapter, Preference Rows, the Field Updater, the Game Card Shell, Party/Lineup, the Party Persistence Factory and its error semantics, and the Update Pipeline. Definitions live there; this file keeps the operational instructions. Consult `CONTEXT.md` for terminology in architecture reviews, specs, and naming discussions.
+[`CONTEXT.md`](CONTEXT.md) at the repo root is the canonical domain-language glossary: the games and their per-game entity nouns, Tracked Entity, Catalog, the data-flow model, Roster Persistence, Extras Adapter, Preference Rows, the Field Updater, the Game Card Shell, the Roster View, Party/Lineup, the Party Persistence Factory and its error semantics, and the Update Pipeline. Definitions live there; this file keeps the operational instructions. Consult `CONTEXT.md` for terminology in architecture reviews, specs, and naming discussions.
 
 ## Tech Stack
 
@@ -200,7 +200,7 @@ supabase/migrations/
 
 3. **Hook layer** (`src/hooks/{game}/`): React state management over the shared `useRoster` skeleton. Loads from DB on session change. Optimistic updates with rollback on error. Uses `usePendingSaves` for debounced saves. Plain field/patch updaters are declared as data via the shared `makeFieldUpdater` / `applyPatch` (Field Updater in `CONTEXT.md`) — never hand-write the optimistic set / ref lookup / dbId-guard / queue mechanics for them; only updaters that read current state (N2E awakening) or write through `queueAction` (relics, preference chains) get custom bodies. Exposes `getFilteredRoster` (Fuse.js search).
 
-4. **Page layer** (`src/pages/{game}/`): Composes hooks + components. Two views: "Roster" (entity cards grid) and "Lineups" (party tab). Handles auth gating, loading/error states, search, sort.
+4. **Page layer** (`src/pages/{game}/`): Composes hooks + components. Two views: "Roster" (entity cards grid) and "Lineups" (party tab). View state (view switch, search, sort toggle, add-modal, filtered roster) comes from the shared `useRosterView` hook (Roster View in `CONTEXT.md`) — pages pass sort modes, placeholder, add title, and the roster hook's `getFilteredRoster` as config; never hand-write the state quartet or sort-descriptor objects. Auth gating, loading/error states, and layout live in `RosterPageLayout`.
 
 5. **Update script** (`scripts/update-{game}-data.mjs`): Fetches from external APIs (wikis, GitHub repos), downloads images, uploads to ImageKit, regenerates `src/data/{game}/*.ts` files. Idempotent — skips already-uploaded assets unless `--reupload-*` flags passed. Has a matching `.github/workflows/update-{game}-data.yml` that runs weekly + manual dispatch, auto-creates a PR with changes. Pipeline plumbing (env loading, ImageKit init/exists/upload, `--reupload-*` parsing, `fetchJSON`/`downloadImage`, `slugify`/`esc`, catalog diffing, generated-file banner) lives once in `scripts/lib/pipeline.mjs` — scripts import it, never copy it; game-specific fetching, mapping, and codegen bodies stay in each script.
 
@@ -309,6 +309,7 @@ Reuse these existing shared components — don't recreate them:
 - `ConfirmCheckbox` — checkbox with confirmation dialog
 - `GameSwitcher` — dropdown to switch between games (auto-hides on selection page)
 - `usePendingSaves` — debounced save queue hook (shared across all games)
+- `useRosterView` — roster-page view state hook (view switch, search, sort toggle, add-modal, filtered roster)
 - `useAuth` — Google OAuth via Supabase
 
 ## Key Files

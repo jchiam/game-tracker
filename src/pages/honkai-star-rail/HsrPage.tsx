@@ -1,6 +1,7 @@
-import { useState, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { useCharacters, emptyRelic } from '@/hooks/honkai-star-rail/useCharacters';
 import { useParties } from '@/hooks/honkai-star-rail/useParties';
+import { useRosterView } from '@/hooks/useRosterView';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import { CharacterCard } from './components/CharacterCard';
 import { RelicEditorModal } from './components/RelicEditorModal';
@@ -38,23 +39,32 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
 
   const { parties, saveParty, deleteParty } = useParties(session);
 
-  const [view, setView] = useState<'roster' | 'second'>('roster');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'SCORE' | 'ALPHA'>('SCORE');
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const filterRoster = useCallback(
+    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA') =>
+      getFilteredRoster(searchTerm, sortBy, calculateRelicScore),
+    [getFilteredRoster],
+  );
+
+  const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
+    useRosterView({
+      sortModes: [
+        { key: 'SCORE', label: '★', described: 'by Relic Score' },
+        { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+      ],
+      searchPlaceholder: 'Search by name, element, or path...',
+      addTitle: 'Add Character',
+      addDisabled: isLoadError,
+      filterRoster,
+    });
+
   const [editingRelic, setEditingRelic] = useState<{
     charId: string;
     slot: keyof HsrTrackedCharacter['relics'];
   } | null>(null);
 
-  const filteredRoster = useMemo(
-    () => getFilteredRoster(searchTerm, sortBy, calculateRelicScore),
-    [getFilteredRoster, searchTerm, sortBy],
-  );
-
   const handleAddCharacter = async (char: Parameters<typeof addCharacter>[0]) => {
     await addCharacter(char);
-    setIsModalOpen(false);
+    closeAddModal();
   };
 
   const editingChar = editingRelic
@@ -78,21 +88,9 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
       hasMatches={filteredRoster.length > 0}
       emptyMessage='No characters tracked yet. Click "Add Character" to begin!'
       noMatchMessage="No characters match your search."
-      search={{
-        value: searchTerm,
-        placeholder: 'Search by name, element, or path...',
-        onChange: setSearchTerm,
-      }}
-      sort={{
-        active: sortBy === 'SCORE',
-        label: sortBy === 'SCORE' ? '★' : 'AZ',
-        title:
-          sortBy === 'SCORE'
-            ? 'Sorted by Relic Score — click to sort alphabetically'
-            : 'Sorted alphabetically — click to sort by Relic Score',
-        onToggle: () => setSortBy((prev) => (prev === 'SCORE' ? 'ALPHA' : 'SCORE')),
-      }}
-      add={{ title: 'Add Character', onClick: () => setIsModalOpen(true), disabled: isLoadError }}
+      search={search}
+      sort={sort}
+      add={add}
       cards={filteredRoster.map((char) => (
         <CharacterCard
           key={char.id}
@@ -132,12 +130,12 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
         />
       )}
 
-      {isModalOpen && (
+      {isAddModalOpen && (
         <AddCharacterModal
           availableCharacters={availableCharacters}
           trackedCharacters={trackedCharacters}
           onAddCharacter={handleAddCharacter}
-          onClose={() => setIsModalOpen(false)}
+          onClose={closeAddModal}
         />
       )}
     </RosterPageLayout>

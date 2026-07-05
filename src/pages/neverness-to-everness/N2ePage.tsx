@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
 import { useCharacters } from '@/hooks/neverness-to-everness/useCharacters';
 import { useParties } from '@/hooks/neverness-to-everness/useParties';
+import { useRosterView } from '@/hooks/useRosterView';
 import { CharacterCard } from './components/CharacterCard';
 import { AddCharacterModal } from './components/AddCharacterModal';
 import { PartiesTab } from './components/PartiesTab';
@@ -34,15 +34,17 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
-  const [view, setView] = useState<'roster' | 'second'>('roster');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortBy, setSortBy] = useState<'ALPHA' | 'LEVEL'>('ALPHA');
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const filteredRoster = useMemo(
-    () => getFilteredRoster(searchTerm, sortBy),
-    [getFilteredRoster, searchTerm, sortBy],
-  );
+  const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
+    useRosterView({
+      sortModes: [
+        { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+        { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+      ],
+      searchPlaceholder: 'Search by name, esper type, or role...',
+      addTitle: 'Add Character',
+      addDisabled: isLoadError,
+      filterRoster: getFilteredRoster,
+    });
 
   return (
     <RosterPageLayout
@@ -61,21 +63,9 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No espers tracked yet. Use the + button to begin!"
       noMatchMessage="No espers match your search."
-      search={{
-        value: searchTerm,
-        placeholder: 'Search by name, esper type, or role...',
-        onChange: setSearchTerm,
-      }}
-      sort={{
-        active: sortBy === 'ALPHA',
-        label: sortBy === 'ALPHA' ? 'AZ' : 'Lv',
-        title:
-          sortBy === 'ALPHA'
-            ? 'Sorted alphabetically — click to sort by Level'
-            : 'Sorted by Level — click to sort alphabetically',
-        onToggle: () => setSortBy((prev) => (prev === 'ALPHA' ? 'LEVEL' : 'ALPHA')),
-      }}
-      add={{ title: 'Add Character', onClick: () => setIsModalOpen(true), disabled: isLoadError }}
+      search={search}
+      sort={sort}
+      add={add}
       cards={filteredRoster.map((character) => (
         <CharacterCard
           key={character.id!}
@@ -101,15 +91,15 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
       }
       pendingSaveCount={pendingSaveCount}
     >
-      {isModalOpen && session && (
+      {isAddModalOpen && session && (
         <AddCharacterModal
           availableCharacters={availableCharacters}
           trackedCharacters={trackedCharacters}
           onAddCharacter={(character) => {
             addCharacter(character);
-            setIsModalOpen(false);
+            closeAddModal();
           }}
-          onClose={() => setIsModalOpen(false)}
+          onClose={closeAddModal}
         />
       )}
     </RosterPageLayout>
