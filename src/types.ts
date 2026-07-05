@@ -24,8 +24,8 @@ export interface PartyMember {
 
 /**
  * A saved Party/Lineup, shared across all games. `tier` and `isFavorited`
- * exist only for the games whose party tables carry them (R1999, N2E); they
- * stay undefined for the rest.
+ * exist for the games whose party tables carry them (all games); they
+ * stay undefined for any game whose config leaves the columns off.
  */
 export interface Party {
   id: string;

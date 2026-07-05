@@ -1,8 +1,8 @@
 /* ─── Shared party/lineup styles ─────────────────────────────────── */
 /* Canonical look for the Lineups view: tab chrome, party card, tier
-   banner, action icon buttons, member slot row. All games use these
-   class names; game stylesheets contribute only genuine overrides
-   (AE keeps its own lighter `endfield-*` card but reuses `.icon-btn`). */
+   banner, action icon buttons, member slot row. All four games render
+   this canonical card; game stylesheets contribute only slot-accent
+   border colors, no structural overrides. */
 
 /* ─── Parties tab chrome ─────────────────────────────────────────── */
 

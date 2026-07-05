@@ -8,6 +8,7 @@ vi.mock('@/services/honkai-star-rail/partyService', () => ({
   loadParties: vi.fn(),
   saveParty: vi.fn(),
   deleteParty: vi.fn(),
+  toggleFavoriteParty: vi.fn(),
 }));
 
 import * as partyService from '@/services/honkai-star-rail/partyService';
@@ -15,6 +16,7 @@ import * as partyService from '@/services/honkai-star-rail/partyService';
 const mockLoadParties = vi.mocked(partyService.loadParties);
 const mockSaveParty = vi.mocked(partyService.saveParty);
 const mockDeleteParty = vi.mocked(partyService.deleteParty);
+const mockToggleFavoriteParty = vi.mocked(partyService.toggleFavoriteParty);
 
 const mockSession: Session = {
   user: {
@@ -55,6 +57,37 @@ describe('useParties', () => {
     mockLoadParties.mockResolvedValue([]);
     mockSaveParty.mockResolvedValue('new-party-id');
     mockDeleteParty.mockResolvedValue(true);
+    mockToggleFavoriteParty.mockResolvedValue(true);
+  });
+
+  describe('toggleFavoriteParty', () => {
+    it('updates local state and persists', async () => {
+      mockLoadParties.mockResolvedValue([makeParty('p1', 'Alpha Team', { isFavorited: false })]);
+
+      const { result } = renderHook(() => useParties(mockSession));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.toggleFavoriteParty('p1', true);
+      });
+
+      expect(result.current.parties[0].isFavorited).toBe(true);
+      expect(mockToggleFavoriteParty).toHaveBeenCalledWith('p1', true);
+    });
+
+    it('reverts local state when the write fails', async () => {
+      mockLoadParties.mockResolvedValue([makeParty('p1', 'Alpha Team', { isFavorited: false })]);
+      mockToggleFavoriteParty.mockResolvedValue(false);
+
+      const { result } = renderHook(() => useParties(mockSession));
+      await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+      await act(async () => {
+        await result.current.toggleFavoriteParty('p1', true);
+      });
+
+      expect(result.current.parties[0].isFavorited).toBe(false);
+    });
   });
 
   describe('initial load', () => {

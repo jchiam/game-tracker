@@ -20,6 +20,8 @@ const party: Party = {
   profileId: 'user-1',
   name: 'Squad Alpha',
   notes: null,
+  tier: 'S',
+  isFavorited: false,
   members: [{ entityId: firstOperator.id, slotIndex: 0 }],
   createdAt: '2026-01-01T00:00:00Z',
 };
@@ -29,22 +31,29 @@ const defaultProps = {
   availableOperators: ALL_OPERATORS,
   onSaveParty: vi.fn().mockResolvedValue('party-1'),
   onDeleteParty: vi.fn().mockResolvedValue(true),
+  onToggleFavorite: vi.fn(),
   session: createMockSession(),
 };
 
 describe('PartiesTab (AE config wiring)', () => {
-  it('uses the Squad noun and AE copy, without tier or favorite', () => {
+  it('uses the Squad noun with the tier selector enabled', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
     expect(screen.getByText('Your Squads')).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Create New Squad' }));
     expect(screen.getByPlaceholderText(/boss rush/i)).toBeInTheDocument();
-    expect(screen.queryByText('Tier')).not.toBeInTheDocument();
-    expect(screen.queryByTitle('Favourite')).not.toBeInTheDocument();
+    expect(screen.getByText('Tier')).toBeInTheDocument();
   });
 
-  it('applies the endfield variant class to the view root', () => {
+  it('renders the tier banner and favorite toggle', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
-    expect(document.querySelector('.parties-tab')).toHaveClass('endfield');
+    expect(screen.getByText('S')).toBeInTheDocument();
+    fireEvent.click(screen.getByTitle('Favourite'));
+    expect(defaultProps.onToggleFavorite).toHaveBeenCalledWith('party-1', true);
+  });
+
+  it('renders the canonical party card without the endfield variant', () => {
+    renderWithProviders(<PartiesTab {...defaultProps} />);
+    expect(document.querySelector('.parties-tab')).not.toHaveClass('endfield');
   });
 
   it('resolves member images through getMugshotUrl without a slot accent', () => {

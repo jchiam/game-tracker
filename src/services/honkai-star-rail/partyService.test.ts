@@ -25,7 +25,7 @@ describe('hsr partyService', () => {
     vi.unstubAllEnvs();
   });
 
-  it('loadParties queries hsr tables and maps character_id to entityId', async () => {
+  it('loadParties queries hsr tables with tier/is_favorited and maps character_id', async () => {
     const builder = createBuilder({
       data: [
         {
@@ -33,6 +33,8 @@ describe('hsr partyService', () => {
           profile_id: 'user-1',
           name: 'Alpha Team',
           notes: 'Some notes',
+          tier: 'S',
+          is_favorited: 1,
           created_at: '2024-01-01T00:00:00Z',
           hsr_party_members: [
             { character_id: 'blade', slot_index: 1 },
@@ -48,15 +50,17 @@ describe('hsr partyService', () => {
 
     expect(mockFrom).toHaveBeenCalledWith('hsr_parties');
     expect(builder.select).toHaveBeenCalledWith(
-      'id, profile_id, name, notes, created_at, hsr_party_members ( * )',
+      'id, profile_id, name, notes, created_at, tier, is_favorited, hsr_party_members ( * )',
     );
+    expect(result[0].tier).toBe('S');
+    expect(result[0].isFavorited).toBe(true);
     expect(result[0].members).toEqual([
       { entityId: 'acheron', slotIndex: 0 },
       { entityId: 'blade', slotIndex: 1 },
     ]);
   });
 
-  it('saveParty inserts hsr member columns and the HSR default name', async () => {
+  it('saveParty writes tier with the HSR default name and never touches is_favorited', async () => {
     const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
     const memberBuilder = createBuilder({ data: null, error: null });
     mockFrom.mockImplementation((table: string) =>
@@ -64,6 +68,7 @@ describe('hsr partyService', () => {
     );
 
     await service.saveParty('user-1', {
+      tier: 'A',
       members: [{ entityId: 'acheron', slotIndex: 0 }],
     });
 
@@ -71,10 +76,21 @@ describe('hsr partyService', () => {
       profile_id: 'user-1',
       name: 'New Party',
       notes: null,
+      tier: 'A',
     });
     expect(memberBuilder.insert).toHaveBeenCalledWith([
       { party_id: 'new-party-id', character_id: 'acheron', slot_index: 0 },
     ]);
+  });
+
+  it('toggleFavoriteParty updates is_favorited on hsr_parties', async () => {
+    const builder = createBuilder({ data: null, error: null });
+    mockFrom.mockReturnValue(builder);
+
+    expect(await service.toggleFavoriteParty('party-1', true)).toBe(true);
+    expect(mockFrom).toHaveBeenCalledWith('hsr_parties');
+    expect(builder.update).toHaveBeenCalledWith({ is_favorited: true });
+    expect(builder.eq).toHaveBeenCalledWith('id', 'party-1');
   });
 
   it('deleteParty targets hsr_parties', async () => {

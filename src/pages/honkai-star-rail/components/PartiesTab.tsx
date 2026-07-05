@@ -16,8 +16,8 @@ const HSR_PARTY_VIEW: PartyViewConfig<Character> = {
   resolveSlotImage: (char) => char.imageUrl,
   resolveListImage: (char) => char.imageUrl,
   slotAccentClass: (char) => `element-${char.element.toLowerCase()}`,
-  supportsTier: false,
-  supportsFavorite: false,
+  supportsTier: true,
+  supportsFavorite: true,
 };
 
 interface PartiesTabProps {
@@ -25,6 +25,7 @@ interface PartiesTabProps {
   availableCharacters: Character[];
   onSaveParty: (party: Partial<Party> & { members: PartyMember[] }) => Promise<string | null>;
   onDeleteParty: (id: string) => Promise<boolean>;
+  onToggleFavorite: (partyId: string, value: boolean) => void;
   session: Session | null;
 }
 
@@ -33,6 +34,7 @@ export function PartiesTab({
   availableCharacters,
   onSaveParty,
   onDeleteParty,
+  onToggleFavorite,
   session,
 }: PartiesTabProps) {
   return (
@@ -42,6 +44,7 @@ export function PartiesTab({
       entities={availableCharacters}
       onSaveParty={onSaveParty}
       onDeleteParty={onDeleteParty}
+      onToggleFavorite={onToggleFavorite}
       session={session}
     />
   );

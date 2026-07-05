@@ -74,6 +74,7 @@ const defaultPartiesHook = {
   isLoading: false,
   saveParty: vi.fn().mockResolvedValue(null),
   deleteParty: vi.fn().mockResolvedValue(true),
+  toggleFavoriteParty: vi.fn(),
   refreshParties: vi.fn(),
 };
 

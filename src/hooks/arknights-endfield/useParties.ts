@@ -4,18 +4,19 @@ import {
   loadParties,
   saveParty as apiSaveParty,
   deleteParty as apiDeleteParty,
+  toggleFavoriteParty as apiToggleFavorite,
 } from '@/services/arknights-endfield/partyService';
-import { useParties as usePartiesBase } from '@/hooks/useParties';
+import { useParties as usePartiesBase, makeFavoriteToggle } from '@/hooks/useParties';
 
 export function useParties(session: Session | null) {
-  const { parties, isLoading, saveParty, deleteParty, refreshParties } = usePartiesBase<
-    Party,
-    PartyMember
-  >(session, {
-    loadParties,
-    saveParty: apiSaveParty,
-    deleteParty: apiDeleteParty,
-  });
+  const { parties, setParties, partiesRef, isLoading, saveParty, deleteParty, refreshParties } =
+    usePartiesBase<Party, PartyMember>(session, {
+      loadParties,
+      saveParty: apiSaveParty,
+      deleteParty: apiDeleteParty,
+    });
 
-  return { parties, isLoading, saveParty, deleteParty, refreshParties };
+  const toggleFavoriteParty = makeFavoriteToggle(setParties, partiesRef, apiToggleFavorite);
+
+  return { parties, isLoading, saveParty, deleteParty, toggleFavoriteParty, refreshParties };
 }

@@ -36,7 +36,7 @@ export function ArknightsEndfieldPage({
     getFilteredRoster,
   } = useOperators(session, isAuthLoading);
 
-  const { parties, saveParty, deleteParty } = useParties(session);
+  const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
   const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
     useRosterView({
@@ -89,6 +89,7 @@ export function ArknightsEndfieldPage({
           availableOperators={availableOperators}
           onSaveParty={saveParty}
           onDeleteParty={deleteParty}
+          onToggleFavorite={toggleFavoriteParty}
           session={session}
         />
       }

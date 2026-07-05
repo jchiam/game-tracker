@@ -37,7 +37,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     getFilteredRoster,
   } = useCharacters(session, isAuthLoading);
 
-  const { parties, saveParty, deleteParty } = useParties(session);
+  const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
   const filterRoster = useCallback(
     (searchTerm: string, sortBy: 'SCORE' | 'ALPHA') =>
@@ -109,6 +109,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           availableCharacters={availableCharacters}
           onSaveParty={saveParty}
           onDeleteParty={deleteParty}
+          onToggleFavorite={toggleFavoriteParty}
           session={session}
         />
       }

@@ -16,9 +16,8 @@ const AE_PARTY_VIEW: PartyViewConfig<AeOperator> = {
   },
   resolveSlotImage: (operator) => getMugshotUrl(operator.imageUrl),
   resolveListImage: (operator) => getAvatarUrl(operator.imageUrl),
-  supportsTier: false,
-  supportsFavorite: false,
-  variantClass: 'endfield',
+  supportsTier: true,
+  supportsFavorite: true,
 };
 
 interface PartiesTabProps {
@@ -26,6 +25,7 @@ interface PartiesTabProps {
   availableOperators: AeOperator[];
   onSaveParty: (party: Partial<Party> & { members: PartyMember[] }) => Promise<string | null>;
   onDeleteParty: (id: string) => Promise<boolean>;
+  onToggleFavorite: (partyId: string, value: boolean) => void;
   session: Session | null;
 }
 
@@ -34,6 +34,7 @@ export function PartiesTab({
   availableOperators,
   onSaveParty,
   onDeleteParty,
+  onToggleFavorite,
   session,
 }: PartiesTabProps) {
   return (
@@ -43,6 +44,7 @@ export function PartiesTab({
       entities={availableOperators}
       onSaveParty={onSaveParty}
       onDeleteParty={onDeleteParty}
+      onToggleFavorite={onToggleFavorite}
       session={session}
     />
   );
