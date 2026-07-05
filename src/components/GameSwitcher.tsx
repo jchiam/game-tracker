@@ -50,7 +50,7 @@ export function GameSwitcher() {
                 <div className="game-icon-container">
                   <img src={game.icon} alt="" className="game-icon-img" />
                 </div>
-                <span className="game-name">{game.name}</span>
+                <span className="switcher-game-name">{game.name}</span>
                 {location.pathname.startsWith(game.path) && (
                   <span className="active-indicator">●</span>
                 )}

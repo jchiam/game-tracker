@@ -121,7 +121,11 @@
   object-fit: cover;
 }
 
-.game-name {
+/* Named `switcher-game-name` (not `game-name`) on purpose — the selection
+   page's `.game-name` in index.css is a 1.6rem gold-hover title; sharing the
+   class would let either rule set clobber the other depending on bundle
+   order. */
+.switcher-game-name {
   font-size: var(--typography-font-size-base);
   font-weight: var(--typography-font-weight-medium);
 }

@@ -211,7 +211,7 @@ Dropdown selector for switching between tracked games. Animated with `slideIn` k
     <div class="dropdown-header">SWITCH GAME</div>
     <div class="dropdown-item active">
       <img class="dropdown-game-icon" src="..." alt="" />
-      <span class="game-name">Honkai: Star Rail</span>
+      <span class="switcher-game-name">Honkai: Star Rail</span>
       <span class="active-indicator">●</span>
     </div>
     <div class="dropdown-item">...</div>
