@@ -77,6 +77,15 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     imageUrl: '/assets/neverness-to-everness/characters/hotori.webp',
   },
   {
+    id: 'iroi',
+    name: 'Iroi',
+    rarity: 'S',
+    esperType: 'Anima',
+    arcType: 'Liquid',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/iroi.webp',
+  },
+  {
     id: 'jiuyuan',
     name: 'Jiuyuan',
     rarity: 'S',
@@ -111,6 +120,15 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     arcType: 'Gas',
     roles: ['Buff', 'Control', 'DMG Boost'],
     imageUrl: '/assets/neverness-to-everness/characters/sakiri.webp',
+  },
+  {
+    id: 'shinku',
+    name: 'Shinku',
+    rarity: 'S',
+    esperType: 'Cosmos',
+    arcType: 'Condensate',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/shinku.webp',
   },
   {
     id: 'zero',
