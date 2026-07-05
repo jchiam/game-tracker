@@ -1,13 +1,12 @@
-import { useLayoutEffect, useRef, useState } from 'react';
 import type { AeTrackedOperator, AeWeaponPatch } from '@/types';
 import { ALL_WEAPONS } from '@/data/arknights-endfield/weapons';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
+import { GameCardShell } from '@/components/GameCardShell';
 import { LevelSlider } from '@/components/LevelSlider';
 import { PreferenceChain } from '@/components/PreferenceChain';
 import { Select } from '@/components/Select';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
-import { getMugshotUrl } from '@/lib/imagekit';
 import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
 import { getProgressStyle } from '@/utils/progressGradient';
@@ -38,21 +37,6 @@ export function OperatorCard({
   onUpdateWeaponPreferences,
   onToggleFavorite,
 }: OperatorCardProps) {
-  const [imgLoading, setImgLoading] = useState(true);
-  const [imgError, setImgError] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-
-  // The edit body is height-capped for its expand/collapse transition, so measure
-  // the real content height (which grows with each preferred-weapon row) and use it
-  // as the budget — the card lengthens to fit instead of clipping the bottom.
-  const editInnerRef = useRef<HTMLDivElement>(null);
-  const [editHeight, setEditHeight] = useState(0);
-  useLayoutEffect(() => {
-    if (editInnerRef.current) setEditHeight(editInnerRef.current.scrollHeight);
-  }, [operator.weaponPreferences.length, operator.weaponName, isEditing]);
-
-  const imageUrl = getMugshotUrl(operator.imageUrl);
-
   // Weapons equippable on this operator are filtered by class (exact type match)
   const equippableWeapons = sortWeaponsForDisplay(
     ALL_WEAPONS.filter((w) => w.type === operator.weapon),
@@ -86,194 +70,136 @@ export function OperatorCard({
   const weaponLevelPs = getProgressStyle(operator.weaponLevel, 1, 90);
 
   return (
-    <div
-      className={`game-card ${isEditing ? 'is-editing' : ''}`}
-      style={
-        {
-          '--game-card-summary-max-height': '80px',
-          '--game-card-edit-max-height': `${editHeight}px`,
-        } as React.CSSProperties
-      }
-    >
-      <div className="game-card-header">
-        <div className="game-card-image-wrapper">
-          {imgLoading && !imgError && (
-            <div className="game-card-image-spinner">
-              <div className="spinner-dot" />
-              <div className="spinner-dot" />
-              <div className="spinner-dot" />
-            </div>
-          )}
-          <img
-            src={imageUrl}
-            alt={operator.name}
-            className={`game-card-image ${imgLoading ? 'loading' : 'loaded'}`}
-            onLoad={() => setImgLoading(false)}
-            onError={(e) => {
-              setImgLoading(false);
-              setImgError(true);
-              const target = e.target as HTMLImageElement;
-              target.src = `https://ui-avatars.com/api/?name=${operator.name.replace(' ', '+')}&background=1a1a1a&color=fff&size=250`;
-            }}
+    <GameCardShell
+      name={operator.name}
+      imageUrl={operator.imageUrl}
+      entityNoun="Operator"
+      isFavorited={operator.isFavorited}
+      onToggleFavorite={(value) => onToggleFavorite(operator.id, value)}
+      onRemove={(e) => onRemove(operator.id, e)}
+      badges={
+        <>
+          <GameBadge
+            label={operator.class}
+            variant="ae-class"
+            modifier={operator.class.toLowerCase()}
           />
-        </div>
-        <div className="game-card-overlay"></div>
-        <div className="game-card-controls">
-          <div className="game-card-controls-top">
-            <button
-              className={`favorite-btn ${operator.isFavorited ? 'active' : ''}`}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleFavorite(operator.id, !operator.isFavorited);
-              }}
-              title={operator.isFavorited ? 'Unfavorite' : 'Favorite'}
-            >
-              {operator.isFavorited ? '★' : '☆'}
-            </button>
-            <button
-              className="remove-btn"
-              onClick={(e) => onRemove(operator.id, e)}
-              title="Remove Operator"
-            >
-              ✕
-            </button>
-          </div>
-          <div className="game-card-controls-bottom">
-            <div className="game-card-badges">
-              <GameBadge
-                label={operator.class}
-                variant="ae-class"
-                modifier={operator.class.toLowerCase()}
-              />
-              <GameBadge
-                label={operator.element}
-                variant="ae-element"
-                modifier={operator.element.toLowerCase()}
-              />
-              <GameBadge
-                label={operator.weapon}
-                variant="ae-weapon"
-                modifier={operator.weapon.toLowerCase().replace(' ', '-')}
-              />
-            </div>
-            <button
-              className={`edit-toggle-btn ${isEditing ? 'active' : ''}`}
-              onClick={() => setIsEditing((v) => !v)}
-              title={isEditing ? 'Done editing' : 'Edit'}
-            >
-              {isEditing ? '✓' : '✎'}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <div className={`game-card-body ${isEditing ? 'is-editing' : ''}`}>
-        <h3 className="game-card-name">{operator.name}</h3>
-
-        <div className="game-card-static-summary">
-          <div className="game-card-static-stats">
-            <StatChip
-              label={`Lv ${operator.level}`}
-              style={{ color: levelPs.color, borderColor: levelPs.borderColor }}
-            />
-            <StatChip
-              label={`P${operator.phase}`}
-              style={{ color: phasePs.color, borderColor: phasePs.borderColor }}
-            />
-            <StatChip
-              label={`Skills ${operator.skillsMaxed ? '✓' : '✗'}`}
-              style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
-            />
-          </div>
-          <div className="game-card-static-line">
-            {operator.weaponName ? (
-              <>
-                <span style={{ color: weaponNamePs.color }}>{operator.weaponName}</span>
-                <span style={{ color: weaponLevelPs.color }}>
-                  &nbsp;·&nbsp;Lv&nbsp;{operator.weaponLevel}
-                </span>
-              </>
-            ) : (
-              <span className="no-weapon" style={{ color: weaponNamePs.color }}>
-                &mdash;
+          <GameBadge
+            label={operator.element}
+            variant="ae-element"
+            modifier={operator.element.toLowerCase()}
+          />
+          <GameBadge
+            label={operator.weapon}
+            variant="ae-weapon"
+            modifier={operator.weapon.toLowerCase().replace(' ', '-')}
+          />
+        </>
+      }
+      summaryStats={
+        <>
+          <StatChip
+            label={`Lv ${operator.level}`}
+            style={{ color: levelPs.color, borderColor: levelPs.borderColor }}
+          />
+          <StatChip
+            label={`P${operator.phase}`}
+            style={{ color: phasePs.color, borderColor: phasePs.borderColor }}
+          />
+          <StatChip
+            label={`Skills ${operator.skillsMaxed ? '✓' : '✗'}`}
+            style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
+          />
+        </>
+      }
+      summaryLine={
+        <>
+          {operator.weaponName ? (
+            <>
+              <span style={{ color: weaponNamePs.color }}>{operator.weaponName}</span>
+              <span style={{ color: weaponLevelPs.color }}>
+                &nbsp;·&nbsp;Lv&nbsp;{operator.weaponLevel}
               </span>
-            )}
-            {showMatchBadge && (
-              <span
-                className="weapon-match-badge"
-                style={{ color: matchPs.color, borderColor: matchPs.borderColor }}
-                title="Equipped weapon vs preferred"
-              >
-                {matchLabel}
-              </span>
-            )}
-          </div>
-        </div>
+            </>
+          ) : (
+            <span className="no-weapon" style={{ color: weaponNamePs.color }}>
+              &mdash;
+            </span>
+          )}
+          {showMatchBadge && (
+            <span
+              className="weapon-match-badge"
+              style={{ color: matchPs.color, borderColor: matchPs.borderColor }}
+              title="Equipped weapon vs preferred"
+            >
+              {matchLabel}
+            </span>
+          )}
+        </>
+      }
+      editBody={
+        <>
+          <ProgressSection label="Level" value={`${operator.level} / 90`}>
+            <LevelSlider
+              name={`level-${operator.id}`}
+              value={operator.level}
+              min={1}
+              max={90}
+              onChange={(n) => onUpdateLevel(operator.id, n)}
+            />
+          </ProgressSection>
 
-        <div className="game-card-edit-body" aria-hidden={!isEditing}>
-          <div className="game-card-edit-body-inner" ref={editInnerRef}>
-            <ProgressSection label="Level" value={`${operator.level} / 90`}>
-              <LevelSlider
-                name={`level-${operator.id}`}
-                value={operator.level}
-                min={1}
-                max={90}
-                onChange={(n) => onUpdateLevel(operator.id, n)}
-              />
-            </ProgressSection>
+          <ProgressSection label="Phase" value={`${operator.phase} / 5`}>
+            <SegmentedButtons
+              className="phase-row"
+              options={PHASE_OPTIONS}
+              value={String(operator.phase)}
+              coloring="investment"
+              onChange={(v) => onUpdatePhase(operator.id, Number(v))}
+            />
+          </ProgressSection>
 
-            <ProgressSection label="Phase" value={`${operator.phase} / 5`}>
-              <SegmentedButtons
-                className="phase-row"
-                options={PHASE_OPTIONS}
-                value={String(operator.phase)}
-                coloring="investment"
-                onChange={(v) => onUpdatePhase(operator.id, Number(v))}
-              />
-            </ProgressSection>
+          <ProgressSection label="Skills">
+            <ConfirmCheckbox
+              checked={operator.skillsMaxed}
+              onChange={(val) => onUpdateSkillsMaxed(operator.id, val)}
+              label="All Skills Maxed"
+            />
+          </ProgressSection>
 
-            <ProgressSection label="Skills">
-              <ConfirmCheckbox
-                checked={operator.skillsMaxed}
-                onChange={(val) => onUpdateSkillsMaxed(operator.id, val)}
-                label="All Skills Maxed"
-              />
-            </ProgressSection>
+          <ProgressSection label="Weapon" value={`${operator.weaponLevel} / 90`}>
+            <Select
+              name={`weapon-${operator.id}`}
+              size="sm"
+              value={operator.weaponName ?? ''}
+              placeholder="No Weapon"
+              options={equippableWeapons.map((w) => ({
+                value: w.name,
+                label: `${w.name} (${w.rarity}★)`,
+              }))}
+              onChange={(v) => onUpdateWeapon(operator.id, { weaponName: v || null })}
+            />
+            <LevelSlider
+              name={`weapon-level-${operator.id}`}
+              value={operator.weaponLevel}
+              min={1}
+              max={90}
+              onChange={(n) => onUpdateWeapon(operator.id, { weaponLevel: n })}
+            />
+          </ProgressSection>
 
-            <ProgressSection label="Weapon" value={`${operator.weaponLevel} / 90`}>
-              <Select
-                name={`weapon-${operator.id}`}
-                size="sm"
-                value={operator.weaponName ?? ''}
-                placeholder="No Weapon"
-                options={equippableWeapons.map((w) => ({
-                  value: w.name,
-                  label: `${w.name} (${w.rarity}★)`,
-                }))}
-                onChange={(v) => onUpdateWeapon(operator.id, { weaponName: v || null })}
-              />
-              <LevelSlider
-                name={`weapon-level-${operator.id}`}
-                value={operator.weaponLevel}
-                min={1}
-                max={90}
-                onChange={(n) => onUpdateWeapon(operator.id, { weaponLevel: n })}
-              />
-            </ProgressSection>
-
-            <ProgressSection label="Preferred Weapons">
-              <PreferenceChain
-                variant="ranked-list"
-                values={operator.weaponPreferences}
-                options={weaponPrefOptions}
-                onChange={(prefs) => onUpdateWeaponPreferences(operator.id, prefs)}
-                namePrefix={`weapon-pref-${operator.id}`}
-                addLabel="+ Add Weapon"
-              />
-            </ProgressSection>
-          </div>
-        </div>
-      </div>
-    </div>
+          <ProgressSection label="Preferred Weapons">
+            <PreferenceChain
+              variant="ranked-list"
+              values={operator.weaponPreferences}
+              options={weaponPrefOptions}
+              onChange={(prefs) => onUpdateWeaponPreferences(operator.id, prefs)}
+              namePrefix={`weapon-pref-${operator.id}`}
+              addLabel="+ Add Weapon"
+            />
+          </ProgressSection>
+        </>
+      }
+    />
   );
 }

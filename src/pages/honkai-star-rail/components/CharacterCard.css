@@ -1,16 +1,6 @@
 /* HSR card body uses the canonical layout in card.css (padding, gap, name margin)
-   and the shared card hover — it contributes no body-layout override. Collapse
-   height budgets are set inline on the card root in CharacterCard.tsx
-   (element-scoped — a bare `.game-card {}` rule leaks across games once both
-   route stylesheets are loaded in the SPA). */
-
-/* Overlay-right grouping: score badge + edit toggle (HSR-local;
-   not shared to avoid cross-game CSS coupling) */
-.hsr-overlay-right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
+   and the shared card hover — it contributes no body-layout override. Card
+   structure (header, controls, collapse budgets) comes from GameCardShell. */
 
 /* Relics Grid */
 .relics-grid {

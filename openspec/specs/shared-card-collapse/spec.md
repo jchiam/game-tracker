@@ -1,6 +1,6 @@
 ## Purpose
 
-A single canonical card collapse/expand mechanism, defined once in `src/styles/card.css`, that all game cards share. A read-only static summary and an editing body swap visibility based on the `.is-editing` class on `.game-card-body`, with each game tuning only its two height budgets via CSS custom properties.
+A single canonical card collapse/expand mechanism, defined once in `src/styles/card.css`, that all game cards share. A read-only static summary and an editing body swap visibility based on the `.is-editing` class on `.game-card-body`, with the two height budgets measured from real card content by the shared `GameCardShell` and set as element-scoped custom properties on the card root.
 
 ## Requirements
 
@@ -32,21 +32,26 @@ When a card body carries the `.is-editing` class, the static summary SHALL colla
 - **WHEN** `.game-card-body` has `.is-editing`
 - **THEN** `.game-card-static-summary` collapses to `max-height: 0` with `opacity: 0` and `pointer-events: none`, and `.game-card-edit-body` expands to its game height budget
 
-### Requirement: Per-game height budgets via CSS custom properties
+### Requirement: Height budgets measured from content by the card shell
 
-The collapsed-summary and expanded-edit-body maximum heights SHALL be controlled by the CSS custom properties `--game-card-summary-max-height` and `--game-card-edit-max-height`. `card.css` SHALL provide default values. Each game SHALL set its budgets as **inline custom properties on the card root element** (`style={{ '--game-card-summary-max-height': …, '--game-card-edit-max-height': … }}`), NOT via a shared `.game-card { … }` rule in route-split CSS. Inline custom properties are element-scoped, so per-game budgets cannot leak across games regardless of which route stylesheets are loaded; a `.game-card { … }` rule in one game's route-split CSS persists after navigation and would otherwise apply to every card on the page. Each game SHALL size its budgets to its own card's content; a game whose content fits the shared defaults MAY omit the override, but a game whose content is materially shorter than the defaults (e.g. AE, whose edit body is only a level slider and a potential row) SHALL set explicit budgets so the expand transition does not animate far past the real content height.
+The collapsed-summary and expanded-edit-body maximum heights SHALL be controlled by the CSS custom properties `--game-card-summary-max-height` and `--game-card-edit-max-height`. `card.css` SHALL provide default values. The shared `GameCardShell` (`shared-ui-components`) SHALL measure both budgets from the card's rendered content (`scrollHeight` of the static summary and of the edit-body inner wrapper) in a layout effect after every render, and SHALL set them as **inline custom properties on the card root element** — NOT via a shared `.game-card { … }` rule in route-split CSS. Inline custom properties are element-scoped, so budgets cannot leak across games regardless of which route stylesheets are loaded; a `.game-card { … }` rule in one game's route-split CSS persists after navigation and would otherwise apply to every card on the page. Because budgets are measured, no game SHALL hardcode per-game budget constants; conditional slot content (target-build displays, preference rows) can never clip the bottom, and the expand transition never animates far past the real content height. The summary budget SHALL be measured only while the card is not editing: the collapsed summary loses its padding, so a mid-collapse measurement would shrink the reopen budget.
 
-#### Scenario: A game sets its budgets inline on the card root
+#### Scenario: Budgets track measured content
 
-- **WHEN** a game's card needs a taller or shorter budget than the default
-- **THEN** it sets `--game-card-summary-max-height` and/or `--game-card-edit-max-height` inline on the card's root element, and the canonical rules in `card.css` consume those values via the cascade into the card's descendants
+- **WHEN** any game's card renders, including conditional edit sections of varying height
+- **THEN** the shell writes `--game-card-summary-max-height` and `--game-card-edit-max-height` inline on the card root from the measured content, and the canonical rules in `card.css` consume those values via the cascade into the card's descendants — the expanded edit body neither clips its content nor animates far past it
 
-#### Scenario: Per-game budgets do not leak across games after navigation
+#### Scenario: Budgets do not leak across games after navigation
 
 - **WHEN** a user navigates from one game's roster to another within the SPA (so both games' route stylesheets are loaded)
-- **THEN** each game's cards retain their own collapsed-summary and edit-body heights, because the budgets are element-scoped inline properties rather than a shared `.game-card` rule
+- **THEN** each card retains its own measured collapsed-summary and edit-body heights, because the budgets are element-scoped inline properties rather than a shared `.game-card` rule
 
-#### Scenario: Each game renders at its tuned heights
+#### Scenario: No hardcoded per-game budgets remain
 
-- **WHEN** an r1999 arcanist card, an N2E character card, or an AE operator card is rendered
-- **THEN** the collapsed summary and expanded edit body occupy their intended heights (r1999 80px/700px, N2E 100px/1200px, AE ~80px summary with an edit budget sized to its level-slider-plus-potential-row content) regardless of prior navigation
+- **WHEN** the game card components are searched for inline `--game-card-summary-max-height` / `--game-card-edit-max-height` values or per-game measurement code
+- **THEN** none exists outside `GameCardShell`; every game's budgets come from the shell's measurement
+
+#### Scenario: Summary budget survives the collapse
+
+- **WHEN** a card enters edit mode and its collapsed summary shrinks to zero height
+- **THEN** the shell does not re-measure the summary while editing, so the previously measured (expanded) budget is retained and the summary reopens to its full height

@@ -4,7 +4,7 @@ Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Curren
 
 ## Domain Language
 
-[`CONTEXT.md`](CONTEXT.md) at the repo root is the canonical domain-language glossary: the games and their per-game entity nouns, Tracked Entity, Catalog, the data-flow model, Roster Persistence, Extras Adapter, Preference Rows, the Field Updater, Party/Lineup, the Party Persistence Factory and its error semantics, and the Update Pipeline. Definitions live there; this file keeps the operational instructions. Consult `CONTEXT.md` for terminology in architecture reviews, specs, and naming discussions.
+[`CONTEXT.md`](CONTEXT.md) at the repo root is the canonical domain-language glossary: the games and their per-game entity nouns, Tracked Entity, Catalog, the data-flow model, Roster Persistence, Extras Adapter, Preference Rows, the Field Updater, the Game Card Shell, Party/Lineup, the Party Persistence Factory and its error semantics, and the Update Pipeline. Definitions live there; this file keeps the operational instructions. Consult `CONTEXT.md` for terminology in architecture reviews, specs, and naming discussions.
 
 ## Tech Stack
 
@@ -90,21 +90,22 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 
 ### L3 — Shared Components
 
-| Component         | CSS                   | Purpose                                                                                                                            |
-| ----------------- | --------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `Modal`           | `Modal.css`           | Base modal + tabs + form-group input/textarea surfaces                                                                             |
-| `AddEntityModal`  | `AddEntityModal.css`  | Generic add-entity picker (Fuse search, exclusion, GameBadge rows)                                                                 |
-| `PartiesView`     | uses `party.css`      | Shared Party/Lineup view (`src/components/parties/`) — grid, card, editor; per-game `PartiesTab` files are config adapters over it |
-| `ProgressSection` | uses `card.css`       | `.progress-section` + `.section-header` + `.section-value` wrapper                                                                 |
-| `GameBadge`       | uses game CSS         | Badge with `{variant}-badge {variant}-{modifier}` classes                                                                          |
-| `StatChip`        | uses `controls.css`   | Compact stat display chip (`.stat-chip`)                                                                                           |
-| `AuthGate`        | —                     | Sign-in prompt                                                                                                                     |
-| `LoadErrorState`  | —                     | Retry prompt                                                                                                                       |
-| `ConfirmCheckbox` | `ConfirmCheckbox.css` | Checkbox with confirmation                                                                                                         |
-| `GameSwitcher`    | `GameSwitcher.css`    | Game dropdown                                                                                                                      |
-| `Navbar`          | `Navbar.css`          | Top nav                                                                                                                            |
-| `SavingToast`     | `SavingToast.css`     | Save indicator                                                                                                                     |
-| `ToastContainer`  | `ToastContainer.css`  | Notification system                                                                                                                |
+| Component         | CSS                   | Purpose                                                                                                                                                                               |
+| ----------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Modal`           | `Modal.css`           | Base modal + tabs + form-group input/textarea surfaces                                                                                                                                |
+| `AddEntityModal`  | `AddEntityModal.css`  | Generic add-entity picker (Fuse search, exclusion, GameBadge rows)                                                                                                                    |
+| `GameCardShell`   | uses `card.css`       | Structural shell of every roster card — header image/spinner/fallback, favorite/remove/edit controls, summary ⇄ edit collapse with measured height budgets; game cards fill its slots |
+| `PartiesView`     | uses `party.css`      | Shared Party/Lineup view (`src/components/parties/`) — grid, card, editor; per-game `PartiesTab` files are config adapters over it                                                    |
+| `ProgressSection` | uses `card.css`       | `.progress-section` + `.section-header` + `.section-value` wrapper                                                                                                                    |
+| `GameBadge`       | uses game CSS         | Badge with `{variant}-badge {variant}-{modifier}` classes                                                                                                                             |
+| `StatChip`        | uses `controls.css`   | Compact stat display chip (`.stat-chip`)                                                                                                                                              |
+| `AuthGate`        | —                     | Sign-in prompt                                                                                                                                                                        |
+| `LoadErrorState`  | —                     | Retry prompt                                                                                                                                                                          |
+| `ConfirmCheckbox` | `ConfirmCheckbox.css` | Checkbox with confirmation                                                                                                                                                            |
+| `GameSwitcher`    | `GameSwitcher.css`    | Game dropdown                                                                                                                                                                         |
+| `Navbar`          | `Navbar.css`          | Top nav                                                                                                                                                                               |
+| `SavingToast`     | `SavingToast.css`     | Save indicator                                                                                                                                                                        |
+| `ToastContainer`  | `ToastContainer.css`  | Notification system                                                                                                                                                                   |
 
 Shared modal CSS: `src/components/parties/PartyEditorModal.css` (team builder). Per-game `Add*Modal` files are thin config wrappers over the shared `AddEntityModal` (title, entity noun, Fuse `searchKeys`, `getBadges` descriptors) — never re-implement the picker. Likewise, per-game `PartiesTab.tsx` files are thin config adapters over the shared `PartiesView` (`PartyViewConfig`: nouns, image resolvers, slot accent class, tier/favorite support, variant class) — never re-implement the party grid, card, or editor.
 
@@ -134,7 +135,7 @@ Only game-unique UI belongs here. Game card CSS files contain:
 - Game-specific score/tier badges
 - Game-specific button rows and sliders beyond `.level-slider`
 
-**Adding a new game card:** Use canonical `.game-card-*` class names. Import game-specific CSS for overrides only. Check `card.css` and `controls.css` before declaring any new rule — it may already exist.
+**Adding a new game card:** Compose `GameCardShell` — pass the game's badges, summary chips, summary line, optional header extra (score badge), and edit sections as slots; never re-implement the header, controls, or collapse mechanics (Game Card Shell in `CONTEXT.md`). Use canonical `.game-card-*` class names inside slot content. Import game-specific CSS for overrides only. Check `card.css` and `controls.css` before declaring any new rule — it may already exist.
 
 ### Storybook
 

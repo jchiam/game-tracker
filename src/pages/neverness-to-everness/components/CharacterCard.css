@@ -177,14 +177,6 @@
   font-size: var(--typography-font-size-sm);
 }
 
-/* ─── Overlay right (score badge + edit btn) ─────────────────── */
-
-.character-overlay-right {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-sm);
-}
-
 /* Arc/cartridge selects use the canonical `.game-select`, and the level/arc
    sliders use the canonical `.level-slider` — both from controls.css. */
 

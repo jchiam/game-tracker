@@ -16,8 +16,8 @@ are specced separately (`shared-card-collapse`, `shared-card-controls`, `shared-
 The card skeleton classes SHALL be defined exactly once, in `src/styles/card.css`,
 using the canonical names `.game-card`, `.game-card-header`, `.game-card-image`,
 `.game-card-overlay`, `.game-card-controls`, `.game-card-controls-top`,
-`.game-card-controls-bottom`, `.game-card-badges`, `.game-card-body`, and
-`.game-card-name`. Game-specific card stylesheets SHALL NOT re-declare these
+`.game-card-controls-bottom`, `.game-card-badges`, `.game-card-header-actions`,
+`.game-card-body`, and `.game-card-name`. Game-specific card stylesheets SHALL NOT re-declare these
 structural rules as bare rules on the shared class. Any genuine per-game deviation
 from a shared structural rule SHALL be expressed in a **leak-proof** (element-scoped)
 form — a game-scoped selector (e.g. `.game-card.is-{gameId} …`) or an inline

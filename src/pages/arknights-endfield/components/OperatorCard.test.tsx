@@ -138,25 +138,25 @@ describe('OperatorCard', () => {
   it('calls onToggleFavorite with true when favoriting', async () => {
     const user = userEvent.setup();
     render(<OperatorCard {...defaultProps} />);
-    await user.click(screen.getByTitle('Favorite'));
+    await user.click(screen.getByTitle('Favorite Operator'));
     expect(defaultProps.onToggleFavorite).toHaveBeenCalledWith('ember', true);
   });
 
   it('calls onToggleFavorite with false when unfavoriting', async () => {
     const user = userEvent.setup();
     render(<OperatorCard {...defaultProps} operator={makeOperator({ isFavorited: true })} />);
-    await user.click(screen.getByTitle('Unfavorite'));
+    await user.click(screen.getByTitle('Unfavorite Operator'));
     expect(defaultProps.onToggleFavorite).toHaveBeenCalledWith('ember', false);
   });
 
   it('favorite button has active class when favorited', () => {
     render(<OperatorCard {...defaultProps} operator={makeOperator({ isFavorited: true })} />);
-    expect(screen.getByTitle('Unfavorite')).toHaveClass('active');
+    expect(screen.getByTitle('Unfavorite Operator')).toHaveClass('active');
   });
 
   it('favorite button does not have active class when not favorited', () => {
     render(<OperatorCard {...defaultProps} />);
-    expect(screen.getByTitle('Favorite')).not.toHaveClass('active');
+    expect(screen.getByTitle('Favorite Operator')).not.toHaveClass('active');
   });
 
   // --- Remove ---

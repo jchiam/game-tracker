@@ -110,6 +110,14 @@
   gap: var(--spacing-2);
 }
 
+/* Right-hand action cluster in the header overlay: optional per-game extras
+   (score badge, …) followed by the edit toggle. Rendered by GameCardShell. */
+.game-card-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
 /* ─── Canonical pill badge ────────────────────────────────────────── */
 /* Shared base for every GameBadge variant (class, element, weapon,
    afflatus, damage, esper, arc, path). Game stylesheets contribute only
@@ -156,9 +164,10 @@
 
 /* ─── Collapse mechanism (static summary ⇄ edit body) ─────────────── */
 /* Canonical for all games. Toggling `.is-editing` on `.game-card-body`
-   collapses the read-only summary and expands the editing body. Each game
-   sets only the two height budgets below via custom properties on
-   `.game-card`; it must not re-declare these structural rules. */
+   collapses the read-only summary and expands the editing body. The two
+   height budgets below are measured from real content by GameCardShell and
+   set as custom properties on `.game-card`; games must not re-declare these
+   structural rules or hardcode budget values. */
 
 .game-card-static-summary {
   display: flex;
