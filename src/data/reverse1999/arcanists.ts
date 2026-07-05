@@ -135,20 +135,20 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: true,
   },
   {
+    id: 'enigma',
+    name: 'Enigma',
+    afflatus: 'Intellect',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/enigma.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'eternity',
     name: 'Eternity',
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/eternity.webp',
     hasEuphoria: true,
-  },
-  {
-    id: 'everecho',
-    name: 'Everecho',
-    afflatus: 'Mineral',
-    damageType: 'Unknown',
-    imageUrl: '/assets/reverse-1999/arcanists-mugshots/everecho.webp',
-    hasEuphoria: false,
   },
   {
     id: 'ezio_auditore',
@@ -412,7 +412,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/recoleta.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'regulus',
