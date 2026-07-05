@@ -116,6 +116,7 @@ describe('initImageKit (disabled)', () => {
     vi.stubEnv('IMAGEKIT_PRIVATE_KEY', '');
     vi.stubEnv('VITE_IMAGEKIT_PRIVATE_KEY', '');
     vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
   afterEach(() => {
@@ -133,5 +134,57 @@ describe('initImageKit (disabled)', () => {
     expect(console.log).toHaveBeenCalledWith(
       'ImageKit uploads skipped (IMAGEKIT_PRIVATE_KEY not set)',
     );
+  });
+
+  describe('ensureAsset', () => {
+    it('skips without fetching when the batched pre-check says the asset is on ImageKit', async () => {
+      const kit = initImageKit();
+      const fetchBuffer = vi.fn();
+      await expect(
+        kit.ensureAsset({
+          localPath: '/assets/x/y.webp',
+          label: 'Image',
+          onKit: true,
+          fetchBuffer,
+        }),
+      ).resolves.toBe('skipped');
+      expect(fetchBuffer).not.toHaveBeenCalled();
+      expect(console.log).toHaveBeenCalledWith('    Image already on ImageKit, skipping');
+    });
+
+    it('fetches and uploads a missing asset, logging the missing-from-ImageKit reason', async () => {
+      const kit = initImageKit();
+      const fetchBuffer = vi.fn().mockResolvedValue(Buffer.from('img'));
+      await expect(
+        kit.ensureAsset({ localPath: '/assets/x/y.webp', label: 'Mugshot', fetchBuffer }),
+      ).resolves.toBe('uploaded');
+      expect(fetchBuffer).toHaveBeenCalledOnce();
+      expect(console.log).toHaveBeenCalledWith(
+        '    Mugshot missing from ImageKit — downloading...',
+      );
+    });
+
+    it('re-fetches when reupload is requested, logging the reupload reason', async () => {
+      const kit = initImageKit();
+      const fetchBuffer = vi.fn().mockResolvedValue(Buffer.from('img'));
+      await expect(
+        kit.ensureAsset({
+          localPath: '/assets/x/y.webp',
+          label: 'Image',
+          reupload: true,
+          fetchBuffer,
+        }),
+      ).resolves.toBe('uploaded');
+      expect(console.log).toHaveBeenCalledWith('    Image reupload requested — downloading...');
+    });
+
+    it('returns failed and warns with the label when the fetch closure throws', async () => {
+      const kit = initImageKit();
+      const fetchBuffer = vi.fn().mockRejectedValue(new Error('HTTP 404'));
+      await expect(
+        kit.ensureAsset({ localPath: '/assets/x/y.webp', label: 'Full-art', fetchBuffer }),
+      ).resolves.toBe('failed');
+      expect(console.warn).toHaveBeenCalledWith('    Full-art failed: HTTP 404');
+    });
   });
 });

@@ -1,8 +1,9 @@
 // Shared plumbing for the per-game update scripts (scripts/update-*-data.mjs).
 // Game-specific fetching, data mapping, and codegen stay in each script; this
 // module owns only the pipeline mechanics that were previously copied verbatim:
-// env loading, ImageKit init/existence-check/upload, asset-path derivation,
-// reupload-flag parsing, fetch/download, slugify/esc, catalog diffing, and the
+// env loading, ImageKit init/existence-check/upload, the per-asset
+// skip-or-upload skeleton (ensureAsset), asset-path derivation, reupload-flag
+// parsing, fetch/download, slugify/esc, catalog diffing, and the
 // generated-file banner.
 
 import { resolve, dirname } from 'node:path';
@@ -101,7 +102,33 @@ export function initImageKit() {
     }
   }
 
-  return { enabled: !!client, existsOnImageKit, uploadToImageKit };
+  /**
+   * The per-asset skip-or-upload skeleton shared by every update-script loop:
+   * skip when the asset is already on ImageKit (unless `reupload` is set),
+   * otherwise call the script's `fetchBuffer` closure and upload the result.
+   * Returns 'skipped' | 'uploaded' | 'failed' so callers drive their counters
+   * and missing-asset lists off it. Pass `onKit` to short-circuit the
+   * existence check when the caller batched it (parallel pre-check).
+   */
+  async function ensureAsset({ localPath, label, reupload = false, mimeType, onKit, fetchBuffer }) {
+    const alreadyOnKit = onKit ?? (!reupload && (await existsOnImageKit(localPath)));
+    if (alreadyOnKit) {
+      console.log(`    ${label} already on ImageKit, skipping`);
+      return 'skipped';
+    }
+    try {
+      const reason = reupload ? 'reupload requested' : 'missing from ImageKit';
+      console.log(`    ${label} ${reason} — downloading...`);
+      const buffer = await fetchBuffer();
+      await uploadToImageKit(buffer, localPath, mimeType);
+      return 'uploaded';
+    } catch (e) {
+      console.warn(`    ${label} failed: ${e?.message ?? String(e)}`);
+      return 'failed';
+    }
+  }
+
+  return { enabled: !!client, existsOnImageKit, uploadToImageKit, ensureAsset };
 }
 
 /**

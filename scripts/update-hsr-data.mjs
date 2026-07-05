@@ -29,7 +29,7 @@ import {
 const STAR_RAIL_RES_BASE = 'https://raw.githubusercontent.com/Mar-7th/StarRailRes/master';
 
 loadLocalEnv();
-const { existsOnImageKit, uploadToImageKit } = initImageKit();
+const { ensureAsset } = initImageKit();
 
 const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags(['relics']);
 const reuploadRelics = reuploadFlags.relics;
@@ -214,20 +214,14 @@ async function main() {
     const imageUrl = `/assets/honkai-star-rail/characters/${id}.webp`;
     const imageLocalPath = resolve(charImgDir, `${id}.webp`);
 
-    const onKit = !reuploadAll && (await existsOnImageKit(imageLocalPath));
-    if (onKit) {
-      console.log(`  [${characters.length + 1}] ${c.name} — already on ImageKit, skipping`);
-    } else {
-      try {
-        const reason = reuploadAll ? 'reupload requested' : 'missing from ImageKit';
-        console.log(`  Downloading image for ${c.name} (${reason})...`);
-        const buffer = await downloadBinary(`${STAR_RAIL_RES_BASE}/${c.icon}`, imageLocalPath);
-        charImgCount++;
-        await uploadToImageKit(buffer, imageLocalPath, 'image/webp');
-      } catch (e) {
-        console.warn(`  Warning: Could not download image for ${c.name}: ${e.message}`);
-      }
-    }
+    const charResult = await ensureAsset({
+      localPath: imageLocalPath,
+      label: `Image for ${c.name}`,
+      reupload: reuploadAll,
+      mimeType: 'image/webp',
+      fetchBuffer: () => downloadBinary(`${STAR_RAIL_RES_BASE}/${c.icon}`, imageLocalPath),
+    });
+    if (charResult === 'uploaded') charImgCount++;
 
     characters.push({
       id,
@@ -257,21 +251,14 @@ async function main() {
     const iconUrl = `/assets/honkai-star-rail/relics/${id}.${ext}`;
     const iconLocalPath = resolve(relicImgDir, `${id}.${ext}`);
 
-    const onKit = !reuploadRelics && (await existsOnImageKit(iconLocalPath));
-    if (onKit) {
-      console.log(`  Relic ${id} — already on ImageKit, skipping`);
-    } else {
-      try {
-        const reason = reuploadRelics ? 'reupload requested' : 'missing from ImageKit';
-        console.log(`  Downloading relic icon ${id} (${reason})...`);
-        const mimeType = ext === 'png' ? 'image/png' : 'image/webp';
-        const buffer = await downloadBinary(`${STAR_RAIL_RES_BASE}/${i.icon}`, iconLocalPath);
-        relicImgCount++;
-        await uploadToImageKit(buffer, iconLocalPath, mimeType);
-      } catch (e) {
-        console.warn(`  Warning: Could not download relic icon ${id}: ${e.message}`);
-      }
-    }
+    const relicResult = await ensureAsset({
+      localPath: iconLocalPath,
+      label: `Relic icon ${id}`,
+      reupload: reuploadRelics,
+      mimeType: ext === 'png' ? 'image/png' : 'image/webp',
+      fetchBuffer: () => downloadBinary(`${STAR_RAIL_RES_BASE}/${i.icon}`, iconLocalPath),
+    });
+    if (relicResult === 'uploaded') relicImgCount++;
 
     relicSets.push({ id, name: i.name, icon: iconUrl });
   }

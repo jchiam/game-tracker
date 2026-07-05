@@ -37,7 +37,7 @@ import {
 } from './lib/pipeline.mjs';
 
 loadLocalEnv();
-const { existsOnImageKit, uploadToImageKit } = initImageKit();
+const { existsOnImageKit, ensureAsset } = initImageKit();
 
 const { flags: reuploadFlags } = parseReuploadFlags(['mugshots', 'full-art', 'psychubes']);
 const reuploadMugshots = reuploadFlags['mugshots'];
@@ -440,47 +440,31 @@ async function main() {
     console.log(`  [${idx + 1}/${total}] ${c.Name}`);
 
     // Mugshot: headicon (primary) or kornblume icon (fallback) → unified mugshot folder
-    const mugshotLocalPath = resolve(mugshotDir, `${id}.webp`);
-    const mugshotOnKit = !reuploadMugshots && (await existsOnImageKit(mugshotLocalPath));
-    if (mugshotOnKit) {
-      console.log(`    Mugshot already on ImageKit, skipping`);
-    } else {
-      try {
-        const reason = reuploadMugshots ? 'reupload requested' : 'missing from ImageKit';
-        console.log(`    Mugshot ${reason} — downloading...`);
-        let buffer;
+    const mugshotResult = await ensureAsset({
+      localPath: resolve(mugshotDir, `${id}.webp`),
+      label: 'Mugshot',
+      reupload: reuploadMugshots,
+      fetchBuffer: async () => {
         if (headiconId) {
-          buffer = await downloadImage(`${HEADICON_BASE}/${headiconId}.png`);
+          const buffer = await downloadImage(`${HEADICON_BASE}/${headiconId}.png`);
           console.log(`      Source: headicon ${headiconId}`);
-        } else {
-          buffer = await downloadImage(`${KORNBLUME_BASE}/images/arcanists/icon/${c.Id}.webp`);
-          console.log(`      Source: kornblume icon (no headicon matched)`);
+          return buffer;
         }
-        mugshotCount++;
-        await uploadToImageKit(buffer, mugshotLocalPath);
-      } catch (e) {
-        console.warn(`    Warning: Could not process mugshot: ${e?.message ?? String(e)}`);
-      }
-    }
+        const buffer = await downloadImage(`${KORNBLUME_BASE}/images/arcanists/icon/${c.Id}.webp`);
+        console.log(`      Source: kornblume icon (no headicon matched)`);
+        return buffer;
+      },
+    });
+    if (mugshotResult === 'uploaded') mugshotCount++;
 
     // Full-art portrait (kornblume i2)
-    const fullArtLocalPath = resolve(fullArtDir, `${id}.webp`);
-    const fullArtOnKit = !reuploadFullArt && (await existsOnImageKit(fullArtLocalPath));
-    if (fullArtOnKit) {
-      console.log(`    Full-art already on ImageKit, skipping`);
-    } else {
-      try {
-        const reason = reuploadFullArt ? 'reupload requested' : 'missing from ImageKit';
-        console.log(`    Full-art ${reason} — downloading and uploading...`);
-        const fullArtBuffer = await downloadImage(
-          `${KORNBLUME_BASE}/images/arcanists/i2/${c.Id}.webp`,
-        );
-        fullArtCount++;
-        await uploadToImageKit(fullArtBuffer, fullArtLocalPath);
-      } catch (e) {
-        console.warn(`    Warning: Could not process full-art: ${e?.message ?? String(e)}`);
-      }
-    }
+    const fullArtResult = await ensureAsset({
+      localPath: resolve(fullArtDir, `${id}.webp`),
+      label: 'Full-art',
+      reupload: reuploadFullArt,
+      fetchBuffer: () => downloadImage(`${KORNBLUME_BASE}/images/arcanists/i2/${c.Id}.webp`),
+    });
+    if (fullArtResult === 'uploaded') fullArtCount++;
 
     arcanists.push({
       id,
@@ -580,24 +564,18 @@ async function main() {
 
     console.log(`  [${idx + 1}/${validPsychubeNames.length}] ${name}`);
 
-    if (onKitResults[idx]) {
-      console.log(`    Already on ImageKit, skipping`);
-    } else {
-      try {
-        const reason = reuploadPsychubes ? 'reupload requested' : 'missing from ImageKit';
-        console.log(`    Image ${reason} — downloading...`);
+    const psychubeResult = await ensureAsset({
+      localPath: localFile,
+      label: 'Image',
+      reupload: reuploadPsychubes,
+      onKit: onKitResults[idx],
+      fetchBuffer: () => {
         const wikiImgUrl = psychubeImageUrlMap.get(name);
-        if (wikiImgUrl) {
-          const buffer = await downloadImage(wikiImgUrl);
-          psychubeImageCount++;
-          await uploadToImageKit(buffer, localFile);
-        } else {
-          console.warn(`    No image found on wiki`);
-        }
-      } catch (e) {
-        console.warn(`    Image failed: ${e?.message ?? String(e)}`);
-      }
-    }
+        if (!wikiImgUrl) throw new Error('no image found on wiki');
+        return downloadImage(wikiImgUrl);
+      },
+    });
+    if (psychubeResult === 'uploaded') psychubeImageCount++;
 
     psychubes.push({ name, rarity, tag: 'None', imageUrl: localPath });
   }

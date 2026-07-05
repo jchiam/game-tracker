@@ -93,13 +93,17 @@ the read side (resolution).
 ### Requirement: Shared update-pipeline helper library
 
 Update scripts SHALL compose the shared helpers in `scripts/lib/pipeline.mjs` — env
-loading (`loadLocalEnv`), ImageKit init/existence-check/upload (`initImageKit`),
-asset-path derivation (`toImageKitLocation`), reupload-flag parsing
-(`parseReuploadFlags`), fetch/download (`fetchJSON`, `downloadImage`), id and string
-helpers (`slugify`, `esc`), catalog diffing (`diffByKey`, `formatDiff`), and the
-generated-file banner (`generatedHeader`) — instead of carrying private copies. The lib
-SHALL be the only implementation of this plumbing; game-specific fetching, data mapping,
-and codegen bodies stay in each script.
+loading (`loadLocalEnv`), ImageKit init/existence-check/upload (`initImageKit`), the
+per-asset skip-or-upload skeleton (`ensureAsset`), asset-path derivation
+(`toImageKitLocation`), reupload-flag parsing (`parseReuploadFlags`), fetch/download
+(`fetchJSON`, `downloadImage`), id and string helpers (`slugify`, `esc`), catalog
+diffing (`diffByKey`, `formatDiff`), and the generated-file banner (`generatedHeader`)
+— instead of carrying private copies. The lib SHALL be the only implementation of this
+plumbing; game-specific fetching, data mapping, and codegen bodies stay in each script.
+Per-asset processing SHALL go through `ensureAsset`: it skips when the asset is already
+on ImageKit (unless reupload was requested), otherwise fetches via the script's
+source-specific closure and uploads, returning `'skipped'` / `'uploaded'` / `'failed'`
+for the caller's counters and missing-asset lists.
 
 #### Scenario: Scripts share one ImageKit implementation
 
@@ -114,12 +118,20 @@ and codegen bodies stay in each script.
 - **THEN** it imports the lib helpers rather than copying plumbing from an existing
   script
 
+#### Scenario: Per-asset ensure skeleton is shared
+
+- **WHEN** an update script processes one asset
+- **THEN** it calls the lib's `ensureAsset` with a source-specific fetch closure —
+  never a hand-written exists-check/reason-log/try-catch/upload block — and derives
+  its uploaded counters and missing-asset lists from the returned result
+
 #### Scenario: Pure helpers are unit tested
 
 - **WHEN** `npm test` runs
 - **THEN** `scripts/lib/pipeline.test.mjs` verifies the pure helpers (slugify, esc,
-  toImageKitLocation, diff/format, reupload-flag parsing, generated header) and the
-  ImageKit-disabled early-return path
+  toImageKitLocation, diff/format, reupload-flag parsing, generated header), the
+  ImageKit-disabled early-return path, and the `ensureAsset` skip/upload/reupload/fail
+  contract
 
 ### Requirement: Weekly workflow runs the script and auto-PRs changes
 

@@ -33,7 +33,7 @@ import {
 } from './lib/pipeline.mjs';
 
 loadLocalEnv();
-const { existsOnImageKit, uploadToImageKit } = initImageKit();
+const { ensureAsset } = initImageKit();
 
 const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags(['arcs']);
 const reuploadArcs = reuploadFlags.arcs;
@@ -411,19 +411,12 @@ async function main() {
 
     console.log(`  [${idx + 1}/${espers.length}] ${e.name} (${e.id})`);
 
-    const localPath = resolve(ROOT, `public/assets/neverness-to-everness/characters/${id}.webp`);
-    const onKit = !reuploadAll && (await existsOnImageKit(localPath));
-
-    if (onKit) {
-      console.log('    Already on ImageKit, skipping');
-    } else {
-      try {
-        const reason = reuploadAll ? 'reupload requested' : 'missing from ImageKit';
-        console.log(`    Image ${reason} — downloading...`);
-
-        let buffer;
+    const charResult = await ensureAsset({
+      localPath: resolve(ROOT, `public/assets/neverness-to-everness/characters/${id}.webp`),
+      label: 'Image',
+      reupload: reuploadAll,
+      fetchBuffer: async () => {
         const mergeAltId = MERGE_IDS[e.id];
-
         if (mergeAltId) {
           // Download both variants and merge 50:50
           const leftUrl = `${AVATAR_BASE}/${avatarFilename(Number(e.id))}`;
@@ -433,19 +426,13 @@ async function main() {
             downloadImage(leftUrl),
             downloadImage(rightUrl),
           ]);
-          buffer = await mergeAvatars(leftBuf, rightBuf);
-        } else {
-          const url = `${AVATAR_BASE}/${avatarFilename(Number(e.id))}`;
-          buffer = await downloadImage(url);
+          return mergeAvatars(leftBuf, rightBuf);
         }
-
-        charImageCount++;
-        await uploadToImageKit(buffer, localPath);
-      } catch (err) {
-        console.warn(`    Image failed: ${err?.message ?? String(err)}`);
-        missingImages.push(e.name);
-      }
-    }
+        return downloadImage(`${AVATAR_BASE}/${avatarFilename(Number(e.id))}`);
+      },
+    });
+    if (charResult === 'uploaded') charImageCount++;
+    if (charResult === 'failed') missingImages.push(e.name);
 
     characters.push({ id, name: e.name, rarity, esperType, arcType, roles, imageUrl });
   }
@@ -472,23 +459,13 @@ async function main() {
 
     console.log(`  [${idx + 1}/${rawArcs.length}] ${a.name}`);
 
-    const localPath = resolve(ROOT, `public/assets/neverness-to-everness/arcs/${a.id}.webp`);
-    const onKit = !reuploadArcs && (await existsOnImageKit(localPath));
-
-    if (onKit) {
-      console.log('    Already on ImageKit, skipping');
-    } else {
-      try {
-        const reason = reuploadArcs ? 'reupload requested' : 'missing from ImageKit';
-        console.log(`    Image ${reason} — downloading...`);
-        const url = `${ARC_ICON_BASE}/${a.id}_256.png`;
-        const buffer = await downloadImage(url);
-        arcImageCount++;
-        await uploadToImageKit(buffer, localPath);
-      } catch (err) {
-        console.warn(`    Image failed: ${err?.message ?? String(err)}`);
-      }
-    }
+    const arcResult = await ensureAsset({
+      localPath: resolve(ROOT, `public/assets/neverness-to-everness/arcs/${a.id}.webp`),
+      label: 'Image',
+      reupload: reuploadArcs,
+      fetchBuffer: () => downloadImage(`${ARC_ICON_BASE}/${a.id}_256.png`),
+    });
+    if (arcResult === 'uploaded') arcImageCount++;
 
     arcs.push({ id: a.id, name: a.name, rarity, arcType, imageUrl });
   }
