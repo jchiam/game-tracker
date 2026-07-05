@@ -26,4 +26,4 @@
 
 - [x] 5.1 Run `npm run lint && npm run format:check` — fix any issues
 - [x] 5.2 Run `npm test` — confirm no regressions (77 files / 889 tests pass)
-- [ ] 5.3 Trigger the workflow via manual dispatch and confirm it opens a clean PR
+- [x] 5.3 Trigger the workflow via manual dispatch and confirm it opens a clean PR — dispatch run completed successfully (catalog already current, no diff, no PR)
