@@ -126,17 +126,17 @@ describe('P5xPage', () => {
     expect(screen.getByText(/no thieves tracked yet/i)).toBeInTheDocument();
   });
 
-  it('switches to the Teams view', () => {
+  it('switches to the Parties view', () => {
     vi.mocked(useParties).mockReturnValue({
       ...defaultPartiesHook,
-      parties: [makeParty('p1', 'Team Alpha')],
+      parties: [makeParty('p1', 'Party Alpha')],
     });
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Teams' }));
-    expect(screen.getByText('Your Teams')).toBeInTheDocument();
-    expect(screen.getByText('Team Alpha')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Parties' }));
+    expect(screen.getByText('Your Parties')).toBeInTheDocument();
+    expect(screen.getByText('Party Alpha')).toBeInTheDocument();
   });
 
   it('opens the add modal from the add button', () => {

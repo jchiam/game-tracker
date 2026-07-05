@@ -39,7 +39,7 @@ describe('useParties (p5x)', () => {
       {
         id: 'p1',
         profileId: 'user-1',
-        name: 'Team A',
+        name: 'Party A',
         notes: null,
         members: [{ entityId: 'ann-takamaki', slotIndex: 0 }],
         createdAt: '2026-01-01',
@@ -48,7 +48,7 @@ describe('useParties (p5x)', () => {
     const { result } = renderHook(() => useParties(mockSession));
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current.parties).toHaveLength(1);
-    expect(result.current.parties[0].name).toBe('Team A');
+    expect(result.current.parties[0].name).toBe('Party A');
   });
 
   it('saveParty creates and reloads', async () => {
@@ -79,7 +79,7 @@ describe('useParties (p5x)', () => {
       {
         id: 'p1',
         profileId: 'user-1',
-        name: 'Team',
+        name: 'Party',
         notes: null,
         members: [],
         createdAt: '2026-01-01',
@@ -106,7 +106,7 @@ describe('useParties (p5x)', () => {
         {
           id: 'p1',
           profileId: 'user-1',
-          name: 'Team A',
+          name: 'Party A',
           notes: null,
           tier: null,
           isFavorited: false,
@@ -131,7 +131,7 @@ describe('useParties (p5x)', () => {
         {
           id: 'p1',
           profileId: 'user-1',
-          name: 'Team A',
+          name: 'Party A',
           notes: null,
           tier: null,
           isFavorited: false,

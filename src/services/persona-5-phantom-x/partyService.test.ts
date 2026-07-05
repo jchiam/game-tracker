@@ -31,7 +31,7 @@ describe('p5x partyService', () => {
         {
           id: 'party-1',
           profile_id: 'user-1',
-          name: 'Team One',
+          name: 'Party One',
           notes: null,
           tier: 'S',
           is_favorited: 1,
@@ -60,7 +60,7 @@ describe('p5x partyService', () => {
     ]);
   });
 
-  it('saveParty writes tier with the P5X default name and never touches is_favorited', async () => {
+  it('saveParty writes tier with the P5X default party name and never touches is_favorited', async () => {
     const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
     const memberBuilder = createBuilder({ data: null, error: null });
     mockFrom.mockImplementation((table: string) =>
@@ -74,7 +74,7 @@ describe('p5x partyService', () => {
 
     expect(partyBuilder.insert).toHaveBeenCalledWith({
       profile_id: 'user-1',
-      name: 'New Team',
+      name: 'New Party',
       notes: null,
       tier: 'A',
     });

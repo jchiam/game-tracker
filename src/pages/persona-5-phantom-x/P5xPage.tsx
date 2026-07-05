@@ -47,8 +47,8 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
   return (
     <RosterPageLayout
       title="Persona 5: The Phantom X"
-      subtitle="Track your thieves and build teams."
-      secondViewLabel="Teams"
+      subtitle="Track your thieves and build parties."
+      secondViewLabel="Parties"
       view={view}
       onViewChange={setView}
       session={session}

@@ -18,7 +18,7 @@ const firstThief = ALL_THIEVES[0];
 const party: Party = {
   id: 'party-1',
   profileId: 'user-1',
-  name: 'Team Alpha',
+  name: 'Party Alpha',
   notes: null,
   tier: 'S',
   isFavorited: false,
@@ -36,10 +36,10 @@ const defaultProps = {
 };
 
 describe('PartiesTab (P5X config wiring)', () => {
-  it('uses the Team noun with the tier selector enabled', () => {
+  it('uses the Party noun with the tier selector enabled', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
-    expect(screen.getByText('Your Teams')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Create New Team' }));
+    expect(screen.getByText('Your Parties')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
     expect(screen.getByPlaceholderText(/kamoshida palace/i)).toBeInTheDocument();
     expect(screen.getByText('Tier')).toBeInTheDocument();
   });

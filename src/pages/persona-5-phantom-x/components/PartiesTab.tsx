@@ -7,10 +7,10 @@ import './PartiesTab.css';
 
 const P5X_PARTY_VIEW: PartyViewConfig<P5xThief> = {
   nouns: {
-    party: 'Team',
-    partiesLower: 'teams',
+    party: 'Party',
+    partiesLower: 'parties',
     entity: 'thief',
-    header: 'Your Teams',
+    header: 'Your Parties',
     namePlaceholder: 'e.g. Kamoshida Palace Crew',
     searchPlaceholder: 'Search thief...',
   },

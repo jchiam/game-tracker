@@ -97,7 +97,7 @@ export const GAMES: Game[] = [
     name: 'Persona 5: The Phantom X',
     path: '/persona-5-phantom-x',
     developer: 'Black Wing Game Studio',
-    description: 'Track thieves, awareness, and team compositions.',
+    description: 'Track thieves, awareness, and party compositions.',
     icon: '/assets/icons/p5x-icon.png',
     color: '#f84f36',
     coverImage: '/assets/persona-5-phantom-x/selection-cover.webp',
