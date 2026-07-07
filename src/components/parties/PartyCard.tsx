@@ -1,5 +1,6 @@
 import type { Party } from '@/types';
-import { groupSlots, type PartyEntity, type PartyViewConfig, type SlotConfig } from './PartiesView';
+import type { PartyEntity, PartyViewConfig, SlotConfig } from './PartiesView';
+import { groupSlots } from './partyUtils';
 
 function renderCardSlot<E extends PartyEntity>(
   slotConfig: SlotConfig<E>,

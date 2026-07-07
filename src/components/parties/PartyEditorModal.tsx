@@ -3,7 +3,8 @@ import type { Party, PartyMember } from '@/types';
 import { addToast } from '@/utils/toast';
 import { Modal } from '@/components/Modal';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
-import { groupSlots, type PartyEntity, type PartyViewConfig, type SlotConfig } from './PartiesView';
+import type { PartyEntity, PartyViewConfig, SlotConfig } from './PartiesView';
+import { groupSlots } from './partyUtils';
 import './PartyEditorModal.css';
 
 const TIER_OPTIONS = (['S+', 'S', 'A', 'B'] as const).map((t) => ({
