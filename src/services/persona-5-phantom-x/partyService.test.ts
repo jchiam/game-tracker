@@ -25,7 +25,7 @@ describe('p5x partyService', () => {
     vi.unstubAllEnvs();
   });
 
-  it('loadParties queries p5x tables with tier/is_favorited and maps thief_id', async () => {
+  it('loadParties queries p5x tables with tier/is_favorited and maps entity_id', async () => {
     const builder = createBuilder({
       data: [
         {
@@ -37,8 +37,8 @@ describe('p5x partyService', () => {
           is_favorited: 1,
           created_at: '2024-01-01T00:00:00Z',
           p5x_party_members: [
-            { thief_id: 'ren-amamiya', slot_index: 1 },
-            { thief_id: 'ann-takamaki', slot_index: 0 },
+            { entity_id: 'ann-takamaki', slot_index: 4, member_type: 'thief' },
+            { entity_id: 'arsene', slot_index: 1, member_type: 'persona' },
           ],
         },
       ],
@@ -55,12 +55,12 @@ describe('p5x partyService', () => {
     expect(result[0].tier).toBe('S');
     expect(result[0].isFavorited).toBe(true);
     expect(result[0].members).toEqual([
-      { entityId: 'ann-takamaki', slotIndex: 0 },
-      { entityId: 'ren-amamiya', slotIndex: 1 },
+      { entityId: 'arsene', slotIndex: 1 },
+      { entityId: 'ann-takamaki', slotIndex: 4 },
     ]);
   });
 
-  it('saveParty writes tier with the P5X default party name and never touches is_favorited', async () => {
+  it('saveParty writes members with entity_id and derives member_type from slot range', async () => {
     const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
     const memberBuilder = createBuilder({ data: null, error: null });
     mockFrom.mockImplementation((table: string) =>
@@ -69,7 +69,10 @@ describe('p5x partyService', () => {
 
     await service.saveParty('user-1', {
       tier: 'A',
-      members: [{ entityId: 'ann-takamaki', slotIndex: 0 }],
+      members: [
+        { entityId: 'arsene', slotIndex: 1 },
+        { entityId: 'ann-takamaki', slotIndex: 4 },
+      ],
     });
 
     expect(partyBuilder.insert).toHaveBeenCalledWith({
@@ -79,7 +82,8 @@ describe('p5x partyService', () => {
       tier: 'A',
     });
     expect(memberBuilder.insert).toHaveBeenCalledWith([
-      { party_id: 'new-party-id', thief_id: 'ann-takamaki', slot_index: 0 },
+      { party_id: 'new-party-id', entity_id: 'arsene', slot_index: 1, member_type: 'persona' },
+      { party_id: 'new-party-id', entity_id: 'ann-takamaki', slot_index: 4, member_type: 'thief' },
     ]);
   });
 
