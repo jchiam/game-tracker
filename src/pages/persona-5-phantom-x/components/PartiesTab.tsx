@@ -32,12 +32,48 @@ const isThief = (e: P5xPartyEntity) => e.entityType === 'thief';
 
 const P5X_SLOTS: SlotConfig<P5xPartyEntity>[] = [
   { index: -1, fixed: { image: WONDER_IMAGE, name: 'Wonder' }, group: 'wonder' },
-  { index: 1, label: 'Persona 1', entityFilter: isPersona, searchPlaceholder: 'Search persona...', group: 'wonder' },
-  { index: 2, label: 'Persona 2', entityFilter: isPersona, searchPlaceholder: 'Search persona...', group: 'wonder' },
-  { index: 3, label: 'Persona 3', entityFilter: isPersona, searchPlaceholder: 'Search persona...', group: 'wonder' },
-  { index: 4, label: 'Phantom Thief 1', entityFilter: isThief, searchPlaceholder: 'Search phantom thief...', group: 'thieves' },
-  { index: 5, label: 'Phantom Thief 2', entityFilter: isThief, searchPlaceholder: 'Search phantom thief...', group: 'thieves' },
-  { index: 6, label: 'Phantom Thief 3', entityFilter: isThief, searchPlaceholder: 'Search phantom thief...', group: 'thieves' },
+  {
+    index: 1,
+    label: 'Persona 1',
+    entityFilter: isPersona,
+    searchPlaceholder: 'Search persona...',
+    group: 'wonder',
+  },
+  {
+    index: 2,
+    label: 'Persona 2',
+    entityFilter: isPersona,
+    searchPlaceholder: 'Search persona...',
+    group: 'wonder',
+  },
+  {
+    index: 3,
+    label: 'Persona 3',
+    entityFilter: isPersona,
+    searchPlaceholder: 'Search persona...',
+    group: 'wonder',
+  },
+  {
+    index: 4,
+    label: 'Phantom Thief 1',
+    entityFilter: isThief,
+    searchPlaceholder: 'Search phantom thief...',
+    group: 'thieves',
+  },
+  {
+    index: 5,
+    label: 'Phantom Thief 2',
+    entityFilter: isThief,
+    searchPlaceholder: 'Search phantom thief...',
+    group: 'thieves',
+  },
+  {
+    index: 6,
+    label: 'Phantom Thief 3',
+    entityFilter: isThief,
+    searchPlaceholder: 'Search phantom thief...',
+    group: 'thieves',
+  },
 ];
 
 const P5X_PARTY_VIEW: PartyViewConfig<P5xPartyEntity> = {

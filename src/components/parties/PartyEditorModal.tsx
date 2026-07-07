@@ -3,12 +3,7 @@ import type { Party, PartyMember } from '@/types';
 import { addToast } from '@/utils/toast';
 import { Modal } from '@/components/Modal';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
-import {
-  groupSlots,
-  type PartyEntity,
-  type PartyViewConfig,
-  type SlotConfig,
-} from './PartiesView';
+import { groupSlots, type PartyEntity, type PartyViewConfig, type SlotConfig } from './PartiesView';
 import './PartyEditorModal.css';
 
 const TIER_OPTIONS = (['S+', 'S', 'A', 'B'] as const).map((t) => ({
@@ -105,11 +100,7 @@ export function PartyEditorModal<E extends PartyEntity>({
       >
         {entity ? (
           <>
-            <img
-              src={config.resolveSlotImage(entity)}
-              alt={entity.name}
-              className="slot-img"
-            />
+            <img src={config.resolveSlotImage(entity)} alt={entity.name} className="slot-img" />
             <div className="slot-overlay">
               <span className="slot-name">{entity.name}</span>
             </div>
@@ -211,9 +202,7 @@ export function PartyEditorModal<E extends PartyEntity>({
               ))}
             </div>
           ) : (
-            <div className="team-slots">
-              {slots.map((slotConfig) => renderSlot(slotConfig))}
-            </div>
+            <div className="team-slots">{slots.map((slotConfig) => renderSlot(slotConfig))}</div>
           )}
 
           {activeSlot !== null && (

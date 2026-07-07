@@ -24,9 +24,7 @@ function renderCardSlot<E extends PartyEntity>(
 
   return (
     <div key={slotIndex} className="slot-item">
-      <div
-        className={`slot-avatar ${entity ? (config.slotAccentClass?.(entity) ?? '') : 'empty'}`}
-      >
+      <div className={`slot-avatar ${entity ? (config.slotAccentClass?.(entity) ?? '') : 'empty'}`}>
         {entity ? (
           <img src={config.resolveSlotImage(entity)} alt={entity.name} className="char-img" />
         ) : (
@@ -99,9 +97,7 @@ export function PartyCard<E extends PartyEntity>({
                 key={group.key}
                 className={`slot-group-panel${group.style.accent ? ` ${group.style.accent}` : ''}`}
               >
-                {group.style.label && (
-                  <span className="slot-group-label">{group.style.label}</span>
-                )}
+                {group.style.label && <span className="slot-group-label">{group.style.label}</span>}
                 <div className="slot-group-row">
                   {group.slots.map((sc) => renderCardSlot(sc, party, entities, config))}
                 </div>
