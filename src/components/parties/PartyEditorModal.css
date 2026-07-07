@@ -233,10 +233,44 @@
   color: var(--color-text-secondary);
 }
 
+/* Slot group panels — used when PartyViewConfig.slotGroups is defined. */
+
+.team-slots-grouped {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.slot-group-panel {
+  border: 1px solid color-mix(in srgb, var(--color-ui-border) 60%, transparent);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.slot-group-label {
+  font-size: var(--typography-font-size-xs);
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: var(--color-text-secondary);
+}
+
+.slot-group-slots {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-md);
+}
+
 /* slide-in-down defined in src/styles/animations.css */
 
 @media (max-width: 480px) {
   .team-slots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .slot-group-slots {
     grid-template-columns: repeat(2, 1fr);
   }
 }

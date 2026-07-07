@@ -363,4 +363,66 @@ describe('PartiesView', () => {
       );
     });
   });
+
+  describe('slot configuration', () => {
+    const slotConfig: PartyViewConfig<TestEntity> = {
+      ...plainConfig,
+      slots: [
+        { index: -1, fixed: { image: '/wonder.webp', name: 'Wonder' } },
+        {
+          index: 0,
+          label: 'Fire Slot',
+          entityFilter: (e) => e.element === 'Fire',
+          searchPlaceholder: 'Search fire...',
+        },
+        { index: 1, label: 'Ice Slot', entityFilter: (e) => e.element === 'Ice' },
+      ],
+    };
+
+    it('renders a fixed slot as a static image on the card', () => {
+      renderWithProviders(
+        <PartiesView
+          config={slotConfig}
+          {...defaultProps}
+          parties={[makeParty({ members: [] })]}
+          session={createMockSession()}
+        />,
+      );
+      expect(screen.getByAltText('Wonder')).toBeInTheDocument();
+    });
+
+    it('uses slot labels for empty-slot placeholders and omits fixed slots from the builder flow', () => {
+      renderWithProviders(
+        <PartiesView config={slotConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      expect(screen.getByText('Fire Slot')).toBeInTheDocument();
+      expect(screen.getByText('Ice Slot')).toBeInTheDocument();
+      expect(screen.queryByText('Slot 1')).not.toBeInTheDocument();
+      // Fixed Wonder slot shows its static image, not an empty placeholder.
+      expect(screen.getByAltText('Wonder')).toBeInTheDocument();
+    });
+
+    it('narrows the picker to entities passing the active slot entityFilter', () => {
+      renderWithProviders(
+        <PartiesView config={slotConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      fireEvent.click(screen.getByText('Fire Slot'));
+      const picker = screen
+        .getByPlaceholderText('Search fire...')
+        .closest('.character-picker') as HTMLElement;
+      expect(within(picker).getByText('Alice')).toBeInTheDocument();
+      expect(within(picker).queryByText('Bob')).not.toBeInTheDocument();
+    });
+
+    it('falls back to the config-level search placeholder when a slot omits its own', () => {
+      renderWithProviders(
+        <PartiesView config={slotConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      fireEvent.click(screen.getByText('Ice Slot'));
+      expect(screen.getByPlaceholderText('Search character...')).toBeInTheDocument();
+    });
+  });
 });

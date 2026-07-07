@@ -3,7 +3,12 @@ import type { Party, PartyMember } from '@/types';
 import { addToast } from '@/utils/toast';
 import { Modal } from '@/components/Modal';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
-import type { PartyEntity, PartyViewConfig } from './PartiesView';
+import {
+  groupSlots,
+  type PartyEntity,
+  type PartyViewConfig,
+  type SlotConfig,
+} from './PartiesView';
 import './PartyEditorModal.css';
 
 const TIER_OPTIONS = (['S+', 'S', 'A', 'B'] as const).map((t) => ({
@@ -35,14 +40,18 @@ export function PartyEditorModal<E extends PartyEntity>({
   const [activeSlot, setActiveSlot] = useState<number | null>(null);
   const { nouns } = config;
   const partyLower = nouns.party.toLowerCase();
+  const slots: SlotConfig<E>[] = config.slots ?? [0, 1, 2, 3].map((index) => ({ index }));
+  const activeSlotConfig =
+    activeSlot === null ? null : (slots.find((s) => s.index === activeSlot) ?? null);
 
   const filteredEntities = useMemo(() => {
     return entities.filter(
       (e) =>
         e.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        !members.some((m) => m.entityId === e.id),
+        !members.some((m) => m.entityId === e.id) &&
+        (!activeSlotConfig?.entityFilter || activeSlotConfig.entityFilter(e)),
     );
-  }, [entities, searchTerm, members]);
+  }, [entities, searchTerm, members, activeSlotConfig]);
 
   const handleSelectEntity = (entityId: string) => {
     if (activeSlot === null) return;
@@ -70,6 +79,58 @@ export function PartyEditorModal<E extends PartyEntity>({
       notes,
       members,
     });
+  };
+
+  const renderSlot = (slotConfig: SlotConfig<E>) => {
+    if (slotConfig.fixed) {
+      return (
+        <div key={slotConfig.index} className="builder-slot fixed occupied">
+          <img src={slotConfig.fixed.image} alt={slotConfig.fixed.name} className="slot-img" />
+          <div className="slot-overlay">
+            <span className="slot-name">{slotConfig.fixed.name}</span>
+          </div>
+        </div>
+      );
+    }
+
+    const slotIndex = slotConfig.index;
+    const member = members.find((m) => m.slotIndex === slotIndex);
+    const entity = member ? entities.find((e) => e.id === member.entityId) : null;
+
+    return (
+      <div
+        key={slotIndex}
+        className={`builder-slot ${activeSlot === slotIndex ? 'active' : ''} ${entity ? 'occupied' : 'empty'}`}
+        onClick={() => setActiveSlot(slotIndex)}
+      >
+        {entity ? (
+          <>
+            <img
+              src={config.resolveSlotImage(entity)}
+              alt={entity.name}
+              className="slot-img"
+            />
+            <div className="slot-overlay">
+              <span className="slot-name">{entity.name}</span>
+            </div>
+            <button
+              className="remove-member-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                removeMember(slotIndex);
+              }}
+            >
+              ✕
+            </button>
+          </>
+        ) : (
+          <div className="slot-placeholder">
+            <span className="plus">+</span>
+            <span>{slotConfig.label ?? `Slot ${slotIndex + 1}`}</span>
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -133,47 +194,27 @@ export function PartyEditorModal<E extends PartyEntity>({
 
         <div className="team-builder-section">
           <label>Team Selection</label>
-          <div className="team-slots">
-            {[0, 1, 2, 3].map((slotIndex) => {
-              const member = members.find((m) => m.slotIndex === slotIndex);
-              const entity = member ? entities.find((e) => e.id === member.entityId) : null;
-
-              return (
+          {config.slotGroups ? (
+            <div className="team-slots-grouped">
+              {groupSlots(slots, config.slotGroups).map((group) => (
                 <div
-                  key={slotIndex}
-                  className={`builder-slot ${activeSlot === slotIndex ? 'active' : ''} ${entity ? 'occupied' : 'empty'}`}
-                  onClick={() => setActiveSlot(slotIndex)}
+                  key={group.key}
+                  className={`slot-group-panel${group.style.accent ? ` ${group.style.accent}` : ''}`}
                 >
-                  {entity ? (
-                    <>
-                      <img
-                        src={config.resolveSlotImage(entity)}
-                        alt={entity.name}
-                        className="slot-img"
-                      />
-                      <div className="slot-overlay">
-                        <span className="slot-name">{entity.name}</span>
-                      </div>
-                      <button
-                        className="remove-member-btn"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removeMember(slotIndex);
-                        }}
-                      >
-                        ✕
-                      </button>
-                    </>
-                  ) : (
-                    <div className="slot-placeholder">
-                      <span className="plus">+</span>
-                      <span>Slot {slotIndex + 1}</span>
-                    </div>
+                  {group.style.label && (
+                    <span className="slot-group-label">{group.style.label}</span>
                   )}
+                  <div className="slot-group-slots">
+                    {group.slots.map((slotConfig) => renderSlot(slotConfig))}
+                  </div>
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div className="team-slots">
+              {slots.map((slotConfig) => renderSlot(slotConfig))}
+            </div>
+          )}
 
           {activeSlot !== null && (
             <div className="character-picker">
@@ -181,7 +222,7 @@ export function PartyEditorModal<E extends PartyEntity>({
                 <input
                   type="text"
                   name={`${partyLower}-${nouns.entity}-search`}
-                  placeholder={nouns.searchPlaceholder}
+                  placeholder={activeSlotConfig?.searchPlaceholder ?? nouns.searchPlaceholder}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   autoFocus

@@ -170,6 +170,29 @@
   margin-top: var(--spacing-sm);
 }
 
+/* Slot group panels in the card view (when slotGroups is configured) */
+.party-members-row .slot-group-panel {
+  border: 1px solid color-mix(in srgb, var(--color-ui-border) 40%, transparent);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-3);
+}
+
+.party-members-row .slot-group-label {
+  font-size: var(--typography-font-size-xs);
+  font-variant: small-caps;
+  letter-spacing: 0.05em;
+  color: var(--color-text-dim);
+}
+
+.party-members-row .slot-group-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--spacing-sm);
+}
+
 .slot-item {
   display: flex;
   flex-direction: column;

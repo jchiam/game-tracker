@@ -12,6 +12,33 @@ export interface PartyEntity {
 }
 
 /**
+ * Per-slot configuration for the editor and card. Games that omit
+ * `PartyViewConfig.slots` fall back to four uniform, unfiltered slots at
+ * index 0–3 (`defaultSlots()`) — the pre-existing behaviour.
+ */
+export interface SlotConfig<E extends PartyEntity> {
+  /** Slot index stored in the DB (or -1 for display-only fixed slots). */
+  index: number;
+  /** Label shown in the builder placeholder (e.g. 'Persona 1', 'Thief 2'). */
+  label?: string;
+  /** Non-pickable fixed slot — renders a static image and name, never persisted. */
+  fixed?: { image: string; name: string };
+  /** Narrows the picker entity list for this slot. */
+  entityFilter?: (entity: E) => boolean;
+  /** Overrides the config-level search placeholder for this slot's picker. */
+  searchPlaceholder?: string;
+  /** Groups slots visually — slots sharing the same key render in one panel. */
+  group?: string;
+}
+
+export interface SlotGroupStyle {
+  /** Panel heading (e.g. "Wonder's Team", "Thieves"). */
+  label: string;
+  /** Optional CSS class for tinted panel background. */
+  accent?: string;
+}
+
+/**
  * Per-game adapter for the shared Party View — the UI-side twin of the
  * Party Persistence Factory config. Everything that varies between games
  * is data here; the view behaviour lives in this module.
@@ -42,10 +69,48 @@ export interface PartyViewConfig<E extends PartyEntity> {
   /** Gates the favorite star and the favorites-first sort. */
   supportsFavorite: boolean;
   /**
+   * Optional per-slot configuration (fixed display slots, entity filtering,
+   * custom labels). When omitted, the editor and card use `DEFAULT_SLOTS`
+   * (four uniform slots) — unchanged behaviour for HSR/R1999/N2E/AE.
+   */
+  slots?: SlotConfig<E>[];
+  /**
+   * When defined, the editor and card group consecutive slots by their `group`
+   * key and wrap each group in a styled panel. Omit for flat layout.
+   */
+  slotGroups?: Record<string, SlotGroupStyle>;
+  /**
    * Optional class added to the view root for game visual overrides on top of
    * the canonical `party.css` rules (AE's lighter 'endfield' card).
    */
   variantClass?: string;
+}
+
+/** Groups consecutive slots by their `group` key for panel rendering. */
+export function groupSlots<E extends PartyEntity>(
+  slots: SlotConfig<E>[],
+  slotGroups: Record<string, SlotGroupStyle>,
+): { key: string; style: SlotGroupStyle; slots: SlotConfig<E>[] }[] {
+  const groups: { key: string; style: SlotGroupStyle; slots: SlotConfig<E>[] }[] = [];
+  for (const slot of slots) {
+    const groupKey = slot.group;
+    if (!groupKey || !slotGroups[groupKey]) {
+      const last = groups[groups.length - 1];
+      if (last && last.key === '__ungrouped') {
+        last.slots.push(slot);
+      } else {
+        groups.push({ key: '__ungrouped', style: { label: '' }, slots: [slot] });
+      }
+    } else {
+      const last = groups[groups.length - 1];
+      if (last && last.key === groupKey) {
+        last.slots.push(slot);
+      } else {
+        groups.push({ key: groupKey, style: slotGroups[groupKey], slots: [slot] });
+      }
+    }
+  }
+  return groups;
 }
 
 interface PartiesViewProps<E extends PartyEntity> {
