@@ -123,7 +123,7 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    expect(screen.getByText(/no thieves tracked yet/i)).toBeInTheDocument();
+    expect(screen.getByText(/no phantom thieves tracked yet/i)).toBeInTheDocument();
   });
 
   it('switches to the Parties view', () => {
@@ -143,7 +143,7 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByTitle('Add Thief'));
-    expect(screen.getByRole('heading', { name: /add thief/i })).toBeInTheDocument();
+    fireEvent.click(screen.getByTitle('Add Phantom Thief'));
+    expect(screen.getByRole('heading', { name: /add phantom thief/i })).toBeInTheDocument();
   });
 });

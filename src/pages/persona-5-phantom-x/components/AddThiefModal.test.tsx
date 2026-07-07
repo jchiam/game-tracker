@@ -45,7 +45,7 @@ const defaultProps = {
 describe('AddThiefModal', () => {
   it('renders the P5X title and thieves', () => {
     render(<AddThiefModal {...defaultProps} />);
-    expect(screen.getByRole('heading', { name: /add thief/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /add phantom thief/i })).toBeInTheDocument();
     expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
   });
 
@@ -77,7 +77,7 @@ describe('AddThiefModal', () => {
   it('searches by codename (secondary search key)', async () => {
     const user = userEvent.setup();
     render(<AddThiefModal {...defaultProps} />);
-    await user.type(screen.getByPlaceholderText('Search thieves...'), 'Panther');
+    await user.type(screen.getByPlaceholderText('Search phantom thieves...'), 'Panther');
     expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
     expect(screen.queryByText('Lufel')).not.toBeInTheDocument();
   });
@@ -85,7 +85,7 @@ describe('AddThiefModal', () => {
   it('searches by persona name', async () => {
     const user = userEvent.setup();
     render(<AddThiefModal {...defaultProps} />);
-    await user.type(screen.getByPlaceholderText('Search thieves...'), 'Janosik');
+    await user.type(screen.getByPlaceholderText('Search phantom thieves...'), 'Janosik');
     expect(screen.getByText('Lufel')).toBeInTheDocument();
     expect(screen.queryByText('Ann Takamaki')).not.toBeInTheDocument();
   });

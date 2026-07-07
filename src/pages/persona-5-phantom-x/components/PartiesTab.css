@@ -1,2 +1,53 @@
-/* P5X parties use the canonical party card from src/styles/party.css — the same
-   look as every other game's lineups. No P5X-specific overrides. */
+/* P5X parties use slot groups: Wonder's Team panel (4 cols) and Thieves panel
+   (3 cols). The party-members-row becomes a flex container of group panels. */
+
+.p5x-party .party-members-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.p5x-party .slot-group-row {
+  display: grid;
+  gap: var(--spacing-sm);
+}
+
+.p5x-party .p5x-wonder-panel .slot-group-row {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.p5x-party .p5x-thief-panel .slot-group-row {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Panel accent tints */
+.p5x-wonder-panel {
+  background: color-mix(in srgb, var(--color-p5x-element-fire) 6%, transparent);
+}
+
+.p5x-thief-panel {
+  background: color-mix(in srgb, var(--color-p5x-element-curse) 6%, transparent);
+}
+
+/* Editor: Wonder panel gets 4-col sub-grid, Thieves panel gets 3-col */
+.p5x-party .p5x-wonder-panel .slot-group-slots {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.p5x-party .p5x-thief-panel .slot-group-slots {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+/* Fixed Wonder slot: the always-present protagonist, not an editable pick.
+   Subtle brand-red border, no hover affordance. */
+.p5x-party .slot-avatar.fixed {
+  border-color: color-mix(in srgb, var(--color-p5x-element-fire) 60%, transparent);
+  background: color-mix(in srgb, var(--color-p5x-element-fire) 12%, transparent);
+  cursor: default;
+}
+
+/* Builder mirror: the fixed slot in the editor is display-only. */
+.p5x-party .builder-slot.fixed {
+  cursor: default;
+  border-color: color-mix(in srgb, var(--color-p5x-element-fire) 60%, transparent);
+}

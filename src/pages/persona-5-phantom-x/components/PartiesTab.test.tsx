@@ -11,6 +11,8 @@ import { ALL_THIEVES } from '@/data/persona-5-phantom-x/thieves';
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: vi.fn((url: string) => `mugshot:${url}`),
   getAvatarUrl: vi.fn((url: string) => `avatar:${url}`),
+  getPersonaMugshotUrl: vi.fn((url: string) => `persona-mugshot:${url}`),
+  getPersonaAvatarUrl: vi.fn((url: string) => `persona-avatar:${url}`),
 }));
 
 const firstThief = ALL_THIEVES[0];
@@ -22,7 +24,8 @@ const party: Party = {
   notes: null,
   tier: 'S',
   isFavorited: false,
-  members: [{ entityId: firstThief.id, slotIndex: 0 }],
+  // Thieves occupy slots 4–6 in the restructured P5X party model.
+  members: [{ entityId: firstThief.id, slotIndex: 4 }],
   createdAt: '2026-01-01T00:00:00Z',
 };
 
@@ -51,13 +54,13 @@ describe('PartiesTab (P5X config wiring)', () => {
     expect(defaultProps.onToggleFavorite).toHaveBeenCalledWith('party-1', true);
   });
 
-  it('renders the canonical party card without a variant class', () => {
+  it('renders the p5x-party variant with a fixed Wonder slot', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
-    expect(document.querySelector('.parties-tab')).toBeInTheDocument();
-    expect(document.querySelector('.parties-tab')?.className.trim()).toBe('parties-tab');
+    expect(document.querySelector('.parties-tab.p5x-party')).toBeInTheDocument();
+    expect(screen.getByAltText('Wonder')).toBeInTheDocument();
   });
 
-  it('resolves member images through getMugshotUrl without a slot accent', () => {
+  it('resolves thief member images through getMugshotUrl', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
     const img = screen.getByAltText(firstThief.name);
     expect(img).toHaveAttribute('src', `mugshot:${firstThief.imageUrl}`);

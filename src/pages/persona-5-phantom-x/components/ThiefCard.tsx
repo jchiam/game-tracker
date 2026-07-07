@@ -36,7 +36,7 @@ export function ThiefCard({
     <GameCardShell
       name={thief.name}
       imageUrl={thief.imageUrl}
-      entityNoun="Thief"
+      entityNoun="Phantom Thief"
       isFavorited={thief.isFavorited}
       onToggleFavorite={(value) => onToggleFavorite(thief.id, value)}
       onRemove={(e) => onRemove(thief.id, e)}

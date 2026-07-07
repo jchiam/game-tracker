@@ -20,8 +20,8 @@ export function AddThiefModal({
 }: AddThiefModalProps) {
   return (
     <AddEntityModal
-      title="Add Thief"
-      entityNoun="thieves"
+      title="Add Phantom Thief"
+      entityNoun="phantom thieves"
       available={availableThieves}
       tracked={trackedThieves}
       searchKeys={['name', 'codename', 'personaName', 'role', 'element']}

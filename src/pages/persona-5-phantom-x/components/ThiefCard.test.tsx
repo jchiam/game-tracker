@@ -137,14 +137,14 @@ describe('ThiefCard', () => {
   it('toggles favorite', async () => {
     const user = userEvent.setup();
     render(<ThiefCard {...defaultProps} />);
-    await user.click(screen.getByTitle('Favorite Thief'));
+    await user.click(screen.getByTitle('Favorite Phantom Thief'));
     expect(defaultProps.onToggleFavorite).toHaveBeenCalledWith('ann-takamaki', true);
   });
 
   it('calls onRemove with the thief id', async () => {
     const user = userEvent.setup();
     render(<ThiefCard {...defaultProps} />);
-    await user.click(screen.getByTitle('Remove Thief'));
+    await user.click(screen.getByTitle('Remove Phantom Thief'));
     expect(defaultProps.onRemove).toHaveBeenCalledWith('ann-takamaki', expect.anything());
   });
 });

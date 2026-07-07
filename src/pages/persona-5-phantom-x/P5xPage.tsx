@@ -39,7 +39,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
         { key: 'LEVEL', label: 'Lv', described: 'by Level' },
       ],
       searchPlaceholder: 'Search by name, codename, persona, role, or element...',
-      addTitle: 'Add Thief',
+      addTitle: 'Add Phantom Thief',
       addDisabled: isLoadError,
       filterRoster: getFilteredRoster,
     });
@@ -47,7 +47,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
   return (
     <RosterPageLayout
       title="Persona 5: The Phantom X"
-      subtitle="Track your thieves and build parties."
+      subtitle="Track your phantom thieves and build parties."
       secondViewLabel="Parties"
       view={view}
       onViewChange={setView}
@@ -59,8 +59,8 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
       onSignIn={onSignIn}
       hasTracked={trackedThieves.length > 0}
       hasMatches={filteredRoster.length > 0}
-      emptyMessage="No thieves tracked yet. Use the + button to begin!"
-      noMatchMessage="No thieves match your search."
+      emptyMessage="No phantom thieves tracked yet. Use the + button to begin!"
+      noMatchMessage="No phantom thieves match your search."
       search={search}
       sort={sort}
       add={add}
