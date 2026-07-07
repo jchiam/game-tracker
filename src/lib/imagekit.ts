@@ -35,6 +35,24 @@ export function getAvatarUrl(localPath: string): string {
   return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
 }
 
+// Returns a fully-formed ImageKit URL for a P5X persona mugshot.
+// Personas share the thief image treatment: top-anchored square crop.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getPersonaMugshotUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  const tr = 'tr:fo-top,ar-1-1';
+  return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
+}
+
+// Returns a fully-formed ImageKit URL for a small P5X persona avatar (picker list).
+// Face-centered crop at 128px — no upscale needed at this display size.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getPersonaAvatarUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  const tr = 'tr:w-128,h-128,fo-face,c-at_max';
+  return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
+}
+
 // Returns a fully-formed ImageKit URL for a psychube icon.
 // Psychube icons are already square artwork — no crop transform needed.
 // Falls back to the raw local path when ImageKit is not configured.
