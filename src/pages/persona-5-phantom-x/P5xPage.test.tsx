@@ -36,6 +36,7 @@ function makeThief(id: string, name: string): P5xTrackedThief {
     awareness: 3,
     skillsLeveled: false,
     roseMaxed: false,
+    mindscapeMaxed: false,
   };
 }
 
@@ -63,6 +64,7 @@ const defaultThievesHook = {
   updateAwareness: vi.fn(),
   updateSkillProgress: vi.fn(),
   toggleFavorite: vi.fn(),
+  toggleMindscapeMaxed: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };
 

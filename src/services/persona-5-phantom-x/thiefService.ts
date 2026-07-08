@@ -9,6 +9,7 @@ const THIEF_COLUMNS: Record<keyof P5xThiefPatch, string> = {
   isFavorited: 'is_favorited',
   skillsLeveled: 'skills_leveled',
   roseMaxed: 'rose_maxed',
+  mindscapeMaxed: 'mindscape_maxed',
 };
 
 const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
@@ -21,8 +22,10 @@ const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
     awareness: 0,
     skills_leveled: false,
     rose_maxed: false,
+    mindscape_maxed: false,
   },
-  select: 'id, thief_id, level, awareness, is_favorited, skills_leveled, rose_maxed',
+  select:
+    'id, thief_id, level, awareness, is_favorited, skills_leveled, rose_maxed, mindscape_maxed',
   fromRow: (row, base) => ({
     ...base,
     dbId: row.id,
@@ -31,6 +34,7 @@ const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
     awareness: row.awareness ?? 0,
     skillsLeveled: !!row.skills_leveled,
     roseMaxed: !!row.rose_maxed,
+    mindscapeMaxed: !!row.mindscape_maxed,
   }),
 });
 

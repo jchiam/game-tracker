@@ -24,6 +24,7 @@ interface ThiefCardProps {
     patch: Pick<P5xThiefPatch, 'skillsLeveled' | 'roseMaxed'>,
   ) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
+  onToggleMindscapeMaxed: (id: string, value: boolean) => void;
 }
 
 export function ThiefCard({
@@ -33,6 +34,7 @@ export function ThiefCard({
   onUpdateAwareness,
   onUpdateSkillProgress,
   onToggleFavorite,
+  onToggleMindscapeMaxed,
 }: ThiefCardProps) {
   // Investment chips + slider share the cross-game rust→teal gradient
   const levelPs = getProgressStyle(thief.level, 1, 80);
@@ -41,6 +43,7 @@ export function ThiefCard({
   // Lv8 (mid rust→teal). Untouched Thieves show no chip, keeping early cards clean.
   const roseGated = thief.skillsLeveled && !thief.roseMaxed;
   const skillsPs = getProgressStyle(thief.roseMaxed ? 1 : roseGated ? 0.5 : 0, 0, 1);
+  const miPs = getProgressStyle(1, 0, 1);
 
   return (
     <GameCardShell
@@ -75,6 +78,9 @@ export function ThiefCard({
               label={thief.roseMaxed ? 'Skills ✓' : '🌹 Gated'}
               style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
             />
+          )}
+          {thief.mindscapeMaxed && (
+            <StatChip label="MS ✓" style={{ color: miPs.color, borderColor: miPs.borderColor }} />
           )}
         </>
       }
@@ -117,6 +123,14 @@ export function ThiefCard({
                 label="Rose Maxed (Lv10)"
               />
             </div>
+          </ProgressSection>
+
+          <ProgressSection label="Mindscape" value={thief.mindscapeMaxed ? 'Maxed' : '—'}>
+            <ConfirmCheckbox
+              checked={thief.mindscapeMaxed}
+              onChange={(val) => onToggleMindscapeMaxed(thief.id, val)}
+              label="Fully Unlocked"
+            />
           </ProgressSection>
         </>
       }

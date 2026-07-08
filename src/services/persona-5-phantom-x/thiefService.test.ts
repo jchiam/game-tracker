@@ -86,6 +86,7 @@ describe('thiefService', () => {
       awareness: 0,
       skills_leveled: false,
       rose_maxed: false,
+      mindscape_maxed: false,
     });
     expect(result).toBe('new-db-id');
   });

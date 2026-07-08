@@ -168,6 +168,7 @@ export interface P5xTrackedThief extends P5xThief {
   awareness: number; // 0–6 (A0–A6 duplicate ranks)
   skillsLeveled: boolean; // skills brought up to the Lv8 incense cap
   roseMaxed: boolean; // pushed past the rose gate 8→10 to max; implies skillsLeveled
+  mindscapeMaxed: boolean; // entire Mindscape node tree fully unlocked
 }
 
 /** Typed partial update for a P5X tracked thief row (camelCase keys). */
@@ -177,4 +178,5 @@ export interface P5xThiefPatch {
   isFavorited?: boolean;
   skillsLeveled?: boolean;
   roseMaxed?: boolean;
+  mindscapeMaxed?: boolean;
 }

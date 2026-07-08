@@ -29,6 +29,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     updateAwareness,
     updateSkillProgress,
     toggleFavorite,
+    toggleMindscapeMaxed,
     getFilteredRoster,
   } = useThieves(session, isAuthLoading);
 
@@ -100,6 +101,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
           onUpdateAwareness={updateAwareness}
           onUpdateSkillProgress={updateSkillProgress}
           onToggleFavorite={toggleFavorite}
+          onToggleMindscapeMaxed={toggleMindscapeMaxed}
         />
       ))}
       partiesTab={

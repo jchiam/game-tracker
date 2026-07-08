@@ -1,0 +1,8 @@
+- [x] Add `mindscapeMaxed` to `P5xTrackedThief` and `P5xThiefPatch` in `src/types.ts`
+- [x] Add DB migration: `mindscape_maxed BOOLEAN NOT NULL DEFAULT FALSE` column on `p5x_tracked_thieves`
+- [x] Update `thiefService.ts` column map and load mapping to include `mindscape_maxed`
+- [x] Add `mindscapeMaxed: false` default in `useThieves.ts` addThief, add field updater
+- [x] Add Mindscape toggle in ThiefCard edit body (ProgressSection below Skills)
+- [x] Add Mindscape maxed indicator in ThiefCard collapsed summary (StatChip "MS ✓")
+- [x] Add hook test: default value on add, field update
+- [x] Add card test: indicator shown when maxed, hidden when not, toggle invokes updater

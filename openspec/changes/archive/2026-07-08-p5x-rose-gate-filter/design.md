@@ -11,11 +11,13 @@ text search only, composed with a sort comparator via `filterRoster`.
 ## Goals / Non-Goals
 
 **Goals:**
+
 - P5X roster has a toggle chip that narrows to rose-gated thieves
 - Pattern is documented so future games can adopt without re-inventing
 - Composes cleanly with existing search + sort
 
 **Non-Goals:**
+
 - Multi-filter (multiple simultaneous predicates) — one chip is enough for now
 - Shared hook abstraction — the predicate is a simple `.filter()` call, no new hook needed
 - URL-persisted or DB-persisted filter state

@@ -86,6 +86,7 @@ describe('useThieves', () => {
     expect(result.current.trackedThieves[0].isFavorited).toBe(false);
     expect(result.current.trackedThieves[0].skillsLeveled).toBe(false);
     expect(result.current.trackedThieves[0].roseMaxed).toBe(false);
+    expect(result.current.trackedThieves[0].mindscapeMaxed).toBe(false);
   });
 
   it('removes a thief', async () => {
@@ -127,6 +128,13 @@ describe('useThieves', () => {
     expect(result.current.trackedThieves[0].isFavorited).toBe(true);
   });
 
+  it('toggleMindscapeMaxed updates mindscapeMaxed', async () => {
+    const { result } = await setupWithThief();
+    act(() => result.current.toggleMindscapeMaxed(firstThief.id, true));
+    expect(result.current.trackedThieves[0].mindscapeMaxed).toBe(true);
+    expect(mockUpdateThief).toHaveBeenCalledWith('new-db-id', { mindscapeMaxed: true });
+  });
+
   it('updateSkillProgress sets skillsLeveled without touching rose', async () => {
     const { result } = await setupWithThief();
     act(() => result.current.updateSkillProgress(firstThief.id, { skillsLeveled: true }));
@@ -166,6 +174,7 @@ describe('useThieves', () => {
         awareness: 2,
         skillsLeveled: false,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
       {
         ...ALL_THIEVES[1],
@@ -175,6 +184,7 @@ describe('useThieves', () => {
         awareness: 1,
         skillsLeveled: true,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
     ]);
     const { result } = await setup();
@@ -192,6 +202,7 @@ describe('useThieves', () => {
         awareness: 2,
         skillsLeveled: true,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
       {
         ...ALL_THIEVES[1],
@@ -201,6 +212,7 @@ describe('useThieves', () => {
         awareness: 1,
         skillsLeveled: false,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
     ]);
     const { result } = await setup();
@@ -223,6 +235,7 @@ describe('useThieves', () => {
         awareness: 2,
         skillsLeveled: true,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
       {
         ...ALL_THIEVES[1],
@@ -232,6 +245,7 @@ describe('useThieves', () => {
         awareness: 1,
         skillsLeveled: true,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
       {
         ...ALL_THIEVES[2],
@@ -241,6 +255,7 @@ describe('useThieves', () => {
         awareness: 3,
         skillsLeveled: false,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
     ]);
     const { result } = await setup();
@@ -264,6 +279,7 @@ describe('useThieves', () => {
         awareness: 2,
         skillsLeveled: true,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
       {
         ...ALL_THIEVES[1],
@@ -273,6 +289,7 @@ describe('useThieves', () => {
         awareness: 1,
         skillsLeveled: true,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
     ]);
     const { result } = await setup();
@@ -295,6 +312,7 @@ describe('useThieves', () => {
         awareness: 2,
         skillsLeveled: true,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
       {
         ...ALL_THIEVES[1],
@@ -304,6 +322,7 @@ describe('useThieves', () => {
         awareness: 1,
         skillsLeveled: false,
         roseMaxed: false,
+        mindscapeMaxed: false,
       },
     ]);
     const { result } = await setup();

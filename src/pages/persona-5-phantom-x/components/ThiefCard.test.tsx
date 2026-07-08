@@ -24,6 +24,7 @@ function makeThief(overrides: Partial<P5xTrackedThief> = {}): P5xTrackedThief {
     awareness: 3,
     skillsLeveled: false,
     roseMaxed: false,
+    mindscapeMaxed: false,
     ...overrides,
   };
 }
@@ -36,6 +37,7 @@ describe('ThiefCard', () => {
     onUpdateAwareness: vi.fn(),
     onUpdateSkillProgress: vi.fn(),
     onToggleFavorite: vi.fn(),
+    onToggleMindscapeMaxed: vi.fn(),
   };
 
   beforeEach(() => {
@@ -186,6 +188,27 @@ describe('ThiefCard', () => {
     expect(defaultProps.onUpdateSkillProgress).toHaveBeenCalledWith('ann-takamaki', {
       roseMaxed: true,
     });
+  });
+
+  // --- Mental Image ---
+
+  it('shows MS ✓ chip when mindscapeMaxed is true', () => {
+    render(<ThiefCard {...defaultProps} thief={makeThief({ mindscapeMaxed: true })} />);
+    expect(screen.getByText('MS ✓')).toBeInTheDocument();
+  });
+
+  it('shows no MS chip when mindscapeMaxed is false', () => {
+    render(<ThiefCard {...defaultProps} thief={makeThief({ mindscapeMaxed: false })} />);
+    expect(screen.queryByText('MS ✓')).not.toBeInTheDocument();
+  });
+
+  it('mindscape toggle reports the change via onToggleMindscapeMaxed', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByText('Fully Unlocked'));
+    await user.click(screen.getByText('Click to confirm'));
+    expect(defaultProps.onToggleMindscapeMaxed).toHaveBeenCalledWith('ann-takamaki', true);
   });
 
   // --- Controls ---
