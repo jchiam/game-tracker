@@ -1,2 +1,36 @@
-/* Game-specific overrides for Persona 5: The Phantom X — currently no custom rules needed.
-   All layout is handled by RosterPageLayout + shared card.css + ThiefCard.css. */
+.filter-row {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.filter-chip {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 var(--spacing-sm);
+  border-radius: var(--border-radius-full);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-ui-border);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: var(--typography-font-weight-bold);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.filter-chip:hover {
+  border-color: var(--color-p5x-element-fire);
+  color: var(--color-p5x-element-fire);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-p5x-element-fire) 30%, transparent);
+}
+
+.filter-chip.active {
+  border-color: var(--color-p5x-element-fire);
+  color: var(--color-p5x-element-fire);
+  background: color-mix(in srgb, var(--color-p5x-element-fire) 15%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-p5x-element-fire) 30%, transparent) inset;
+}

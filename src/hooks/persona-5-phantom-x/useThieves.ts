@@ -68,8 +68,17 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
   };
 
   const getFilteredRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
-      filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined),
+    (
+      searchTerm: string,
+      sortBy: 'ALPHA' | 'LEVEL',
+      predicate?: (t: P5xTrackedThief) => boolean,
+    ) => {
+      const sorted = filterRoster(
+        searchTerm,
+        sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined,
+      );
+      return predicate ? sorted.filter(predicate) : sorted;
+    },
     [filterRoster],
   );
 

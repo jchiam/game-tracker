@@ -31,6 +31,8 @@ interface RosterPageLayoutProps {
   sort: { active: boolean; label: string; title: string; onToggle: () => void };
   add: { title: string; onClick: () => void; disabled: boolean };
 
+  /** Optional filter row rendered between toolbar and card grid. */
+  filterRow?: ReactNode;
   /** The mapped roster cards (rendered only when there are matches). */
   cards: ReactNode;
   /** The parties/lineups tab content. */
@@ -66,6 +68,7 @@ export function RosterPageLayout({
   search,
   sort,
   add,
+  filterRow,
   cards,
   partiesTab,
   pendingSaveCount,
@@ -93,48 +96,51 @@ export function RosterPageLayout({
         </div>
 
         {view === 'roster' && session && (
-          <div className="roster-controls">
-            {hasTracked && (
-              <>
-                <input
-                  type="text"
-                  name="roster-search"
-                  className="search-input"
-                  placeholder={search.placeholder}
-                  value={search.value}
-                  onChange={(e) => search.onChange(e.target.value)}
-                />
-                <button
-                  className={`sort-btn ${sort.active ? 'active' : ''}`}
-                  onClick={sort.onToggle}
-                  title={sort.title}
-                >
-                  <svg
-                    width="14"
-                    height="14"
-                    viewBox="0 0 14 14"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
+          <div className="roster-toolbar">
+            <div className="roster-controls">
+              {hasTracked && (
+                <>
+                  <input
+                    type="text"
+                    name="roster-search"
+                    className="search-input"
+                    placeholder={search.placeholder}
+                    value={search.value}
+                    onChange={(e) => search.onChange(e.target.value)}
+                  />
+                  <button
+                    className={`sort-btn ${sort.active ? 'active' : ''}`}
+                    onClick={sort.onToggle}
+                    title={sort.title}
                   >
-                    <path d="M2 3h10M2 7h6M2 11h3" />
-                    <path d="M10 6v6M10 12l-2-2M10 12l2-2" />
-                  </svg>
-                  <span className="sort-btn-label">{sort.label}</span>
-                </button>
-              </>
-            )}
-            <button
-              className="roster-add-btn"
-              onClick={add.onClick}
-              title={add.title}
-              disabled={add.disabled}
-            >
-              +
-            </button>
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 14 14"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <path d="M2 3h10M2 7h6M2 11h3" />
+                      <path d="M10 6v6M10 12l-2-2M10 12l2-2" />
+                    </svg>
+                    <span className="sort-btn-label">{sort.label}</span>
+                  </button>
+                </>
+              )}
+              <button
+                className="roster-add-btn"
+                onClick={add.onClick}
+                title={add.title}
+                disabled={add.disabled}
+              >
+                +
+              </button>
+            </div>
+            {hasTracked && filterRow}
           </div>
         )}
       </header>

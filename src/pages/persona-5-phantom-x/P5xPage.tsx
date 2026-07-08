@@ -1,3 +1,4 @@
+import { useCallback, useState } from 'react';
 import { useThieves } from '@/hooks/persona-5-phantom-x/useThieves';
 import { useParties } from '@/hooks/persona-5-phantom-x/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
@@ -33,6 +34,18 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
+  const [roseGateFilter, setRoseGateFilter] = useState(false);
+
+  const filteredGetRoster = useCallback(
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
+      getFilteredRoster(
+        searchTerm,
+        sortBy,
+        roseGateFilter ? (t) => t.skillsLeveled && !t.roseMaxed : undefined,
+      ),
+    [getFilteredRoster, roseGateFilter],
+  );
+
   const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
     useRosterView({
       sortModes: [
@@ -42,7 +55,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
       searchPlaceholder: 'Search by name, codename, persona, role, or element...',
       addTitle: 'Add Phantom Thief',
       addDisabled: isLoadError,
-      filterRoster: getFilteredRoster,
+      filterRoster: filteredGetRoster,
     });
 
   return (
@@ -61,7 +74,20 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
       hasTracked={trackedThieves.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No phantom thieves tracked yet. Use the + button to begin!"
-      noMatchMessage="No phantom thieves match your search."
+      noMatchMessage={
+        roseGateFilter ? 'No rose-gated thieves found.' : 'No phantom thieves match your search.'
+      }
+      filterRow={
+        <div className="filter-row">
+          <button
+            className={`filter-chip ${roseGateFilter ? 'active' : ''}`}
+            onClick={() => setRoseGateFilter((v) => !v)}
+            title={roseGateFilter ? 'Show all thieves' : 'Show only rose-gated thieves'}
+          >
+            🌹 Gated
+          </button>
+        </div>
+      }
       search={search}
       sort={sort}
       add={add}

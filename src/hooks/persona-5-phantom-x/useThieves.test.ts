@@ -182,6 +182,135 @@ describe('useThieves', () => {
     expect(sorted[0].isFavorited).toBe(true);
   });
 
+  it('getFilteredRoster with predicate returns only matching entities', async () => {
+    mockLoadThievesFromDB.mockResolvedValue([
+      {
+        ...ALL_THIEVES[0],
+        dbId: 'db-1',
+        isFavorited: false,
+        level: 50,
+        awareness: 2,
+        skillsLeveled: true,
+        roseMaxed: false,
+      },
+      {
+        ...ALL_THIEVES[1],
+        dbId: 'db-2',
+        isFavorited: false,
+        level: 30,
+        awareness: 1,
+        skillsLeveled: false,
+        roseMaxed: false,
+      },
+    ]);
+    const { result } = await setup();
+    const filtered = result.current.getFilteredRoster(
+      '',
+      'ALPHA',
+      (t) => t.skillsLeveled && !t.roseMaxed,
+    );
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].id).toBe(ALL_THIEVES[0].id);
+  });
+
+  it('getFilteredRoster predicate composes with LEVEL sort', async () => {
+    mockLoadThievesFromDB.mockResolvedValue([
+      {
+        ...ALL_THIEVES[0],
+        dbId: 'db-1',
+        isFavorited: false,
+        level: 30,
+        awareness: 2,
+        skillsLeveled: true,
+        roseMaxed: false,
+      },
+      {
+        ...ALL_THIEVES[1],
+        dbId: 'db-2',
+        isFavorited: false,
+        level: 70,
+        awareness: 1,
+        skillsLeveled: true,
+        roseMaxed: false,
+      },
+      {
+        ...ALL_THIEVES[2],
+        dbId: 'db-3',
+        isFavorited: false,
+        level: 80,
+        awareness: 3,
+        skillsLeveled: false,
+        roseMaxed: false,
+      },
+    ]);
+    const { result } = await setup();
+    const filtered = result.current.getFilteredRoster(
+      '',
+      'LEVEL',
+      (t) => t.skillsLeveled && !t.roseMaxed,
+    );
+    expect(filtered).toHaveLength(2);
+    expect(filtered[0].level).toBe(70);
+    expect(filtered[1].level).toBe(30);
+  });
+
+  it('getFilteredRoster predicate composes with search', async () => {
+    mockLoadThievesFromDB.mockResolvedValue([
+      {
+        ...ALL_THIEVES[0],
+        dbId: 'db-1',
+        isFavorited: false,
+        level: 50,
+        awareness: 2,
+        skillsLeveled: true,
+        roseMaxed: false,
+      },
+      {
+        ...ALL_THIEVES[1],
+        dbId: 'db-2',
+        isFavorited: false,
+        level: 30,
+        awareness: 1,
+        skillsLeveled: true,
+        roseMaxed: false,
+      },
+    ]);
+    const { result } = await setup();
+    const filtered = result.current.getFilteredRoster(
+      ALL_THIEVES[0].name,
+      'ALPHA',
+      (t) => t.skillsLeveled && !t.roseMaxed,
+    );
+    expect(filtered).toHaveLength(1);
+    expect(filtered[0].id).toBe(ALL_THIEVES[0].id);
+  });
+
+  it('getFilteredRoster without predicate returns all', async () => {
+    mockLoadThievesFromDB.mockResolvedValue([
+      {
+        ...ALL_THIEVES[0],
+        dbId: 'db-1',
+        isFavorited: false,
+        level: 50,
+        awareness: 2,
+        skillsLeveled: true,
+        roseMaxed: false,
+      },
+      {
+        ...ALL_THIEVES[1],
+        dbId: 'db-2',
+        isFavorited: false,
+        level: 30,
+        awareness: 1,
+        skillsLeveled: false,
+        roseMaxed: false,
+      },
+    ]);
+    const { result } = await setup();
+    const all = result.current.getFilteredRoster('', 'ALPHA');
+    expect(all).toHaveLength(2);
+  });
+
   it('shows error toast when add fails', async () => {
     mockInsertThief.mockRejectedValue(new Error('fail'));
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});

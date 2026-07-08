@@ -149,4 +149,48 @@ describe('P5xPage', () => {
     fireEvent.click(screen.getByTitle('Add Phantom Thief'));
     expect(screen.getByRole('heading', { name: /add phantom thief/i })).toBeInTheDocument();
   });
+
+  it('renders the rose-gate filter chip', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: vi.fn().mockReturnValue(thieves),
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(screen.getByRole('button', { name: '🌹 Gated' })).toBeInTheDocument();
+  });
+
+  it('activating filter chip calls getFilteredRoster with predicate', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    const mockGetFiltered = vi.fn().mockReturnValue(thieves);
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: mockGetFiltered,
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
+    const lastCall = mockGetFiltered.mock.calls[mockGetFiltered.mock.calls.length - 1];
+    expect(lastCall[2]).toBeInstanceOf(Function);
+  });
+
+  it('shows contextual empty message when filter active with no matches', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    const mockGetFiltered = vi.fn().mockReturnValue([]);
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: mockGetFiltered,
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
+    expect(screen.getByText(/no rose-gated thieves/i)).toBeInTheDocument();
+  });
 });
