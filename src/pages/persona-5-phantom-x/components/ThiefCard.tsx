@@ -1,10 +1,11 @@
-import type { P5xTrackedThief } from '@/types';
+import type { P5xThiefPatch, P5xTrackedThief } from '@/types';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
 import { LevelSlider } from '@/components/LevelSlider';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
+import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { getProgressStyle } from '@/utils/progressGradient';
 import './ThiefCard.css';
 
@@ -18,6 +19,10 @@ interface ThiefCardProps {
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
   onUpdateAwareness: (id: string, awareness: number) => void;
+  onUpdateSkillProgress: (
+    id: string,
+    patch: Pick<P5xThiefPatch, 'skillsLeveled' | 'roseMaxed'>,
+  ) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
 }
 
@@ -26,11 +31,16 @@ export function ThiefCard({
   onRemove,
   onUpdateLevel,
   onUpdateAwareness,
+  onUpdateSkillProgress,
   onToggleFavorite,
 }: ThiefCardProps) {
   // Investment chips + slider share the cross-game rust→teal gradient
   const levelPs = getProgressStyle(thief.level, 1, 80);
   const awarenessPs = getProgressStyle(thief.awareness, 0, 6);
+  // Skill progress collapses to one summary chip: maxed (teal) vs rose-gated at
+  // Lv8 (mid rust→teal). Untouched Thieves show no chip, keeping early cards clean.
+  const roseGated = thief.skillsLeveled && !thief.roseMaxed;
+  const skillsPs = getProgressStyle(thief.roseMaxed ? 1 : roseGated ? 0.5 : 0, 0, 1);
 
   return (
     <GameCardShell
@@ -60,6 +70,12 @@ export function ThiefCard({
             label={`A${thief.awareness}`}
             style={{ color: awarenessPs.color, borderColor: awarenessPs.borderColor }}
           />
+          {(thief.skillsLeveled || thief.roseMaxed) && (
+            <StatChip
+              label={thief.roseMaxed ? 'Skills ✓' : '🌹 Gated'}
+              style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
+            />
+          )}
         </>
       }
       summaryLine={<span className="persona-line">{thief.personaName}</span>}
@@ -83,6 +99,24 @@ export function ThiefCard({
               coloring="investment"
               onChange={(v) => onUpdateAwareness(thief.id, Number(v))}
             />
+          </ProgressSection>
+
+          <ProgressSection
+            label="Skills"
+            value={thief.roseMaxed ? 'Maxed' : roseGated ? 'Rose-gated' : '—'}
+          >
+            <div className="skill-toggles">
+              <ConfirmCheckbox
+                checked={thief.skillsLeveled}
+                onChange={(val) => onUpdateSkillProgress(thief.id, { skillsLeveled: val })}
+                label="Skills Leveled (Lv8)"
+              />
+              <ConfirmCheckbox
+                checked={thief.roseMaxed}
+                onChange={(val) => onUpdateSkillProgress(thief.id, { roseMaxed: val })}
+                label="Rose Maxed (Lv10)"
+              />
+            </div>
           </ProgressSection>
         </>
       }

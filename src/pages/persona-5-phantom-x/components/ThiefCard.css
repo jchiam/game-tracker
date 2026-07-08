@@ -7,6 +7,15 @@
   font-style: italic;
 }
 
+/* Skill-progress toggles: the two coupled ConfirmCheckboxes stack in the
+   Skills section. The rose-gated summary chip reuses the shared StatChip +
+   getProgressStyle colour language, so no bespoke badge rule lives here. */
+.skill-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
 /* P5X badge colours. Base appearance comes from the canonical `.game-badge`
    pill (card.css); only the per-variant tint + text colour live here —
    fill/border derive from the variant token via color-mix at the canonical

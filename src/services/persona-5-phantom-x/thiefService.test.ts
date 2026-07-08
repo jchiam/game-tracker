@@ -32,6 +32,8 @@ describe('thiefService', () => {
       level: 65,
       awareness: 3,
       is_favorited: true,
+      skills_leveled: true,
+      rose_maxed: true,
     };
 
     mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
@@ -45,6 +47,8 @@ describe('thiefService', () => {
     expect(result[0].level).toBe(65);
     expect(result[0].awareness).toBe(3);
     expect(result[0].isFavorited).toBe(true);
+    expect(result[0].skillsLeveled).toBe(true);
+    expect(result[0].roseMaxed).toBe(true);
     expect(result[0].name).toBe('Ann Takamaki');
     expect(result[0].codename).toBe('Panther');
     expect(result[0].personaName).toBe('Carmen');
@@ -61,6 +65,8 @@ describe('thiefService', () => {
     mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
     const result = await service.loadThievesFromDB('user-1');
     expect(result[0].awareness).toBe(0);
+    expect(result[0].skillsLeveled).toBe(false);
+    expect(result[0].roseMaxed).toBe(false);
   });
 
   it('insertThief inserts the entity FK column and configured defaults', async () => {
@@ -78,6 +84,8 @@ describe('thiefService', () => {
       thief_id: 'ann-takamaki',
       level: 1,
       awareness: 0,
+      skills_leveled: false,
+      rose_maxed: false,
     });
     expect(result).toBe('new-db-id');
   });
@@ -90,6 +98,8 @@ describe('thiefService', () => {
       level: 72,
       awareness: 6,
       isFavorited: true,
+      skillsLeveled: true,
+      roseMaxed: true,
     });
 
     expect(mockFrom).toHaveBeenCalledWith('p5x_tracked_thieves');
@@ -97,6 +107,8 @@ describe('thiefService', () => {
       level: 72,
       awareness: 6,
       is_favorited: true,
+      skills_leveled: true,
+      rose_maxed: true,
     });
     expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
   });

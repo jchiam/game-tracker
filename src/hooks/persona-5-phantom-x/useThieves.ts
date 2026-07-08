@@ -16,6 +16,8 @@ function createTrackedThief(thief: P5xThief): P5xTrackedThief {
     isFavorited: false,
     level: 1,
     awareness: 0,
+    skillsLeveled: false,
+    roseMaxed: false,
   };
 }
 
@@ -27,8 +29,10 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
     isLoadError,
     retryLoad,
     pendingSaveCount,
+    trackedRef: trackedThievesRef,
     addEntity: addThief,
     removeEntity: removeThief,
+    applyPatch,
     makeFieldUpdater,
     filterRoster,
   } = useRoster<P5xThief, P5xTrackedThief, P5xThiefPatch>(session, isAuthLoading, {
@@ -47,6 +51,22 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
   const updateAwareness = makeFieldUpdater('awareness', { clamp: [0, 6] });
   const toggleFavorite = makeFieldUpdater('isFavorited');
 
+  // Skill progress is two coupled booleans with the invariant
+  // NOT(roseMaxed && !skillsLeveled). This updater reads current state and lets
+  // the field the user just changed drive the coupling: enabling rose implies
+  // skills leveled; clearing skills leveled clears rose.
+  const updateSkillProgress = (
+    id: string,
+    patch: Pick<P5xThiefPatch, 'skillsLeveled' | 'roseMaxed'>,
+  ) => {
+    const cur = trackedThievesRef.current.find((t) => t.id === id);
+    let skillsLeveled = patch.skillsLeveled ?? cur?.skillsLeveled ?? false;
+    let roseMaxed = patch.roseMaxed ?? cur?.roseMaxed ?? false;
+    if (patch.roseMaxed === true) skillsLeveled = true;
+    if (patch.skillsLeveled === false) roseMaxed = false;
+    applyPatch(id, { skillsLeveled, roseMaxed });
+  };
+
   const getFilteredRoster = useCallback(
     (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
       filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined),
@@ -64,6 +84,7 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
     removeThief,
     updateLevel,
     updateAwareness,
+    updateSkillProgress,
     toggleFavorite,
     getFilteredRoster,
   };

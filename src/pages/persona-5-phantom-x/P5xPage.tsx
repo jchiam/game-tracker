@@ -26,6 +26,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     removeThief,
     updateLevel,
     updateAwareness,
+    updateSkillProgress,
     toggleFavorite,
     getFilteredRoster,
   } = useThieves(session, isAuthLoading);
@@ -71,6 +72,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
           onRemove={removeThief}
           onUpdateLevel={updateLevel}
           onUpdateAwareness={updateAwareness}
+          onUpdateSkillProgress={updateSkillProgress}
           onToggleFavorite={toggleFavorite}
         />
       ))}

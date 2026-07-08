@@ -84,6 +84,8 @@ describe('useThieves', () => {
     expect(result.current.trackedThieves[0].level).toBe(1);
     expect(result.current.trackedThieves[0].awareness).toBe(0);
     expect(result.current.trackedThieves[0].isFavorited).toBe(false);
+    expect(result.current.trackedThieves[0].skillsLeveled).toBe(false);
+    expect(result.current.trackedThieves[0].roseMaxed).toBe(false);
   });
 
   it('removes a thief', async () => {
@@ -125,10 +127,55 @@ describe('useThieves', () => {
     expect(result.current.trackedThieves[0].isFavorited).toBe(true);
   });
 
+  it('updateSkillProgress sets skillsLeveled without touching rose', async () => {
+    const { result } = await setupWithThief();
+    act(() => result.current.updateSkillProgress(firstThief.id, { skillsLeveled: true }));
+    expect(result.current.trackedThieves[0].skillsLeveled).toBe(true);
+    expect(result.current.trackedThieves[0].roseMaxed).toBe(false);
+    expect(mockUpdateThief).toHaveBeenCalledWith('new-db-id', {
+      skillsLeveled: true,
+      roseMaxed: false,
+    });
+  });
+
+  it('enabling rose forces skillsLeveled true (invariant)', async () => {
+    const { result } = await setupWithThief();
+    act(() => result.current.updateSkillProgress(firstThief.id, { roseMaxed: true }));
+    expect(result.current.trackedThieves[0].skillsLeveled).toBe(true);
+    expect(result.current.trackedThieves[0].roseMaxed).toBe(true);
+  });
+
+  it('clearing skillsLeveled clears rose (invariant)', async () => {
+    const { result } = await setupWithThief();
+    // reach maxed state first
+    act(() => result.current.updateSkillProgress(firstThief.id, { roseMaxed: true }));
+    expect(result.current.trackedThieves[0].roseMaxed).toBe(true);
+    // now turn off skills leveled — rose must follow to false
+    act(() => result.current.updateSkillProgress(firstThief.id, { skillsLeveled: false }));
+    expect(result.current.trackedThieves[0].skillsLeveled).toBe(false);
+    expect(result.current.trackedThieves[0].roseMaxed).toBe(false);
+  });
+
   it('getFilteredRoster returns favorited-first sorted results', async () => {
     mockLoadThievesFromDB.mockResolvedValue([
-      { ...ALL_THIEVES[0], dbId: 'db-1', isFavorited: false, level: 50, awareness: 2 },
-      { ...ALL_THIEVES[1], dbId: 'db-2', isFavorited: true, level: 30, awareness: 1 },
+      {
+        ...ALL_THIEVES[0],
+        dbId: 'db-1',
+        isFavorited: false,
+        level: 50,
+        awareness: 2,
+        skillsLeveled: false,
+        roseMaxed: false,
+      },
+      {
+        ...ALL_THIEVES[1],
+        dbId: 'db-2',
+        isFavorited: true,
+        level: 30,
+        awareness: 1,
+        skillsLeveled: true,
+        roseMaxed: false,
+      },
     ]);
     const { result } = await setup();
     const sorted = result.current.getFilteredRoster('', 'LEVEL');

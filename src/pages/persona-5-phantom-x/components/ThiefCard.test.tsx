@@ -22,6 +22,8 @@ function makeThief(overrides: Partial<P5xTrackedThief> = {}): P5xTrackedThief {
     isFavorited: false,
     level: 45,
     awareness: 3,
+    skillsLeveled: false,
+    roseMaxed: false,
     ...overrides,
   };
 }
@@ -32,6 +34,7 @@ describe('ThiefCard', () => {
     onRemove: vi.fn(),
     onUpdateLevel: vi.fn(),
     onUpdateAwareness: vi.fn(),
+    onUpdateSkillProgress: vi.fn(),
     onToggleFavorite: vi.fn(),
   };
 
@@ -130,6 +133,59 @@ describe('ThiefCard', () => {
     }
     await user.click(screen.getByRole('button', { name: 'A6' }));
     expect(defaultProps.onUpdateAwareness).toHaveBeenCalledWith('ann-takamaki', 6);
+  });
+
+  // --- Skill progress ---
+
+  it('shows no skill chip when untouched', () => {
+    const { container } = render(
+      <ThiefCard {...defaultProps} thief={makeThief({ skillsLeveled: false, roseMaxed: false })} />,
+    );
+    expect(screen.queryByText('🌹 Gated')).not.toBeInTheDocument();
+    expect(screen.queryByText('Skills ✓')).not.toBeInTheDocument();
+    // only Lv + A chips in the summary
+    expect(container.querySelectorAll('.game-card-static-stats .stat-chip')).toHaveLength(2);
+  });
+
+  it('shows the rose-gated chip only in the leveled-but-not-maxed state', () => {
+    render(
+      <ThiefCard {...defaultProps} thief={makeThief({ skillsLeveled: true, roseMaxed: false })} />,
+    );
+    expect(screen.getByText('🌹 Gated')).toBeInTheDocument();
+    expect(screen.queryByText('Skills ✓')).not.toBeInTheDocument();
+  });
+
+  it('shows the maxed chip and no rose-gated chip when rose maxed', () => {
+    render(
+      <ThiefCard {...defaultProps} thief={makeThief({ skillsLeveled: true, roseMaxed: true })} />,
+    );
+    expect(screen.getByText('Skills ✓')).toBeInTheDocument();
+    expect(screen.queryByText('🌹 Gated')).not.toBeInTheDocument();
+  });
+
+  it('skills-leveled toggle reports the change via onUpdateSkillProgress', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    const toggle = screen.getByText('Skills Leveled (Lv8)');
+    await user.click(toggle); // arms confirmation
+    await user.click(screen.getByText('Click to confirm'));
+    expect(defaultProps.onUpdateSkillProgress).toHaveBeenCalledWith('ann-takamaki', {
+      skillsLeveled: true,
+    });
+  });
+
+  it('rose-maxed toggle reports the change via onUpdateSkillProgress', async () => {
+    const user = userEvent.setup();
+    render(
+      <ThiefCard {...defaultProps} thief={makeThief({ skillsLeveled: true, roseMaxed: false })} />,
+    );
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByText('Rose Maxed (Lv10)')); // arms confirmation
+    await user.click(screen.getByText('Click to confirm'));
+    expect(defaultProps.onUpdateSkillProgress).toHaveBeenCalledWith('ann-takamaki', {
+      roseMaxed: true,
+    });
   });
 
   // --- Controls ---
