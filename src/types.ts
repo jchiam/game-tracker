@@ -4,6 +4,7 @@ import { type Arcanist } from '@/data/reverse1999/arcanists';
 import { type N2ECharacter } from '@/data/neverness-to-everness/characters';
 import { type AeOperator } from '@/data/arknights-endfield/operators';
 import { type P5xThief } from '@/data/persona-5-phantom-x/thieves';
+import { type EquippedRevelation } from '@/data/persona-5-phantom-x/revelations';
 
 /** One entry in a build/cartridge stat-preference priority chain. */
 export interface StatPreference {
@@ -161,6 +162,17 @@ export interface AeOperatorPatch {
 /** Patch shape for the AE operator weapon-equip callback (`onUpdateWeapon`). */
 export type AeWeaponPatch = Pick<AeOperatorPatch, 'weaponName' | 'weaponLevel'>;
 
+export interface P5xRevelationPreferences {
+  heavensSetId: string | null;
+  spaceSetId: string | null;
+  mainStats: {
+    moon: StatPreference[];
+    star: StatPreference[];
+    sky: StatPreference[];
+  };
+  subStats: StatPreference[];
+}
+
 export interface P5xTrackedThief extends P5xThief {
   dbId?: string;
   isFavorited: boolean;
@@ -172,6 +184,14 @@ export interface P5xTrackedThief extends P5xThief {
   weaponRarity: number | null; // 2–5★ equipped weapon rarity; null = not tracking
   weaponLevel: number; // 1–80 (shared across all weapons on the same thief)
   weaponForge: number; // 0–6 (dupe-based forge level)
+  revelations: {
+    sun: EquippedRevelation | null;
+    moon: EquippedRevelation | null;
+    star: EquippedRevelation | null;
+    sky: EquippedRevelation | null;
+    space: EquippedRevelation | null;
+  };
+  revelationPreferences: P5xRevelationPreferences;
 }
 
 /** Typed partial update for a P5X tracked thief row (camelCase keys). */

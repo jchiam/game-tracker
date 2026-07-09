@@ -1,4 +1,9 @@
 import type { P5xThiefPatch, P5xTrackedThief } from '@/types';
+import {
+  ALL_HEAVENS_SETS,
+  ALL_SPACE_SETS,
+  HEAVENS_SLOTS,
+} from '@/data/persona-5-phantom-x/revelations';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
 import { LevelSlider } from '@/components/LevelSlider';
@@ -39,6 +44,7 @@ interface ThiefCardProps {
   onUpdateWeaponRarity: (id: string, value: number | null) => void;
   onUpdateWeaponLevel: (id: string, value: number) => void;
   onUpdateWeaponForge: (id: string, value: number) => void;
+  onOpenRevelations: (id: string) => void;
 }
 
 export function ThiefCard({
@@ -52,6 +58,7 @@ export function ThiefCard({
   onUpdateWeaponRarity,
   onUpdateWeaponLevel,
   onUpdateWeaponForge,
+  onOpenRevelations,
 }: ThiefCardProps) {
   // Investment chips + slider share the cross-game rust→teal gradient
   const levelPs = getProgressStyle(thief.level, 1, 80);
@@ -62,6 +69,21 @@ export function ThiefCard({
   const skillsPs = getProgressStyle(thief.roseMaxed ? 1 : roseGated ? 0.5 : 0, 0, 1);
   const miPs = getProgressStyle(1, 0, 1);
   const weaponForgePs = getProgressStyle(thief.weaponForge, 0, 6);
+
+  // Revelation summary: find dominant Heavens set + Space set
+  const heavensCards = HEAVENS_SLOTS.map((s) => thief.revelations[s]).filter(Boolean);
+  const heavensSetCounts: Record<string, number> = {};
+  for (const card of heavensCards) {
+    if (card?.setId) heavensSetCounts[card.setId] = (heavensSetCounts[card.setId] || 0) + 1;
+  }
+  const dominantSetId = Object.entries(heavensSetCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
+  const dominantSetCount = dominantSetId ? heavensSetCounts[dominantSetId] : 0;
+  const dominantSetName = dominantSetId
+    ? ALL_HEAVENS_SETS.find((s) => s.id === dominantSetId)?.name
+    : null;
+  const spaceSetId = thief.revelations.space?.setId;
+  const spaceSetName = spaceSetId ? ALL_SPACE_SETS.find((s) => s.id === spaceSetId)?.name : null;
+  const revPs = getProgressStyle(dominantSetCount, 0, 4);
 
   return (
     <GameCardShell
@@ -95,6 +117,16 @@ export function ThiefCard({
             <StatChip
               label={`⚔ ${thief.weaponRarity}★ F${thief.weaponForge}`}
               style={{ color: weaponForgePs.color, borderColor: weaponForgePs.borderColor }}
+            />
+          )}
+          {dominantSetName && (
+            <StatChip
+              label={
+                spaceSetName && dominantSetCount === 4
+                  ? `${dominantSetName} 4pc + ${spaceSetName}`
+                  : `${dominantSetName} ${dominantSetCount}pc`
+              }
+              style={{ color: revPs.color, borderColor: revPs.borderColor }}
             />
           )}
           {thief.mindscapeMaxed && (
@@ -161,6 +193,15 @@ export function ThiefCard({
               coloring="investment"
               onChange={(v) => onUpdateWeaponForge(thief.id, Number(v))}
             />
+          </ProgressSection>
+
+          <ProgressSection
+            label="Revelations"
+            value={dominantSetName ? `${dominantSetName} ${dominantSetCount}pc` : '—'}
+          >
+            <button className="toggle-btn" onClick={() => onOpenRevelations(thief.id)}>
+              Edit Revelations
+            </button>
           </ProgressSection>
 
           <ProgressSection label="Mindscape" value={thief.mindscapeMaxed ? 'Maxed' : '—'}>

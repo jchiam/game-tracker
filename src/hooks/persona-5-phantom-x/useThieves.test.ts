@@ -8,6 +8,9 @@ vi.mock('@/services/persona-5-phantom-x/thiefService', () => ({
   insertThief: vi.fn(),
   deleteThief: vi.fn(),
   updateThief: vi.fn(),
+  upsertRevelationCard: vi.fn(),
+  deleteRevelationCard: vi.fn(),
+  saveRevelationPreferences: vi.fn(),
 }));
 
 vi.mock('@/hooks/usePendingSaves', () => ({
@@ -418,5 +421,126 @@ describe('useThieves', () => {
   it('returns empty when no session', async () => {
     const { result } = await setup(null);
     expect(result.current.trackedThieves).toEqual([]);
+  });
+
+  // --- Revelation updaters ---
+
+  it('updateRevelationSlot optimistically updates a slot and calls upsert', async () => {
+    const tracked = {
+      ...firstThief,
+      dbId: 'db-1',
+      isFavorited: false,
+      level: 1,
+      awareness: 0,
+      skillsLeveled: false,
+      roseMaxed: false,
+      mindscapeMaxed: false,
+      weaponRarity: null,
+      weaponLevel: 1,
+      weaponForge: 0,
+      revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+      revelationPreferences: {
+        heavensSetId: null,
+        spaceSetId: null,
+        mainStats: { moon: [], star: [], sky: [] },
+        subStats: [],
+      },
+    };
+    mockLoadThievesFromDB.mockResolvedValue([tracked]);
+    const mockUpsert = vi.mocked(thiefService.upsertRevelationCard);
+    mockUpsert.mockResolvedValue(undefined);
+
+    const { result } = await setup();
+
+    const cardData = { setId: 'strife', mainStat: 'ATK%', subStats: [] };
+    await act(async () => {
+      result.current.updateRevelationSlot(firstThief.id, 'moon', cardData);
+    });
+
+    expect(result.current.trackedThieves[0].revelations.moon).toEqual(cardData);
+    expect(mockUpsert).toHaveBeenCalledWith('db-1', 'moon', cardData);
+  });
+
+  it('updateRevelationSlot with null calls delete', async () => {
+    const tracked = {
+      ...firstThief,
+      dbId: 'db-1',
+      isFavorited: false,
+      level: 1,
+      awareness: 0,
+      skillsLeveled: false,
+      roseMaxed: false,
+      mindscapeMaxed: false,
+      weaponRarity: null,
+      weaponLevel: 1,
+      weaponForge: 0,
+      revelations: {
+        sun: null,
+        moon: { setId: 'strife', mainStat: 'ATK%', subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+      revelationPreferences: {
+        heavensSetId: null,
+        spaceSetId: null,
+        mainStats: { moon: [], star: [], sky: [] },
+        subStats: [],
+      },
+    };
+    mockLoadThievesFromDB.mockResolvedValue([tracked]);
+    const mockDelete = vi.mocked(thiefService.deleteRevelationCard);
+    mockDelete.mockResolvedValue(undefined);
+
+    const { result } = await setup();
+
+    await act(async () => {
+      result.current.updateRevelationSlot(firstThief.id, 'moon', null);
+    });
+
+    expect(result.current.trackedThieves[0].revelations.moon).toBeNull();
+    expect(mockDelete).toHaveBeenCalledWith('db-1', 'moon');
+  });
+
+  it('updateRevelationPreferences optimistically updates and calls save', async () => {
+    const tracked = {
+      ...firstThief,
+      dbId: 'db-1',
+      isFavorited: false,
+      level: 1,
+      awareness: 0,
+      skillsLeveled: false,
+      roseMaxed: false,
+      mindscapeMaxed: false,
+      weaponRarity: null,
+      weaponLevel: 1,
+      weaponForge: 0,
+      revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+      revelationPreferences: {
+        heavensSetId: null,
+        spaceSetId: null,
+        mainStats: { moon: [], star: [], sky: [] },
+        subStats: [],
+      },
+    };
+    mockLoadThievesFromDB.mockResolvedValue([tracked]);
+    const mockSave = vi.mocked(thiefService.saveRevelationPreferences);
+    mockSave.mockResolvedValue(undefined);
+
+    const { result } = await setup();
+
+    const newPrefs = {
+      heavensSetId: 'strife',
+      spaceSetId: 'meditation',
+      mainStats: { moon: [], star: [], sky: [] },
+      subStats: [{ stat: 'Crit Rate%', operator: null, orderIndex: 0 }],
+    };
+
+    await act(async () => {
+      result.current.updateRevelationPreferences(firstThief.id, newPrefs);
+    });
+
+    expect(result.current.trackedThieves[0].revelationPreferences).toEqual(newPrefs);
+    expect(mockSave).toHaveBeenCalledWith('db-1', newPrefs);
   });
 });

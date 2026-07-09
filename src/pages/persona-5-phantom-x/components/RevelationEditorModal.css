@@ -1,0 +1,19 @@
+/* P5X Revelation Editor — game-specific layout only.
+   Control styling (selects, sub-stat rows, preference chains) is owned by the
+   shared primitives in controls.css; tabs and form-group by Modal.css. */
+.revelation-editor-body {
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+  overflow-y: auto;
+  max-height: 50vh;
+}
+
+@media (max-width: 600px) {
+  .revelation-editor-body {
+    padding: var(--spacing-md);
+    gap: var(--spacing-md);
+    max-height: 60vh;
+  }
+}

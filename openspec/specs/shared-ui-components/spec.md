@@ -413,3 +413,47 @@ HSR and N2E editors SHALL be rendered by `<PreferenceChain variant="stat-chain">
 - **THEN** they contain no `select` / `input` surface rules, no `.substat-row` / `.add-substat-btn` /
   `.remove-substat` rules, and no bespoke level-slider rules — those resolve from the shared
   primitives in `controls.css`
+
+### Requirement: Build-preference editor modal layout pattern
+
+The system SHALL enforce a canonical layout pattern for all build-preference editor
+modals (HSR `RelicEditorModal`, N2E `CartridgeEditorModal`, P5X
+`RevelationEditorModal`, and any future game equivalents). Each modal SHALL use the
+shared `Modal` component with a `className` for the game-specific body selector,
+render `.modal-tabs` with `.tab-btn` buttons for "Equip" and "Preferences" tabs
+(class names and styling inherited from `Modal.css`), render a single
+`*-editor-body` container (`relic-editor-body`, `revelation-editor-body`, etc.)
+that is a flex column with `gap: var(--spacing-lg)`, `overflow-y: auto`,
+`max-height: 50vh`, and `padding: var(--spacing-lg)`, render `FormGroup` components
+as direct children of the body container (no intermediate wrapper divs) so that
+the body's gap provides uniform inter-field spacing, and return each tab's content
+as a React fragment (`<>…</>`) so the `FormGroup` children land directly inside
+the body container. A mobile breakpoint (`max-width: 600px`) SHALL reduce gap and
+padding to `var(--spacing-md)` and raise max-height to `60vh`. The per-game CSS
+file SHALL define ONLY the body layout rule and its mobile override — all other
+styling (tabs, form-group label/control layout, select surfaces, preference-chain
+rows, substat rows) SHALL be inherited from `Modal.css` and `controls.css`.
+
+#### Scenario: FormGroups are direct children of the body
+
+- **WHEN** a build-preference editor modal's DOM is inspected
+- **THEN** every `FormGroup` (`.form-group`) is a direct child of the `*-editor-body` container,
+  with no intermediate wrapper elements between the body and the form groups
+
+#### Scenario: Body gap provides inter-field spacing
+
+- **WHEN** the body container renders multiple `FormGroup` children
+- **THEN** spacing between them is provided solely by the body's `gap: var(--spacing-lg)` —
+  no margin, padding, or border-bottom rules on individual form groups or wrapper divs
+
+#### Scenario: Per-game CSS is minimal
+
+- **WHEN** a build-preference editor modal's CSS file is reviewed
+- **THEN** it contains only the body layout rule (flex-direction, gap, overflow-y, max-height,
+  padding) and its mobile breakpoint — no tab styling, no form-group spacing, no control
+  surface rules
+
+#### Scenario: Tabs inherit from Modal.css
+
+- **WHEN** a build-preference editor modal renders its tab row
+- **THEN** it uses `.modal-tabs` and `.tab-btn` class names without any per-game tab CSS overrides

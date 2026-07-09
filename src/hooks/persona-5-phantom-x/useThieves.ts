@@ -1,12 +1,16 @@
 import { useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import { ALL_THIEVES, type P5xThief } from '@/data/persona-5-phantom-x/thieves';
-import type { P5xThiefPatch, P5xTrackedThief } from '@/types';
+import type { EquippedRevelation, RevelationSlot } from '@/data/persona-5-phantom-x/revelations';
+import type { P5xThiefPatch, P5xTrackedThief, P5xRevelationPreferences } from '@/types';
 import {
   loadThievesFromDB,
   insertThief,
   deleteThief,
   updateThief,
+  upsertRevelationCard,
+  deleteRevelationCard,
+  saveRevelationPreferences,
 } from '@/services/persona-5-phantom-x/thiefService';
 import { useRoster } from '@/hooks/useRoster';
 
@@ -22,6 +26,13 @@ function createTrackedThief(thief: P5xThief): P5xTrackedThief {
     weaponRarity: null,
     weaponLevel: 1,
     weaponForge: 0,
+    revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+    revelationPreferences: {
+      heavensSetId: null,
+      spaceSetId: null,
+      mainStats: { moon: [], star: [], sky: [] },
+      subStats: [],
+    },
   };
 }
 
@@ -29,11 +40,13 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
   const {
     availableEntities: availableThieves,
     trackedEntities: trackedThieves,
+    setTrackedEntities: setTrackedThieves,
     isInitialLoad,
     isLoadError,
     retryLoad,
     pendingSaveCount,
     trackedRef: trackedThievesRef,
+    queueAction,
     addEntity: addThief,
     removeEntity: removeThief,
     applyPatch,
@@ -75,6 +88,38 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
     applyPatch(id, { skillsLeveled, roseMaxed });
   };
 
+  const updateRevelationSlot = (
+    id: string,
+    slot: RevelationSlot,
+    data: EquippedRevelation | null,
+  ) => {
+    setTrackedThieves((prev) =>
+      prev.map((t) =>
+        t.id === id ? { ...t, revelations: { ...t.revelations, [slot]: data } } : t,
+      ),
+    );
+    const thief = trackedThievesRef.current.find((t) => t.id === id);
+    if (thief?.dbId) {
+      if (data) {
+        queueAction(`${thief.dbId}-rev-${slot}`, () =>
+          upsertRevelationCard(thief.dbId!, slot, data),
+        );
+      } else {
+        queueAction(`${thief.dbId}-rev-${slot}-del`, () => deleteRevelationCard(thief.dbId!, slot));
+      }
+    }
+  };
+
+  const updateRevelationPreferences = (id: string, prefs: P5xRevelationPreferences) => {
+    setTrackedThieves((prev) =>
+      prev.map((t) => (t.id === id ? { ...t, revelationPreferences: prefs } : t)),
+    );
+    const thief = trackedThievesRef.current.find((t) => t.id === id);
+    if (thief?.dbId) {
+      queueAction(`${thief.dbId}-rev-prefs`, () => saveRevelationPreferences(thief.dbId!, prefs));
+    }
+  };
+
   const getFilteredRoster = useCallback(
     (
       searchTerm: string,
@@ -107,6 +152,8 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
     updateWeaponRarity,
     updateWeaponLevel,
     updateWeaponForge,
+    updateRevelationSlot,
+    updateRevelationPreferences,
     getFilteredRoster,
   };
 }

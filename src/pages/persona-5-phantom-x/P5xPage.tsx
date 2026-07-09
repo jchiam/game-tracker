@@ -4,6 +4,7 @@ import { useParties } from '@/hooks/persona-5-phantom-x/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
 import { ThiefCard } from './components/ThiefCard';
 import { AddThiefModal } from './components/AddThiefModal';
+import { RevelationEditorModal } from './components/RevelationEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { Session } from '@supabase/supabase-js';
@@ -33,12 +34,19 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     updateWeaponRarity,
     updateWeaponLevel,
     updateWeaponForge,
+    updateRevelationSlot,
+    updateRevelationPreferences,
     getFilteredRoster,
   } = useThieves(session, isAuthLoading);
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
   const [roseGateFilter, setRoseGateFilter] = useState(false);
+  const [editingRevThiefId, setEditingRevThiefId] = useState<string | null>(null);
+
+  const editingRevThief = editingRevThiefId
+    ? trackedThieves.find((t) => t.id === editingRevThiefId)
+    : null;
 
   const filteredGetRoster = useCallback(
     (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
@@ -108,6 +116,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
           onUpdateWeaponRarity={updateWeaponRarity}
           onUpdateWeaponLevel={updateWeaponLevel}
           onUpdateWeaponForge={updateWeaponForge}
+          onOpenRevelations={setEditingRevThiefId}
         />
       ))}
       partiesTab={
@@ -131,6 +140,14 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
             closeAddModal();
           }}
           onClose={closeAddModal}
+        />
+      )}
+      {editingRevThief && (
+        <RevelationEditorModal
+          thief={editingRevThief}
+          onUpdateSlot={(slot, data) => updateRevelationSlot(editingRevThief.id, slot, data)}
+          onSavePreferences={(prefs) => updateRevelationPreferences(editingRevThief.id, prefs)}
+          onClose={() => setEditingRevThiefId(null)}
         />
       )}
     </RosterPageLayout>

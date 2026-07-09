@@ -40,6 +40,13 @@ function makeThief(id: string, name: string): P5xTrackedThief {
     weaponRarity: null,
     weaponLevel: 1,
     weaponForge: 0,
+    revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+    revelationPreferences: {
+      heavensSetId: null,
+      spaceSetId: null,
+      mainStats: { moon: [], star: [], sky: [] },
+      subStats: [],
+    },
   };
 }
 
@@ -71,8 +78,10 @@ const defaultThievesHook = {
   updateWeaponRarity: vi.fn(),
   updateWeaponLevel: vi.fn(),
   updateWeaponForge: vi.fn(),
+  updateRevelationSlot: vi.fn(),
+  updateRevelationPreferences: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
-};
+} as any;
 
 const defaultPartiesHook = {
   parties: [] as Party[],

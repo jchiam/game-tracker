@@ -131,4 +131,88 @@ describe('thiefService', () => {
     });
     expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
   });
+
+  describe('upsertRevelationCard', () => {
+    it('upserts with thief_row_id, slot, and JSONB sub_stats', async () => {
+      const builder = createBuilder({ data: null, error: null });
+      mockFrom.mockReturnValue(builder);
+
+      await service.upsertRevelationCard('db-uuid-1', 'moon', {
+        setId: 'strife',
+        mainStat: 'ATK%',
+        subStats: [
+          { type: 'Crit Rate%', value: 3.5 },
+          { type: 'Speed', value: 2.0 },
+        ],
+      });
+
+      expect(mockFrom).toHaveBeenCalledWith('p5x_revelation_cards');
+      expect(builder.upsert).toHaveBeenCalledWith(
+        {
+          thief_row_id: 'db-uuid-1',
+          slot: 'moon',
+          set_id: 'strife',
+          main_stat: 'ATK%',
+          sub_stats: [
+            { type: 'Crit Rate%', value: 3.5 },
+            { type: 'Speed', value: 2.0 },
+          ],
+        },
+        { onConflict: 'thief_row_id,slot' },
+      );
+    });
+  });
+
+  describe('deleteRevelationCard', () => {
+    it('deletes by thief_row_id and slot', async () => {
+      const builder = createBuilder({ data: null, error: null });
+      mockFrom.mockReturnValue(builder);
+
+      await service.deleteRevelationCard('db-uuid-1', 'star');
+
+      expect(mockFrom).toHaveBeenCalledWith('p5x_revelation_cards');
+      expect(builder.delete).toHaveBeenCalled();
+      expect(builder.eq).toHaveBeenCalledWith('thief_row_id', 'db-uuid-1');
+      expect(builder.eq).toHaveBeenCalledWith('slot', 'star');
+    });
+  });
+
+  describe('saveRevelationPreferences', () => {
+    it('deletes existing rows then inserts new preference rows', async () => {
+      const builder = createBuilder({ data: null, error: null });
+      mockFrom.mockReturnValue(builder);
+
+      await service.saveRevelationPreferences('db-uuid-1', {
+        heavensSetId: 'strife',
+        spaceSetId: 'meditation',
+        mainStats: {
+          moon: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
+          star: [],
+          sky: [],
+        },
+        subStats: [
+          { stat: 'Crit Rate%', operator: '>', orderIndex: 0 },
+          { stat: 'ATK%', operator: null, orderIndex: 1 },
+        ],
+      });
+
+      expect(mockFrom).toHaveBeenCalledWith('p5x_revelation_preferences');
+      expect(builder.delete).toHaveBeenCalled();
+      expect(builder.insert).toHaveBeenCalled();
+
+      const insertedRows = builder.insert.mock.calls[0][0];
+      expect(insertedRows).toContainEqual(
+        expect.objectContaining({ category: 'heavens_set', stat: 'strife' }),
+      );
+      expect(insertedRows).toContainEqual(
+        expect.objectContaining({ category: 'space_set', stat: 'meditation' }),
+      );
+      expect(insertedRows).toContainEqual(
+        expect.objectContaining({ category: 'moon_main', stat: 'ATK%', order_index: 0 }),
+      );
+      expect(insertedRows).toContainEqual(
+        expect.objectContaining({ category: 'sub_stats', stat: 'Crit Rate%', operator: '>' }),
+      );
+    });
+  });
 });

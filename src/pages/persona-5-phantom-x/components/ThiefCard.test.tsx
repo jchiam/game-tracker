@@ -28,6 +28,13 @@ function makeThief(overrides: Partial<P5xTrackedThief> = {}): P5xTrackedThief {
     weaponRarity: null,
     weaponLevel: 1,
     weaponForge: 0,
+    revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+    revelationPreferences: {
+      heavensSetId: null,
+      spaceSetId: null,
+      mainStats: { moon: [], star: [], sky: [] },
+      subStats: [],
+    },
     ...overrides,
   };
 }
@@ -44,6 +51,7 @@ describe('ThiefCard', () => {
     onUpdateWeaponRarity: vi.fn(),
     onUpdateWeaponLevel: vi.fn(),
     onUpdateWeaponForge: vi.fn(),
+    onOpenRevelations: vi.fn(),
   };
 
   beforeEach(() => {
@@ -279,5 +287,48 @@ describe('ThiefCard', () => {
     render(<ThiefCard {...defaultProps} />);
     await user.click(screen.getByTitle('Remove Phantom Thief'));
     expect(defaultProps.onRemove).toHaveBeenCalledWith('ann-takamaki', expect.anything());
+  });
+
+  // --- Revelation summary chip ---
+
+  it('shows no revelation chip when all slots are empty', () => {
+    render(<ThiefCard {...defaultProps} />);
+    expect(screen.queryByText(/pc/)).toBeNull();
+  });
+
+  it('shows revelation chip with Heavens set name and piece count', () => {
+    const thief = makeThief({
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'Flat HP', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'ATK%', subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+    });
+    render(<ThiefCard {...defaultProps} thief={thief} />);
+    expect(screen.getAllByText('Strife 2pc').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('appends Space set name when Heavens 4pc is complete', () => {
+    const thief = makeThief({
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'Flat HP', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'ATK%', subStats: [] },
+        star: { setId: 'strife', mainStat: 'HP%', subStats: [] },
+        sky: { setId: 'strife', mainStat: 'Speed', subStats: [] },
+        space: { setId: 'meditation', mainStat: 'Flat ATK & Flat DEF', subStats: [] },
+      },
+    });
+    render(<ThiefCard {...defaultProps} thief={thief} />);
+    expect(screen.getAllByText('Strife 4pc + Meditation').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('calls onOpenRevelations when Edit Revelations button is clicked', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByText('Edit Revelations'));
+    expect(defaultProps.onOpenRevelations).toHaveBeenCalledWith('ann-takamaki');
   });
 });
