@@ -719,5 +719,45 @@ describe('useArcanists', () => {
       expect(filtered[0].name).toBe('6');
       expect(filtered[1].name).toBe('37');
     });
+
+    it('resonance-gate predicate excludes un-started (0) and maxed (15), keeps in-progress', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'id-1', resonanceLevel: 0 }),
+        trackedArcanist('6', '6', { dbId: 'id-2', resonanceLevel: 1 }),
+        trackedArcanist('42', '42', { dbId: 'id-3', resonanceLevel: 14 }),
+        trackedArcanist('99', '99', { dbId: 'id-4', resonanceLevel: 15 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      const filtered = result.current.getFilteredRoster(
+        '',
+        'ALPHA',
+        (a) => a.resonanceLevel > 0 && a.resonanceLevel < 15,
+      );
+
+      expect(filtered.map((a) => a.name).sort()).toEqual(['42', '6']);
+    });
+
+    it('no predicate returns all arcanists', async () => {
+      mockLoadArcanistsFromDB.mockResolvedValue([
+        trackedArcanist('37', '37', { dbId: 'id-1', resonanceLevel: 0 }),
+        trackedArcanist('6', '6', { dbId: 'id-2', resonanceLevel: 15 }),
+      ]);
+
+      const { result } = renderHook(() => useArcanists(mockSession, false));
+
+      await waitFor(() => {
+        expect(result.current.isInitialLoad).toBe(false);
+      });
+
+      const filtered = result.current.getFilteredRoster('', 'ALPHA');
+
+      expect(filtered).toHaveLength(2);
+    });
   });
 });

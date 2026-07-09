@@ -201,6 +201,7 @@ function ColorsSection() {
           '--color-r1999-afflatus-mineral',
           '--color-r1999-afflatus-intellect',
           '--color-r1999-afflatus-spirit',
+          '--color-r1999-accent',
         ]}
       />
 

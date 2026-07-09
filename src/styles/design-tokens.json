@@ -137,7 +137,8 @@
       "afflatusIntellect": { "$value": "#c9a8f8", "$type": "color" },
       "afflatusSpirit": { "$value": "#90d0f0", "$type": "color" },
       "damageMental": { "$value": "#c9a8f8", "$type": "color" },
-      "damageReality": { "$value": "#f5d68a", "$type": "color" }
+      "damageReality": { "$value": "#f5d68a", "$type": "color" },
+      "accent": { "$value": "#deb887", "$type": "color" }
     },
     "tier": {
       "splus": { "$value": "#ff6b35", "$type": "color" },

@@ -60,8 +60,17 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
     applyPatch(id, { psychubeName, psychubeLevel });
 
   const getFilteredRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
-      filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined),
+    (
+      searchTerm: string,
+      sortBy: 'ALPHA' | 'LEVEL',
+      predicate?: (a: R1999TrackedArcanist) => boolean,
+    ) => {
+      const sorted = filterRoster(
+        searchTerm,
+        sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined,
+      );
+      return predicate ? sorted.filter(predicate) : sorted;
+    },
     [filterRoster],
   );
 

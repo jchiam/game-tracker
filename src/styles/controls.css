@@ -329,3 +329,42 @@
     grid-template-columns: 1fr 1fr auto;
   }
 }
+
+/* Roster predicate-filter chip (used by every game gate). Accent comes from the
+   `--filter-chip-accent` custom property set per game on the `.filter-row`. */
+.filter-row {
+  display: flex;
+  gap: var(--spacing-xs);
+}
+
+.filter-chip {
+  flex-shrink: 0;
+  height: 32px;
+  padding: 0 var(--spacing-sm);
+  border-radius: var(--border-radius-full);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-ui-border);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  font-weight: var(--typography-font-weight-bold);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    background var(--transition-fast),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.filter-chip:hover {
+  border-color: var(--filter-chip-accent);
+  color: var(--filter-chip-accent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--filter-chip-accent) 30%, transparent);
+}
+
+.filter-chip.active {
+  border-color: var(--filter-chip-accent);
+  color: var(--filter-chip-accent);
+  background: color-mix(in srgb, var(--filter-chip-accent) 15%, transparent);
+  box-shadow: 0 0 8px color-mix(in srgb, var(--filter-chip-accent) 30%, transparent) inset;
+}

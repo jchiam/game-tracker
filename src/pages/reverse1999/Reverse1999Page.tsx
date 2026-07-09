@@ -1,3 +1,4 @@
+import { useCallback, useState, type CSSProperties } from 'react';
 import { useArcanists } from '@/hooks/reverse1999/useArcanists';
 import { useParties } from '@/hooks/reverse1999/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
@@ -35,6 +36,18 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
+  const [resonanceGateFilter, setResonanceGateFilter] = useState(false);
+
+  const filteredGetRoster = useCallback(
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
+      getFilteredRoster(
+        searchTerm,
+        sortBy,
+        resonanceGateFilter ? (a) => a.resonanceLevel > 0 && a.resonanceLevel < 15 : undefined,
+      ),
+    [getFilteredRoster, resonanceGateFilter],
+  );
+
   const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
     useRosterView({
       sortModes: [
@@ -44,7 +57,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       searchPlaceholder: 'Search by name, afflatus, or damage type...',
       addTitle: 'Add Arcanist',
       addDisabled: isLoadError,
-      filterRoster: getFilteredRoster,
+      filterRoster: filteredGetRoster,
     });
 
   return (
@@ -63,7 +76,29 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       hasTracked={trackedArcanists.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No arcanists tracked yet. Use the + button to begin!"
-      noMatchMessage="No arcanists match your search."
+      noMatchMessage={
+        resonanceGateFilter
+          ? 'No arcanists with resonance in progress.'
+          : 'No arcanists match your search.'
+      }
+      filterRow={
+        <div
+          className="filter-row"
+          style={{ '--filter-chip-accent': 'var(--color-r1999-accent)' } as CSSProperties}
+        >
+          <button
+            className={`filter-chip ${resonanceGateFilter ? 'active' : ''}`}
+            onClick={() => setResonanceGateFilter((v) => !v)}
+            title={
+              resonanceGateFilter
+                ? 'Show all arcanists'
+                : 'Show only arcanists with resonance in progress'
+            }
+          >
+            💠 Resonating
+          </button>
+        </div>
+      }
       search={search}
       sort={sort}
       add={add}

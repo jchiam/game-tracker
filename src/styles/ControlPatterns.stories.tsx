@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
 
 const meta = {
@@ -42,6 +43,30 @@ export const StatChips: Story = {
       <span className="stat-chip">R15</span>
       <span className="stat-chip">E4</span>
       <span className="stat-chip">S1</span>
+    </div>
+  ),
+};
+
+export const FilterChips: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
+      {/* Roster predicate-filter chip. The `.filter-chip` base lives in
+          controls.css; hover/active accent comes from the `--filter-chip-accent`
+          custom property each page sets on its `.filter-row`. */}
+      <div
+        className="filter-row"
+        style={{ '--filter-chip-accent': 'var(--color-p5x-element-fire)' } as CSSProperties}
+      >
+        <button className="filter-chip">🌹 Gated</button>
+        <button className="filter-chip active">🌹 Gated (active)</button>
+      </div>
+      <div
+        className="filter-row"
+        style={{ '--filter-chip-accent': 'var(--color-r1999-accent)' } as CSSProperties}
+      >
+        <button className="filter-chip">💠 Resonating</button>
+        <button className="filter-chip active">💠 Resonating (active)</button>
+      </div>
     </div>
   ),
 };

@@ -226,7 +226,7 @@ describe('Reverse1999Page', () => {
     fireEvent.change(screen.getByPlaceholderText(/search by name, afflatus/i), {
       target: { value: 'Vertin' },
     });
-    expect(getFilteredRoster).toHaveBeenCalledWith('Vertin', expect.any(String));
+    expect(getFilteredRoster).toHaveBeenCalledWith('Vertin', expect.any(String), undefined);
   });
 
   // --- Search / sort controls visibility ---
@@ -303,7 +303,7 @@ describe('Reverse1999Page', () => {
       <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
     fireEvent.click(screen.getByTitle(/sorted alphabetically/i));
-    expect(getFilteredRoster).toHaveBeenCalledWith('', 'LEVEL');
+    expect(getFilteredRoster).toHaveBeenCalledWith('', 'LEVEL', undefined);
   });
 
   // --- AddArcanistModal: adding closes the modal ---
@@ -331,5 +331,112 @@ describe('Reverse1999Page', () => {
     expect(screen.getByRole('heading', { name: /add arcanist/i })).toBeInTheDocument();
     fireEvent.click(screen.getByText('Regulus'));
     expect(screen.queryByRole('heading', { name: /add arcanist/i })).not.toBeInTheDocument();
+  });
+
+  // --- Resonance-gate filter chip ---
+
+  it('does not render the resonance-gate chip when no arcanists are tracked', () => {
+    const session = createMockSession();
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(screen.queryByText(/resonating/i)).not.toBeInTheDocument();
+  });
+
+  it('renders the resonance-gate chip, off by default, when arcanists are tracked', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster: vi.fn().mockReturnValue(arcanists),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    const chip = screen.getByRole('button', { name: /resonating/i });
+    expect(chip).toBeInTheDocument();
+    expect(chip).not.toHaveClass('active');
+  });
+
+  it('toggles the gate chip active class on click', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster: vi.fn().mockReturnValue(arcanists),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    const chip = screen.getByRole('button', { name: /resonating/i });
+    fireEvent.click(chip);
+    expect(chip).toHaveClass('active');
+    fireEvent.click(chip);
+    expect(chip).not.toHaveClass('active');
+  });
+
+  it('forwards no predicate while the gate is off, then a resonance predicate when on', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    const getFilteredRoster = vi.fn().mockReturnValue(arcanists);
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster,
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    // Off: predicate arg is undefined
+    expect(getFilteredRoster).toHaveBeenLastCalledWith('', 'ALPHA', undefined);
+
+    fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
+
+    // On: a predicate is forwarded; verify its resonance-gate semantics
+    const predicate = getFilteredRoster.mock.calls.at(-1)?.[2] as (
+      a: R1999TrackedArcanist,
+    ) => boolean;
+    expect(typeof predicate).toBe('function');
+    expect(predicate(makeArcanist('a', 'A'))).toBe(false); // resonance 0
+    expect(predicate({ ...makeArcanist('b', 'B'), resonanceLevel: 1 })).toBe(true);
+    expect(predicate({ ...makeArcanist('c', 'C'), resonanceLevel: 14 })).toBe(true);
+    expect(predicate({ ...makeArcanist('d', 'D'), resonanceLevel: 15 })).toBe(false);
+  });
+
+  it('composes the gate with search (both forwarded to getFilteredRoster)', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    const getFilteredRoster = vi.fn().mockReturnValue(arcanists);
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster,
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
+    fireEvent.change(screen.getByPlaceholderText(/search by name, afflatus/i), {
+      target: { value: 'Vertin' },
+    });
+    const [term, , predicate] = getFilteredRoster.mock.calls.at(-1)!;
+    expect(term).toBe('Vertin');
+    expect(typeof predicate).toBe('function');
+  });
+
+  it('shows the gate-specific empty message when the gate matches nothing', () => {
+    const session = createMockSession();
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: [makeArcanist('regulus', 'Regulus')],
+      getFilteredRoster: vi.fn().mockReturnValue([]),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
+    expect(screen.getByText(/no arcanists with resonance in progress/i)).toBeInTheDocument();
   });
 });

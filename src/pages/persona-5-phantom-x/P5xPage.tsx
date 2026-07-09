@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type CSSProperties } from 'react';
 import { useThieves } from '@/hooks/persona-5-phantom-x/useThieves';
 import { useParties } from '@/hooks/persona-5-phantom-x/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
@@ -8,7 +8,6 @@ import { RevelationEditorModal } from './components/RevelationEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { Session } from '@supabase/supabase-js';
-import './P5xPage.css';
 
 interface P5xPageProps {
   session: Session | null;
@@ -90,7 +89,10 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
         roseGateFilter ? 'No rose-gated thieves found.' : 'No phantom thieves match your search.'
       }
       filterRow={
-        <div className="filter-row">
+        <div
+          className="filter-row"
+          style={{ '--filter-chip-accent': 'var(--color-p5x-element-fire)' } as CSSProperties}
+        >
           <button
             className={`filter-chip ${roseGateFilter ? 'active' : ''}`}
             onClick={() => setRoseGateFilter((v) => !v)}
