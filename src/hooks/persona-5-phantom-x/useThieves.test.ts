@@ -87,6 +87,9 @@ describe('useThieves', () => {
     expect(result.current.trackedThieves[0].skillsLeveled).toBe(false);
     expect(result.current.trackedThieves[0].roseMaxed).toBe(false);
     expect(result.current.trackedThieves[0].mindscapeMaxed).toBe(false);
+    expect(result.current.trackedThieves[0].weaponRarity).toBeNull();
+    expect(result.current.trackedThieves[0].weaponLevel).toBe(1);
+    expect(result.current.trackedThieves[0].weaponForge).toBe(0);
   });
 
   it('removes a thief', async () => {
@@ -135,6 +138,34 @@ describe('useThieves', () => {
     expect(mockUpdateThief).toHaveBeenCalledWith('new-db-id', { mindscapeMaxed: true });
   });
 
+  it('updateWeaponRarity sets rarity (nullable)', async () => {
+    const { result } = await setupWithThief();
+    act(() => result.current.updateWeaponRarity(firstThief.id, 5));
+    expect(result.current.trackedThieves[0].weaponRarity).toBe(5);
+    expect(mockUpdateThief).toHaveBeenCalledWith('new-db-id', { weaponRarity: 5 });
+
+    act(() => result.current.updateWeaponRarity(firstThief.id, null));
+    expect(result.current.trackedThieves[0].weaponRarity).toBeNull();
+  });
+
+  it('updateWeaponLevel clamps to 1–80', async () => {
+    const { result } = await setupWithThief();
+    act(() => result.current.updateWeaponLevel(firstThief.id, 100));
+    expect(result.current.trackedThieves[0].weaponLevel).toBe(80);
+
+    act(() => result.current.updateWeaponLevel(firstThief.id, -5));
+    expect(result.current.trackedThieves[0].weaponLevel).toBe(1);
+  });
+
+  it('updateWeaponForge clamps to 0–6', async () => {
+    const { result } = await setupWithThief();
+    act(() => result.current.updateWeaponForge(firstThief.id, 10));
+    expect(result.current.trackedThieves[0].weaponForge).toBe(6);
+
+    act(() => result.current.updateWeaponForge(firstThief.id, -1));
+    expect(result.current.trackedThieves[0].weaponForge).toBe(0);
+  });
+
   it('updateSkillProgress sets skillsLeveled without touching rose', async () => {
     const { result } = await setupWithThief();
     act(() => result.current.updateSkillProgress(firstThief.id, { skillsLeveled: true }));
@@ -175,6 +206,9 @@ describe('useThieves', () => {
         skillsLeveled: false,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
       {
         ...ALL_THIEVES[1],
@@ -185,6 +219,9 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
     ]);
     const { result } = await setup();
@@ -203,6 +240,9 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
       {
         ...ALL_THIEVES[1],
@@ -213,6 +253,9 @@ describe('useThieves', () => {
         skillsLeveled: false,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
     ]);
     const { result } = await setup();
@@ -236,6 +279,9 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
       {
         ...ALL_THIEVES[1],
@@ -246,6 +292,9 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
       {
         ...ALL_THIEVES[2],
@@ -256,6 +305,9 @@ describe('useThieves', () => {
         skillsLeveled: false,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
     ]);
     const { result } = await setup();
@@ -280,6 +332,9 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
       {
         ...ALL_THIEVES[1],
@@ -290,6 +345,9 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
     ]);
     const { result } = await setup();
@@ -313,6 +371,9 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
       {
         ...ALL_THIEVES[1],
@@ -323,6 +384,9 @@ describe('useThieves', () => {
         skillsLeveled: false,
         roseMaxed: false,
         mindscapeMaxed: false,
+        weaponRarity: null,
+        weaponLevel: 1,
+        weaponForge: 0,
       },
     ]);
     const { result } = await setup();

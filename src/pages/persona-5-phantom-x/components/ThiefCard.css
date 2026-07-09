@@ -138,6 +138,27 @@
   border-color: color-mix(in srgb, var(--color-p5x-element-almighty) 60%, transparent);
 }
 
+/* Weapon rarity — static-coloring modifier classes for SegmentedButtons */
+.rarity-2 {
+  color: var(--color-p5x-weapon-rarity2);
+  border-color: var(--color-p5x-weapon-rarity2);
+}
+
+.rarity-3 {
+  color: var(--color-p5x-weapon-rarity3);
+  border-color: var(--color-p5x-weapon-rarity3);
+}
+
+.rarity-4 {
+  color: var(--color-p5x-weapon-rarity4);
+  border-color: var(--color-p5x-weapon-rarity4);
+}
+
+.rarity-5 {
+  color: var(--color-p5x-weapon-rarity5);
+  border-color: var(--color-p5x-weapon-rarity5);
+}
+
 .p5x-element-none {
   color: var(--color-p5x-element-none);
   background: color-mix(in srgb, var(--color-p5x-element-none) 25%, transparent);

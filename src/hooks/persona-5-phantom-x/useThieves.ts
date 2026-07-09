@@ -19,6 +19,9 @@ function createTrackedThief(thief: P5xThief): P5xTrackedThief {
     skillsLeveled: false,
     roseMaxed: false,
     mindscapeMaxed: false,
+    weaponRarity: null,
+    weaponLevel: 1,
+    weaponForge: 0,
   };
 }
 
@@ -52,6 +55,9 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
   const updateAwareness = makeFieldUpdater('awareness', { clamp: [0, 6] });
   const toggleFavorite = makeFieldUpdater('isFavorited');
   const toggleMindscapeMaxed = makeFieldUpdater('mindscapeMaxed');
+  const updateWeaponRarity = makeFieldUpdater('weaponRarity');
+  const updateWeaponLevel = makeFieldUpdater('weaponLevel', { clamp: [1, 80] });
+  const updateWeaponForge = makeFieldUpdater('weaponForge', { clamp: [0, 6] });
 
   // Skill progress is two coupled booleans with the invariant
   // NOT(roseMaxed && !skillsLeveled). This updater reads current state and lets
@@ -98,6 +104,9 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
     updateSkillProgress,
     toggleFavorite,
     toggleMindscapeMaxed,
+    updateWeaponRarity,
+    updateWeaponLevel,
+    updateWeaponForge,
     getFilteredRoster,
   };
 }

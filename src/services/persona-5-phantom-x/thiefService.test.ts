@@ -34,6 +34,9 @@ describe('thiefService', () => {
       is_favorited: true,
       skills_leveled: true,
       rose_maxed: true,
+      weapon_rarity: 5,
+      weapon_level: 60,
+      weapon_forge: 4,
     };
 
     mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
@@ -49,6 +52,9 @@ describe('thiefService', () => {
     expect(result[0].isFavorited).toBe(true);
     expect(result[0].skillsLeveled).toBe(true);
     expect(result[0].roseMaxed).toBe(true);
+    expect(result[0].weaponRarity).toBe(5);
+    expect(result[0].weaponLevel).toBe(60);
+    expect(result[0].weaponForge).toBe(4);
     expect(result[0].name).toBe('Ann Takamaki');
     expect(result[0].codename).toBe('Panther');
     expect(result[0].personaName).toBe('Carmen');
@@ -67,6 +73,9 @@ describe('thiefService', () => {
     expect(result[0].awareness).toBe(0);
     expect(result[0].skillsLeveled).toBe(false);
     expect(result[0].roseMaxed).toBe(false);
+    expect(result[0].weaponRarity).toBeNull();
+    expect(result[0].weaponLevel).toBe(1);
+    expect(result[0].weaponForge).toBe(0);
   });
 
   it('insertThief inserts the entity FK column and configured defaults', async () => {
@@ -87,6 +96,9 @@ describe('thiefService', () => {
       skills_leveled: false,
       rose_maxed: false,
       mindscape_maxed: false,
+      weapon_rarity: null,
+      weapon_level: 1,
+      weapon_forge: 0,
     });
     expect(result).toBe('new-db-id');
   });
@@ -101,6 +113,9 @@ describe('thiefService', () => {
       isFavorited: true,
       skillsLeveled: true,
       roseMaxed: true,
+      weaponRarity: 5,
+      weaponLevel: 60,
+      weaponForge: 4,
     });
 
     expect(mockFrom).toHaveBeenCalledWith('p5x_tracked_thieves');
@@ -110,6 +125,9 @@ describe('thiefService', () => {
       is_favorited: true,
       skills_leveled: true,
       rose_maxed: true,
+      weapon_rarity: 5,
+      weapon_level: 60,
+      weapon_forge: 4,
     });
     expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
   });

@@ -123,7 +123,11 @@
       "roleHealer": { "$value": "#90d0f0", "$type": "color" },
       "roleTank": { "$value": "#8ab8f5", "$type": "color" },
       "roleNavigator": { "$value": "#f0a8d8", "$type": "color" },
-      "roleVirtuoso": { "$value": "#f5d68a", "$type": "color" }
+      "roleVirtuoso": { "$value": "#f5d68a", "$type": "color" },
+      "weaponRarity2": { "$value": "#8be28b", "$type": "color" },
+      "weaponRarity3": { "$value": "#7fbfff", "$type": "color" },
+      "weaponRarity4": { "$value": "#c9a8f8", "$type": "color" },
+      "weaponRarity5": { "$value": "#ffd700", "$type": "color" }
     },
     "r1999": {
       "afflatusPlant": { "$value": "#90e09a", "$type": "color" },

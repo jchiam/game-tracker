@@ -169,6 +169,9 @@ export interface P5xTrackedThief extends P5xThief {
   skillsLeveled: boolean; // skills brought up to the Lv8 incense cap
   roseMaxed: boolean; // pushed past the rose gate 8→10 to max; implies skillsLeveled
   mindscapeMaxed: boolean; // entire Mindscape node tree fully unlocked
+  weaponRarity: number | null; // 2–5★ equipped weapon rarity; null = not tracking
+  weaponLevel: number; // 1–80 (shared across all weapons on the same thief)
+  weaponForge: number; // 0–6 (dupe-based forge level)
 }
 
 /** Typed partial update for a P5X tracked thief row (camelCase keys). */
@@ -179,4 +182,7 @@ export interface P5xThiefPatch {
   skillsLeveled?: boolean;
   roseMaxed?: boolean;
   mindscapeMaxed?: boolean;
+  weaponRarity?: number | null;
+  weaponLevel?: number;
+  weaponForge?: number;
 }

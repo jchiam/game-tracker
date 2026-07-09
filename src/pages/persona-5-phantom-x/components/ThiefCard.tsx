@@ -11,6 +11,17 @@ import './ThiefCard.css';
 
 const AWARENESS_OPTIONS = [0, 1, 2, 3, 4, 5, 6].map((a) => ({ value: String(a), label: `A${a}` }));
 
+const WEAPON_RARITY_OPTIONS = [2, 3, 4, 5].map((r) => ({
+  value: String(r),
+  label: `${r}★`,
+  modifier: `rarity-${r}`,
+}));
+
+const WEAPON_FORGE_OPTIONS = [0, 1, 2, 3, 4, 5, 6].map((f) => ({
+  value: String(f),
+  label: `F${f}`,
+}));
+
 /** Badge modifiers derive from the verbatim source values (e.g. "Single-target"). */
 const toModifier = (value: string) => value.toLowerCase().replace(/\s+/g, '-');
 
@@ -25,6 +36,9 @@ interface ThiefCardProps {
   ) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
   onToggleMindscapeMaxed: (id: string, value: boolean) => void;
+  onUpdateWeaponRarity: (id: string, value: number | null) => void;
+  onUpdateWeaponLevel: (id: string, value: number) => void;
+  onUpdateWeaponForge: (id: string, value: number) => void;
 }
 
 export function ThiefCard({
@@ -35,6 +49,9 @@ export function ThiefCard({
   onUpdateSkillProgress,
   onToggleFavorite,
   onToggleMindscapeMaxed,
+  onUpdateWeaponRarity,
+  onUpdateWeaponLevel,
+  onUpdateWeaponForge,
 }: ThiefCardProps) {
   // Investment chips + slider share the cross-game rust→teal gradient
   const levelPs = getProgressStyle(thief.level, 1, 80);
@@ -44,6 +61,7 @@ export function ThiefCard({
   const roseGated = thief.skillsLeveled && !thief.roseMaxed;
   const skillsPs = getProgressStyle(thief.roseMaxed ? 1 : roseGated ? 0.5 : 0, 0, 1);
   const miPs = getProgressStyle(1, 0, 1);
+  const weaponForgePs = getProgressStyle(thief.weaponForge, 0, 6);
 
   return (
     <GameCardShell
@@ -73,14 +91,20 @@ export function ThiefCard({
             label={`A${thief.awareness}`}
             style={{ color: awarenessPs.color, borderColor: awarenessPs.borderColor }}
           />
+          {thief.weaponRarity !== null && (
+            <StatChip
+              label={`⚔ ${thief.weaponRarity}★ F${thief.weaponForge}`}
+              style={{ color: weaponForgePs.color, borderColor: weaponForgePs.borderColor }}
+            />
+          )}
+          {thief.mindscapeMaxed && (
+            <StatChip label="MS ✓" style={{ color: miPs.color, borderColor: miPs.borderColor }} />
+          )}
           {(thief.skillsLeveled || thief.roseMaxed) && (
             <StatChip
               label={thief.roseMaxed ? 'Skills ✓' : '🌹 Gated'}
               style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
             />
-          )}
-          {thief.mindscapeMaxed && (
-            <StatChip label="MS ✓" style={{ color: miPs.color, borderColor: miPs.borderColor }} />
           )}
         </>
       }
@@ -108,6 +132,46 @@ export function ThiefCard({
           </ProgressSection>
 
           <ProgressSection
+            label="Weapon"
+            value={
+              thief.weaponRarity !== null
+                ? `${thief.weaponRarity}★ · Lv ${thief.weaponLevel} · F${thief.weaponForge}`
+                : '—'
+            }
+          >
+            <SegmentedButtons
+              className="weapon-rarity-row"
+              options={WEAPON_RARITY_OPTIONS}
+              value={thief.weaponRarity !== null ? String(thief.weaponRarity) : null}
+              coloring="static"
+              allowDeselect
+              onChange={(v) => onUpdateWeaponRarity(thief.id, v !== null ? Number(v) : null)}
+            />
+            <LevelSlider
+              name={`weapon-level-${thief.id}`}
+              value={thief.weaponLevel}
+              min={1}
+              max={80}
+              onChange={(n) => onUpdateWeaponLevel(thief.id, n)}
+            />
+            <SegmentedButtons
+              className="weapon-forge-row"
+              options={WEAPON_FORGE_OPTIONS}
+              value={String(thief.weaponForge)}
+              coloring="investment"
+              onChange={(v) => onUpdateWeaponForge(thief.id, Number(v))}
+            />
+          </ProgressSection>
+
+          <ProgressSection label="Mindscape" value={thief.mindscapeMaxed ? 'Maxed' : '—'}>
+            <ConfirmCheckbox
+              checked={thief.mindscapeMaxed}
+              onChange={(val) => onToggleMindscapeMaxed(thief.id, val)}
+              label="Fully Unlocked"
+            />
+          </ProgressSection>
+
+          <ProgressSection
             label="Skills"
             value={thief.roseMaxed ? 'Maxed' : roseGated ? 'Rose-gated' : '—'}
           >
@@ -123,14 +187,6 @@ export function ThiefCard({
                 label="Rose Maxed (Lv10)"
               />
             </div>
-          </ProgressSection>
-
-          <ProgressSection label="Mindscape" value={thief.mindscapeMaxed ? 'Maxed' : '—'}>
-            <ConfirmCheckbox
-              checked={thief.mindscapeMaxed}
-              onChange={(val) => onToggleMindscapeMaxed(thief.id, val)}
-              label="Fully Unlocked"
-            />
           </ProgressSection>
         </>
       }

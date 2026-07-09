@@ -1,0 +1,13 @@
+## Tasks
+
+- [x] **Task 1: DB migration — add weapon columns.** Add migration `supabase/migrations/20260709000002_p5x_add_weapon_tracking.sql` with three columns: `weapon_rarity SMALLINT CHECK (weapon_rarity BETWEEN 2 AND 5)` (nullable), `weapon_level SMALLINT NOT NULL DEFAULT 1 CHECK (weapon_level BETWEEN 1 AND 80)`, `weapon_forge SMALLINT NOT NULL DEFAULT 0 CHECK (weapon_forge BETWEEN 0 AND 6)`. Files: `supabase/migrations/20260709000002_p5x_add_weapon_tracking.sql`
+
+- [x] **Task 2: Types — extend P5xTrackedThief and P5xThiefPatch.** Add `weaponRarity: number | null` (2–5, null = not tracking), `weaponLevel: number` (1–80), `weaponForge: number` (0–6) to `P5xTrackedThief`. Add matching optional fields to `P5xThiefPatch`. Files: `src/types.ts`
+
+- [x] **Task 3: Service — extend thiefService column map and fromRow.** Add `weaponRarity`, `weaponLevel`, `weaponForge` to `THIEF_COLUMNS` (mapping to `weapon_rarity`, `weapon_level`, `weapon_forge`). Extend `insertDefaults` with `weapon_rarity: null`, `weapon_level: 1`, `weapon_forge: 0`. Extend `select` string. Extend `fromRow` mapper. Update `thiefService.test.ts` for wiring coverage. Files: `src/services/persona-5-phantom-x/thiefService.ts`, `src/services/persona-5-phantom-x/thiefService.test.ts`
+
+- [x] **Task 4: Hook — add weapon field updaters.** Update `createTrackedThief` defaults: `weaponRarity: null`, `weaponLevel: 1`, `weaponForge: 0`. Add `makeFieldUpdater` calls: `updateWeaponRarity` (no clamp), `updateWeaponLevel` (clamp [1, 80]), `updateWeaponForge` (clamp [0, 6]). Export all three. Update `useThieves.test.ts`. Files: `src/hooks/persona-5-phantom-x/useThieves.ts`, `src/hooks/persona-5-phantom-x/useThieves.test.ts`
+
+- [x] **Task 5: Card UI — weapon summary chip and edit section.** Add `onUpdateWeaponRarity`, `onUpdateWeaponLevel`, `onUpdateWeaponForge` props. Summary chip: `⚔ {rarity}★ F{forge}` StatChip colored by forge (0–6), shown only when `weaponRarity` not null. Edit section: "Weapon" ProgressSection after Mindscape with rarity SegmentedButtons (static, allowDeselect, 2★–5★), LevelSlider (1–80), forge SegmentedButtons (investment, F0–F6). Value label: `{rarity}★ · Lv {level} · F{forge}` or `—`. Wire callbacks through P5xPage. Add rarity modifier CSS. Update ThiefCard.test.tsx. Files: `src/pages/persona-5-phantom-x/components/ThiefCard.tsx`, `src/pages/persona-5-phantom-x/components/ThiefCard.css`, `src/pages/persona-5-phantom-x/P5xPage.tsx`, `src/pages/persona-5-phantom-x/components/ThiefCard.test.tsx`
+
+- [x] **Task 6: Merge spec delta into main spec.** After implementation and tests pass, merge delta spec into `openspec/specs/p5x-thief-detail/spec.md` — append weapon requirements after the Mindscape sections. Files: `openspec/specs/p5x-thief-detail/spec.md`

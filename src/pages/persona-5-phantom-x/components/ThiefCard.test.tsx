@@ -25,6 +25,9 @@ function makeThief(overrides: Partial<P5xTrackedThief> = {}): P5xTrackedThief {
     skillsLeveled: false,
     roseMaxed: false,
     mindscapeMaxed: false,
+    weaponRarity: null,
+    weaponLevel: 1,
+    weaponForge: 0,
     ...overrides,
   };
 }
@@ -38,6 +41,9 @@ describe('ThiefCard', () => {
     onUpdateSkillProgress: vi.fn(),
     onToggleFavorite: vi.fn(),
     onToggleMindscapeMaxed: vi.fn(),
+    onUpdateWeaponRarity: vi.fn(),
+    onUpdateWeaponLevel: vi.fn(),
+    onUpdateWeaponForge: vi.fn(),
   };
 
   beforeEach(() => {
@@ -108,9 +114,10 @@ describe('ThiefCard', () => {
     const user = userEvent.setup();
     render(<ThiefCard {...defaultProps} thief={makeThief({ level: 1 })} />);
     await user.click(screen.getByTitle('Edit'));
-    const slider = screen.getByRole('slider');
-    expect(slider).toHaveClass('level-slider');
-    expect(slider.style.getPropertyValue('--slider-fill-color')).toBe('rgb(138, 96, 80)');
+    const sliders = screen.getAllByRole('slider');
+    const levelSlider = sliders.find((s) => s.getAttribute('name') === 'level-ann-takamaki')!;
+    expect(levelSlider).toHaveClass('level-slider');
+    expect(levelSlider.style.getPropertyValue('--slider-fill-color')).toBe('rgb(138, 96, 80)');
   });
 
   // --- Edit body ---
@@ -119,10 +126,11 @@ describe('ThiefCard', () => {
     const user = userEvent.setup();
     render(<ThiefCard {...defaultProps} />);
     await user.click(screen.getByTitle('Edit'));
-    const slider = screen.getByRole('slider');
-    expect(slider).toHaveAttribute('min', '1');
-    expect(slider).toHaveAttribute('max', '80');
-    fireEvent.change(slider, { target: { value: '72' } });
+    const sliders = screen.getAllByRole('slider');
+    const levelSlider = sliders.find((s) => s.getAttribute('name') === 'level-ann-takamaki')!;
+    expect(levelSlider).toHaveAttribute('min', '1');
+    expect(levelSlider).toHaveAttribute('max', '80');
+    fireEvent.change(levelSlider, { target: { value: '72' } });
     expect(defaultProps.onUpdateLevel).toHaveBeenCalledWith('ann-takamaki', 72);
   });
 
@@ -209,6 +217,52 @@ describe('ThiefCard', () => {
     await user.click(screen.getByText('Fully Unlocked'));
     await user.click(screen.getByText('Click to confirm'));
     expect(defaultProps.onToggleMindscapeMaxed).toHaveBeenCalledWith('ann-takamaki', true);
+  });
+
+  // --- Weapon ---
+
+  it('shows no weapon chip when weaponRarity is null', () => {
+    render(<ThiefCard {...defaultProps} thief={makeThief({ weaponRarity: null })} />);
+    expect(screen.queryByText(/⚔/)).not.toBeInTheDocument();
+  });
+
+  it('shows weapon chip when weaponRarity is set', () => {
+    render(
+      <ThiefCard
+        {...defaultProps}
+        thief={makeThief({ weaponRarity: 5, weaponLevel: 60, weaponForge: 4 })}
+      />,
+    );
+    expect(screen.getByText('⚔ 5★ F4')).toBeInTheDocument();
+  });
+
+  it('renders weapon rarity, level, and forge controls in edit mode', async () => {
+    const user = userEvent.setup();
+    render(
+      <ThiefCard
+        {...defaultProps}
+        thief={makeThief({ weaponRarity: 4, weaponLevel: 30, weaponForge: 2 })}
+      />,
+    );
+    await user.click(screen.getByTitle('Edit'));
+    expect(screen.getByRole('button', { name: '2★' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '5★' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'F0' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'F6' })).toBeInTheDocument();
+    const sliders = screen.getAllByRole('slider');
+    const weaponSlider = sliders.find(
+      (s) => s.getAttribute('name') === 'weapon-level-ann-takamaki',
+    );
+    expect(weaponSlider).toHaveAttribute('min', '1');
+    expect(weaponSlider).toHaveAttribute('max', '80');
+  });
+
+  it('weapon forge button reports change', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} thief={makeThief({ weaponRarity: 5, weaponForge: 0 })} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByRole('button', { name: 'F3' }));
+    expect(defaultProps.onUpdateWeaponForge).toHaveBeenCalledWith('ann-takamaki', 3);
   });
 
   // --- Controls ---
