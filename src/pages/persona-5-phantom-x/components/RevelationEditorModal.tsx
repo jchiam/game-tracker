@@ -134,9 +134,9 @@ function EquipTab({
               variant="stat-value"
               namePrefix={`rev-${slot}-sub`}
               options={availableSubStats}
-              values={card?.subStats?.map((s) => ({ type: s.type, value: s.value })) ?? []}
+              values={card?.subStats?.map((s) => ({ type: s.type, value: String(s.value) })) ?? []}
               onChange={(vals) =>
-                handleSubStatsChange(vals.map((v) => ({ type: v.type, value: v.value })))
+                handleSubStatsChange(vals.map((v) => ({ type: v.type, value: Number(v.value) })))
               }
               max={4}
               addLabel="+ Substat"

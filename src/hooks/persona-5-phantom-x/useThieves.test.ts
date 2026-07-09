@@ -212,6 +212,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
       {
         ...ALL_THIEVES[1],
@@ -225,6 +232,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
     ]);
     const { result } = await setup();
@@ -246,6 +260,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
       {
         ...ALL_THIEVES[1],
@@ -259,6 +280,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
     ]);
     const { result } = await setup();
@@ -285,6 +313,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
       {
         ...ALL_THIEVES[1],
@@ -298,6 +333,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
       {
         ...ALL_THIEVES[2],
@@ -311,6 +353,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
     ]);
     const { result } = await setup();
@@ -338,6 +387,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
       {
         ...ALL_THIEVES[1],
@@ -351,6 +407,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
     ]);
     const { result } = await setup();
@@ -377,6 +440,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
       {
         ...ALL_THIEVES[1],
@@ -390,6 +460,13 @@ describe('useThieves', () => {
         weaponRarity: null,
         weaponLevel: 1,
         weaponForge: 0,
+        revelations: { sun: null, moon: null, star: null, sky: null, space: null },
+        revelationPreferences: {
+          heavensSetId: null,
+          spaceSetId: null,
+          mainStats: { moon: [], star: [], sky: [] },
+          subStats: [],
+        },
       },
     ]);
     const { result } = await setup();
