@@ -105,6 +105,24 @@ describe('SubStatList — shared behaviour', () => {
     expect(container.querySelector('.remove-substat')).toBeInTheDocument();
     expect(container.querySelector('.add-substat-btn')).toBeInTheDocument();
   });
+
+  it('disables row select and remove, and suppresses add, when disabled', () => {
+    const { container } = render(
+      <SubStatList
+        values={['HP', 'ATK']}
+        options={STATS}
+        namePrefix="substat"
+        disabled
+        onChange={vi.fn()}
+      />,
+    );
+    const selects = container.querySelectorAll<HTMLSelectElement>('.substat-row select');
+    const removes = container.querySelectorAll<HTMLButtonElement>('.remove-substat');
+    expect(selects.length).toBe(2);
+    expect(Array.from(selects).every((s) => s.disabled)).toBe(true);
+    expect(Array.from(removes).every((b) => b.disabled)).toBe(true);
+    expect(container.querySelector('.add-substat-btn')).toBeNull();
+  });
 });
 
 describe('SubStatList — id/label options', () => {

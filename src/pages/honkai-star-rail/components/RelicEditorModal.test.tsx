@@ -285,11 +285,22 @@ describe('RelicEditorModal', () => {
 
   it('calls onSave when a main stat is selected for a flexible slot', () => {
     const onSave = vi.fn();
+    // A set must be equipped for the (gated) main-stat select to be enabled.
+    const char = makeChar({
+      relics: {
+        head: null,
+        hands: null,
+        body: { setId: '101', mainStat: null, subStats: [] },
+        feet: null,
+        sphere: null,
+        rope: null,
+      },
+    });
     render(
       <RelicEditorModal
-        char={makeChar()}
+        char={char}
         slot="body"
-        availableRelicSets={[]}
+        availableRelicSets={cavernRelicSets}
         emptyRelic={emptyRelic}
         onSave={onSave}
         onRemove={vi.fn()}
@@ -309,7 +320,7 @@ describe('RelicEditorModal', () => {
       relics: {
         head: null,
         hands: null,
-        body: { setId: null, mainStat: null, subStats: ['CRIT Rate'] },
+        body: { setId: '101', mainStat: null, subStats: ['CRIT Rate'] },
         feet: null,
         sphere: null,
         rope: null,
@@ -319,7 +330,7 @@ describe('RelicEditorModal', () => {
       <RelicEditorModal
         char={char}
         slot="body"
-        availableRelicSets={[]}
+        availableRelicSets={cavernRelicSets}
         emptyRelic={emptyRelic}
         onSave={onSave}
         onRemove={vi.fn()}
@@ -336,11 +347,22 @@ describe('RelicEditorModal', () => {
 
   it('calls onSave with a new substat when "+ Add Substat" is clicked', () => {
     const onSave = vi.fn();
+    // Substats are gated until a set is equipped; give the body slot a set.
+    const char = makeChar({
+      relics: {
+        head: null,
+        hands: null,
+        body: { setId: '101', mainStat: null, subStats: [] },
+        feet: null,
+        sphere: null,
+        rope: null,
+      },
+    });
     render(
       <RelicEditorModal
-        char={makeChar()}
+        char={char}
         slot="body"
-        availableRelicSets={[]}
+        availableRelicSets={cavernRelicSets}
         emptyRelic={emptyRelic}
         onSave={onSave}
         onRemove={vi.fn()}
@@ -363,7 +385,7 @@ describe('RelicEditorModal', () => {
       relics: {
         head: null,
         hands: null,
-        body: { setId: null, mainStat: null, subStats: ['HP'] },
+        body: { setId: '101', mainStat: null, subStats: ['HP'] },
         feet: null,
         sphere: null,
         rope: null,
@@ -373,7 +395,7 @@ describe('RelicEditorModal', () => {
       <RelicEditorModal
         char={char}
         slot="body"
-        availableRelicSets={[]}
+        availableRelicSets={cavernRelicSets}
         emptyRelic={emptyRelic}
         onSave={onSave}
         onRemove={vi.fn()}
@@ -575,7 +597,7 @@ describe('RelicEditorModal', () => {
       relics: {
         head: null,
         hands: null,
-        body: { setId: null, mainStat: null, subStats: ['HP'] },
+        body: { setId: '101', mainStat: null, subStats: ['HP'] },
         feet: null,
         sphere: null,
         rope: null,
@@ -585,7 +607,7 @@ describe('RelicEditorModal', () => {
       <RelicEditorModal
         char={char}
         slot="body"
-        availableRelicSets={[]}
+        availableRelicSets={cavernRelicSets}
         emptyRelic={emptyRelic}
         onSave={onSave}
         onRemove={vi.fn()}
@@ -670,5 +692,75 @@ describe('RelicEditorModal', () => {
         subStats: expect.arrayContaining([expect.objectContaining({ stat: 'CRIT Rate' })]),
       }),
     );
+  });
+
+  // --- Equip tab: fixed-main read-only + set-gating ---
+
+  it('renders the fixed head main as .readonly-stat with no inline style', () => {
+    const { container } = render(
+      <RelicEditorModal
+        char={makeChar()}
+        slot="head"
+        availableRelicSets={[]}
+        emptyRelic={emptyRelic}
+        onSave={vi.fn()}
+        onRemove={vi.fn()}
+        onUpdateBuildPreferences={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    const fixed = container.querySelector('.readonly-stat');
+    expect(fixed?.textContent).toMatch(/HP \(Fixed\)/);
+    // No leftover inline style block (old hardcoded rgba is gone).
+    expect(fixed?.getAttribute('style')).toBeNull();
+  });
+
+  it('gates the variable-slot main + substats until a set is equipped', () => {
+    const { container } = render(
+      <RelicEditorModal
+        char={makeChar()}
+        slot="body"
+        availableRelicSets={cavernRelicSets}
+        emptyRelic={emptyRelic}
+        onSave={vi.fn()}
+        onRemove={vi.fn()}
+        onUpdateBuildPreferences={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    // No set: main-stat select disabled, add-substat hidden, two gated groups dimmed.
+    const mainSelect = container.querySelector<HTMLSelectElement>('select[name="relic-main-stat"]');
+    expect(mainSelect?.disabled).toBe(true);
+    expect(screen.queryByRole('button', { name: /\+ add substat/i })).toBeNull();
+    expect(container.querySelectorAll('.is-gated').length).toBe(2);
+  });
+
+  it('enables the variable-slot main + substats once a set is equipped', () => {
+    const char = makeChar({
+      relics: {
+        head: null,
+        hands: null,
+        body: { setId: '101', mainStat: null, subStats: [] },
+        feet: null,
+        sphere: null,
+        rope: null,
+      },
+    });
+    const { container } = render(
+      <RelicEditorModal
+        char={char}
+        slot="body"
+        availableRelicSets={cavernRelicSets}
+        emptyRelic={emptyRelic}
+        onSave={vi.fn()}
+        onRemove={vi.fn()}
+        onUpdateBuildPreferences={vi.fn()}
+        onClose={vi.fn()}
+      />,
+    );
+    const mainSelect = container.querySelector<HTMLSelectElement>('select[name="relic-main-stat"]');
+    expect(mainSelect?.disabled).toBe(false);
+    expect(screen.getByRole('button', { name: /\+ add substat/i })).toBeInTheDocument();
+    expect(container.querySelectorAll('.is-gated').length).toBe(0);
   });
 });

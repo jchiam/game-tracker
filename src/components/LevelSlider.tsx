@@ -9,6 +9,8 @@ interface LevelSliderProps {
   name: string;
   /** Show a numeric readout beside the slider. */
   showValue?: boolean;
+  /** Disables the range input (e.g. when gated behind an unmet precondition). */
+  disabled?: boolean;
 }
 
 /**
@@ -16,7 +18,15 @@ interface LevelSliderProps {
  * shared `progressGradient` over `[min, max]`, so every level slider shares the
  * cross-game investment gradient — callers never pass a fill colour.
  */
-export function LevelSlider({ value, min, max, onChange, name, showValue }: LevelSliderProps) {
+export function LevelSlider({
+  value,
+  min,
+  max,
+  onChange,
+  name,
+  showValue,
+  disabled,
+}: LevelSliderProps) {
   const ps = getProgressStyle(value, min, max);
   const pct = max === min ? 100 : ((value - min) / (max - min)) * 100;
 
@@ -27,6 +37,7 @@ export function LevelSlider({ value, min, max, onChange, name, showValue }: Leve
       min={min}
       max={max}
       value={value}
+      disabled={disabled}
       onChange={(e) => onChange(parseInt(e.target.value, 10))}
       className="level-slider"
       style={

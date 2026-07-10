@@ -75,3 +75,14 @@ export const StatOnly: Story = {
 export const IdLabelOptions: Story = {
   render: () => <IdLabelList />,
 };
+
+/** Gated: with `disabled`, every row select and remove button is disabled and the add button
+ * is suppressed — the whole list is read-only until a precondition (e.g. an equipped set) is met. */
+export const Disabled: Story = {
+  args: {
+    values: ['ATK', 'CRIT Rate'],
+    label: 'Sub Stats (Max 4)',
+    addLabel: '+ Add Sub Stat',
+    disabled: true,
+  },
+};

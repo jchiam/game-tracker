@@ -97,9 +97,10 @@ describe('CartridgeEditorModal', () => {
 
   it('calls onSaveCartridge when main stat is changed', () => {
     const onSaveCartridge = vi.fn();
+    // Stat controls are gated until a cartridge is equipped.
     render(
       <CartridgeEditorModal
-        character={makeChar()}
+        character={makeChar({ cartridgeId: firstCartridge.id, cartridgeRarity: 'S' })}
         {...defaultProps}
         onSaveCartridge={onSaveCartridge}
       />,
@@ -115,7 +116,7 @@ describe('CartridgeEditorModal', () => {
     const onSaveCartridge = vi.fn();
     render(
       <CartridgeEditorModal
-        character={makeChar()}
+        character={makeChar({ cartridgeId: firstCartridge.id, cartridgeRarity: 'S' })}
         {...defaultProps}
         onSaveCartridge={onSaveCartridge}
       />,
@@ -159,7 +160,7 @@ describe('CartridgeEditorModal', () => {
     const onSaveCartridge = vi.fn();
     render(
       <CartridgeEditorModal
-        character={makeChar()}
+        character={makeChar({ cartridgeId: firstCartridge.id, cartridgeRarity: 'S' })}
         {...defaultProps}
         onSaveCartridge={onSaveCartridge}
       />,
@@ -177,7 +178,11 @@ describe('CartridgeEditorModal', () => {
     const onSaveCartridge = vi.fn();
     render(
       <CartridgeEditorModal
-        character={makeChar({ cartridgeSubStats: ['ATK', 'HP'] })}
+        character={makeChar({
+          cartridgeId: firstCartridge.id,
+          cartridgeRarity: 'S',
+          cartridgeSubStats: ['ATK', 'HP'],
+        })}
         {...defaultProps}
         onSaveCartridge={onSaveCartridge}
       />,
@@ -333,5 +338,37 @@ describe('CartridgeEditorModal', () => {
     expect(onSavePreferences).toHaveBeenCalledWith(
       expect.objectContaining({ cartridgeId: expectedId }),
     );
+  });
+
+  // --- Equip tab: set-gating ---
+
+  it('gates main stat / level / substats until a cartridge is selected', () => {
+    const { container } = render(<CartridgeEditorModal character={makeChar()} {...defaultProps} />);
+    const mainSelect = container.querySelector<HTMLSelectElement>(
+      'select[name="cartridge-main-stat"]',
+    );
+    const level = container.querySelector<HTMLInputElement>('input[name="cartridge-level"]');
+    expect(mainSelect?.disabled).toBe(true);
+    expect(level?.disabled).toBe(true);
+    expect(screen.queryByText('+ Add Sub Stat')).toBeNull();
+    // Main Stat + Level + Substats groups all dimmed.
+    expect(container.querySelectorAll('.is-gated').length).toBe(3);
+  });
+
+  it('enables main stat / level / substats once a cartridge is selected', () => {
+    const { container } = render(
+      <CartridgeEditorModal
+        character={makeChar({ cartridgeId: firstCartridge.id, cartridgeRarity: 'S' })}
+        {...defaultProps}
+      />,
+    );
+    const mainSelect = container.querySelector<HTMLSelectElement>(
+      'select[name="cartridge-main-stat"]',
+    );
+    const level = container.querySelector<HTMLInputElement>('input[name="cartridge-level"]');
+    expect(mainSelect?.disabled).toBe(false);
+    expect(level?.disabled).toBe(false);
+    expect(screen.getByText('+ Add Sub Stat')).toBeInTheDocument();
+    expect(container.querySelectorAll('.is-gated').length).toBe(0);
   });
 });

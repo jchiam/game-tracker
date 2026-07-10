@@ -55,6 +55,11 @@ export function CartridgeEditorModal({
   const currentMainStat = character.cartridgeMainStat;
   const currentSubStats = character.cartridgeSubStats;
 
+  // Editable stat controls (main stat, level, substats) are gated until a cartridge
+  // is selected — a valid cartridgeId requires both a name and a rarity.
+  const hasCartridge = Boolean(currentCartridgeId);
+  const gatedClass = hasCartridge ? undefined : 'is-gated';
+
   const currentPrefs = character.cartridgePreferences ?? {
     cartridgeId: null,
     mainStats: [],
@@ -176,35 +181,40 @@ export function CartridgeEditorModal({
               />
             </FormGroup>
 
-            <FormGroup label="Main Stat">
+            <FormGroup label="Main Stat" className={gatedClass}>
               <Select
                 name="cartridge-main-stat"
                 value={currentMainStat || ''}
                 placeholder="-- No Main Stat --"
                 options={CARTRIDGE_MAIN_STATS}
                 onChange={(v) => onSaveCartridge({ cartridgeMainStat: v || null })}
+                disabled={!hasCartridge}
               />
             </FormGroup>
 
-            <FormGroup label="Level">
+            <FormGroup label="Level" className={gatedClass}>
               <LevelSlider
                 name="cartridge-level"
                 value={currentLevel}
                 min={0}
                 max={20}
                 showValue
+                disabled={!hasCartridge}
                 onChange={(n) => onSaveCartridge({ cartridgeLevel: n })}
               />
             </FormGroup>
 
-            <SubStatList
-              values={currentSubStats}
-              options={CARTRIDGE_SUB_STATS}
-              namePrefix="substat"
-              label="Sub Stats (Max 4)"
-              addLabel="+ Add Sub Stat"
-              onChange={(subs) => onSaveCartridge({ cartridgeSubStats: subs })}
-            />
+            <div className={gatedClass}>
+              <SubStatList
+                values={currentSubStats}
+                options={CARTRIDGE_SUB_STATS}
+                namePrefix="substat"
+                label="Sub Stats (Max 4)"
+                addLabel="+ Add Sub Stat"
+                disabled={!hasCartridge}
+                onChange={(subs) => onSaveCartridge({ cartridgeSubStats: subs })}
+              />
+            </div>
           </>
         ) : (
           <div className="preferences-tab">

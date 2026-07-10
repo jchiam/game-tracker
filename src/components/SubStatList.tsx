@@ -71,6 +71,7 @@ export function SubStatList({
           />
           <button
             className="remove-substat"
+            disabled={disabled}
             onClick={() => onChange(values.filter((_, i) => i !== idx))}
           >
             ✕

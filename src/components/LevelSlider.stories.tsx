@@ -50,6 +50,11 @@ export const Default: Story = {
   render: () => <DefaultSlider />,
 };
 
+/** Gated: `disabled` blocks interaction (e.g. a cartridge level before a cartridge is equipped). */
+export const Disabled: Story = {
+  args: { value: 8, min: 0, max: 20, showValue: true, disabled: true },
+};
+
 export const WithReadout: Story = {
   render: () => <ReadoutSlider />,
 };

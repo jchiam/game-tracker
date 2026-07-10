@@ -99,6 +99,10 @@ export function RelicEditorModal({
   const isFixedSlot = slot === 'head' || slot === 'hands';
   // The equipped main stat must not also be offered as a sub-stat.
   const excludeSubStats = currentRelic.mainStat ? [currentRelic.mainStat] : [];
+  // Editable stat controls are gated (dimmed + disabled) until a relic set is chosen;
+  // fixed head/hands mains are read-only and stay ungated.
+  const hasSet = Boolean(currentRelic.setId);
+  const gatedClass = hasSet ? undefined : 'is-gated';
 
   return (
     <Modal
@@ -152,19 +156,10 @@ export function RelicEditorModal({
               />
             </FormGroup>
 
-            <FormGroup label="Main Stat">
+            <FormGroup label="Main Stat" className={isFixedSlot ? undefined : gatedClass}>
               {isFixedSlot ? (
-                <div
-                  style={{
-                    padding: '10px 14px',
-                    background: 'rgba(255,255,255,0.02)',
-                    border: '1px solid var(--color-ui-border)',
-                    borderRadius: 'var(--border-radius-md)',
-                    color: 'var(--color-brand-primary)',
-                  }}
-                >
-                  {slot === 'head' ? 'HP' : 'ATK'} (Fixed)
-                </div>
+                // Head/hands mains are fixed — read-only, always shown, never gated.
+                <span className="readonly-stat">{slot === 'head' ? 'HP' : 'ATK'} (Fixed)</span>
               ) : (
                 <Select
                   name="relic-main-stat"
@@ -172,19 +167,23 @@ export function RelicEditorModal({
                   placeholder="-- No Main Stat --"
                   options={validMainStats[slot]}
                   onChange={(v) => validateAndSave({ mainStat: v })}
+                  disabled={!hasSet}
                 />
               )}
             </FormGroup>
 
-            <SubStatList
-              values={currentRelic.subStats}
-              options={allSubStats}
-              namePrefix="substat"
-              label="Substats (Max 4)"
-              addLabel="+ Add Substat"
-              excludeValues={excludeSubStats}
-              onChange={(subStats) => validateAndSave({ subStats })}
-            />
+            <div className={gatedClass}>
+              <SubStatList
+                values={currentRelic.subStats}
+                options={allSubStats}
+                namePrefix="substat"
+                label="Substats (Max 4)"
+                addLabel="+ Add Substat"
+                excludeValues={excludeSubStats}
+                onChange={(subStats) => validateAndSave({ subStats })}
+                disabled={!hasSet}
+              />
+            </div>
           </>
         ) : (
           <div className="preferences-tab">
