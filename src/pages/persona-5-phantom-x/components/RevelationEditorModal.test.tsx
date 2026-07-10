@@ -58,13 +58,13 @@ describe('RevelationEditorModal', () => {
     expect(screen.getByText('Space')).toBeInTheDocument();
   });
 
-  it('disables main stat select for Sun slot (fixed Flat HP)', () => {
+  it('disables main stat select for Sun slot (fixed HP)', () => {
     render(<RevelationEditorModal {...defaultProps} />);
     const sunSelects = screen.getAllByRole('combobox');
     // Sun slot: first select = set, second = main stat (disabled)
-    // Find the disabled one with value "Flat HP"
+    // Find the disabled one with value "HP"
     const disabledSelect = sunSelects.find(
-      (s) => (s as HTMLSelectElement).disabled && (s as HTMLSelectElement).value === 'Flat HP',
+      (s) => (s as HTMLSelectElement).disabled && (s as HTMLSelectElement).value === 'HP',
     );
     expect(disabledSelect).toBeDefined();
   });

@@ -133,19 +133,19 @@ export const ALL_SPACE_SETS: SpaceSet[] = [
 ];
 
 export const MAIN_STATS: Record<Uppercase<RevelationSlot>, string[]> = {
-  SUN: ['Flat HP'],
+  SUN: ['HP'],
   MOON: ['ATK%', 'DEF%', 'HP%', 'HP Recovery%', 'DMG Multiplier%'],
   STAR: ['ATK%', 'DEF%', 'HP%', 'Crit Rate%', 'Crit Multiplier%', 'Ailment Accuracy%'],
   SKY: ['ATK%', 'DEF%', 'HP%', 'Speed', 'SP Recovery%'],
-  SPACE: ['Flat ATK & Flat DEF'],
+  SPACE: ['ATK & DEF'],
 };
 
 export const SUB_STATS: string[] = [
-  'Flat ATK',
+  'ATK',
   'ATK%',
-  'Flat DEF',
+  'DEF',
   'DEF%',
-  'Flat HP',
+  'HP',
   'HP%',
   'DMG Multiplier%',
   'Ailment Accuracy%',
