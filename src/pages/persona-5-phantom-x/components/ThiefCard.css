@@ -38,17 +38,21 @@
   gap: var(--spacing-xs);
 }
 
-/* Consolidated revelation set readout in the edit-mode Revelations section:
-   Space set first (tagged), then each active Heavens bonus, above the Edit button. */
-.rev-set-readout {
-  list-style: none;
-  margin: 0 0 var(--spacing-xs);
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-  font-size: var(--typography-font-size-sm);
-  color: var(--color-text-secondary);
+/* Revelation slot grid — base structure/active states come from the shared
+   .equip-slot-grid / .equip-slot-cell rules in card.css; P5X has five slots
+   and shows per-slot glyphs (no set art exists), so only the column count
+   and glyph sizing live here. */
+.p5x-rev-grid {
+  grid-template-columns: repeat(5, 1fr);
+}
+
+.p5x-rev-grid .equip-slot-icon {
+  font-size: var(--typography-font-size-lg);
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.p5x-rev-grid .equip-slot-cell.active .equip-slot-icon {
+  color: var(--color-brand-primary);
 }
 
 /* P5X badge colours. Base appearance comes from the canonical `.game-badge`

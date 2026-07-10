@@ -247,7 +247,7 @@ describe('HsrPage', () => {
     });
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByTitle(/^Head/));
-    expect(screen.getByRole('heading', { name: /edit head/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /relics — acheron/i })).toBeInTheDocument();
   });
 
   // --- Tab active classes ---
@@ -371,9 +371,9 @@ describe('HsrPage', () => {
     });
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByTitle(/^Head/));
-    expect(screen.getByRole('heading', { name: /edit head/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: /relics — acheron/i })).toBeInTheDocument();
     fireEvent.click(document.querySelector('.close-btn')!);
-    expect(screen.queryByRole('heading', { name: /edit head/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: /relics — acheron/i })).not.toBeInTheDocument();
   });
 
   // --- Tab toggle round-trip ---

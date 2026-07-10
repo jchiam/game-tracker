@@ -223,6 +223,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
       {
@@ -243,6 +244,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
     ]);
@@ -309,6 +311,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
       {
@@ -329,6 +332,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
     ]);
@@ -362,6 +366,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
       {
@@ -382,6 +387,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
       {
@@ -402,6 +408,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
     ]);
@@ -436,6 +443,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
       {
@@ -456,6 +464,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
     ]);
@@ -489,6 +498,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
       {
@@ -509,6 +519,7 @@ describe('useThieves', () => {
           spaceSetId: null,
           mainStats: { moon: [], star: [], sky: [] },
           subStats: [],
+          comments: '',
         },
       },
     ]);
@@ -564,6 +575,7 @@ describe('useThieves', () => {
         spaceSetId: null,
         mainStats: { moon: [], star: [], sky: [] },
         subStats: [],
+        comments: '',
       },
     };
     mockLoadThievesFromDB.mockResolvedValue([tracked]);
@@ -606,6 +618,7 @@ describe('useThieves', () => {
         spaceSetId: null,
         mainStats: { moon: [], star: [], sky: [] },
         subStats: [],
+        comments: '',
       },
     };
     mockLoadThievesFromDB.mockResolvedValue([tracked]);
@@ -641,6 +654,7 @@ describe('useThieves', () => {
         spaceSetId: null,
         mainStats: { moon: [], star: [], sky: [] },
         subStats: [],
+        comments: '',
       },
     };
     mockLoadThievesFromDB.mockResolvedValue([tracked]);
@@ -654,6 +668,7 @@ describe('useThieves', () => {
       spaceSetId: 'meditation',
       mainStats: { moon: [], star: [], sky: [] },
       subStats: [{ stat: 'Crit Rate%', operator: null, orderIndex: 0 }],
+      comments: 'Focus crit',
     };
 
     await act(async () => {

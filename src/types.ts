@@ -175,6 +175,7 @@ export interface P5xRevelationPreferences {
     sky: StatPreference[];
   };
   subStats: StatPreference[];
+  comments: string;
 }
 
 export interface P5xTrackedThief extends P5xThief {

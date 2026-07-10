@@ -43,6 +43,7 @@ function makeThief(revelations: Partial<Revs> = {}, prefs: Partial<Prefs> = {}):
       spaceSetId: null,
       mainStats: { moon: [], star: [], sky: [] },
       subStats: [],
+      comments: '',
       ...prefs,
     },
   };

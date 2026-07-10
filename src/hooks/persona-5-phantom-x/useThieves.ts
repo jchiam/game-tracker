@@ -33,6 +33,7 @@ function createTrackedThief(thief: P5xThief): P5xTrackedThief {
       spaceSetId: null,
       mainStats: { moon: [], star: [], sky: [] },
       subStats: [],
+      comments: '',
     },
   };
 }

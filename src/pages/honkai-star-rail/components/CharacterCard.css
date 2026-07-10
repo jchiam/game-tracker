@@ -2,67 +2,22 @@
    and the shared card hover — it contributes no body-layout override. Card
    structure (header, controls, collapse budgets) comes from GameCardShell. */
 
-/* Relics Grid */
-.relics-grid {
-  display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: var(--spacing-sm);
-}
-
-.relic-slot {
-  aspect-ratio: 1;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: var(--border-radius-sm);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition:
-    background var(--transition-fast),
-    border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.relic-icon {
-  font-size: var(--typography-font-size-sm);
-  color: rgba(255, 255, 255, 0.2);
-  transition:
-    color var(--transition-fast),
-    filter var(--transition-fast);
-}
-
-.relic-icon.planar {
+/* Relic slot grid — base structure/active states come from the shared
+   .equip-slot-grid / .equip-slot-cell / .equip-slot-icon rules in card.css;
+   only the HSR glyph-size modifiers live here. */
+.equip-slot-icon.planar {
   font-size: var(--typography-font-size-xl);
   color: color-mix(in srgb, var(--color-brand-primary) 40%, transparent);
 }
 
-.relic-icon.cavern {
+.equip-slot-icon.cavern {
   font-size: var(--typography-font-size-lg);
   color: rgba(255, 255, 255, 0.3);
 }
 
-.relic-slot:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.relic-slot.active {
-  background: color-mix(in srgb, var(--color-brand-primary) 10%, transparent);
-  border-color: var(--color-brand-primary);
-  box-shadow: var(--shadow-inset-glow);
-}
-
-.relic-slot.active .relic-icon {
+.equip-slot-cell.active .equip-slot-icon.planar,
+.equip-slot-cell.active .equip-slot-icon.cavern {
   color: var(--color-brand-primary);
-  filter: drop-shadow(0 0 2px var(--color-brand-primary-glow));
-}
-
-.relic-set-icon {
-  width: 80%;
-  height: 80%;
-  object-fit: contain;
-  opacity: 0.9;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
 }
 
 @media (max-width: 480px) {
@@ -74,11 +29,11 @@
     font-size: var(--typography-font-size-xl2);
   }
 
-  .relics-grid {
+  .equip-slot-grid {
     gap: var(--spacing-3);
   }
 
-  .relic-slot {
+  .equip-slot-cell {
     border-radius: 6px;
   }
 
@@ -87,74 +42,9 @@
   }
 }
 
-/* Build Preferences Display */
-.build-prefs-display {
-  margin-top: -4px;
-}
-
-.prefs-display-grid {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-  background: rgba(0, 0, 0, 0.1);
-  padding: var(--spacing-sm);
-  border-radius: var(--border-radius-sm);
-  border: 1px solid rgba(255, 255, 255, 0.02);
-}
-
-.pref-display-row {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-}
-
-.pref-display-label {
-  font-size: 0.75rem;
-  color: var(--color-text-dim);
-  text-transform: uppercase;
-  min-width: 48px;
-  font-weight: var(--typography-font-weight-semibold);
-  margin-top: var(--spacing-1);
-}
-
-.pref-display-chain {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--spacing-2);
-}
-
-.pref-stat-badge {
-  font-size: 0.75rem;
-  background: rgba(255, 255, 255, 0.06);
-  padding: var(--spacing-1) var(--spacing-3);
-  border-radius: var(--border-radius-sm);
-  color: var(--color-text-primary);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.pref-operator-badge {
-  font-size: 0.75rem;
-  color: var(--color-brand-primary);
-  font-weight: var(--typography-font-weight-bold);
-  opacity: 0.8;
-}
-
-.build-comments-row {
-  margin-top: var(--spacing-2);
-  border-top: 1px dashed rgba(255, 255, 255, 0.1);
-  padding-top: var(--spacing-sm);
-}
-
-.pref-comments-text {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  line-height: var(--typography-line-height-relaxed);
-  font-style: italic;
-  overflow-wrap: break-word;
-  width: 100%;
-  opacity: 0.8;
-}
+/* Target Build readout classes (.build-prefs-display, .prefs-display-grid,
+   .pref-display-row/-label/-chain, .pref-stat-badge, .pref-operator-badge,
+   .build-comments-row, .pref-comments-text) are shared in card.css. */
 
 /* Path Badge — base appearance from the canonical `.game-badge` pill (card.css);
    only the per-path colours live here. */

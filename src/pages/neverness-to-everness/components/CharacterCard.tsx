@@ -4,7 +4,9 @@ import { ALL_CARTRIDGES } from '@/data/neverness-to-everness/cartridges';
 import { calculateCartridgeScore } from '@/utils/cartridgeScoring';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
+import { LevelSlider } from '@/components/LevelSlider';
 import { ScoreBadge } from '@/components/ScoreBadge';
+import { Select } from '@/components/Select';
 import { getProgressStyle } from '@/utils/progressGradient';
 import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
@@ -47,14 +49,16 @@ export function CharacterCard({
 
   const awakeningCount = character.awakening.filter(Boolean).length;
 
-  // Cartridge score
+  // The scorer owns the insufficient-data decision: -1 when no preferences or no cartridge.
+  const cartridgeScore = calculateCartridgeScore(character);
+
+  // Target Build readout — shown only when any cartridge preference is set.
   const hasCartridgePrefs =
     character.cartridgePreferences &&
     (character.cartridgePreferences.cartridgeId != null ||
       character.cartridgePreferences.mainStats.length > 0 ||
-      character.cartridgePreferences.subStats.length > 0);
-  const cartridgeScore = hasCartridgePrefs ? calculateCartridgeScore(character) : -1;
-  const showCartridgeScore = cartridgeScore >= 0;
+      character.cartridgePreferences.subStats.length > 0 ||
+      Boolean(character.cartridgePreferences.comments));
 
   // Progress color styles per dimension
   const levelPs = getProgressStyle(character.level, 1, 90);
@@ -62,7 +66,6 @@ export function CharacterCard({
   const arcNamePs = character.arcId
     ? getProgressStyle(90, 1, 90) // teal when equipped
     : getProgressStyle(0, 0, 1); // rust when unequipped
-  const arcLevelPs = getProgressStyle(character.arcLevel, 1, 80);
 
   const isCartridgeEquipped =
     !!character.cartridgeId || !!character.cartridgeMainStat || !!character.cartridgeRarity;
@@ -104,15 +107,6 @@ export function CharacterCard({
               label={`A ${awakeningCount}/6`}
               style={{ color: awakeningPs.color, borderColor: awakeningPs.borderColor }}
             />
-            {showCartridgeScore && (
-              <StatChip
-                label={`Cart ${cartridgeScore.toFixed(0)}%`}
-                style={{
-                  color: getProgressStyle(cartridgeScore, 0, 100).color,
-                  borderColor: getProgressStyle(cartridgeScore, 0, 100).borderColor,
-                }}
-              />
-            )}
           </>
         }
         summaryLine={
@@ -148,21 +142,12 @@ export function CharacterCard({
           <>
             {/* ── Level ─────────────────────────────────────────── */}
             <ProgressSection label="Level" value={`${character.level} / 90`}>
-              <input
-                type="range"
+              <LevelSlider
                 name={`level-${character.id}`}
-                min="1"
-                max="90"
                 value={character.level}
-                onChange={(e) => onUpdateLevel(character.id!, parseInt(e.target.value))}
-                className="level-slider"
-                style={
-                  {
-                    '--slider-fill-color': levelPs.color,
-                    '--slider-fill-glow': levelPs.glowColor,
-                    background: `linear-gradient(to right, ${levelPs.color} ${((character.level - 1) / 89) * 100}%, rgba(255,255,255,0.1) ${((character.level - 1) / 89) * 100}%)`,
-                  } as React.CSSProperties
-                }
+                min={1}
+                max={90}
+                onChange={(n) => onUpdateLevel(character.id!, n)}
               />
             </ProgressSection>
 
@@ -198,48 +183,24 @@ export function CharacterCard({
 
             {/* ── Arc ───────────────────────────────────────────── */}
             <ProgressSection label="Arc" value={`${character.arcLevel} / 80`}>
-              <select
+              <Select
                 name={`arc-${character.id}`}
-                className="game-select"
                 value={character.arcId ?? ''}
-                onChange={(e) =>
-                  onUpdateArc(
-                    character.id!,
-                    e.target.value || null,
-                    character.arcLevel,
-                    character.arcTier,
-                  )
+                placeholder="No Arc"
+                options={ALL_ARCS.map((a) => ({
+                  value: a.id,
+                  label: `${a.name} (${a.rarity} · ${a.arcType})`,
+                }))}
+                onChange={(v) =>
+                  onUpdateArc(character.id!, v || null, character.arcLevel, character.arcTier)
                 }
-              >
-                <option value="">No Arc</option>
-                {ALL_ARCS.map((a) => (
-                  <option key={a.id} value={a.id}>
-                    {a.name} ({a.rarity} &middot; {a.arcType})
-                  </option>
-                ))}
-              </select>
-              <input
-                type="range"
+              />
+              <LevelSlider
                 name={`arc-level-${character.id}`}
-                min="1"
-                max="80"
                 value={character.arcLevel}
-                onChange={(e) =>
-                  onUpdateArc(
-                    character.id!,
-                    character.arcId,
-                    parseInt(e.target.value),
-                    character.arcTier,
-                  )
-                }
-                className="level-slider"
-                style={
-                  {
-                    '--slider-fill-color': arcLevelPs.color,
-                    '--slider-fill-glow': arcLevelPs.glowColor,
-                    background: `linear-gradient(to right, ${arcLevelPs.color} ${((character.arcLevel - 1) / 79) * 100}%, rgba(255,255,255,0.1) ${((character.arcLevel - 1) / 79) * 100}%)`,
-                  } as React.CSSProperties
-                }
+                min={1}
+                max={80}
+                onChange={(n) => onUpdateArc(character.id!, character.arcId, n, character.arcTier)}
               />
               <span className="section-sublabel">Tier</span>
               <SegmentedButtons
@@ -255,10 +216,7 @@ export function CharacterCard({
             </ProgressSection>
 
             {/* ── Cartridge slot (clickable, opens modal) ──────────── */}
-            <div className="cartridge-slot-section">
-              <div className="section-header">
-                <span>Cartridge</span>
-              </div>
+            <ProgressSection label="Cartridge">
               <div
                 className={`cartridge-slot ${isCartridgeEquipped ? 'active' : ''}`}
                 onClick={() => setIsCartridgeEditorOpen(true)}
@@ -292,69 +250,76 @@ export function CharacterCard({
                   <span className="cartridge-slot-empty">+ Equip Cartridge</span>
                 )}
               </div>
-            </div>
+            </ProgressSection>
 
             {/* ── Target Build (read-only preferences display) ─────── */}
             {hasCartridgePrefs && (
-              <div className="cartridge-target-build">
-                <div className="target-build-header">
-                  <span className="target-build-label">Target Build</span>
+              <ProgressSection label="Target Build" className="build-prefs-display">
+                <div className="prefs-display-grid">
+                  {character.cartridgePreferences.cartridgeId && (
+                    <div className="pref-display-row">
+                      <span className="pref-display-label">Set</span>
+                      <div className="pref-display-chain">
+                        <span className="pref-stat-badge">
+                          {ALL_CARTRIDGES.find(
+                            (c) => c.id === character.cartridgePreferences.cartridgeId,
+                          )?.name ?? character.cartridgePreferences.cartridgeId}
+                        </span>
+                        <span
+                          className={`cartridge-rarity-badge rarity-${(ALL_CARTRIDGES.find((c) => c.id === character.cartridgePreferences.cartridgeId)?.rarity ?? '').toLowerCase()}`}
+                        >
+                          {
+                            ALL_CARTRIDGES.find(
+                              (c) => c.id === character.cartridgePreferences.cartridgeId,
+                            )?.rarity
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                  {character.cartridgePreferences.mainStats.length > 0 && (
+                    <div className="pref-display-row">
+                      <span className="pref-display-label">Main</span>
+                      <div className="pref-display-chain">
+                        {character.cartridgePreferences.mainStats.map((p, i) => (
+                          <span key={i}>
+                            <span className="pref-stat-badge">{p.stat}</span>
+                            {p.operator && (
+                              <span className="pref-operator-badge">
+                                {p.operator === '>=' ? '≥' : p.operator}
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {character.cartridgePreferences.subStats.length > 0 && (
+                    <div className="pref-display-row">
+                      <span className="pref-display-label">Subs</span>
+                      <div className="pref-display-chain">
+                        {character.cartridgePreferences.subStats.map((p, i) => (
+                          <span key={i}>
+                            <span className="pref-stat-badge">{p.stat}</span>
+                            {p.operator && (
+                              <span className="pref-operator-badge">
+                                {p.operator === '>=' ? '≥' : p.operator}
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {character.cartridgePreferences.comments && (
+                    <div className="pref-display-row build-comments-row">
+                      <div className="pref-comments-text">
+                        {character.cartridgePreferences.comments}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {character.cartridgePreferences.cartridgeId && (
-                  <div className="target-build-chain">
-                    <span className="target-build-chain-label">Set</span>
-                    <span className="pref-stat-badge">
-                      {ALL_CARTRIDGES.find(
-                        (c) => c.id === character.cartridgePreferences.cartridgeId,
-                      )?.name ?? character.cartridgePreferences.cartridgeId}
-                    </span>
-                    <span
-                      className={`cartridge-rarity-badge rarity-${(ALL_CARTRIDGES.find((c) => c.id === character.cartridgePreferences.cartridgeId)?.rarity ?? '').toLowerCase()}`}
-                    >
-                      {
-                        ALL_CARTRIDGES.find(
-                          (c) => c.id === character.cartridgePreferences.cartridgeId,
-                        )?.rarity
-                      }
-                    </span>
-                  </div>
-                )}
-                {character.cartridgePreferences.mainStats.length > 0 && (
-                  <div className="target-build-chain">
-                    <span className="target-build-chain-label">Main</span>
-                    {character.cartridgePreferences.mainStats.map((p, i) => (
-                      <span key={i}>
-                        <span className="pref-stat-badge">{p.stat}</span>
-                        {p.operator && (
-                          <span className="pref-operator-badge">
-                            {p.operator === '>=' ? '≥' : p.operator}
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {character.cartridgePreferences.subStats.length > 0 && (
-                  <div className="target-build-chain">
-                    <span className="target-build-chain-label">Subs</span>
-                    {character.cartridgePreferences.subStats.map((p, i) => (
-                      <span key={i}>
-                        <span className="pref-stat-badge">{p.stat}</span>
-                        {p.operator && (
-                          <span className="pref-operator-badge">
-                            {p.operator === '>=' ? '≥' : p.operator}
-                          </span>
-                        )}
-                      </span>
-                    ))}
-                  </div>
-                )}
-                {character.cartridgePreferences.comments && (
-                  <div className="target-build-comments">
-                    {character.cartridgePreferences.comments}
-                  </div>
-                )}
-              </div>
+              </ProgressSection>
             )}
           </>
         }

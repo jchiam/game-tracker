@@ -348,6 +348,42 @@
   font-size: var(--typography-font-size-sm);
 }
 
+/* Equipment editor slot card — bordered per-slot grouping container used by
+   multi-slot equipment editors (HSR relics, P5X revelations) so stacked slot
+   sections stay scannable inside the modal body. */
+.equip-slot-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-md);
+  background: var(--color-input-surface);
+}
+
+.equip-slot-header {
+  font-size: var(--typography-font-size-base);
+  font-weight: var(--typography-font-weight-bold);
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Set-gated stat controls: dimmed + non-interactive until a Set is chosen.
+   The inner control's own `disabled` prop blocks interaction; this dims.
+   Shared by every equipment editor modal. */
+.is-gated {
+  opacity: 0.4;
+}
+
+/* Row of read-only fixed main stats (one or more `.readonly-stat` chips),
+   e.g. P5X Sun (one) / Space (two). Owns only the row wrapping. */
+.readonly-stat-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
 /* Roster predicate-filter chip (used by every game gate). Accent comes from the
    `--filter-chip-accent` custom property set per game on the `.filter-row`. */
 .filter-row {

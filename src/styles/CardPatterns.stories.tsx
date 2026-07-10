@@ -180,6 +180,52 @@ export const PartyCard: Story = {
   ),
 };
 
+export const EquipmentSlotGrid: Story = {
+  render: () => (
+    <div style={{ maxWidth: 300, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* 6-slot grid (HSR relics) — default column count */}
+      <div className="equip-slot-grid">
+        <div className="equip-slot-cell active">
+          <span className="equip-slot-icon">⬡</span>
+        </div>
+        <div className="equip-slot-cell active">
+          <span className="equip-slot-icon">⬡</span>
+        </div>
+        <div className="equip-slot-cell">
+          <span className="equip-slot-icon">⬡</span>
+        </div>
+        <div className="equip-slot-cell">
+          <span className="equip-slot-icon">⬡</span>
+        </div>
+        <div className="equip-slot-cell active">
+          <span className="equip-slot-icon">○</span>
+        </div>
+        <div className="equip-slot-cell">
+          <span className="equip-slot-icon">○</span>
+        </div>
+      </div>
+      {/* 5-slot grid (P5X revelations) — per-game column override */}
+      <div className="equip-slot-grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}>
+        <div className="equip-slot-cell active">
+          <span className="equip-slot-icon">☀</span>
+        </div>
+        <div className="equip-slot-cell">
+          <span className="equip-slot-icon">☽</span>
+        </div>
+        <div className="equip-slot-cell active">
+          <span className="equip-slot-icon">★</span>
+        </div>
+        <div className="equip-slot-cell">
+          <span className="equip-slot-icon">☁</span>
+        </div>
+        <div className="equip-slot-cell active">
+          <span className="equip-slot-icon">◈</span>
+        </div>
+      </div>
+    </div>
+  ),
+};
+
 export const ProgressSections: Story = {
   render: () => (
     <div style={{ maxWidth: 300 }}>

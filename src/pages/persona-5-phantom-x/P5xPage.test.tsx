@@ -46,6 +46,7 @@ function makeThief(id: string, name: string): P5xTrackedThief {
       spaceSetId: null,
       mainStats: { moon: [], star: [], sky: [] },
       subStats: [],
+      comments: '',
     },
   };
 }

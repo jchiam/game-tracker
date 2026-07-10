@@ -1,5 +1,12 @@
 import type { P5xThiefPatch, P5xTrackedThief } from '@/types';
-import { getRevelationSummary } from '@/data/persona-5-phantom-x/revelations';
+import {
+  ALL_HEAVENS_SETS,
+  ALL_SPACE_SETS,
+  REVELATION_SLOTS,
+  getRevelationSummary,
+  statLabel,
+  type RevelationSlot,
+} from '@/data/persona-5-phantom-x/revelations';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
 import { LevelSlider } from '@/components/LevelSlider';
@@ -28,6 +35,17 @@ const WEAPON_FORGE_OPTIONS = [0, 1, 2, 3, 4, 5, 6].map((f) => ({
 /** Badge modifiers derive from the verbatim source values (e.g. "Single-target"). */
 const toModifier = (value: string) => value.toLowerCase().replace(/\s+/g, '-');
 
+/** No set art exists for revelation sets — grid cells show per-slot glyphs. */
+const REV_SLOT_GLYPHS: Record<RevelationSlot, string> = {
+  sun: '☀',
+  moon: '☽',
+  star: '★',
+  sky: '☁',
+  space: '◈',
+};
+
+const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+
 interface ThiefCardProps {
   thief: P5xTrackedThief;
   onRemove: (id: string, e: React.MouseEvent) => void;
@@ -42,7 +60,7 @@ interface ThiefCardProps {
   onUpdateWeaponRarity: (id: string, value: number | null) => void;
   onUpdateWeaponLevel: (id: string, value: number) => void;
   onUpdateWeaponForge: (id: string, value: number) => void;
-  onOpenRevelations: (id: string) => void;
+  onOpenRevelations: (id: string, slot: RevelationSlot) => void;
 }
 
 export function ThiefCard({
@@ -85,6 +103,26 @@ export function ThiefCard({
   const revPs = showScore
     ? getProgressStyle(revScore, 0, 100)
     : getProgressStyle(revSummary.heavensBonuses[0]?.pieces ?? 0, 0, 4);
+
+  const hasAnyRevCard = REVELATION_SLOTS.some((slot) => thief.revelations[slot]?.setId);
+
+  // Target Build readout — shown only when any revelation preference is set.
+  const prefs = thief.revelationPreferences;
+  const hasRevPrefs = Boolean(
+    prefs.heavensSetId ||
+    prefs.spaceSetId ||
+    prefs.mainStats.moon.length > 0 ||
+    prefs.mainStats.star.length > 0 ||
+    prefs.mainStats.sky.length > 0 ||
+    prefs.subStats.length > 0 ||
+    prefs.comments,
+  );
+  const heavensPrefName = prefs.heavensSetId
+    ? (ALL_HEAVENS_SETS.find((s) => s.id === prefs.heavensSetId)?.name ?? prefs.heavensSetId)
+    : null;
+  const spacePrefName = prefs.spaceSetId
+    ? (ALL_SPACE_SETS.find((s) => s.id === prefs.spaceSetId)?.name ?? prefs.spaceSetId)
+    : null;
 
   return (
     <GameCardShell
@@ -195,23 +233,89 @@ export function ThiefCard({
             />
           </ProgressSection>
 
-          {/* Value stays empty when sets are active — the consolidated list renders vertically in
-              the body below, so a long one-liner isn't crammed into the space-between header. */}
-          <ProgressSection label="Revelations" value={hasRevSets ? undefined : '—'}>
-            {hasRevSets && (
-              <ul className="rev-set-readout">
-                {revSummary.spaceSet && <li key="space">{revSummary.spaceSet.name} (Space)</li>}
-                {revSummary.heavensBonuses.map((b) => (
-                  <li key={b.id}>
-                    {b.name} {b.pieces}pc
-                  </li>
-                ))}
-              </ul>
-            )}
-            <button className="toggle-btn" onClick={() => onOpenRevelations(thief.id)}>
-              Edit Revelations
-            </button>
+          {/* Slot grid — clicking a cell opens the editor anchored to that slot. Set names
+              live on the summary chip and inside the modal; the grid shows fill state. */}
+          <ProgressSection label="Revelations" value={hasAnyRevCard ? undefined : '—'}>
+            <div className="equip-slot-grid p5x-rev-grid">
+              {REVELATION_SLOTS.map((slot) => {
+                const isActive = Boolean(thief.revelations[slot]?.setId);
+                return (
+                  <div
+                    key={slot}
+                    className={`equip-slot-cell ${isActive ? 'active' : ''}`}
+                    title={capitalize(slot)}
+                    onClick={() => onOpenRevelations(thief.id, slot)}
+                  >
+                    <span className="equip-slot-icon">{REV_SLOT_GLYPHS[slot]}</span>
+                  </div>
+                );
+              })}
+            </div>
           </ProgressSection>
+
+          {hasRevPrefs && (
+            <ProgressSection label="Target Build" className="build-prefs-display">
+              <div className="prefs-display-grid">
+                {(spacePrefName || heavensPrefName) && (
+                  <div className="pref-display-row">
+                    <span className="pref-display-label">Sets</span>
+                    <div className="pref-display-chain">
+                      {spacePrefName && <span className="pref-stat-badge">{spacePrefName}</span>}
+                      {heavensPrefName && (
+                        <span className="pref-stat-badge">{heavensPrefName}</span>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {(['moon', 'star', 'sky'] as const).map((slot) => {
+                  const chain = prefs.mainStats[slot];
+                  if (chain.length === 0) return null;
+                  return (
+                    <div key={slot} className="pref-display-row">
+                      <span className="pref-display-label">{capitalize(slot)}</span>
+                      <div className="pref-display-chain">
+                        {chain.map((p, i) => (
+                          <span key={i}>
+                            <span className="pref-stat-badge">{statLabel(p.stat)}</span>
+                            {p.operator && (
+                              <span className="pref-operator-badge">
+                                {p.operator === '>=' ? '≥' : p.operator}
+                              </span>
+                            )}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+
+                {prefs.subStats.length > 0 && (
+                  <div className="pref-display-row">
+                    <span className="pref-display-label">Subs</span>
+                    <div className="pref-display-chain">
+                      {prefs.subStats.map((p, i) => (
+                        <span key={i}>
+                          <span className="pref-stat-badge">{statLabel(p.stat)}</span>
+                          {p.operator && (
+                            <span className="pref-operator-badge">
+                              {p.operator === '>=' ? '≥' : p.operator}
+                            </span>
+                          )}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {prefs.comments && (
+                  <div className="pref-display-row build-comments-row">
+                    <div className="pref-comments-text">{prefs.comments}</div>
+                  </div>
+                )}
+              </div>
+            </ProgressSection>
+          )}
 
           <ProgressSection label="Mindscape" value={thief.mindscapeMaxed ? 'Maxed' : '—'}>
             <ConfirmCheckbox

@@ -91,12 +91,7 @@
 }
 
 /* ─── Cartridge slot (clickable, opens modal) ────────────────── */
-
-.cartridge-slot-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-sm);
-}
+/* Section wrapper is the shared ProgressSection (card.css). */
 
 .cartridge-slot {
   background: rgba(255, 255, 255, 0.03);
@@ -181,68 +176,5 @@
 }
 
 /* Arc/cartridge selects use the canonical `.game-select`, and the level/arc
-   sliders use the canonical `.level-slider` — both from controls.css. */
-
-/* ─── Target Build comments ──────────────────────────────────── */
-
-.target-build-comments {
-  font-size: 0.72rem;
-  color: var(--color-text-dim);
-  line-height: var(--typography-line-height-base);
-  font-style: italic;
-}
-
-/* ─── Target Build (cartridge preferences display) ────────────────── */
-
-.cartridge-target-build {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-3);
-  background: rgba(0, 0, 0, 0.15);
-  padding: var(--spacing-sm) var(--spacing-md);
-  border-radius: var(--border-radius-md);
-  border: 1px solid rgba(255, 255, 255, 0.03);
-  margin-top: var(--spacing-3);
-}
-
-.target-build-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.target-build-label {
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-weight: var(--typography-font-weight-semibold);
-}
-
-.target-build-chain {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 2px;
-  font-size: 0.72rem;
-}
-
-.target-build-chain-label {
-  font-size: 0.68rem;
-  color: var(--color-text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-right: var(--spacing-2);
-  font-weight: var(--typography-font-weight-medium);
-}
-
-.pref-stat-badge {
-  color: var(--color-text-primary);
-  font-weight: var(--typography-font-weight-medium);
-}
-
-.pref-operator-badge {
-  color: var(--color-brand-primary);
-  font-weight: var(--typography-font-weight-bold);
-  margin: 0 2px;
-}
+   sliders use the canonical `.level-slider` — both from controls.css. The
+   Target Build readout uses the shared classes in card.css. */

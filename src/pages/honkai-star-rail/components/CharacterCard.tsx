@@ -4,6 +4,7 @@ import { RELIC_SHORT_NAMES } from '@/data/honkai-star-rail/relic_short_names';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
+import { LevelSlider } from '@/components/LevelSlider';
 import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
 import { getRelicIconUrl } from '@/lib/imagekit';
@@ -117,21 +118,12 @@ export function CharacterCard({
       editBody={
         <>
           <ProgressSection label="Level" value={`${char.level} / 80`}>
-            <input
-              type="range"
+            <LevelSlider
               name={`level-${char.id}`}
-              min="1"
-              max="80"
               value={char.level}
-              onChange={(e) => onUpdateLevel(char.id, parseInt(e.target.value))}
-              className="level-slider"
-              style={
-                {
-                  '--slider-fill-color': levelPs.color,
-                  '--slider-fill-glow': levelPs.glowColor,
-                  background: `linear-gradient(to right, ${levelPs.color} ${(char.level / 80) * 100}%, rgba(255,255,255,0.1) ${(char.level / 80) * 100}%)`,
-                } as React.CSSProperties
-              }
+              min={1}
+              max={80}
+              onChange={(n) => onUpdateLevel(char.id, n)}
             />
           </ProgressSection>
 
@@ -144,14 +136,14 @@ export function CharacterCard({
           </ProgressSection>
 
           <ProgressSection label="Relic Sets">
-            <div className="relics-grid">
+            <div className="equip-slot-grid">
               {(['head', 'hands', 'body', 'feet', 'sphere', 'rope'] as const).map((relic) => {
                 const equipped = char.relics[relic];
                 const isActive = equipped && equipped.setId;
                 return (
                   <div
                     key={relic}
-                    className={`relic-slot ${isActive ? 'active' : ''}`}
+                    className={`equip-slot-cell ${isActive ? 'active' : ''}`}
                     onClick={() => onToggleRelic(char.id, relic)}
                     title={`${relic.charAt(0).toUpperCase() + relic.slice(1)}${isActive ? ` - ${equipped.mainStat}` : ''}`}
                   >
@@ -161,7 +153,7 @@ export function CharacterCard({
                         if (!set)
                           return (
                             <span
-                              className={`relic-icon ${relic === 'sphere' || relic === 'rope' ? 'planar' : 'cavern'}`}
+                              className={`equip-slot-icon ${relic === 'sphere' || relic === 'rope' ? 'planar' : 'cavern'}`}
                             >
                               {relic === 'sphere' || relic === 'rope' ? '○' : '⬡'}
                             </span>
@@ -170,7 +162,7 @@ export function CharacterCard({
                           <img
                             src={getRelicIconUrl(set.icon)}
                             alt="Relic"
-                            className="relic-set-icon"
+                            className="equip-slot-img"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display = 'none';
                             }}
@@ -179,7 +171,7 @@ export function CharacterCard({
                       })()
                     ) : (
                       <span
-                        className={`relic-icon ${relic === 'sphere' || relic === 'rope' ? 'planar' : 'cavern'}`}
+                        className={`equip-slot-icon ${relic === 'sphere' || relic === 'rope' ? 'planar' : 'cavern'}`}
                       >
                         {relic === 'sphere' || relic === 'rope' ? '○' : '⬡'}
                       </span>
@@ -192,6 +184,9 @@ export function CharacterCard({
 
           {char.buildPreferences &&
             (char.buildPreferences.subStats.length > 0 ||
+              char.buildPreferences.relicSetId ||
+              char.buildPreferences.planarSetId ||
+              char.buildPreferences.comments ||
               ['body', 'feet', 'sphere', 'rope'].some(
                 (s) =>
                   char.buildPreferences?.mainStats[
@@ -200,6 +195,28 @@ export function CharacterCard({
               )) && (
               <ProgressSection label="Target Build" className="build-prefs-display">
                 <div className="prefs-display-grid">
+                  {(char.buildPreferences.relicSetId || char.buildPreferences.planarSetId) && (
+                    <div className="pref-display-row">
+                      <span className="pref-display-label">Sets</span>
+                      <div className="pref-display-chain">
+                        {char.buildPreferences.relicSetId && (
+                          <span className="pref-stat-badge">
+                            {availableRelicSets.find(
+                              (s) => s.id === char.buildPreferences?.relicSetId,
+                            )?.name ?? char.buildPreferences.relicSetId}
+                          </span>
+                        )}
+                        {char.buildPreferences.planarSetId && (
+                          <span className="pref-stat-badge">
+                            {availableRelicSets.find(
+                              (s) => s.id === char.buildPreferences?.planarSetId,
+                            )?.name ?? char.buildPreferences.planarSetId}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {(['body', 'feet', 'sphere', 'rope'] as const).map((slot) => {
                     const prefs = char.buildPreferences?.mainStats[slot];
                     if (!prefs || prefs.length === 0) return null;

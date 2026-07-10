@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, afterEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RevelationEditorModal } from './RevelationEditorModal';
@@ -30,6 +30,7 @@ function makeThief(overrides: Partial<P5xTrackedThief> = {}): P5xTrackedThief {
       spaceSetId: null,
       mainStats: { moon: [], star: [], sky: [] },
       subStats: [],
+      comments: '',
     },
     ...overrides,
   };
@@ -51,10 +52,34 @@ describe('RevelationEditorModal', () => {
 
   it('renders five bordered slot cards, space-first', () => {
     const { container } = render(<RevelationEditorModal {...defaultProps} />);
-    const cards = Array.from(container.querySelectorAll('.rev-slot-card'));
+    const cards = Array.from(container.querySelectorAll('.equip-slot-card'));
     expect(cards).toHaveLength(5);
-    const headers = cards.map((c) => c.querySelector('.rev-slot-header')?.textContent);
+    const headers = cards.map((c) => c.querySelector('.equip-slot-header')?.textContent);
     expect(headers).toEqual(['Space', 'Sun', 'Moon', 'Star', 'Sky']);
+  });
+
+  describe('anchor scroll', () => {
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+
+    afterEach(() => {
+      Element.prototype.scrollIntoView = originalScrollIntoView;
+    });
+
+    it('scrolls the anchored slot card into view on mount', () => {
+      const spy = vi.fn();
+      Element.prototype.scrollIntoView = spy;
+      render(<RevelationEditorModal {...defaultProps} anchorSlot="star" />);
+      expect(spy).toHaveBeenCalledTimes(1);
+      const anchored = spy.mock.contexts[0] as HTMLElement;
+      expect(anchored.dataset.slot).toBe('star');
+    });
+
+    it('does not scroll when no anchor slot is given', () => {
+      const spy = vi.fn();
+      Element.prototype.scrollIntoView = spy;
+      render(<RevelationEditorModal {...defaultProps} />);
+      expect(spy).not.toHaveBeenCalled();
+    });
   });
 
   it('labels every equip control (Set / Main Stat / Substats) per slot', () => {
@@ -153,11 +178,33 @@ describe('RevelationEditorModal', () => {
     const user = userEvent.setup();
     render(<RevelationEditorModal {...defaultProps} />);
     await user.click(screen.getByText('Build Preferences'));
-    const heavensSelect = screen.getAllByDisplayValue('-- None --')[0];
+    const heavensSelect = document.querySelector<HTMLSelectElement>(
+      'select[name="rev-pref-heavens"]',
+    )!;
     await user.selectOptions(heavensSelect, 'power');
     expect(defaultProps.onSavePreferences).toHaveBeenCalledWith(
       expect.objectContaining({ heavensSetId: 'power' }),
     );
+  });
+
+  it('shows a Build Comments field on the Preferences tab and saves edits', async () => {
+    const user = userEvent.setup();
+    render(<RevelationEditorModal {...defaultProps} />);
+    await user.click(screen.getByText('Build Preferences'));
+    const textarea = screen.getByPlaceholderText(/additional notes/i);
+    await user.type(textarea, 'F');
+    expect(defaultProps.onSavePreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ comments: 'F' }),
+    );
+  });
+
+  it('pre-populates existing comments in the Build Comments textarea', async () => {
+    const user = userEvent.setup();
+    const thief = makeThief();
+    thief.revelationPreferences = { ...thief.revelationPreferences, comments: 'Crit first' };
+    render(<RevelationEditorModal {...defaultProps} thief={thief} />);
+    await user.click(screen.getByText('Build Preferences'));
+    expect(screen.getByDisplayValue('Crit first')).toBeInTheDocument();
   });
 
   it('filters substats to exclude the equipped main stat', () => {

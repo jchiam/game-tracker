@@ -104,6 +104,38 @@ export const ToggleButtons: Story = {
   ),
 };
 
+export const EquipSlotCard: Story = {
+  render: () => (
+    <div style={{ maxWidth: 360, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Per-slot grouping card used by multi-slot equipment editor modals
+          (HSR relics, P5X revelations). Gated controls dim via .is-gated. */}
+      <div className="equip-slot-card">
+        <div className="equip-slot-header">Body</div>
+        <div className="form-group">
+          <label>Set</label>
+          <select className="game-select" defaultValue="">
+            <option value="">-- No Set --</option>
+            <option value="genius">Genius of Brilliant Stars</option>
+          </select>
+        </div>
+        <div className="form-group is-gated">
+          <label>Main Stat</label>
+          <select className="game-select" disabled>
+            <option>-- No Main Stat --</option>
+          </select>
+        </div>
+      </div>
+      <div className="equip-slot-card">
+        <div className="equip-slot-header">Head</div>
+        <div className="form-group">
+          <label>Main Stat</label>
+          <span className="readonly-stat">HP (Fixed)</span>
+        </div>
+      </div>
+    </div>
+  ),
+};
+
 export const GameSelect: Story = {
   render: () => (
     <div style={{ maxWidth: 250 }}>

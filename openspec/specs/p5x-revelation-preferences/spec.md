@@ -1,8 +1,9 @@
 ## Purpose
 
 Build-preference tracking for P5X Revelation Cards: preferred Heavens/Space sets,
-main stat priority chains per variable-stat slot, and substat priority chain.
-Persisted via the shared `savePreferenceRows` pattern.
+main stat priority chains per variable-stat slot, substat priority chain, and
+free-text build comments. Persisted via the shared `savePreferenceRows` pattern,
+with comments stored on the parent tracked-thief row.
 
 ## Requirements
 
@@ -17,13 +18,14 @@ The system SHALL track `revelationPreferences` on each `P5xTrackedThief` contain
   - `star: StatPreference[]`
   - `sky: StatPreference[]`
 - `subStats: StatPreference[]` — preferred substats in priority order
+- `comments: string` — free-text build notes, defaulting to `''`
 
 This reuses the existing `StatPreference` interface (`{ stat, operator, orderIndex }`).
 
 #### Scenario: Default preferences on add
 
 - **WHEN** a Thief is added to the roster
-- **THEN** `revelationPreferences` has null set IDs and empty preference chains
+- **THEN** `revelationPreferences` has null set IDs, empty preference chains, and empty comments
 
 #### Scenario: Preferences independent of equipped cards
 
@@ -113,3 +115,22 @@ Thief's loaded preference arrays SHALL NOT affect any other Thief or any subsequ
 
 - **WHEN** two Thieves are loaded and one Thief's `revelationPreferences.subStats` is mutated
 - **THEN** the other Thief's `revelationPreferences.subStats` is unchanged
+
+### Requirement: Comments persistence via parent column
+
+The system SHALL persist `revelationPreferences.comments` as a `build_comments TEXT` column on `p5x_tracked_thieves`, written through `savePreferenceRows`' `parentUpdate` seam by the thief service's preference-save function — the same parent-column pattern HSR and N2E use. Comments SHALL NOT be stored as a preference row. Loading maps `build_comments` to `comments`, defaulting `''` when null.
+
+#### Scenario: Comments saved with preferences
+
+- **WHEN** revelation preferences are saved with comments text
+- **THEN** the preference rows are replaced and `build_comments` is updated on the thief's tracked row in the same save
+
+#### Scenario: Comments loaded
+
+- **WHEN** the roster loads a thief whose row has `build_comments` set
+- **THEN** `revelationPreferences.comments` contains that text; a null column loads as `''`
+
+#### Scenario: No comments row in preference table
+
+- **WHEN** preference rows are inspected after a save with comments
+- **THEN** no `p5x_revelation_preferences` row carries the comments text

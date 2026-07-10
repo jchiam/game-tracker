@@ -60,6 +60,34 @@ describe('thiefService', () => {
     expect(result[0].personaName).toBe('Carmen');
   });
 
+  it('loadThievesFromDB maps build_comments into revelationPreferences.comments', async () => {
+    const dbRow = {
+      id: 'db-uuid-1',
+      thief_id: 'ann-takamaki',
+      level: 1,
+      awareness: 0,
+      is_favorited: false,
+      build_comments: 'Focus crit rate first',
+    };
+    mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+    const result = await service.loadThievesFromDB('user-1');
+    expect(result[0].revelationPreferences.comments).toBe('Focus crit rate first');
+  });
+
+  it('loadThievesFromDB defaults comments to empty string when column is null', async () => {
+    const dbRow = {
+      id: 'db-uuid-1',
+      thief_id: 'ann-takamaki',
+      level: 1,
+      awareness: 0,
+      is_favorited: false,
+      build_comments: null,
+    };
+    mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+    const result = await service.loadThievesFromDB('user-1');
+    expect(result[0].revelationPreferences.comments).toBe('');
+  });
+
   it('loadThievesFromDB defaults awareness to 0 when column is null', async () => {
     const dbRow = {
       id: 'db-uuid-1',
@@ -263,11 +291,18 @@ describe('thiefService', () => {
           { stat: 'Crit Rate%', operator: '>', orderIndex: 0 },
           { stat: 'ATK%', operator: null, orderIndex: 1 },
         ],
+        comments: 'Focus crit',
       });
 
       expect(mockFrom).toHaveBeenCalledWith('p5x_revelation_preferences');
       expect(builder.delete).toHaveBeenCalled();
       expect(builder.insert).toHaveBeenCalled();
+
+      // Comments persist on the parent row, not as a preference row.
+      expect(mockFrom).toHaveBeenCalledWith('p5x_tracked_thieves');
+      expect(builder.update).toHaveBeenCalledWith({ build_comments: 'Focus crit' });
+      const rows = builder.insert.mock.calls[0][0] as { stat: string }[];
+      expect(rows.some((r) => r.stat === 'Focus crit')).toBe(false);
 
       const insertedRows = builder.insert.mock.calls[0][0];
       expect(insertedRows).toContainEqual(

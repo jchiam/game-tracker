@@ -147,6 +147,28 @@ card root (`--game-card-summary-max-height`, `--game-card-edit-max-height`).
 
 **Tokens used:** `--spacing-3`, `--spacing-md`, `--spacing-lg`, `--typography-font-size-sm`, `--color-text-secondary`
 
+### Equipment slot grid & Target Build readout (shared)
+
+Two shared card patterns in `card.css` used by the equipment-tracking games:
+
+| Class                                                               | Description                                                                      |
+| ------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `.equip-slot-grid`                                                  | Card-entry grid of clickable equipment slots (6 columns default; games override) |
+| `.equip-slot-cell`                                                  | One slot cell; `.active` when the slot holds an item                             |
+| `.equip-slot-icon`                                                  | Per-slot glyph inside a cell (games size/tint via modifiers)                     |
+| `.equip-slot-img`                                                   | Set icon image inside a cell (when the game has set art)                         |
+| `.build-prefs-display`                                              | Target Build `ProgressSection` wrapper                                           |
+| `.prefs-display-grid`                                               | Read-only preference rows container                                              |
+| `.pref-display-row` / `.pref-display-label` / `.pref-display-chain` | One labeled preference row                                                       |
+| `.pref-stat-badge` / `.pref-operator-badge`                         | Stat chip + operator connector (>, ≥, OR)                                        |
+| `.build-comments-row` / `.pref-comments-text`                       | Free-text comments row                                                           |
+
+Clicking a slot cell opens the game's unified equipment editor modal anchored to
+that slot. HSR (6 relic slots) uses the default column count; P5X overrides to 5
+(`.p5x-rev-grid`) and shows glyphs (no set art). The modal's per-slot grouping
+cards use `.equip-slot-card` / `.equip-slot-header` from `controls.css`, and the
+set-gating dim `.is-gated` is shared there too.
+
 ### Investment-color language (`getProgressStyle`)
 
 `src/utils/progressGradient.ts` maps a normalized progress value to a continuous
@@ -592,15 +614,13 @@ badges in `.game-card-badges`:
 
 **Edit body (`.game-card-edit-body-inner`):**
 
-| Class                  | Description                                                        |
-| ---------------------- | ------------------------------------------------------------------ |
-| `.progress-section`    | Level / Eidolons / Traces sections (shared `ProgressSection`)      |
-| `.level-slider`        | Range input with gradient fill via `--slider-fill-color` / `-glow` |
-| `.relics-grid`         | 6-column relic slot grid                                           |
-| `.relic-slot`          | Individual relic slot; `.active` shows equipped relic set icon     |
-| `.build-prefs-display` | Build preference section (main stats + substats)                   |
-| `.pref-stat-badge`     | Stat name chip with operator (>, >=, OR)                           |
-| `.pref-operator-badge` | Operator connector between stats                                   |
+| Class                  | Description                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------ |
+| `.progress-section`    | Level / Eidolons / Traces sections (shared `ProgressSection`)                        |
+| `.level-slider`        | Shared `LevelSlider` with gradient fill via `--slider-fill-color` / `-glow`          |
+| `.equip-slot-grid`     | Shared 6-column relic slot grid (card.css); clicking a cell opens the modal anchored |
+| `.equip-slot-cell`     | Individual relic slot; `.active` shows equipped relic set icon                       |
+| `.build-prefs-display` | Shared Target Build readout (card.css)                                               |
 
 ```html
 <div class="game-card">
@@ -637,8 +657,8 @@ badges in `.game-card-badges`:
     </div>
     <div class="game-card-edit-body">
       <div class="game-card-edit-body-inner">
-        <div class="relics-grid">
-          <div class="relic-slot active"><img class="relic-set-icon" src="..." alt="" /></div>
+        <div class="equip-slot-grid">
+          <div class="equip-slot-cell active"><img class="equip-slot-img" src="..." alt="" /></div>
         </div>
       </div>
     </div>
@@ -664,24 +684,26 @@ badge + edit toggle.
 
 **Collapsed summary:**
 
-- `.game-card-static-stats` — `StatChip`s for `Lv {n}`, `A {n}/6` (awakening), and an
-  optional `Cart {n}%` (cartridge score), each colored by `getProgressStyle`.
+- `.game-card-static-stats` — `StatChip`s for `Lv {n}` and `A {n}/6` (awakening),
+  each colored by `getProgressStyle`. The cartridge score appears only as the header
+  `ScoreBadge` — no score chip.
 - `.game-card-static-line` — selected arc name + equipped cartridge digest (gradient
   tint; `—` via `.no-equip` when empty).
 
 **Edit body:**
 
-| Class                     | Description                                                                          |
-| ------------------------- | ------------------------------------------------------------------------------------ |
-| `.awakening-row`          | Wrapper for the awakening `.toggle-btn` row                                          |
-| `.arc-tier-row`           | Wrapper for the arc-tier `.toggle-btn.compact` row                                   |
-| `.cartridge-slot`         | Clickable slot that opens the cartridge editor modal                                 |
-| `.cartridge-rarity-badge` | S/A/B rarity pill (`rarity-s` / `rarity-a` / `rarity-b`)                             |
-| `.cartridge-target-build` | Target-build preference display; score shown via the shared `.score-badge` grade-s…d |
+| Class                     | Description                                                                                   |
+| ------------------------- | --------------------------------------------------------------------------------------------- |
+| `.awakening-row`          | Wrapper for the awakening `.toggle-btn` row                                                   |
+| `.arc-tier-row`           | Wrapper for the arc-tier `.toggle-btn.compact` row                                            |
+| `.cartridge-slot`         | Clickable slot (inside a "Cartridge" `ProgressSection`) that opens the cartridge editor modal |
+| `.cartridge-rarity-badge` | S/A/B rarity pill (`rarity-s` / `rarity-a` / `rarity-b`)                                      |
 
 Awakening/arc-tier buttons use the canonical `.toggle-btn` (`.compact` for arc tier),
-the level + arc sliders use `.level-slider`, and the arc/cartridge selects use
-`.game-select` — all from `controls.css`. Only the layout wrappers above are game-local.
+the level + arc controls are the shared `LevelSlider` / `Select`, and the Target
+Build readout renders in a `ProgressSection` via the shared classes in `card.css`
+(`.build-prefs-display`, `.prefs-display-grid`, …). Only the layout wrappers above
+are game-local.
 
 **Esper badge colors:** `--color-n2e-esper-anima/chaos/cosmos/incantation/lakshana/psyche`
 **Arc badge colors:** `--color-n2e-arc-gas/liquid/plasma/solid/synthesis`
@@ -868,56 +890,45 @@ Tab content container for the Lineups view. Header with create button, responsiv
 
 `src/pages/honkai-star-rail/components/RelicEditorModal.tsx` | `RelicEditorModal.css`
 
-Two-tab modal for managing relic equipment and build preferences.
+Two-tab modal covering **all six relic slots** in one open (the multi-slot editor
+pattern shared with P5X's `RevelationEditorModal`). Opened from the card's relic
+grid; the clicked slot's card scrolls into view (`anchorSlot`).
 
-**Tab 1 — Equip Relic:**
+**Tab 1 — Equip Relics:** one `.equip-slot-card` per slot (Head/Hands/Body/Feet/
+Sphere/Rope), each with a set `Select` filtered by slot family (`1*` relic sets /
+`3*` planar sets), a main-stat `Select` (read-only `.readonly-stat` for the fixed
+Head/Hands mains), and a `SubStatList`. Choosing the set's "None" option clears
+that slot; the footer has only "Done" (no un-equip button).
 
-- Relic set dropdown
-- Main stat select
-- Up to 4 substat rows (type + value, remove button)
-- Add substat button
-- Un-equip button (danger style)
-
-**Tab 2 — Build Preferences:**
-
-- Main stat chains per slot (Body/Feet/Sphere/Rope)
-- Each chain: stat badges connected by operator badges (>, >=, OR)
-- Substats chain
-- Comments textarea
+**Tab 2 — Build Preferences:** the complete preference surface — main-stat
+`PreferenceChain`s for all four variable slots together, the global substat
+chain, preferred relic/planar set `Select`s, and `BuildComments`.
 
 ```html
-<div class="modal-content relic-editor-modal">
+<div class="modal-content relic-editor">
   <div class="modal-tabs">
-    <button class="tab-btn active">Equip Relic</button>
+    <button class="tab-btn active">Equip Relics</button>
     <button class="tab-btn">Build Preferences</button>
   </div>
-  <!-- Tab 1 -->
-  <div class="tab-content">
-    <div class="form-group">
-      <label>Relic Set</label>
-      <select>
-        ...
-      </select>
-    </div>
-    <div class="substats-section">
-      <div class="substat-row">
-        <select class="substat-type">
+  <div class="relic-editor-body">
+    <div class="equip-slot-card" data-slot="body">
+      <div class="equip-slot-header">Body</div>
+      <div class="form-group">
+        <label>Relic Set</label>
+        <select class="game-select">
           ...
         </select>
-        <input type="number" class="substat-value" />
-        <button class="remove-substat">✕</button>
+      </div>
+      <div class="substats-section">
+        <div class="substat-row">
+          <select class="substat-type">
+            ...
+          </select>
+          <button class="remove-substat">✕</button>
+        </div>
       </div>
     </div>
-    <button class="secondary-action danger">Un-equip</button>
-  </div>
-  <!-- Tab 2 -->
-  <div class="tab-content pref-tab">
-    <div class="pref-chain">
-      <span class="pref-slot-label">Body</span>
-      <span class="pref-stat-badge">HP%</span>
-      <span class="pref-operator-badge">></span>
-      <span class="pref-stat-badge">DEF%</span>
-    </div>
+    <!-- … five more slot cards … -->
   </div>
 </div>
 ```

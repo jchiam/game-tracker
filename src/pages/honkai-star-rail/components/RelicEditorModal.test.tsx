@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { RelicEditorModal } from '@/pages/honkai-star-rail/components/RelicEditorModal';
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet, EquippedRelic } from '@/data/honkai-star-rail/relics';
@@ -16,6 +16,15 @@ const planarRelicSets: RelicSet[] = [
   { id: '302', name: 'Fleet of the Ageless', icon: '/icon4.png' },
 ];
 
+const emptyRelics: HsrTrackedCharacter['relics'] = {
+  head: null,
+  hands: null,
+  body: null,
+  feet: null,
+  sphere: null,
+  rope: null,
+};
+
 function makeChar(overrides: Partial<HsrTrackedCharacter> = {}): HsrTrackedCharacter {
   return {
     id: 'char-1',
@@ -27,481 +36,362 @@ function makeChar(overrides: Partial<HsrTrackedCharacter> = {}): HsrTrackedChara
     isFavorited: false,
     level: 60,
     tracesAttained: false,
-    relics: { head: null, hands: null, body: null, feet: null, sphere: null, rope: null },
+    relics: { ...emptyRelics },
     buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] },
     ...overrides,
   };
 }
 
-describe('RelicEditorModal', () => {
-  it('renders the slot name in the title', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="head"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    expect(screen.getByRole('heading', { name: /edit head/i })).toBeInTheDocument();
+type ModalProps = Parameters<typeof RelicEditorModal>[0];
+
+function renderModal(overrides: Partial<ModalProps> = {}) {
+  const props: ModalProps = {
+    char: makeChar(),
+    availableRelicSets: [...cavernRelicSets, ...planarRelicSets],
+    emptyRelic,
+    onSaveRelic: vi.fn(),
+    onRemoveRelic: vi.fn(),
+    onUpdateBuildPreferences: vi.fn(),
+    onClose: vi.fn(),
+    ...overrides,
+  };
+  return { ...render(<RelicEditorModal {...props} />), props };
+}
+
+const bodyWithSet = (): HsrTrackedCharacter =>
+  makeChar({
+    relics: { ...emptyRelics, body: { setId: '101', mainStat: null, subStats: [] } },
   });
 
-  it('shows the Equip Relic tab by default', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    // Use exact name to avoid matching "Un-equip Relic" in the footer
-    expect(screen.getByRole('button', { name: 'Equip Relic' })).toHaveClass('active');
+describe('RelicEditorModal', () => {
+  it('renders the character name in the title', () => {
+    renderModal();
+    expect(screen.getByRole('heading', { name: /relics — acheron/i })).toBeInTheDocument();
+  });
+
+  it('renders all six slot cards on the Equip tab', () => {
+    const { container } = renderModal();
+    const cards = container.querySelectorAll('.equip-slot-card');
+    expect(cards).toHaveLength(6);
+    const headers = [...container.querySelectorAll('.equip-slot-header')].map((h) => h.textContent);
+    expect(headers).toEqual(['Head', 'Hands', 'Body', 'Feet', 'Sphere', 'Rope']);
+  });
+
+  it('shows the Equip Relics tab by default', () => {
+    renderModal();
+    expect(screen.getByRole('button', { name: 'Equip Relics' })).toHaveClass('active');
     expect(screen.getByRole('button', { name: 'Build Preferences' })).not.toHaveClass('active');
   });
 
   it('switches to Build Preferences tab when clicked', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
+    renderModal();
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
     expect(screen.getByRole('button', { name: 'Build Preferences' })).toHaveClass('active');
   });
 
-  it('shows "HP (Fixed)" for head slot main stat', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="head"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    expect(screen.getByText(/HP \(Fixed\)/)).toBeInTheDocument();
+  // --- Equip tab: fixed mains + slot-family filtering ---
+
+  it('shows fixed read-only mains for head and hands', () => {
+    const { container } = renderModal();
+    const fixed = [...container.querySelectorAll('.readonly-stat')].map((el) => el.textContent);
+    expect(fixed).toEqual(['HP (Fixed)', 'ATK (Fixed)']);
+    // No leftover inline style block (old hardcoded rgba is gone).
+    expect(container.querySelector('.readonly-stat')?.getAttribute('style')).toBeNull();
   });
 
-  it('shows "ATK (Fixed)" for hands slot main stat', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="hands"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    expect(screen.getByText(/ATK \(Fixed\)/)).toBeInTheDocument();
+  it('offers only cavern relic sets (1*) on non-planar slot cards', () => {
+    const { container } = renderModal();
+    const bodySet = container.querySelector<HTMLSelectElement>('select[name="relic-body-set"]')!;
+    const options = within(bodySet)
+      .getAllByRole('option')
+      .map((o) => o.textContent);
+    expect(options).toContain('Passerby of Wandering Cloud');
+    expect(options).not.toContain('Space Sealing Station');
   });
 
-  it('shows a main stat select for body slot', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    // Multiple selects exist for relic set and main stat
-    const selects = screen.getAllByRole('combobox');
-    expect(selects.length).toBeGreaterThanOrEqual(2);
+  it('offers only planar relic sets (3*) on sphere and rope slot cards', () => {
+    const { container } = renderModal();
+    const sphereSet = container.querySelector<HTMLSelectElement>(
+      'select[name="relic-sphere-set"]',
+    )!;
+    const options = within(sphereSet)
+      .getAllByRole('option')
+      .map((o) => o.textContent);
+    expect(options).toContain('Space Sealing Station');
+    expect(options).not.toContain('Passerby of Wandering Cloud');
   });
 
-  it('shows only cavern relic sets for non-planar slots', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={[...cavernRelicSets, ...planarRelicSets]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
+  // --- Equip tab: save/remove interactions ---
+
+  it('calls onSaveRelic with the slot when a relic set is selected', () => {
+    const { container, props } = renderModal();
+    const bodySet = container.querySelector('select[name="relic-body-set"]')!;
+    fireEvent.change(bodySet, { target: { value: '101' } });
+    expect(props.onSaveRelic).toHaveBeenCalledWith(
+      'body',
+      expect.objectContaining({ setId: '101' }),
     );
-    expect(screen.getByText('Passerby of Wandering Cloud')).toBeInTheDocument();
-    expect(screen.queryByText('Space Sealing Station')).not.toBeInTheDocument();
   });
 
-  it('shows only planar relic sets for sphere and rope slots', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="sphere"
-        availableRelicSets={[...cavernRelicSets, ...planarRelicSets]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    expect(screen.getByText('Space Sealing Station')).toBeInTheDocument();
-    expect(screen.queryByText('Passerby of Wandering Cloud')).not.toBeInTheDocument();
+  it('calls onRemoveRelic for that slot when the set is cleared to None', () => {
+    const { container, props } = renderModal({ char: bodyWithSet() });
+    const bodySet = container.querySelector('select[name="relic-body-set"]')!;
+    fireEvent.change(bodySet, { target: { value: '' } });
+    expect(props.onRemoveRelic).toHaveBeenCalledWith('body');
+    expect(props.onSaveRelic).not.toHaveBeenCalled();
   });
 
-  it('calls onClose when Done button is clicked', () => {
-    const onClose = vi.fn();
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={onClose}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={onClose}
-      />,
+  it('calls onSaveRelic when a main stat is selected for a flexible slot', () => {
+    const { container, props } = renderModal({ char: bodyWithSet() });
+    const mainSelect = container.querySelector('select[name="relic-body-main-stat"]')!;
+    fireEvent.change(mainSelect, { target: { value: 'CRIT Rate' } });
+    expect(props.onSaveRelic).toHaveBeenCalledWith(
+      'body',
+      expect.objectContaining({ mainStat: 'CRIT Rate' }),
     );
-    fireEvent.click(screen.getByRole('button', { name: /done/i }));
-    expect(onClose).toHaveBeenCalled();
-  });
-
-  it('calls onRemove when Un-equip Relic button is clicked', () => {
-    const onRemove = vi.fn();
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={onRemove}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: /un-equip relic/i }));
-    expect(onRemove).toHaveBeenCalledTimes(1);
-  });
-
-  it('does not show Un-equip button on preferences tab', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    expect(screen.queryByRole('button', { name: /un-equip relic/i })).not.toBeInTheDocument();
-  });
-
-  it('shows Add Priority buttons on preferences tab for body slot', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    const addButtons = screen.getAllByRole('button', { name: /add priority/i });
-    expect(addButtons.length).toBeGreaterThanOrEqual(2); // main stat + sub stat
-  });
-
-  it('calls onUpdateBuildPreferences when a sub stat priority is added', () => {
-    const onUpdateBuildPreferences = vi.fn();
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={onUpdateBuildPreferences}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    // Click the sub stat "Add Priority" button (last one)
-    const addButtons = screen.getAllByRole('button', { name: /add priority/i });
-    fireEvent.click(addButtons[addButtons.length - 1]);
-    expect(onUpdateBuildPreferences).toHaveBeenCalled();
-  });
-
-  // --- Equip tab: save interactions ---
-
-  it('calls onSave when a relic set is selected from the dropdown', () => {
-    const onSave = vi.fn();
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={onSave}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const selects = screen.getAllByRole('combobox');
-    // selects[0] is the relic set select
-    fireEvent.change(selects[0], { target: { value: '101' } });
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ setId: '101' }));
-  });
-
-  it('calls onSave when a main stat is selected for a flexible slot', () => {
-    const onSave = vi.fn();
-    // A set must be equipped for the (gated) main-stat select to be enabled.
-    const char = makeChar({
-      relics: {
-        head: null,
-        hands: null,
-        body: { setId: '101', mainStat: null, subStats: [] },
-        feet: null,
-        sphere: null,
-        rope: null,
-      },
-    });
-    render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={onSave}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const selects = screen.getAllByRole('combobox');
-    // selects[1] is the main stat select (selects[0] is relic set)
-    fireEvent.change(selects[1], { target: { value: 'CRIT Rate' } });
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ mainStat: 'CRIT Rate' }));
   });
 
   it('prunes a substat that conflicts with the newly selected main stat', () => {
-    const onSave = vi.fn();
     const char = makeChar({
-      relics: {
-        head: null,
-        hands: null,
-        body: { setId: '101', mainStat: null, subStats: ['CRIT Rate'] },
-        feet: null,
-        sphere: null,
-        rope: null,
-      },
+      relics: { ...emptyRelics, body: { setId: '101', mainStat: null, subStats: ['CRIT Rate'] } },
     });
-    render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={onSave}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const selects = screen.getAllByRole('combobox');
-    fireEvent.change(selects[1], { target: { value: 'CRIT Rate' } });
-    expect(onSave).toHaveBeenCalledWith(
+    const { container, props } = renderModal({ char });
+    const mainSelect = container.querySelector('select[name="relic-body-main-stat"]')!;
+    fireEvent.change(mainSelect, { target: { value: 'CRIT Rate' } });
+    expect(props.onSaveRelic).toHaveBeenCalledWith(
+      'body',
       expect.objectContaining({ mainStat: 'CRIT Rate', subStats: [] }),
     );
   });
 
-  it('calls onSave with a new substat when "+ Add Substat" is clicked', () => {
-    const onSave = vi.fn();
-    // Substats are gated until a set is equipped; give the body slot a set.
+  it('calls onSaveRelic with a new substat when "+ Add Substat" is clicked', () => {
+    const { props } = renderModal({ char: bodyWithSet() });
+    // Only the body slot has a set, so exactly one add button is enabled/rendered.
+    fireEvent.click(screen.getByRole('button', { name: /\+ add substat/i }));
+    expect(props.onSaveRelic).toHaveBeenCalledWith(
+      'body',
+      expect.objectContaining({ subStats: expect.arrayContaining([expect.any(String)]) }),
+    );
+  });
+
+  it('calls onSaveRelic with the substat removed when its remove button is clicked', () => {
     const char = makeChar({
-      relics: {
-        head: null,
-        hands: null,
-        body: { setId: '101', mainStat: null, subStats: [] },
-        feet: null,
-        sphere: null,
-        rope: null,
+      relics: { ...emptyRelics, body: { setId: '101', mainStat: null, subStats: ['HP'] } },
+    });
+    const { container, props } = renderModal({ char });
+    fireEvent.click(container.querySelector('.remove-substat')!);
+    expect(props.onSaveRelic).toHaveBeenCalledWith(
+      'body',
+      expect.objectContaining({ subStats: [] }),
+    );
+  });
+
+  it('calls onSaveRelic when a substat type select is changed', () => {
+    const char = makeChar({
+      relics: { ...emptyRelics, body: { setId: '101', mainStat: null, subStats: ['HP'] } },
+    });
+    const { container, props } = renderModal({ char });
+    const subSelect = container.querySelector('select[name="relic-body-substat-type-0"]')!;
+    fireEvent.change(subSelect, { target: { value: 'CRIT Rate' } });
+    expect(props.onSaveRelic).toHaveBeenCalledWith(
+      'body',
+      expect.objectContaining({ subStats: ['CRIT Rate'] }),
+    );
+  });
+
+  // --- Equip tab: set-gating ---
+
+  it('gates variable mains and all substat lists until each slot has a set', () => {
+    const { container } = renderModal();
+    // 4 variable-main groups + 6 substat wrappers, all setless.
+    expect(container.querySelectorAll('.is-gated').length).toBe(10);
+    const mainSelect = container.querySelector<HTMLSelectElement>(
+      'select[name="relic-body-main-stat"]',
+    );
+    expect(mainSelect?.disabled).toBe(true);
+    expect(screen.queryByRole('button', { name: /\+ add substat/i })).toBeNull();
+  });
+
+  it('ungates a slot once it has a set', () => {
+    const { container } = renderModal({ char: bodyWithSet() });
+    // Body's two groups ungate: 10 - 2 = 8.
+    expect(container.querySelectorAll('.is-gated').length).toBe(8);
+    const mainSelect = container.querySelector<HTMLSelectElement>(
+      'select[name="relic-body-main-stat"]',
+    );
+    expect(mainSelect?.disabled).toBe(false);
+    expect(screen.getByRole('button', { name: /\+ add substat/i })).toBeInTheDocument();
+  });
+
+  // --- Anchor scroll ---
+
+  describe('anchor scroll', () => {
+    const originalScrollIntoView = Element.prototype.scrollIntoView;
+
+    afterEach(() => {
+      Element.prototype.scrollIntoView = originalScrollIntoView;
+    });
+
+    it('scrolls the anchored slot card into view on mount', () => {
+      const spy = vi.fn();
+      Element.prototype.scrollIntoView = spy;
+      renderModal({ anchorSlot: 'feet' });
+      expect(spy).toHaveBeenCalledTimes(1);
+      const anchored = spy.mock.contexts[0] as HTMLElement;
+      expect(anchored.dataset.slot).toBe('feet');
+    });
+
+    it('does not scroll when no anchor slot is given', () => {
+      const spy = vi.fn();
+      Element.prototype.scrollIntoView = spy;
+      renderModal();
+      expect(spy).not.toHaveBeenCalled();
+    });
+  });
+
+  // --- Footer ---
+
+  it('renders only a Done button in the footer (no Un-equip)', () => {
+    renderModal();
+    expect(screen.getByRole('button', { name: /done/i })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /un-equip/i })).not.toBeInTheDocument();
+  });
+
+  it('calls onClose when Done button is clicked', () => {
+    const { props } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: /done/i }));
+    expect(props.onClose).toHaveBeenCalled();
+  });
+
+  it('calls onClose when the header ✕ button is clicked', () => {
+    const { props } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: '✕' }));
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  it('calls onClose when the modal overlay is clicked', () => {
+    const { container, props } = renderModal();
+    fireEvent.mouseDown(container.querySelector('.modal-overlay')!);
+    expect(props.onClose).toHaveBeenCalledTimes(1);
+  });
+
+  // --- Build Preferences tab ---
+
+  it('shows all four variable-slot main chains together on the preferences tab', () => {
+    renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    expect(screen.getByText('Preferred Main Stat (Body)')).toBeInTheDocument();
+    expect(screen.getByText('Preferred Main Stat (Feet)')).toBeInTheDocument();
+    expect(screen.getByText('Preferred Main Stat (Sphere)')).toBeInTheDocument();
+    expect(screen.getByText('Preferred Main Stat (Rope)')).toBeInTheDocument();
+    expect(screen.getByText('Preferred Substats (Global)')).toBeInTheDocument();
+    // No chains for the fixed head/hands slots.
+    expect(screen.queryByText('Preferred Main Stat (Head)')).not.toBeInTheDocument();
+    expect(screen.queryByText('Preferred Main Stat (Hands)')).not.toBeInTheDocument();
+  });
+
+  it('shows the preferred relic/planar set selects and comments field', () => {
+    const { container } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    expect(container.querySelector('select[name="pref-relic-set"]')).toBeInTheDocument();
+    expect(container.querySelector('select[name="pref-planar-set"]')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText(/additional notes/i)).toBeInTheDocument();
+  });
+
+  it('calls onUpdateBuildPreferences when a preferred set is chosen', () => {
+    const { container, props } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    fireEvent.change(container.querySelector('select[name="pref-relic-set"]')!, {
+      target: { value: '101' },
+    });
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ relicSetId: '101' }),
+    );
+    fireEvent.change(container.querySelector('select[name="pref-planar-set"]')!, {
+      target: { value: '301' },
+    });
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ planarSetId: '301' }),
+    );
+  });
+
+  it('calls onUpdateBuildPreferences when a sub stat priority is added', () => {
+    const { props } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    const addButtons = screen.getAllByRole('button', { name: /add priority/i });
+    // 4 main chains + 1 substat chain.
+    expect(addButtons).toHaveLength(5);
+    fireEvent.click(addButtons[addButtons.length - 1]);
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalled();
+  });
+
+  it('calls onUpdateBuildPreferences when a main stat preference is removed', () => {
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: {
+          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+          feet: [],
+          sphere: [],
+          rope: [],
+        },
+        subStats: [],
       },
     });
-    render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={onSave}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
+    const { container, props } = renderModal({ char });
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    fireEvent.click(container.querySelector('.remove-pref-btn')!);
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ mainStats: expect.objectContaining({ body: [] }) }),
     );
-    fireEvent.click(screen.getByRole('button', { name: /\+ add substat/i }));
-    // SubStatList adds a row seeded with the first allowed stat type.
-    expect(onSave).toHaveBeenCalledWith(
+  });
+
+  it('calls onUpdateBuildPreferences when a main stat preference stat is changed', () => {
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: {
+          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+          feet: [],
+          sphere: [],
+          rope: [],
+        },
+        subStats: [],
+      },
+    });
+    const { container, props } = renderModal({ char });
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    const prefSelect = container.querySelector('select[name="pref-main-stat-body-0"]')!;
+    fireEvent.change(prefSelect, { target: { value: 'CRIT DMG' } });
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith(
       expect.objectContaining({
-        subStats: expect.arrayContaining([expect.any(String)]),
+        mainStats: expect.objectContaining({
+          body: expect.arrayContaining([expect.objectContaining({ stat: 'CRIT DMG' })]),
+        }),
       }),
     );
   });
 
-  it('calls onSave with the substat removed when its remove button is clicked', () => {
-    const onSave = vi.fn();
+  it('calls onUpdateBuildPreferences when a sub stat preference is removed', () => {
     const char = makeChar({
-      relics: {
-        head: null,
-        hands: null,
-        body: { setId: '101', mainStat: null, subStats: ['HP'] },
-        feet: null,
-        sphere: null,
-        rope: null,
+      buildPreferences: {
+        mainStats: { body: [], feet: [], sphere: [], rope: [] },
+        subStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
       },
     });
-    const { container } = render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={onSave}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(container.querySelector('.remove-substat')!);
-    expect(onSave).toHaveBeenCalledWith(expect.objectContaining({ subStats: [] }));
-  });
-
-  // --- Modal close interactions ---
-
-  it('calls onClose when the header ✕ button is clicked', () => {
-    const onClose = vi.fn();
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={onClose}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: '✕' }));
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it('calls onClose when the modal overlay is clicked', () => {
-    const onClose = vi.fn();
-    const { container } = render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={onClose}
-      />,
-    );
-    fireEvent.mouseDown(container.querySelector('.modal-overlay')!);
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  // --- Build Preferences tab: head/hands behaviour ---
-
-  it('does not show a main stat section on the preferences tab for head slot', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="head"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
+    const { container, props } = renderModal({ char });
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    expect(screen.queryByText(/preferred main stat/i)).not.toBeInTheDocument();
-  });
-
-  it('does not show a main stat section on the preferences tab for hands slot', () => {
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="hands"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
+    fireEvent.click(container.querySelector('.remove-pref-btn')!);
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ subStats: [] }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    expect(screen.queryByText(/preferred main stat/i)).not.toBeInTheDocument();
   });
-
-  // --- Build Preferences tab: editing ---
 
   it('calls onUpdateBuildPreferences when build comments are entered', () => {
-    const onUpdateBuildPreferences = vi.fn();
-    render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={onUpdateBuildPreferences}
-        onClose={vi.fn()}
-      />,
-    );
+    const { props } = renderModal();
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
     fireEvent.change(screen.getByPlaceholderText(/additional notes/i), {
       target: { value: 'Focus on CRIT stats' },
     });
-    expect(onUpdateBuildPreferences).toHaveBeenCalledWith(
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith(
       expect.objectContaining({ comments: 'Focus on CRIT stats' }),
     );
   });
@@ -514,253 +404,8 @@ describe('RelicEditorModal', () => {
         comments: 'Pre-existing comment',
       },
     });
-    render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
+    renderModal({ char });
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
     expect(screen.getByDisplayValue('Pre-existing comment')).toBeInTheDocument();
-  });
-
-  it('calls onUpdateBuildPreferences when a main stat preference is removed', () => {
-    const onUpdateBuildPreferences = vi.fn();
-    const char = makeChar({
-      buildPreferences: {
-        mainStats: {
-          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
-          feet: [],
-          sphere: [],
-          rope: [],
-        },
-        subStats: [],
-      },
-    });
-    const { container } = render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={onUpdateBuildPreferences}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    fireEvent.click(container.querySelector('.remove-pref-btn')!);
-    expect(onUpdateBuildPreferences).toHaveBeenCalledWith(
-      expect.objectContaining({ mainStats: expect.objectContaining({ body: [] }) }),
-    );
-  });
-
-  it('calls onUpdateBuildPreferences when a sub stat preference is removed', () => {
-    const onUpdateBuildPreferences = vi.fn();
-    const char = makeChar({
-      buildPreferences: {
-        mainStats: { body: [], feet: [], sphere: [], rope: [] },
-        subStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
-      },
-    });
-    const { container } = render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={onUpdateBuildPreferences}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    fireEvent.click(container.querySelector('.remove-pref-btn')!);
-    expect(onUpdateBuildPreferences).toHaveBeenCalledWith(
-      expect.objectContaining({ subStats: [] }),
-    );
-  });
-
-  // --- Equip tab: substat type change ---
-
-  it('calls onSave when a substat type select is changed', () => {
-    const onSave = vi.fn();
-    const char = makeChar({
-      relics: {
-        head: null,
-        hands: null,
-        body: { setId: '101', mainStat: null, subStats: ['HP'] },
-        feet: null,
-        sphere: null,
-        rope: null,
-      },
-    });
-    render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={onSave}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const selects = screen.getAllByRole('combobox');
-    // selects[0] = relic set, selects[1] = main stat, selects[2] = substat type
-    fireEvent.change(selects[2], { target: { value: 'CRIT Rate' } });
-    expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({
-        subStats: ['CRIT Rate'],
-      }),
-    );
-  });
-
-  // --- Preferences tab: stat select changes ---
-
-  it('calls onUpdateBuildPreferences when a main stat preference stat is changed', () => {
-    const onUpdateBuildPreferences = vi.fn();
-    const char = makeChar({
-      buildPreferences: {
-        mainStats: {
-          body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
-          feet: [],
-          sphere: [],
-          rope: [],
-        },
-        subStats: [],
-      },
-    });
-    render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={onUpdateBuildPreferences}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    const prefSelects = screen.getAllByRole('combobox');
-    fireEvent.change(prefSelects[0], { target: { value: 'CRIT DMG' } });
-    expect(onUpdateBuildPreferences).toHaveBeenCalledWith(
-      expect.objectContaining({
-        mainStats: expect.objectContaining({
-          body: expect.arrayContaining([expect.objectContaining({ stat: 'CRIT DMG' })]),
-        }),
-      }),
-    );
-  });
-
-  it('calls onUpdateBuildPreferences when a sub stat preference stat is changed', () => {
-    const onUpdateBuildPreferences = vi.fn();
-    const char = makeChar({
-      buildPreferences: {
-        mainStats: { body: [], feet: [], sphere: [], rope: [] },
-        subStats: [{ stat: 'HP', operator: null, orderIndex: 0 }],
-      },
-    });
-    render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={onUpdateBuildPreferences}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    const prefSelects = screen.getAllByRole('combobox');
-    fireEvent.change(prefSelects[0], { target: { value: 'CRIT Rate' } });
-    expect(onUpdateBuildPreferences).toHaveBeenCalledWith(
-      expect.objectContaining({
-        subStats: expect.arrayContaining([expect.objectContaining({ stat: 'CRIT Rate' })]),
-      }),
-    );
-  });
-
-  // --- Equip tab: fixed-main read-only + set-gating ---
-
-  it('renders the fixed head main as .readonly-stat with no inline style', () => {
-    const { container } = render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="head"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const fixed = container.querySelector('.readonly-stat');
-    expect(fixed?.textContent).toMatch(/HP \(Fixed\)/);
-    // No leftover inline style block (old hardcoded rgba is gone).
-    expect(fixed?.getAttribute('style')).toBeNull();
-  });
-
-  it('gates the variable-slot main + substats until a set is equipped', () => {
-    const { container } = render(
-      <RelicEditorModal
-        char={makeChar()}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    // No set: main-stat select disabled, add-substat hidden, two gated groups dimmed.
-    const mainSelect = container.querySelector<HTMLSelectElement>('select[name="relic-main-stat"]');
-    expect(mainSelect?.disabled).toBe(true);
-    expect(screen.queryByRole('button', { name: /\+ add substat/i })).toBeNull();
-    expect(container.querySelectorAll('.is-gated').length).toBe(2);
-  });
-
-  it('enables the variable-slot main + substats once a set is equipped', () => {
-    const char = makeChar({
-      relics: {
-        head: null,
-        hands: null,
-        body: { setId: '101', mainStat: null, subStats: [] },
-        feet: null,
-        sphere: null,
-        rope: null,
-      },
-    });
-    const { container } = render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={cavernRelicSets}
-        emptyRelic={emptyRelic}
-        onSave={vi.fn()}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    const mainSelect = container.querySelector<HTMLSelectElement>('select[name="relic-main-stat"]');
-    expect(mainSelect?.disabled).toBe(false);
-    expect(screen.getByRole('button', { name: /\+ add substat/i })).toBeInTheDocument();
-    expect(container.querySelectorAll('.is-gated').length).toBe(0);
   });
 });

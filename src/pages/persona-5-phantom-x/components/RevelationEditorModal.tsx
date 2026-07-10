@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { P5xTrackedThief, P5xRevelationPreferences } from '@/types';
 import type { EquippedRevelation, RevelationSlot } from '@/data/persona-5-phantom-x/revelations';
 import {
@@ -12,6 +12,7 @@ import {
   toStatOptions,
 } from '@/data/persona-5-phantom-x/revelations';
 import { Modal } from '@/components/Modal';
+import { BuildComments } from '@/components/BuildComments';
 import { FormGroup } from '@/components/FormGroup';
 import { Select } from '@/components/Select';
 import { SubStatList } from '@/components/SubStatList';
@@ -20,6 +21,7 @@ import './RevelationEditorModal.css';
 
 interface RevelationEditorModalProps {
   thief: P5xTrackedThief;
+  anchorSlot?: RevelationSlot;
   onUpdateSlot: (slot: RevelationSlot, data: EquippedRevelation | null) => void;
   onSavePreferences: (prefs: P5xRevelationPreferences) => void;
   onClose: () => void;
@@ -27,6 +29,7 @@ interface RevelationEditorModalProps {
 
 export function RevelationEditorModal({
   thief,
+  anchorSlot,
   onUpdateSlot,
   onSavePreferences,
   onClose,
@@ -61,7 +64,7 @@ export function RevelationEditorModal({
 
       <div className="revelation-editor-body">
         {activeTab === 'equip' ? (
-          <EquipTab thief={thief} onUpdateSlot={onUpdateSlot} />
+          <EquipTab thief={thief} anchorSlot={anchorSlot} onUpdateSlot={onUpdateSlot} />
         ) : (
           <PreferencesTab prefs={thief.revelationPreferences} onSave={onSavePreferences} />
         )}
@@ -72,11 +75,19 @@ export function RevelationEditorModal({
 
 function EquipTab({
   thief,
+  anchorSlot,
   onUpdateSlot,
 }: {
   thief: P5xTrackedThief;
+  anchorSlot?: RevelationSlot;
   onUpdateSlot: (slot: RevelationSlot, data: EquippedRevelation | null) => void;
 }) {
+  const anchorRef = useRef<HTMLDivElement | null>(null);
+  // Optional call — jsdom has no scrollIntoView.
+  useEffect(() => {
+    anchorRef.current?.scrollIntoView?.({ block: 'start' });
+  }, []);
+
   return (
     <>
       {REVELATION_SLOTS.map((slot) => {
@@ -131,8 +142,13 @@ function EquipTab({
         const mainGatedClass = isFixed ? undefined : gatedClass;
 
         return (
-          <div key={slot} className="rev-slot-card">
-            <div className="rev-slot-header">{slotName}</div>
+          <div
+            key={slot}
+            ref={slot === anchorSlot ? anchorRef : undefined}
+            className="equip-slot-card"
+            data-slot={slot}
+          >
+            <div className="equip-slot-header">{slotName}</div>
             <FormGroup label="Set">
               <Select
                 name={`rev-${slot}-set`}
@@ -145,7 +161,7 @@ function EquipTab({
             <FormGroup label="Main Stat" className={mainGatedClass}>
               {isFixed ? (
                 // Fixed mains are read-only: Sun shows its single fixed stat, Space its two.
-                <div className="rev-fixed-mains">
+                <div className="readonly-stat-row">
                   {slotMainIds.map((id) => (
                     <span key={id} className="readonly-stat">
                       {statLabel(id)}
@@ -191,22 +207,22 @@ function PreferencesTab({
 }) {
   return (
     <>
-      <FormGroup label="Preferred Heavens Set">
-        <Select
-          name="rev-pref-heavens"
-          value={prefs.heavensSetId ?? ''}
-          options={ALL_HEAVENS_SETS.map((s) => ({ value: s.id, label: s.name }))}
-          onChange={(v) => onSave({ ...prefs, heavensSetId: v || null })}
-          placeholder="-- None --"
-        />
-      </FormGroup>
-
       <FormGroup label="Preferred Space Set">
         <Select
           name="rev-pref-space"
           value={prefs.spaceSetId ?? ''}
           options={ALL_SPACE_SETS.map((s) => ({ value: s.id, label: s.name }))}
           onChange={(v) => onSave({ ...prefs, spaceSetId: v || null })}
+          placeholder="-- None --"
+        />
+      </FormGroup>
+
+      <FormGroup label="Preferred Heavens Set">
+        <Select
+          name="rev-pref-heavens"
+          value={prefs.heavensSetId ?? ''}
+          options={ALL_HEAVENS_SETS.map((s) => ({ value: s.id, label: s.name }))}
+          onChange={(v) => onSave({ ...prefs, heavensSetId: v || null })}
           placeholder="-- None --"
         />
       </FormGroup>
@@ -252,6 +268,13 @@ function PreferencesTab({
           onChange={(values) => onSave({ ...prefs, subStats: values })}
         />
       </FormGroup>
+
+      <BuildComments
+        label="Build Comments"
+        value={prefs.comments || ''}
+        placeholder="Additional notes about this build..."
+        onChange={(comments) => onSave({ ...prefs, comments })}
+      />
     </>
   );
 }

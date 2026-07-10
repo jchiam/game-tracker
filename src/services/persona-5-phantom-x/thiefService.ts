@@ -37,6 +37,7 @@ const defaultRevelationPreferences: P5xRevelationPreferences = {
   spaceSetId: null,
   mainStats: { moon: [], star: [], sky: [] },
   subStats: [],
+  comments: '',
 };
 
 const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
@@ -55,7 +56,7 @@ const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
     weapon_forge: 0,
   },
   select:
-    'id, thief_id, level, awareness, is_favorited, skills_leveled, rose_maxed, mindscape_maxed, weapon_rarity, weapon_level, weapon_forge',
+    'id, thief_id, level, awareness, is_favorited, skills_leveled, rose_maxed, mindscape_maxed, weapon_rarity, weapon_level, weapon_forge, build_comments',
   fromRow: (row, base) => ({
     ...base,
     dbId: row.id,
@@ -98,6 +99,7 @@ const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
         ...defaultRevelationPreferences,
         mainStats: { moon: [], star: [], sky: [] },
         subStats: [],
+        comments: row.build_comments || '',
       };
       for (const p of prefRows) {
         switch (p.category) {
@@ -149,41 +151,8 @@ export const deleteThief = svc.remove;
 export const updateThief = svc.update;
 
 // --- Revelation Cards ---
-
-interface RevelationRow {
-  thief_row_id: string;
-  slot: string;
-  set_id: string | null;
-  main_stat: string | null;
-  sub_stats: string[];
-}
-
-export async function loadRevelations(
-  thiefDbIds: string[],
-): Promise<Record<string, Record<string, EquippedRevelation>>> {
-  if (!DB_ENABLED || thiefDbIds.length === 0) return {};
-
-  const { data, error } = await supabase
-    .from('p5x_revelation_cards')
-    .select('thief_row_id, slot, set_id, main_stat, sub_stats')
-    .in('thief_row_id', thiefDbIds);
-
-  if (error) {
-    console.error('loadRevelations error:', error);
-    throw error;
-  }
-
-  const grouped: Record<string, Record<string, EquippedRevelation>> = {};
-  for (const row of (data ?? []) as RevelationRow[]) {
-    if (!grouped[row.thief_row_id]) grouped[row.thief_row_id] = {};
-    grouped[row.thief_row_id][row.slot] = {
-      setId: row.set_id,
-      mainStat: row.main_stat,
-      subStats: row.sub_stats ?? [],
-    };
-  }
-  return grouped;
-}
+// Loading happens through the roster `extras` seam above; only the per-slot
+// write functions live here.
 
 export async function upsertRevelationCard(
   thiefDbId: string,
@@ -225,64 +194,8 @@ export async function deleteRevelationCard(thiefDbId: string, slot: RevelationSl
 }
 
 // --- Revelation Preferences ---
-
-export async function loadRevelationPreferences(
-  thiefDbIds: string[],
-): Promise<Record<string, P5xRevelationPreferences>> {
-  if (!DB_ENABLED || thiefDbIds.length === 0) return {};
-
-  const { data, error } = await supabase
-    .from('p5x_revelation_preferences')
-    .select('thief_row_id, category, stat, operator, order_index')
-    .in('thief_row_id', thiefDbIds)
-    .order('order_index');
-
-  if (error) {
-    console.error('loadRevelationPreferences error:', error);
-    throw error;
-  }
-
-  const grouped: Record<string, P5xRevelationPreferences> = {};
-
-  for (const row of data ?? []) {
-    if (!grouped[row.thief_row_id]) {
-      grouped[row.thief_row_id] = {
-        heavensSetId: null,
-        spaceSetId: null,
-        mainStats: { moon: [], star: [], sky: [] },
-        subStats: [],
-      };
-    }
-    const prefs = grouped[row.thief_row_id];
-    const entry: StatPreference = {
-      stat: row.stat,
-      operator: row.operator,
-      orderIndex: row.order_index,
-    };
-
-    switch (row.category) {
-      case 'heavens_set':
-        prefs.heavensSetId = row.stat;
-        break;
-      case 'space_set':
-        prefs.spaceSetId = row.stat;
-        break;
-      case 'moon_main':
-        prefs.mainStats.moon.push(entry);
-        break;
-      case 'star_main':
-        prefs.mainStats.star.push(entry);
-        break;
-      case 'sky_main':
-        prefs.mainStats.sky.push(entry);
-        break;
-      case 'sub_stats':
-        prefs.subStats.push(entry);
-        break;
-    }
-  }
-  return grouped;
-}
+// Loading happens through the roster `extras` seam above (comments load from
+// the parent row's build_comments); only the save function lives here.
 
 export async function saveRevelationPreferences(
   thiefDbId: string,
@@ -328,6 +241,10 @@ export async function saveRevelationPreferences(
   await savePreferenceRows({
     dbId: thiefDbId,
     deleteFrom: [{ table: 'p5x_revelation_preferences', fkColumn: 'thief_row_id' }],
+    parentUpdate: {
+      table: 'p5x_tracked_thieves',
+      row: { build_comments: prefs.comments },
+    },
     inserts: rows.length > 0 ? [{ table: 'p5x_revelation_preferences', rows }] : [],
   });
 }

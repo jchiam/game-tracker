@@ -36,6 +36,7 @@ function makeThief(overrides: Partial<P5xTrackedThief> = {}): P5xTrackedThief {
       spaceSetId: null,
       mainStats: { moon: [], star: [], sky: [] },
       subStats: [],
+      comments: '',
     },
     ...overrides,
   };
@@ -340,43 +341,92 @@ describe('ThiefCard', () => {
     expect(screen.getAllByText('Peace 2pc · Power 2pc').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('renders a space-first per-set readout in the edit Revelations section', async () => {
+  it('renders a five-cell slot grid, space-first, with active cells for equipped slots', async () => {
     const user = userEvent.setup();
     const thief = makeThief({
       revelations: {
         sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
-        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
-        star: { setId: 'strife', mainStat: 'hp-pct', subStats: [] },
-        sky: { setId: 'strife', mainStat: 'speed', subStats: [] },
+        moon: null,
+        star: null,
+        sky: null,
         space: { setId: 'meditation', mainStat: null, subStats: [] },
       },
     });
     render(<ThiefCard {...defaultProps} thief={thief} />);
     await user.click(screen.getByTitle('Edit'));
-    const readout = document.querySelector('.rev-set-readout');
-    expect(readout).not.toBeNull();
-    const lines = Array.from(readout!.querySelectorAll('li')).map((li) => li.textContent);
-    expect(lines).toEqual(['Meditation (Space)', 'Strife 4pc']);
+    const grid = document.querySelector('.equip-slot-grid.p5x-rev-grid');
+    expect(grid).not.toBeNull();
+    const cells = Array.from(grid!.querySelectorAll('.equip-slot-cell'));
+    expect(cells).toHaveLength(5);
+    // Space-first order matches the modal's slot order.
+    expect(cells.map((c) => c.getAttribute('title'))).toEqual([
+      'Space',
+      'Sun',
+      'Moon',
+      'Star',
+      'Sky',
+    ]);
+    expect(cells[0]).toHaveClass('active');
+    expect(cells[1]).toHaveClass('active');
+    expect(cells[2]).not.toHaveClass('active');
+    // No text readout or Edit Revelations button remains.
+    expect(document.querySelector('.rev-set-readout')).toBeNull();
+    expect(screen.queryByText('Edit Revelations')).toBeNull();
   });
 
-  it('edit Revelations section shows — and no readout when no set is active', async () => {
+  it('edit Revelations section shows — and all cells inactive when no card is equipped', async () => {
     const user = userEvent.setup();
     render(<ThiefCard {...defaultProps} />); // default thief: all slots null
     await user.click(screen.getByTitle('Edit'));
-    expect(document.querySelector('.rev-set-readout')).toBeNull();
     const revSection = Array.from(document.querySelectorAll('.progress-section')).find(
       (s) => s.querySelector('.section-header span')?.textContent === 'Revelations',
     );
     expect(revSection).toBeTruthy();
     expect(revSection!.querySelector('.section-value')?.textContent).toBe('—');
+    expect(revSection!.querySelectorAll('.equip-slot-cell.active')).toHaveLength(0);
+    expect(revSection!.querySelectorAll('.equip-slot-cell')).toHaveLength(5);
   });
 
-  it('calls onOpenRevelations when Edit Revelations button is clicked', async () => {
+  it('calls onOpenRevelations with the clicked slot', async () => {
     const user = userEvent.setup();
     render(<ThiefCard {...defaultProps} />);
     await user.click(screen.getByTitle('Edit'));
-    await user.click(screen.getByText('Edit Revelations'));
-    expect(defaultProps.onOpenRevelations).toHaveBeenCalledWith('ann-takamaki');
+    await user.click(screen.getByTitle('Star'));
+    expect(defaultProps.onOpenRevelations).toHaveBeenCalledWith('ann-takamaki', 'star');
+  });
+
+  it('renders a Target Build readout when revelation preferences are set', async () => {
+    const user = userEvent.setup();
+    const thief = makeThief({
+      revelationPreferences: {
+        heavensSetId: 'strife',
+        spaceSetId: null,
+        mainStats: {
+          moon: [{ stat: 'attack-pct', operator: '>', orderIndex: 0 }],
+          star: [],
+          sky: [],
+        },
+        subStats: [{ stat: 'crit-rate', operator: null, orderIndex: 0 }],
+        comments: 'Crit build',
+      },
+    });
+    render(<ThiefCard {...defaultProps} thief={thief} />);
+    await user.click(screen.getByTitle('Edit'));
+    const readout = document.querySelector('.build-prefs-display');
+    expect(readout).not.toBeNull();
+    expect(readout!.textContent).toContain('Sets');
+    expect(readout!.textContent).toContain('Moon');
+    expect(readout!.textContent).toContain('Subs');
+    expect(readout!.textContent).toContain('Crit build');
+    // Stat ids render as in-game labels.
+    expect(readout!.textContent).toContain('Attack%');
+  });
+
+  it('renders no Target Build readout with default (empty) preferences', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    expect(document.querySelector('.build-prefs-display')).toBeNull();
   });
 
   it('caps the revelation summary chip with the p5x-revelation-chip class', () => {
@@ -451,6 +501,7 @@ describe('ThiefCard', () => {
           sky: [],
         },
         subStats: [],
+        comments: '',
       },
     });
 

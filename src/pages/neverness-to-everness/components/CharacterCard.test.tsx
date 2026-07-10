@@ -94,7 +94,7 @@ describe('CharacterCard', () => {
     expect(screen.getByText('A 2/6')).toBeInTheDocument();
   });
 
-  it('displays cartridge score chip when preferences exist', () => {
+  it('never renders a score chip — the header badge is the only score surface', () => {
     vi.mocked(calculateCartridgeScore).mockReturnValue(82);
     vi.mocked(getScoreGrade).mockReturnValue('A');
     const char = makeChar({
@@ -104,13 +104,9 @@ describe('CharacterCard', () => {
         subStats: [],
       },
     });
-    render(<CharacterCard character={char} {...defaultProps} />);
-    expect(screen.getByText('Cart 82%')).toBeInTheDocument();
-  });
-
-  it('does not show cartridge score chip when no preferences', () => {
-    render(<CharacterCard character={makeChar()} {...defaultProps} />);
+    const { container } = render(<CharacterCard character={char} {...defaultProps} />);
     expect(screen.queryByText(/^Cart \d+%$/)).not.toBeInTheDocument();
+    expect(container.querySelector('.score-badge')?.textContent).toBe('82%');
   });
 
   // --- Favorite ---
@@ -358,6 +354,37 @@ describe('CharacterCard', () => {
     expect(screen.getByText('ATK%')).toBeInTheDocument();
     expect(screen.getByText('CRIT Rate')).toBeInTheDocument();
     expect(screen.getByText('Prioritize crit')).toBeInTheDocument();
+  });
+
+  it('wraps the cartridge slot and Target Build in shared ProgressSections', () => {
+    const char = makeChar({
+      cartridgePreferences: {
+        cartridgeId: null,
+        mainStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
+        subStats: [],
+      },
+    });
+    const { container } = render(<CharacterCard character={char} {...defaultProps} />);
+    const sectionLabels = [...container.querySelectorAll('.progress-section .section-header')].map(
+      (h) => h.querySelector('span')?.textContent,
+    );
+    expect(sectionLabels).toContain('Cartridge');
+    expect(sectionLabels).toContain('Target Build');
+    // Readout renders via the shared Target Build classes.
+    expect(container.querySelector('.build-prefs-display .prefs-display-grid')).toBeInTheDocument();
+    expect(container.querySelector('.cartridge-target-build')).not.toBeInTheDocument();
+  });
+
+  it('renders the level and arc sliders as shared LevelSliders with gradient fill', () => {
+    const { container } = render(
+      <CharacterCard character={makeChar({ arcId: 'arc-1' })} {...defaultProps} />,
+    );
+    const sliders = container.querySelectorAll<HTMLInputElement>('input.level-slider');
+    expect(sliders).toHaveLength(2);
+    for (const slider of sliders) {
+      expect(slider.type).toBe('range');
+      expect(slider.style.getPropertyValue('--slider-fill-color')).not.toBe('');
+    }
   });
 
   it('renders >= operator as ≥ in target build', () => {

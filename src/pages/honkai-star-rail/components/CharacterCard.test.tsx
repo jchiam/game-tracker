@@ -214,9 +214,10 @@ describe('CharacterCard', () => {
 
   // --- Relic slot rendering ---
 
-  it('renders all 6 relic slots', () => {
+  it('renders all 6 relic slots in the shared equip-slot grid', () => {
     const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
-    expect(container.querySelectorAll('.relic-slot')).toHaveLength(6);
+    expect(container.querySelector('.equip-slot-grid')).toBeInTheDocument();
+    expect(container.querySelectorAll('.equip-slot-cell')).toHaveLength(6);
   });
 
   it('marks a relic slot as active when a relic with a setId is equipped', () => {
@@ -227,7 +228,46 @@ describe('CharacterCard', () => {
       },
     });
     const { container } = render(<CharacterCard char={char} {...defaultProps} />);
-    expect(container.querySelector('.relic-slot.active')).toBeInTheDocument();
+    expect(container.querySelector('.equip-slot-cell.active')).toBeInTheDocument();
+  });
+
+  it('shows the Target Build readout with a Sets row when only set preferences exist', () => {
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: { body: [], feet: [], sphere: [], rope: [] },
+        subStats: [],
+        relicSetId: '101',
+        planarSetId: '301',
+      },
+    });
+    const { container } = render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[
+          { id: '101', name: 'Passerby of Wandering Cloud', icon: '/icon1.png' },
+          { id: '301', name: 'Space Sealing Station', icon: '/icon3.png' },
+        ]}
+      />,
+    );
+    const readout = container.querySelector('.build-prefs-display');
+    expect(readout).not.toBeNull();
+    expect(readout!.textContent).toContain('Sets');
+    expect(readout!.textContent).toContain('Passerby of Wandering Cloud');
+    expect(readout!.textContent).toContain('Space Sealing Station');
+  });
+
+  it('hides the Target Build readout when no preference of any kind is set', () => {
+    const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    expect(container.querySelector('.build-prefs-display')).toBeNull();
+  });
+
+  it('renders the level control as the shared LevelSlider with gradient fill', () => {
+    const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    const slider = container.querySelector<HTMLInputElement>('input.level-slider');
+    expect(slider).toBeInTheDocument();
+    expect(slider?.type).toBe('range');
+    expect(slider?.style.getPropertyValue('--slider-fill-color')).not.toBe('');
   });
 
   it('shows a relic set icon image when the equipped set is found in availableRelicSets', () => {

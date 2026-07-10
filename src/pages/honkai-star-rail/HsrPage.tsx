@@ -59,7 +59,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
 
   const [editingRelic, setEditingRelic] = useState<{
     charId: string;
-    slot: keyof HsrTrackedCharacter['relics'];
+    anchorSlot: keyof HsrTrackedCharacter['relics'];
   } | null>(null);
 
   const handleAddCharacter = async (char: Parameters<typeof addCharacter>[0]) => {
@@ -100,7 +100,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           onUpdateLevel={updateCharacterLevel}
           onToggleTraces={toggleCharacterTraces}
           onToggleFavorite={toggleFavoriteCharacter}
-          onToggleRelic={(id, slot) => setEditingRelic({ charId: id, slot })}
+          onToggleRelic={(id, slot) => setEditingRelic({ charId: id, anchorSlot: slot })}
         />
       ))}
       partiesTab={
@@ -118,14 +118,13 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
       {editingRelic && editingChar && (
         <RelicEditorModal
           char={editingChar}
-          slot={editingRelic.slot}
+          anchorSlot={editingRelic.anchorSlot}
           availableRelicSets={availableRelicSets}
           emptyRelic={emptyRelic}
-          onSave={(relicData) => saveRelicData(editingRelic, relicData)}
-          onRemove={async () => {
-            await removeRelicData(editingRelic);
-            setEditingRelic(null);
-          }}
+          onSaveRelic={(slot, relicData) =>
+            saveRelicData({ charId: editingChar.id, slot }, relicData)
+          }
+          onRemoveRelic={(slot) => removeRelicData({ charId: editingChar.id, slot })}
           onUpdateBuildPreferences={(newPrefs) => saveBuildPreferences(editingChar.id, newPrefs)}
           onClose={() => setEditingRelic(null)}
         />
