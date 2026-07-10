@@ -122,42 +122,60 @@ function EquipTab({
           onUpdateSlot(slot, updated);
         };
 
+        const slotName = slot.charAt(0).toUpperCase() + slot.slice(1);
+        // Editable stat controls are meaningless until a Set is picked — gate (dim + disable)
+        // until then. A fixed main is always known regardless of set, so it is never gated;
+        // only variable-main selects and the substat list are.
+        const hasSet = Boolean(card?.setId);
+        const gatedClass = hasSet ? undefined : 'is-gated';
+        const mainGatedClass = isFixed ? undefined : gatedClass;
+
         return (
-          <FormGroup key={slot} label={slot.charAt(0).toUpperCase() + slot.slice(1)}>
-            <Select
-              name={`rev-${slot}-set`}
-              value={card?.setId ?? ''}
-              options={setOptions}
-              onChange={handleSetChange}
-              placeholder="-- No Set --"
-            />
-            {isFixed ? (
-              // Fixed mains are read-only: Sun shows its single fixed stat, Space its two.
-              <div className="rev-fixed-mains">
-                {slotMainIds.map((id) => (
-                  <span key={id} className="rev-fixed-main">
-                    {statLabel(id)}
-                  </span>
-                ))}
-              </div>
-            ) : (
+          <div key={slot} className="rev-slot-card">
+            <div className="rev-slot-header">{slotName}</div>
+            <FormGroup label="Set">
               <Select
-                name={`rev-${slot}-main`}
-                value={mainStat}
-                options={toStatOptions(slotMainIds)}
-                onChange={handleMainStatChange}
+                name={`rev-${slot}-set`}
+                value={card?.setId ?? ''}
+                options={setOptions}
+                onChange={handleSetChange}
+                placeholder="-- No Set --"
               />
-            )}
-            <SubStatList
-              namePrefix={`rev-${slot}-sub`}
-              options={toStatOptions(SUB_STATS)}
-              excludeValues={equippedMainIds}
-              values={card?.subStats ?? []}
-              onChange={handleSubStatsChange}
-              max={4}
-              addLabel="+ Substat"
-            />
-          </FormGroup>
+            </FormGroup>
+            <FormGroup label="Main Stat" className={mainGatedClass}>
+              {isFixed ? (
+                // Fixed mains are read-only: Sun shows its single fixed stat, Space its two.
+                <div className="rev-fixed-mains">
+                  {slotMainIds.map((id) => (
+                    <span key={id} className="readonly-stat">
+                      {statLabel(id)}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <Select
+                  name={`rev-${slot}-main`}
+                  value={mainStat}
+                  options={toStatOptions(slotMainIds)}
+                  onChange={handleMainStatChange}
+                  disabled={!hasSet}
+                />
+              )}
+            </FormGroup>
+            <div className={gatedClass}>
+              <SubStatList
+                namePrefix={`rev-${slot}-sub`}
+                label="Substats"
+                options={toStatOptions(SUB_STATS)}
+                excludeValues={equippedMainIds}
+                values={card?.subStats ?? []}
+                onChange={handleSubStatsChange}
+                max={4}
+                addLabel="+ Substat"
+                disabled={!hasSet}
+              />
+            </div>
+          </div>
         );
       })}
     </>

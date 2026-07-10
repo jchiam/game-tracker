@@ -18,18 +18,35 @@
   }
 }
 
-/* Read-only fixed main stats (Sun: one; Space: two) — displayed, not selectable. */
+/* Each revelation slot is a bordered card so the five stacked slots stay scannable. */
+.rev-slot-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-md);
+  background: var(--color-input-surface);
+}
+
+.rev-slot-header {
+  font-size: var(--typography-font-size-base);
+  font-weight: var(--typography-font-weight-bold);
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Set-gated stat controls: dimmed + non-interactive until a Set is chosen.
+   The inner control's own `disabled` prop blocks interaction; this dims. */
+.is-gated {
+  opacity: 0.4;
+}
+
+/* Read-only fixed main stats (Sun: one; Space: two) — laid out as chips via
+   the shared `.readonly-stat` class; this only owns the row wrapping. */
 .rev-fixed-mains {
   display: flex;
   flex-wrap: wrap;
   gap: var(--spacing-sm);
-}
-
-.rev-fixed-main {
-  padding: var(--spacing-xs) var(--spacing-sm);
-  border: 1px solid var(--color-ui-border);
-  border-radius: var(--border-radius-sm);
-  background: var(--color-input-surface);
-  color: var(--color-text-secondary);
-  font-size: var(--typography-font-size-sm);
 }

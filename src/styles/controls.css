@@ -330,6 +330,19 @@
   }
 }
 
+/* Read-only stat display — a non-editable stat value (e.g. a slot's fixed main
+   stat), styled to read as an input surface without being interactive. Shared
+   across equipment editors. */
+.readonly-stat {
+  display: inline-block;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-input-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--typography-font-size-sm);
+}
+
 /* Roster predicate-filter chip (used by every game gate). Accent comes from the
    `--filter-chip-accent` custom property set per game on the `.filter-row`. */
 .filter-row {

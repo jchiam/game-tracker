@@ -22,6 +22,8 @@ interface SubStatListProps {
   label?: string;
   /** Option values omitted from every row except a row whose own value is already that value. */
   excludeValues?: readonly string[];
+  /** When true, row selects are disabled and the add button is suppressed. */
+  disabled?: boolean;
 }
 
 /**
@@ -39,6 +41,7 @@ export function SubStatList({
   addLabel = '+ Add Substat',
   label,
   excludeValues,
+  disabled,
 }: SubStatListProps) {
   // A row offers every non-excluded option, plus its own current value (so an
   // already-chosen-but-now-conflicting stat stays visible until the user changes it).
@@ -63,6 +66,7 @@ export function SubStatList({
             value={stat}
             placeholder="- Stat -"
             options={rowOptions(stat)}
+            disabled={disabled}
             onChange={(type) => onChange(values.map((v, i) => (i === idx ? type : v)))}
           />
           <button
@@ -74,7 +78,7 @@ export function SubStatList({
         </div>
       ))}
 
-      {!atCap && (
+      {!atCap && !disabled && (
         <button className="add-substat-btn" onClick={() => onChange([...values, firstAllowed])}>
           {addLabel}
         </button>

@@ -49,24 +49,72 @@ describe('RevelationEditorModal', () => {
     expect(screen.getByText('Build Preferences')).not.toHaveClass('active');
   });
 
-  it('renders all 5 slot FormGroups in Equip tab', () => {
-    render(<RevelationEditorModal {...defaultProps} />);
-    expect(screen.getByText('Sun')).toBeInTheDocument();
-    expect(screen.getByText('Moon')).toBeInTheDocument();
-    expect(screen.getByText('Star')).toBeInTheDocument();
-    expect(screen.getByText('Sky')).toBeInTheDocument();
-    expect(screen.getByText('Space')).toBeInTheDocument();
+  it('renders five bordered slot cards, space-first', () => {
+    const { container } = render(<RevelationEditorModal {...defaultProps} />);
+    const cards = Array.from(container.querySelectorAll('.rev-slot-card'));
+    expect(cards).toHaveLength(5);
+    const headers = cards.map((c) => c.querySelector('.rev-slot-header')?.textContent);
+    expect(headers).toEqual(['Space', 'Sun', 'Moon', 'Star', 'Sky']);
   });
 
-  it('renders fixed mains as read-only labels (Sun: HP; Space: Attack + Defense)', () => {
+  it('labels every equip control (Set / Main Stat / Substats) per slot', () => {
+    render(<RevelationEditorModal {...defaultProps} />);
+    // One of each label per slot.
+    expect(screen.getAllByText('Set')).toHaveLength(5);
+    expect(screen.getAllByText('Main Stat')).toHaveLength(5);
+    expect(screen.getAllByText('Substats')).toHaveLength(5);
+  });
+
+  it('renders fixed mains as read-only .readonly-stat labels (Sun: HP; Space: Attack + Defense)', () => {
     const { container } = render(<RevelationEditorModal {...defaultProps} />);
-    const fixedLabels = Array.from(container.querySelectorAll('.rev-fixed-main')).map(
+    const fixedLabels = Array.from(container.querySelectorAll('.readonly-stat')).map(
       (e) => e.textContent,
     );
     // Sun's single fixed main plus Space's two fixed mains — none is a <select>.
     expect(fixedLabels).toContain('HP');
     expect(fixedLabels).toContain('Attack');
     expect(fixedLabels).toContain('Defense');
+  });
+
+  it('set-gates stat controls: disabled + dimmed until a Set is chosen', () => {
+    const { container } = render(<RevelationEditorModal {...defaultProps} />);
+    // No sets equipped — Moon's variable main select is disabled, and gated groups are dimmed.
+    const moonMain = container.querySelector<HTMLSelectElement>('select[name="rev-moon-main"]');
+    expect(moonMain?.disabled).toBe(true);
+    // Gated when no set: 3 variable Main Stat groups (Moon/Star/Sky) + 5 Substats lists.
+    // Fixed mains (Sun/Space) are never gated — always shown.
+    expect(container.querySelectorAll('.is-gated').length).toBe(8);
+    // Add-substat buttons are suppressed while gated.
+    expect(screen.queryByText('+ Substat')).toBeNull();
+  });
+
+  it('never gates the fixed-main display (Sun/Space shown even with no set)', () => {
+    const { container } = render(<RevelationEditorModal {...defaultProps} />);
+    // Sun and Space fixed mains render inside a Main Stat group with no .is-gated wrapper.
+    const fixedGroups = Array.from(container.querySelectorAll('.form-group')).filter((g) =>
+      g.querySelector('.readonly-stat'),
+    );
+    expect(fixedGroups).toHaveLength(2);
+    for (const g of fixedGroups) expect(g.classList.contains('is-gated')).toBe(false);
+  });
+
+  it('enables a slot’s stat controls once its Set is equipped', () => {
+    const thief = makeThief({
+      revelations: {
+        sun: null,
+        moon: { setId: 'strife', mainStat: null, subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+    });
+    const { container } = render(<RevelationEditorModal {...defaultProps} thief={thief} />);
+    const moonMain = container.querySelector<HTMLSelectElement>('select[name="rev-moon-main"]');
+    expect(moonMain?.disabled).toBe(false);
+    // Only Moon (the sole slot with a set) offers its add-substat button.
+    expect(screen.getAllByText('+ Substat')).toHaveLength(1);
+    // Remaining gated: Star + Sky Main Stat (2) + Sun/Star/Sky/Space Substats (4) = 6.
+    expect(container.querySelectorAll('.is-gated').length).toBe(6);
   });
 
   it('switches to Preferences tab on click', async () => {
@@ -123,9 +171,9 @@ describe('RevelationEditorModal', () => {
       },
     });
     render(<RevelationEditorModal {...defaultProps} thief={thief} />);
-    // The Moon slot's substat add should not offer "Attack%" since it's the main stat
-    // We verify by checking + Substat buttons exist (can add substats)
+    // The Moon slot's substat add should not offer "Attack%" since it's the main stat.
+    // Only Moon has a set equipped, so only its (ungated) add button renders.
     const addButtons = screen.getAllByText('+ Substat');
-    expect(addButtons.length).toBe(5); // one per slot
+    expect(addButtons.length).toBe(1);
   });
 });
