@@ -19,6 +19,13 @@ export const ALL_ARCS: N2EArc[] = [
     imageUrl: '/assets/neverness-to-everness/arcs/fork_BitGame.webp',
   },
   {
+    id: 'fork_LunarPhase',
+    name: 'Blushing Mirage',
+    rarity: 'S',
+    arcType: 'Synthesis',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_LunarPhase.webp',
+  },
+  {
     id: 'fork_jingmotingyuan',
     name: 'Camellia Society',
     rarity: 'S',
@@ -159,6 +166,13 @@ export const ALL_ARCS: N2EArc[] = [
     imageUrl: '/assets/neverness-to-everness/arcs/fork_worldrain.webp',
   },
   {
+    id: 'fork_Door',
+    name: 'The Wrong Gate',
+    rarity: 'S',
+    arcType: 'Liquid',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_Door.webp',
+  },
+  {
     id: 'fork_GoldWool',
     name: "What's Desired",
     rarity: 'S',
@@ -178,20 +192,6 @@ export const ALL_ARCS: N2EArc[] = [
     rarity: 'S',
     arcType: 'Liquid',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_BlackBook.webp',
-  },
-  {
-    id: 'fork_LunarPhase',
-    name: '穿过胭红蜃景',
-    rarity: 'S',
-    arcType: 'Synthesis',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_LunarPhase.webp',
-  },
-  {
-    id: 'fork_Door',
-    name: '错误的门',
-    rarity: 'S',
-    arcType: 'Liquid',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_Door.webp',
   },
   // A-Rank
   {
