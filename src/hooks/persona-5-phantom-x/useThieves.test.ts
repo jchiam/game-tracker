@@ -31,9 +31,14 @@ vi.mock('@/utils/toast', () => ({
   addToast: vi.fn(),
 }));
 
+vi.mock('@/utils/revelationScoring', () => ({
+  calculateRevelationScore: vi.fn().mockReturnValue(-1),
+}));
+
 import { useThieves } from '@/hooks/persona-5-phantom-x/useThieves';
 import { ALL_THIEVES } from '@/data/persona-5-phantom-x/thieves';
 import * as thiefService from '@/services/persona-5-phantom-x/thiefService';
+import * as revelationScoring from '@/utils/revelationScoring';
 import * as toastUtils from '@/utils/toast';
 
 const mockLoadThievesFromDB = vi.mocked(thiefService.loadThievesFromDB);
@@ -244,6 +249,44 @@ describe('useThieves', () => {
     const { result } = await setup();
     const sorted = result.current.getFilteredRoster('', 'LEVEL');
     expect(sorted[0].isFavorited).toBe(true);
+  });
+
+  it('getFilteredRoster SCORE sort orders by revelation score descending', async () => {
+    const { result } = await setup();
+
+    await act(async () => {
+      await result.current.addThief(ALL_THIEVES[0]);
+    });
+    await act(async () => {
+      await result.current.addThief(ALL_THIEVES[1]);
+    });
+
+    vi.mocked(revelationScoring.calculateRevelationScore).mockImplementation((t) =>
+      t.id === ALL_THIEVES[1].id ? 90 : 10,
+    );
+
+    const sorted = result.current.getFilteredRoster('', 'SCORE');
+    expect(sorted[0].id).toBe(ALL_THIEVES[1].id);
+  });
+
+  it('getFilteredRoster SCORE sort places insufficient-data (-1) last among non-favorites', async () => {
+    const { result } = await setup();
+
+    await act(async () => {
+      await result.current.addThief(ALL_THIEVES[0]);
+    });
+    await act(async () => {
+      await result.current.addThief(ALL_THIEVES[1]);
+    });
+
+    // ALL_THIEVES[0] has no match data (-1); ALL_THIEVES[1] scores 40.
+    vi.mocked(revelationScoring.calculateRevelationScore).mockImplementation((t) =>
+      t.id === ALL_THIEVES[0].id ? -1 : 40,
+    );
+
+    const sorted = result.current.getFilteredRoster('', 'SCORE');
+    expect(sorted[0].id).toBe(ALL_THIEVES[1].id);
+    expect(sorted[sorted.length - 1].id).toBe(ALL_THIEVES[0].id);
   });
 
   it('getFilteredRoster with predicate returns only matching entities', async () => {

@@ -3,6 +3,7 @@ import { type Session } from '@supabase/supabase-js';
 import { ALL_THIEVES, type P5xThief } from '@/data/persona-5-phantom-x/thieves';
 import type { EquippedRevelation, RevelationSlot } from '@/data/persona-5-phantom-x/revelations';
 import type { P5xThiefPatch, P5xTrackedThief, P5xRevelationPreferences } from '@/types';
+import { calculateRevelationScore } from '@/utils/revelationScoring';
 import {
   loadThievesFromDB,
   insertThief,
@@ -123,13 +124,15 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
   const getFilteredRoster = useCallback(
     (
       searchTerm: string,
-      sortBy: 'ALPHA' | 'LEVEL',
+      sortBy: 'ALPHA' | 'LEVEL' | 'SCORE',
       predicate?: (t: P5xTrackedThief) => boolean,
     ) => {
-      const sorted = filterRoster(
-        searchTerm,
-        sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined,
-      );
+      let compare: ((a: P5xTrackedThief, b: P5xTrackedThief) => number) | undefined;
+      if (sortBy === 'LEVEL') compare = (a, b) => b.level - a.level;
+      // Descending score; insufficient-data (-1) sorts last among non-favorites.
+      else if (sortBy === 'SCORE')
+        compare = (a, b) => calculateRevelationScore(b) - calculateRevelationScore(a);
+      const sorted = filterRoster(searchTerm, compare);
       return predicate ? sorted.filter(predicate) : sorted;
     },
     [filterRoster],

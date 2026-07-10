@@ -74,6 +74,42 @@ describe('useRosterView', () => {
     expect(result.current.sort.label).toBe('AZ');
   });
 
+  it('cycles through three sort modes and wraps back to the default', () => {
+    const filterRoster = vi.fn().mockReturnValue([]);
+    const threeModes = renderHook(() =>
+      useRosterView<'ALPHA' | 'LEVEL' | 'SCORE', string>({
+        sortModes: [
+          { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+          { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+          { key: 'SCORE', label: '★', described: 'by Score' },
+        ],
+        searchPlaceholder: 'Search...',
+        addTitle: 'Add',
+        addDisabled: false,
+        filterRoster,
+      }),
+    );
+
+    expect(threeModes.result.current.sort.label).toBe('AZ');
+    expect(threeModes.result.current.sort.title).toBe(
+      'Sorted alphabetically — click to sort by Level',
+    );
+
+    act(() => threeModes.result.current.sort.onToggle());
+    expect(threeModes.result.current.sort.label).toBe('Lv');
+    expect(filterRoster).toHaveBeenLastCalledWith('', 'LEVEL');
+
+    act(() => threeModes.result.current.sort.onToggle());
+    expect(threeModes.result.current.sort.label).toBe('★');
+    expect(threeModes.result.current.sort.active).toBe(false);
+    expect(filterRoster).toHaveBeenLastCalledWith('', 'SCORE');
+
+    act(() => threeModes.result.current.sort.onToggle());
+    expect(threeModes.result.current.sort.label).toBe('AZ');
+    expect(threeModes.result.current.sort.active).toBe(true);
+    expect(filterRoster).toHaveBeenLastCalledWith('', 'ALPHA');
+  });
+
   it('returns the roster produced by filterRoster', () => {
     const filterRoster = vi.fn().mockReturnValue(['a', 'b']);
     const { result } = setup({ filterRoster });

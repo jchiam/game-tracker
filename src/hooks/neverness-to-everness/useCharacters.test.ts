@@ -29,9 +29,14 @@ vi.mock('@/utils/toast', () => ({
   addToast: vi.fn(),
 }));
 
+vi.mock('@/utils/cartridgeScoring', () => ({
+  calculateCartridgeScore: vi.fn().mockReturnValue(-1),
+}));
+
 import { useCharacters } from '@/hooks/neverness-to-everness/useCharacters';
 import { ALL_CHARACTERS } from '@/data/neverness-to-everness/characters';
 import * as characterService from '@/services/neverness-to-everness/characterService';
+import * as cartridgeScoring from '@/utils/cartridgeScoring';
 import * as toastUtils from '@/utils/toast';
 
 const mockLoadCharactersFromDB = vi.mocked(characterService.loadCharactersFromDB);
@@ -299,6 +304,44 @@ describe('useCharacters', () => {
 
     const sorted = result.current.getFilteredRoster('', 'LEVEL');
     expect(sorted[0].level).toBeGreaterThanOrEqual(sorted[1].level);
+  });
+
+  it('getFilteredRoster SCORE sort orders by cartridge score descending', async () => {
+    const { result } = await setup();
+
+    await act(async () => {
+      await result.current.addCharacter(firstChar);
+    });
+    await act(async () => {
+      await result.current.addCharacter(secondChar);
+    });
+
+    vi.mocked(cartridgeScoring.calculateCartridgeScore).mockImplementation((c) =>
+      c.id === secondChar.id ? 90 : 10,
+    );
+
+    const sorted = result.current.getFilteredRoster('', 'SCORE');
+    expect(sorted[0].id).toBe(secondChar.id);
+  });
+
+  it('getFilteredRoster SCORE sort places insufficient-data (-1) last among non-favorites', async () => {
+    const { result } = await setup();
+
+    await act(async () => {
+      await result.current.addCharacter(firstChar);
+    });
+    await act(async () => {
+      await result.current.addCharacter(secondChar);
+    });
+
+    // firstChar has no match data (-1); secondChar scores 40.
+    vi.mocked(cartridgeScoring.calculateCartridgeScore).mockImplementation((c) =>
+      c.id === firstChar.id ? -1 : 40,
+    );
+
+    const sorted = result.current.getFilteredRoster('', 'SCORE');
+    expect(sorted[0].id).toBe(secondChar.id);
+    expect(sorted[sorted.length - 1].id).toBe(firstChar.id);
   });
 
   it('isLoadError is set on DB failure', async () => {

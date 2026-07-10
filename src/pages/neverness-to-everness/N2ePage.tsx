@@ -39,6 +39,7 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
       sortModes: [
         { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
         { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+        { key: 'SCORE', label: '★', described: 'by Cartridge Score' },
       ],
       searchPlaceholder: 'Search by name, esper type, or role...',
       addTitle: 'Add Character',

@@ -1,99 +1,115 @@
-import type { HsrTrackedCharacter } from '../types';
+import type { HsrTrackedCharacter, StatPreference } from '../types';
+import { createEquipmentScore, matchStatShapes, type StatShape } from './scoring';
 
-export const MAIN_STAT_WEIGHT = 0.4;
-export const SUB_STAT_WEIGHT = 0.6;
-// 6 slots max score = 100%, each slot = 16.666666%
-export const SLOT_WEIGHT = 100 / 6;
+// Unified three-term weights (set/main/sub). Kept as named exports for parity
+// with the other game scorers; the shared core owns the actual application.
+export const SET_WEIGHT = 0.35;
+export const MAIN_STAT_WEIGHT = 0.3;
+export const SUB_STAT_WEIGHT = 0.35;
 
-// Helper to calculate stat match score between 0 and 1
+// Within the set term: a 4-piece relic (cavern) set vs a 2-piece planar set.
+const RELIC_SUBWEIGHT = 0.67;
+const PLANAR_SUBWEIGHT = 0.33;
+
+type Slot = keyof HsrTrackedCharacter['relics'];
+const ALL_SLOTS: Slot[] = ['head', 'hands', 'body', 'feet', 'sphere', 'rope'];
+const FIXED_MAIN_SLOTS: Slot[] = ['head', 'hands'];
+const RELIC_SET_SLOTS: Slot[] = ['head', 'hands', 'body', 'feet'];
+const PLANAR_SET_SLOTS: Slot[] = ['sphere', 'rope'];
+const VARIABLE_MAIN_SLOTS = ['body', 'feet', 'sphere', 'rope'] as const;
+
+// HSR stat-id vocabulary (display strings) → normalized shape. Only the
+// partial-match participants are mapped; everything else falls back to an
+// identity shape (isPercent false) so non-participants can only exact-match.
+const HSR_STAT_SHAPES: Record<string, StatShape> = {
+  HP: { base: 'hp', isPercent: false },
+  'HP%': { base: 'hp', isPercent: true },
+  ATK: { base: 'atk', isPercent: false },
+  'ATK%': { base: 'atk', isPercent: true },
+  DEF: { base: 'def', isPercent: false },
+  'DEF%': { base: 'def', isPercent: true },
+  'CRIT Rate': { base: 'crit-rate', isPercent: false },
+  'CRIT DMG': { base: 'crit-mult', isPercent: false },
+};
+
+function toStatShape(id: string): StatShape {
+  return HSR_STAT_SHAPES[id] ?? { base: id, isPercent: false };
+}
+
 export function getStatMatchScore(preferredStat: string, equippedStat: string): number {
-  if (preferredStat === equippedStat) return 1.0;
-
-  // Partial match: preferred % but equipped flat -> 0.5
-  if (preferredStat === 'HP%' && equippedStat === 'HP') return 0.5;
-  if (preferredStat === 'ATK%' && equippedStat === 'ATK') return 0.5;
-  if (preferredStat === 'DEF%' && equippedStat === 'DEF') return 0.5;
-
-  // As per requirement: "Since the % version always trumps the flat version, the reverse will not result in halving of the percentage."
-  if (preferredStat === 'HP' && equippedStat === 'HP%') return 1.0;
-  if (preferredStat === 'ATK' && equippedStat === 'ATK%') return 1.0;
-  if (preferredStat === 'DEF' && equippedStat === 'DEF%') return 1.0;
-
-  // Crit stats opposite match -> 0.5
-  if (preferredStat === 'CRIT Rate' && equippedStat === 'CRIT DMG') return 0.5;
-  if (preferredStat === 'CRIT DMG' && equippedStat === 'CRIT Rate') return 0.5;
-
-  return 0.0;
+  return matchStatShapes(toStatShape(preferredStat), toStatShape(equippedStat));
 }
 
-export function calculateRelicScore(character: HsrTrackedCharacter): number {
-  let totalScore = 0;
-  const slots: Array<keyof HsrTrackedCharacter['relics']> = [
-    'head',
-    'hands',
-    'body',
-    'feet',
-    'sphere',
-    'rope',
-  ];
-
-  for (const slot of slots) {
-    const relic = character.relics[slot];
-    if (!relic) continue;
-
-    let slotMainMatch = 0;
-
-    if (slot === 'head' || slot === 'hands') {
-      slotMainMatch = 1.0; // Fixed stats are always a 100% correct match
-    } else {
-      // Body, Feet, Sphere, Rope
-      const prefs =
-        character.buildPreferences.mainStats[
-          slot as keyof typeof character.buildPreferences.mainStats
-        ] || [];
-      if (relic.mainStat) {
-        if (prefs.length === 0) {
-          slotMainMatch = 0;
-        } else {
-          // Find the best match score among preferred main stats
-          let bestMatch = 0;
-          for (const pref of prefs) {
-            const matchScore = getStatMatchScore(pref.stat, relic.mainStat);
-            if (matchScore > bestMatch) bestMatch = matchScore;
-          }
-          slotMainMatch = bestMatch;
-        }
-      }
-    }
-
-    let slotSubScore = 0;
-    const subPrefs = character.buildPreferences.subStats || [];
-
-    if (subPrefs.length > 0 && relic.subStats && relic.subStats.length > 0) {
-      const maxSubScoreMatchable = 4; // up to 4 sub stats per relic
-      let currentSubScore = 0;
-
-      for (const equippedSub of relic.subStats) {
-        // Find best match among preferred sub stats
-        let bestMatch = 0;
-        for (const pref of subPrefs) {
-          const matchScore = getStatMatchScore(pref.stat, equippedSub);
-          if (matchScore > bestMatch) {
-            bestMatch = matchScore;
-          }
-        }
-        currentSubScore += bestMatch;
-      }
-
-      // Calculate fraction of sub stats out of 4
-      slotSubScore = Math.min(maxSubScoreMatchable, currentSubScore) / maxSubScoreMatchable; // e.g. 2.5/4
-    }
-
-    // Combine main and sub scores to calculate the score for this slot
-    const finalSlotScore = slotMainMatch * MAIN_STAT_WEIGHT + slotSubScore * SUB_STAT_WEIGHT;
-    totalScore += finalSlotScore * SLOT_WEIGHT;
+function bestMatch(prefs: StatPreference[], equipped: string): number {
+  let best = 0;
+  for (const pref of prefs) {
+    const match = getStatMatchScore(pref.stat, equipped);
+    if (match > best) best = match;
   }
-
-  // Math.round to 1 decimal place or similar if needed. For now returning float.
-  return Math.min(100, Math.max(0, totalScore));
+  return best;
 }
+
+/** Graded count of equipped pieces in `slots` whose set equals `preferredSetId`, over `denom`. */
+function familyMatch(
+  char: HsrTrackedCharacter,
+  slots: Slot[],
+  preferredSetId: string | null | undefined,
+  denom: number,
+): number {
+  // Guard the preference first so a null preference never scores against a null equipped set.
+  if (!preferredSetId) return 0;
+  let count = 0;
+  for (const slot of slots) {
+    if (char.relics[slot]?.setId === preferredSetId) count++;
+  }
+  return Math.min(count, denom) / denom;
+}
+
+/**
+ * Overall relic match score for a character, in 0–100, or -1 for insufficient data.
+ * Three unified terms via the shared scoring core:
+ *   set  0.35 — two-family composition: relic (4pc, graded /4) + planar (2pc, graded /2)
+ *   main 0.30 — per-slot main match averaged over all six slots (head/hands fixed = 1.0)
+ *   sub  0.35 — per-slot sub match (best-per-sub, /4) averaged over all six slots
+ */
+export const calculateRelicScore = createEquipmentScore<HsrTrackedCharacter>({
+  hasPreferences: (char) => {
+    const bp = char.buildPreferences;
+    return (
+      bp.relicSetId != null ||
+      bp.planarSetId != null ||
+      bp.subStats.length > 0 ||
+      VARIABLE_MAIN_SLOTS.some((s) => bp.mainStats[s].length > 0)
+    );
+  },
+  hasEquipment: (char) => ALL_SLOTS.some((s) => char.relics[s] != null),
+  setTerm: (char) => {
+    const relicMatch = familyMatch(char, RELIC_SET_SLOTS, char.buildPreferences.relicSetId, 4);
+    const planarMatch = familyMatch(char, PLANAR_SET_SLOTS, char.buildPreferences.planarSetId, 2);
+    return relicMatch * RELIC_SUBWEIGHT + planarMatch * PLANAR_SUBWEIGHT;
+  },
+  slots: (char) => {
+    const bp = char.buildPreferences;
+    return ALL_SLOTS.map((slot) => {
+      const relic = char.relics[slot];
+      if (!relic) return { mainMatch: 0, subMatches: [] };
+
+      let mainMatch = 0;
+      if (FIXED_MAIN_SLOTS.includes(slot)) {
+        mainMatch = 1.0; // fixed mains always match
+      } else {
+        const chain = bp.mainStats[slot as (typeof VARIABLE_MAIN_SLOTS)[number]];
+        if (relic.mainStat && chain.length > 0) mainMatch = bestMatch(chain, relic.mainStat);
+      }
+
+      const subMatches =
+        bp.subStats.length > 0 && relic.subStats && relic.subStats.length > 0
+          ? relic.subStats.map((s) => bestMatch(bp.subStats, s))
+          : [];
+
+      return { mainMatch, subMatches };
+    });
+  },
+});
+
+export { getScoreGrade } from './scoring';

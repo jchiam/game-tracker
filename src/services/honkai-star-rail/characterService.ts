@@ -36,7 +36,8 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
     level: 1,
     traces_attained: false,
   },
-  select: 'id, character_id, level, traces_attained, is_favorited, build_comments',
+  select:
+    'id, character_id, level, traces_attained, is_favorited, build_comments, relic_set_id, planar_set_id',
   fromRow: (row, base) => ({
     ...base,
     dbId: row.id,
@@ -47,6 +48,8 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
     buildPreferences: {
       mainStats: { body: [], feet: [], sphere: [], rope: [] },
       subStats: [],
+      relicSetId: null,
+      planarSetId: null,
       comments: '',
     },
   }),
@@ -76,6 +79,8 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
         buildPreferences: {
           mainStats,
           subStats: toStatPreferences(row.hsr_build_preference_sub_stats || []),
+          relicSetId: row.relic_set_id ?? null,
+          planarSetId: row.planar_set_id ?? null,
           comments: row.build_comments || '',
         },
       };
@@ -157,7 +162,11 @@ export async function saveBuildPrefs(
     ],
     parentUpdate: {
       table: 'hsr_tracked_characters',
-      row: { build_comments: prefs.comments },
+      row: {
+        build_comments: prefs.comments,
+        relic_set_id: prefs.relicSetId ?? null,
+        planar_set_id: prefs.planarSetId ?? null,
+      },
     },
     inserts: [
       { table: 'hsr_build_preference_main_stats', rows: mainInserts },

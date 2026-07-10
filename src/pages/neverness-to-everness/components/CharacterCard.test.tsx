@@ -323,7 +323,7 @@ describe('CharacterCard', () => {
 
   it('does not show cartridge score badge when no preferences set', () => {
     const { container } = render(<CharacterCard character={makeChar()} {...defaultProps} />);
-    expect(container.querySelector('.cartridge-score-badge')).not.toBeInTheDocument();
+    expect(container.querySelector('.score-badge')).not.toBeInTheDocument();
   });
 
   it('shows cartridge score badge when preferences exist and score >= 0', () => {
@@ -337,7 +337,7 @@ describe('CharacterCard', () => {
       },
     });
     const { container } = render(<CharacterCard character={char} {...defaultProps} />);
-    const badge = container.querySelector('.cartridge-score-badge');
+    const badge = container.querySelector('.score-badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass('grade-a');
     expect(screen.getByText('75%')).toBeInTheDocument();

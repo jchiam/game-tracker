@@ -4,7 +4,7 @@ import { CharacterCard } from '@/pages/honkai-star-rail/components/CharacterCard
 import type { HsrTrackedCharacter } from '@/types';
 
 vi.mock('@/utils/relicScoring', () => ({
-  calculateRelicScore: vi.fn().mockReturnValue(0),
+  calculateRelicScore: vi.fn().mockReturnValue(-1),
 }));
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => `https://ik.imagekit.io/test${path}`,
@@ -159,9 +159,9 @@ describe('CharacterCard', () => {
     expect(onToggleTraces).toHaveBeenCalledWith('char-1', true);
   });
 
-  // --- Score badge tier classes ---
+  // --- Score badge grade classes ---
 
-  it('applies tier-s class to score badge when score is 80 or above', () => {
+  it('applies grade-a class to score badge for a score of 80', () => {
     vi.mocked(calculateRelicScore).mockReturnValue(80);
     const char = makeChar({
       buildPreferences: {
@@ -175,10 +175,10 @@ describe('CharacterCard', () => {
       },
     });
     const { container } = render(<CharacterCard char={char} {...defaultProps} />);
-    expect(container.querySelector('.score-badge.tier-s')).toBeInTheDocument();
+    expect(container.querySelector('.score-badge.grade-a')).toBeInTheDocument();
   });
 
-  it('applies tier-a class to score badge when score is between 50 and 79', () => {
+  it('applies grade-b class to score badge for a score of 65', () => {
     vi.mocked(calculateRelicScore).mockReturnValue(65);
     const char = makeChar({
       buildPreferences: {
@@ -192,10 +192,10 @@ describe('CharacterCard', () => {
       },
     });
     const { container } = render(<CharacterCard char={char} {...defaultProps} />);
-    expect(container.querySelector('.score-badge.tier-a')).toBeInTheDocument();
+    expect(container.querySelector('.score-badge.grade-b')).toBeInTheDocument();
   });
 
-  it('applies tier-b class to score badge when score is below 50', () => {
+  it('applies grade-c class to score badge for a score of 30', () => {
     vi.mocked(calculateRelicScore).mockReturnValue(30);
     const char = makeChar({
       buildPreferences: {
@@ -209,7 +209,7 @@ describe('CharacterCard', () => {
       },
     });
     const { container } = render(<CharacterCard char={char} {...defaultProps} />);
-    expect(container.querySelector('.score-badge.tier-b')).toBeInTheDocument();
+    expect(container.querySelector('.score-badge.grade-c')).toBeInTheDocument();
   });
 
   // --- Relic slot rendering ---
@@ -431,7 +431,7 @@ describe('CharacterCard', () => {
 
   // --- Score badge value ---
 
-  it('score badge displays the score value in X.Y% format', () => {
+  it('score badge displays the rounded score value in X% format', () => {
     vi.mocked(calculateRelicScore).mockReturnValue(72.5);
     const char = makeChar({
       buildPreferences: {
@@ -445,7 +445,7 @@ describe('CharacterCard', () => {
       },
     });
     render(<CharacterCard char={char} {...defaultProps} />);
-    expect(screen.getByText('72.5%')).toBeInTheDocument();
+    expect(screen.getByText('73%')).toBeInTheDocument();
   });
 
   // --- Relic set one-liner ---

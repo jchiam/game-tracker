@@ -60,9 +60,14 @@
       "pathPreservation": { "$value": "#8ab8f5", "$type": "color" },
       "pathAbundance": { "$value": "#90e09a", "$type": "color" },
       "pathRemembrance": { "$value": "#90e8f8", "$type": "color" },
-      "pathElation": { "$value": "#ffc875", "$type": "color" },
-      "scoreTierA": { "$value": "#9370db", "$type": "color" },
-      "scoreTierAText": { "$value": "#e6e6fa", "$type": "color" }
+      "pathElation": { "$value": "#ffc875", "$type": "color" }
+    },
+    "score": {
+      "gradeS": { "$value": "#40c8a0", "$type": "color" },
+      "gradeA": { "$value": "#d4af37", "$type": "color" },
+      "gradeB": { "$value": "#c88040", "$type": "color" },
+      "gradeC": { "$value": "#b48c64", "$type": "color" },
+      "gradeD": { "$value": "#8a6050", "$type": "color" }
     },
     "n2e": {
       "esperAnima": { "$value": "#f5b080", "$type": "color" },
@@ -76,11 +81,6 @@
       "arcPlasma": { "$value": "#f09070", "$type": "color" },
       "arcSolid": { "$value": "#d0c8a0", "$type": "color" },
       "arcSynthesis": { "$value": "#d0a8e0", "$type": "color" },
-      "scoreGradeS": { "$value": "#40c8a0", "$type": "color" },
-      "scoreGradeA": { "$value": "#d4af37", "$type": "color" },
-      "scoreGradeB": { "$value": "#c88040", "$type": "color" },
-      "scoreGradeC": { "$value": "#b48c64", "$type": "color" },
-      "scoreGradeD": { "$value": "#8a6050", "$type": "color" },
       "rarityS": { "$value": "#d4af37", "$type": "color" },
       "rarityA": { "$value": "#c9a8f8", "$type": "color" },
       "rarityB": { "$value": "#90d0f0", "$type": "color" }
@@ -127,12 +127,7 @@
       "weaponRarity2": { "$value": "#8be28b", "$type": "color" },
       "weaponRarity3": { "$value": "#7fbfff", "$type": "color" },
       "weaponRarity4": { "$value": "#c9a8f8", "$type": "color" },
-      "weaponRarity5": { "$value": "#ffd700", "$type": "color" },
-      "scoreGradeS": { "$value": "#40c8a0", "$type": "color" },
-      "scoreGradeA": { "$value": "#d4af37", "$type": "color" },
-      "scoreGradeB": { "$value": "#c88040", "$type": "color" },
-      "scoreGradeC": { "$value": "#b48c64", "$type": "color" },
-      "scoreGradeD": { "$value": "#8a6050", "$type": "color" }
+      "weaponRarity5": { "$value": "#ffd700", "$type": "color" }
     },
     "r1999": {
       "afflatusPlant": { "$value": "#90e09a", "$type": "color" },

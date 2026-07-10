@@ -58,88 +58,113 @@ describe('calculateRelicScore', () => {
     },
   });
 
-  it('returns 0 for empty relics', () => {
+  it('returns -1 for empty relics (no equipment)', () => {
     const char = getBaseCharacter();
-    expect(calculateRelicScore(char)).toBe(0);
+    expect(calculateRelicScore(char)).toBe(-1);
   });
 
-  it('calculates score correctly for perfect matches', () => {
+  it('returns -1 when there are no preferences at all', () => {
     const char = getBaseCharacter();
+    char.buildPreferences = {
+      mainStats: { body: [], feet: [], sphere: [], rope: [] },
+      subStats: [],
+    };
+    char.relics.head = { setId: '101', mainStat: 'HP', subStats: [] };
+    expect(calculateRelicScore(char)).toBe(-1);
+  });
+
+  it('scores 100 for perfect matches including both set families', () => {
+    const char = getBaseCharacter();
+    char.buildPreferences.relicSetId = '101';
+    char.buildPreferences.planarSetId = '301';
+    const allSubs = ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'];
     char.relics = {
-      head: {
-        setId: null,
-        mainStat: 'HP',
-        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
-      },
-      hands: {
-        setId: null,
-        mainStat: 'ATK',
-        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
-      },
-      body: {
-        setId: null,
-        mainStat: 'CRIT Rate',
-        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
-      },
-      feet: {
-        setId: null,
-        mainStat: 'SPD',
-        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
-      },
-      sphere: {
-        setId: null,
-        mainStat: 'Fire DMG Boost',
-        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
-      },
-      rope: {
-        setId: null,
-        mainStat: 'ATK%',
-        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
-      },
+      head: { setId: '101', mainStat: 'HP', subStats: allSubs },
+      hands: { setId: '101', mainStat: 'ATK', subStats: allSubs },
+      body: { setId: '101', mainStat: 'CRIT Rate', subStats: allSubs },
+      feet: { setId: '101', mainStat: 'SPD', subStats: allSubs },
+      sphere: { setId: '301', mainStat: 'Fire DMG Boost', subStats: allSubs },
+      rope: { setId: '301', mainStat: 'ATK%', subStats: allSubs },
     };
-    // Should be very close to 100
-    expect(Math.round(calculateRelicScore(char))).toBe(100);
+    expect(calculateRelicScore(char)).toBeCloseTo(100, 5);
   });
 
-  it('calculates partial score correctly', () => {
+  it('caps at 65 when set preferences are absent but stats are perfect', () => {
     const char = getBaseCharacter();
-    // Head with only 1 correct sub stat => main match 1.0 (40%), sub match 0.25 (1/4 of 60% = 15%) => total slot score = 55%
-    // Only 1 slot equipped out of 6 => final score = 55% / 6 = 9.1666%
-    char.relics.head = {
-      setId: null,
-      mainStat: 'HP',
-      subStats: [
-        'CRIT Rate', // Match 1.0
-        'DEF', // Match 0
-        'HP', // Match 0
-        'Effect Hit Rate', // Match 0
-      ],
+    // No relicSetId/planarSetId → setTerm 0; perfect mains + subs → 0.30 + 0.35 = 65
+    const allSubs = ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'];
+    char.relics = {
+      head: { setId: '101', mainStat: 'HP', subStats: allSubs },
+      hands: { setId: '101', mainStat: 'ATK', subStats: allSubs },
+      body: { setId: '101', mainStat: 'CRIT Rate', subStats: allSubs },
+      feet: { setId: '101', mainStat: 'SPD', subStats: allSubs },
+      sphere: { setId: '301', mainStat: 'Fire DMG Boost', subStats: allSubs },
+      rope: { setId: '301', mainStat: 'ATK%', subStats: allSubs },
     };
-    const score = calculateRelicScore(char);
-    // 16.666 * (1.0 * 0.4 + 0.25 * 0.6) = 16.666 * (0.4 + 0.15) = 16.666 * 0.55 = 9.1666...
-    expect(score).toBeCloseTo(9.16666, 3);
+    expect(calculateRelicScore(char)).toBeCloseTo(65, 5);
   });
 
-  it('calculates partial sub stat matching like Crit Rate/DMG', () => {
+  it('grades the relic-set term toward the 4-piece breakpoint', () => {
     const char = getBaseCharacter();
-    // Prefer: CRIT Rate, CRIT DMG, ATK%, SPD
-    // Equip: CRIT DMG (is preffered, but let's test a mismatch by replacing build prefs to only one)
+    char.buildPreferences = {
+      mainStats: { body: [], feet: [], sphere: [], rope: [] },
+      subStats: [],
+      relicSetId: '101',
+    };
+    // 3 of 4 relic-set slots match → relicMatch 0.75 → setTerm 0.75 × 0.67 = 0.5025
+    // main term: head + hands fixed (1 each) out of 6 = 0.33333; sub 0
+    char.relics = {
+      head: { setId: '101', mainStat: 'HP', subStats: [] },
+      hands: { setId: '101', mainStat: 'ATK', subStats: [] },
+      body: { setId: '101', mainStat: 'CRIT Rate', subStats: [] },
+      feet: { setId: '102', mainStat: 'SPD', subStats: [] },
+      sphere: null,
+      rope: null,
+    };
+    // (0.5025 × 0.35 + (2/6) × 0.30) × 100 = 27.5875
+    expect(calculateRelicScore(char)).toBeCloseTo(27.5875, 3);
+  });
+
+  it('scores the planar-set term over its 2-piece breakpoint', () => {
+    const char = getBaseCharacter();
+    char.buildPreferences = {
+      mainStats: { body: [], feet: [], sphere: [], rope: [] },
+      subStats: [],
+      planarSetId: '301',
+    };
+    char.relics.sphere = { setId: '301', mainStat: 'Fire DMG Boost', subStats: [] };
+    char.relics.rope = { setId: '301', mainStat: 'ATK%', subStats: [] };
+    // planarMatch 1.0 → setTerm 0.33; sphere/rope have empty main chains → main 0
+    // (0.33 × 0.35) × 100 = 11.55
+    expect(calculateRelicScore(char)).toBeCloseTo(11.55, 3);
+  });
+
+  it('does not credit the set term when the preference is null even if relics carry sets', () => {
+    const char = getBaseCharacter();
+    // relicSetId/planarSetId null; only a sub preference keeps the score numeric
+    char.buildPreferences = {
+      mainStats: { body: [], feet: [], sphere: [], rope: [] },
+      subStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+    };
+    char.relics.head = { setId: '101', mainStat: 'HP', subStats: ['CRIT Rate', 'DEF', 'HP'] };
+    // setTerm 0 (null-guarded); head fixed main 1/6; sub best-1 → 0.25/6
+    // ((1/6) × 0.30 + (0.25/6) × 0.35) × 100 = 6.4583
+    expect(calculateRelicScore(char)).toBeCloseTo(6.4583, 3);
+  });
+
+  it('averages a single equipped slot with partial subs over six slots', () => {
+    const char = getBaseCharacter();
     char.buildPreferences.subStats = [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }];
-
     char.relics.hands = {
-      setId: null,
+      setId: '101',
       mainStat: 'ATK',
       subStats: [
-        'CRIT DMG', // Match 0.5 because Pref is CRIT Rate
-        'DEF',
+        'CRIT DMG', // 0.5 (cross-crit vs preferred CRIT Rate)
+        'DEF', // 0
       ],
     };
-
-    const score = calculateRelicScore(char);
-    // Main match: 1.0 (40%)
-    // Sub match: 0.5 / 4 = 0.125 (0.125 * 60% = 7.5%)
-    // Total slot = 47.5%
-    // Final score = 47.5% / 6 = 7.9166%
-    expect(score).toBeCloseTo(7.9166, 3);
+    // setTerm 0 (no set pref); hands fixed main 1/6; sub 0.5/4 = 0.125 → /6
+    // ((1/6) × 0.30 + (0.125/6) × 0.35) × 100 = 5.72917
+    expect(calculateRelicScore(char)).toBeCloseTo(5.72917, 3);
   });
 });

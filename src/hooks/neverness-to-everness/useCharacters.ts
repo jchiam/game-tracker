@@ -10,6 +10,7 @@ import {
   saveCartridgePreferences as apiSaveCartridgePrefs,
 } from '@/services/neverness-to-everness/characterService';
 import { useRoster } from '@/hooks/useRoster';
+import { calculateCartridgeScore } from '@/utils/cartridgeScoring';
 
 const DEFAULT_AWAKENING = [false, false, false, false, false, false];
 
@@ -102,8 +103,14 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   };
 
   const getFilteredRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
-      filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined),
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE') => {
+      let compare: ((a: N2ETrackedCharacter, b: N2ETrackedCharacter) => number) | undefined;
+      if (sortBy === 'LEVEL') compare = (a, b) => b.level - a.level;
+      // Descending score; insufficient-data (-1) sorts last among non-favorites.
+      else if (sortBy === 'SCORE')
+        compare = (a, b) => calculateCartridgeScore(b) - calculateCartridgeScore(a);
+      return filterRoster(searchTerm, compare);
+    },
     [filterRoster],
   );
 

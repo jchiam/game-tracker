@@ -1,9 +1,10 @@
 import type { N2ETrackedCharacter, N2ECartridgePatch } from '@/types';
 import { ALL_ARCS } from '@/data/neverness-to-everness/arcs';
 import { ALL_CARTRIDGES } from '@/data/neverness-to-everness/cartridges';
-import { calculateCartridgeScore, getScoreGrade } from '@/utils/cartridgeScoring';
+import { calculateCartridgeScore } from '@/utils/cartridgeScoring';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
+import { ScoreBadge } from '@/components/ScoreBadge';
 import { getProgressStyle } from '@/utils/progressGradient';
 import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
@@ -53,7 +54,6 @@ export function CharacterCard({
       character.cartridgePreferences.mainStats.length > 0 ||
       character.cartridgePreferences.subStats.length > 0);
   const cartridgeScore = hasCartridgePrefs ? calculateCartridgeScore(character) : -1;
-  const scoreGrade = cartridgeScore >= 0 ? getScoreGrade(cartridgeScore) : '';
   const showCartridgeScore = cartridgeScore >= 0;
 
   // Progress color styles per dimension
@@ -93,13 +93,7 @@ export function CharacterCard({
             />
           </>
         }
-        headerExtra={
-          showCartridgeScore && (
-            <div className={`cartridge-score-badge grade-${scoreGrade.toLowerCase()}`}>
-              <span>{cartridgeScore.toFixed(0)}%</span>
-            </div>
-          )
-        }
+        headerExtra={<ScoreBadge score={cartridgeScore} />}
         summaryStats={
           <>
             <StatChip

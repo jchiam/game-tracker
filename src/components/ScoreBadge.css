@@ -1,0 +1,40 @@
+/* Shared roster-card score badge — one flat graded pill for every game.
+   Grade colours come from the game-agnostic --color-score-grade-* ramp. */
+.score-badge {
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-bold);
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid;
+  white-space: nowrap;
+}
+
+.score-badge.grade-s {
+  background: color-mix(in srgb, var(--color-score-grade-s) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-score-grade-s) 50%, transparent);
+  color: var(--color-score-grade-s);
+}
+
+.score-badge.grade-a {
+  background: color-mix(in srgb, var(--color-score-grade-a) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-score-grade-a) 50%, transparent);
+  color: var(--color-score-grade-a);
+}
+
+.score-badge.grade-b {
+  background: color-mix(in srgb, var(--color-score-grade-b) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-score-grade-b) 50%, transparent);
+  color: var(--color-score-grade-b);
+}
+
+.score-badge.grade-c {
+  background: color-mix(in srgb, var(--color-score-grade-c) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-score-grade-c) 50%, transparent);
+  color: var(--color-score-grade-c);
+}
+
+.score-badge.grade-d {
+  background: color-mix(in srgb, var(--color-score-grade-d) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-score-grade-d) 50%, transparent);
+  color: var(--color-score-grade-d);
+}

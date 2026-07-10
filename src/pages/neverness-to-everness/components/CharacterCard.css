@@ -219,44 +219,6 @@
   font-weight: var(--typography-font-weight-semibold);
 }
 
-.cartridge-score-badge {
-  font-size: 0.7rem;
-  font-weight: var(--typography-font-weight-bold);
-  padding: 2px 6px;
-  border-radius: var(--border-radius-sm);
-  border: 1px solid;
-}
-
-.cartridge-score-badge.grade-s {
-  background: color-mix(in srgb, var(--color-n2e-score-grade-s) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-n2e-score-grade-s) 50%, transparent);
-  color: var(--color-n2e-score-grade-s);
-}
-
-.cartridge-score-badge.grade-a {
-  background: color-mix(in srgb, var(--color-n2e-score-grade-a) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-n2e-score-grade-a) 50%, transparent);
-  color: var(--color-n2e-score-grade-a);
-}
-
-.cartridge-score-badge.grade-b {
-  background: color-mix(in srgb, var(--color-n2e-score-grade-b) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-n2e-score-grade-b) 50%, transparent);
-  color: var(--color-n2e-score-grade-b);
-}
-
-.cartridge-score-badge.grade-c {
-  background: color-mix(in srgb, var(--color-n2e-score-grade-c) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-n2e-score-grade-c) 50%, transparent);
-  color: var(--color-n2e-score-grade-c);
-}
-
-.cartridge-score-badge.grade-d {
-  background: color-mix(in srgb, var(--color-n2e-score-grade-d) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-n2e-score-grade-d) 50%, transparent);
-  color: var(--color-n2e-score-grade-d);
-}
-
 .target-build-chain {
   display: flex;
   flex-wrap: wrap;

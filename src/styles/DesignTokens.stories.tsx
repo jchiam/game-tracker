@@ -221,6 +221,17 @@ function ColorsSection() {
         label="Tier"
         variables={['--color-tier-splus', '--color-tier-s', '--color-tier-a', '--color-tier-b']}
       />
+
+      <ColorGroup
+        label="Score Grades (shared across games)"
+        variables={[
+          '--color-score-grade-s',
+          '--color-score-grade-a',
+          '--color-score-grade-b',
+          '--color-score-grade-c',
+          '--color-score-grade-d',
+        ]}
+      />
     </section>
   );
 }

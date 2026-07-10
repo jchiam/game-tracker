@@ -219,6 +219,36 @@ export function RelicEditorModal({
             </div>
 
             <div className="pref-section">
+              <h3>Preferred Sets</h3>
+              <FormGroup label="Relic Set (4-piece)">
+                <Select
+                  name="pref-relic-set"
+                  value={currentPrefs.relicSetId ?? ''}
+                  placeholder="-- None --"
+                  options={availableRelicSets
+                    .filter((set) => set.id.startsWith('1'))
+                    .map((set) => ({ value: set.id, label: set.name }))}
+                  onChange={(v) =>
+                    onUpdateBuildPreferences({ ...currentPrefs, relicSetId: v || null })
+                  }
+                />
+              </FormGroup>
+              <FormGroup label="Planar Set (2-piece)">
+                <Select
+                  name="pref-planar-set"
+                  value={currentPrefs.planarSetId ?? ''}
+                  placeholder="-- None --"
+                  options={availableRelicSets
+                    .filter((set) => set.id.startsWith('3'))
+                    .map((set) => ({ value: set.id, label: set.name }))}
+                  onChange={(v) =>
+                    onUpdateBuildPreferences({ ...currentPrefs, planarSetId: v || null })
+                  }
+                />
+              </FormGroup>
+            </div>
+
+            <div className="pref-section">
               <BuildComments
                 label="Build Comments"
                 value={currentPrefs.comments || ''}

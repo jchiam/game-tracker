@@ -100,6 +100,7 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 | `ProgressSection` | uses `card.css`       | `.progress-section` + `.section-header` + `.section-value` wrapper                                                                                                                    |
 | `GameBadge`       | uses game CSS         | Badge with `{variant}-badge {variant}-{modifier}` classes                                                                                                                             |
 | `StatChip`        | uses `controls.css`   | Compact stat display chip (`.stat-chip`)                                                                                                                                              |
+| `ScoreBadge`      | `ScoreBadge.css`      | Shared roster-card equipment-match score badge (`.score-badge.grade-{s..d}`); hides on a negative sentinel; used by HSR/N2E/P5X                                                       |
 | `AuthGate`        | —                     | Sign-in prompt                                                                                                                                                                        |
 | `LoadErrorState`  | —                     | Retry prompt                                                                                                                                                                          |
 | `ConfirmCheckbox` | `ConfirmCheckbox.css` | Checkbox with confirmation                                                                                                                                                            |
@@ -315,17 +316,18 @@ Reuse these existing shared components — don't recreate them:
 
 ## Key Files
 
-| File                                | Purpose                                                                                                     |
-| ----------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| `CONTEXT.md`                        | Canonical domain-language glossary — games, entity nouns, persistence concepts                              |
-| `src/types.ts`                      | All shared domain types — single source of truth                                                            |
-| `src/index.css`                     | CSS custom properties (colours, spacing, radii, transitions)                                                |
-| `src/lib/supabase.ts`               | Supabase client (10 s timeout, auto session refresh)                                                        |
-| `src/hooks/usePendingSaves.ts`      | Debounced DB write queue — reuse for all mutations                                                          |
-| `src/services/rosterPersistence.ts` | Shared roster + party CRUD factories + `savePreferenceRows` — all game services are config adapters over it |
-| `scripts/lib/pipeline.mjs`          | Shared update-script plumbing (ImageKit, flags, diffing) — all update scripts compose it                    |
-| `supabase/migrations/`              | Full schema history                                                                                         |
-| `.env.template`                     | Required env var names (`VITE_SUPABASE_*`, `VITE_IMAGEKIT_*`)                                               |
+| File                                | Purpose                                                                                                                                                               |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `CONTEXT.md`                        | Canonical domain-language glossary — games, entity nouns, persistence concepts                                                                                        |
+| `src/types.ts`                      | All shared domain types — single source of truth                                                                                                                      |
+| `src/index.css`                     | CSS custom properties (colours, spacing, radii, transitions)                                                                                                          |
+| `src/lib/supabase.ts`               | Supabase client (10 s timeout, auto session refresh)                                                                                                                  |
+| `src/hooks/usePendingSaves.ts`      | Debounced DB write queue — reuse for all mutations                                                                                                                    |
+| `src/services/rosterPersistence.ts` | Shared roster + party CRUD factories + `savePreferenceRows` — all game services are config adapters over it                                                           |
+| `src/utils/scoring/`                | Shared equipment-scoring core — `matchStatShapes`, `createEquipmentScore` factory (set-term plugin), `getScoreGrade`; HSR/N2E/P5X scorers are config adapters over it |
+| `scripts/lib/pipeline.mjs`          | Shared update-script plumbing (ImageKit, flags, diffing) — all update scripts compose it                                                                              |
+| `supabase/migrations/`              | Full schema history                                                                                                                                                   |
+| `.env.template`                     | Required env var names (`VITE_SUPABASE_*`, `VITE_IMAGEKIT_*`)                                                                                                         |
 
 ## Guard Rails
 

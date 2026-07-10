@@ -440,6 +440,26 @@ Empty state screens. LoadErrorState shows error + retry button. AuthGate shows s
 
 ---
 
+### ScoreBadge (shared across games)
+
+`src/components/ScoreBadge.tsx` | `ScoreBadge.css`
+
+The roster-card equipment-match score badge for every game (HSR relics, N2E cartridges,
+P5X revelations). Takes a numeric score; renders a flat graded pill showing the rounded
+percentage, or **nothing** when the score is a negative sentinel (insufficient data — no
+preferences or no equipment). Grade + colour come from the shared `getScoreGrade` scale
+(S ≥ 90, A ≥ 70, B ≥ 50, C ≥ 30, else D) and the game-agnostic `--color-score-grade-*` ramp
+via `color-mix` (fill 15% / border 50%). Replaces the former per-game badges
+(`.score-badge.tier-*`, `.cartridge-score-badge`).
+
+```html
+<div class="score-badge grade-a"><span>82%</span></div>
+```
+
+**Tokens used:** `--color-score-grade-{s,a,b,c,d}`, `--typography-font-size-xs`, `--typography-font-weight-bold`, `--spacing-1`, `--spacing-3`, `--border-radius-sm`
+
+---
+
 ## Pages
 
 ### SelectionPage
@@ -626,7 +646,7 @@ badges in `.game-card-badges`:
 </div>
 ```
 
-**Tokens used:** `--color-hsr-path-*`, `--color-hsr-element-*`, `--color-hsr-score-tier-a*`, `--shadow-card-hover`, `--shadow-inset-glow`, `--border-radius-lg`, `--typography-font-size-2xl`, `--color-ui-danger`
+**Tokens used:** `--color-hsr-path-*`, `--color-hsr-element-*`, `--color-score-grade-*` (via the shared `ScoreBadge`), `--shadow-card-hover`, `--shadow-inset-glow`, `--border-radius-lg`, `--typography-font-size-2xl`, `--color-ui-danger`
 
 ---
 
@@ -651,13 +671,13 @@ badge + edit toggle.
 
 **Edit body:**
 
-| Class                     | Description                                                          |
-| ------------------------- | -------------------------------------------------------------------- |
-| `.awakening-row`          | Wrapper for the awakening `.toggle-btn` row                          |
-| `.arc-tier-row`           | Wrapper for the arc-tier `.toggle-btn.compact` row                   |
-| `.cartridge-slot`         | Clickable slot that opens the cartridge editor modal                 |
-| `.cartridge-rarity-badge` | S/A/B rarity pill (`rarity-s` / `rarity-a` / `rarity-b`)             |
-| `.cartridge-target-build` | Target-build preference display (`.cartridge-score-badge` grade-s…d) |
+| Class                     | Description                                                                          |
+| ------------------------- | ------------------------------------------------------------------------------------ |
+| `.awakening-row`          | Wrapper for the awakening `.toggle-btn` row                                          |
+| `.arc-tier-row`           | Wrapper for the arc-tier `.toggle-btn.compact` row                                   |
+| `.cartridge-slot`         | Clickable slot that opens the cartridge editor modal                                 |
+| `.cartridge-rarity-badge` | S/A/B rarity pill (`rarity-s` / `rarity-a` / `rarity-b`)                             |
+| `.cartridge-target-build` | Target-build preference display; score shown via the shared `.score-badge` grade-s…d |
 
 Awakening/arc-tier buttons use the canonical `.toggle-btn` (`.compact` for arc tier),
 the level + arc sliders use `.level-slider`, and the arc/cartridge selects use
@@ -665,7 +685,7 @@ the level + arc sliders use `.level-slider`, and the arc/cartridge selects use
 
 **Esper badge colors:** `--color-n2e-esper-anima/chaos/cosmos/incantation/lakshana/psyche`
 **Arc badge colors:** `--color-n2e-arc-gas/liquid/plasma/solid/synthesis`
-**Tokens used:** `--color-n2e-rarity-*`, `--color-n2e-score-grade-*`, `--shadow-card-hover`, `--shadow-inset-glow`, `--border-radius-lg`, `--color-ui-danger`
+**Tokens used:** `--color-n2e-rarity-*`, `--color-score-grade-*` (via the shared `ScoreBadge`), `--shadow-card-hover`, `--shadow-inset-glow`, `--border-radius-lg`, `--color-ui-danger`
 
 ---
 

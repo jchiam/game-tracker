@@ -3,7 +3,9 @@
 Static catalog of Persona 5: The Phantom X Revelation Card sets, per-slot main stat
 pools, shared substat pool, slot identifiers, and card rarity tiers. Provides the
 reference data consumed by the revelation tracking and preference systems.
+
 ## Requirements
+
 ### Requirement: Heavens set catalog
 
 The system SHALL maintain a static catalog of all Heavens Revelation Card sets. Each set entry SHALL include: `id` (kebab-case string), `name` (display string), `twoSetEffect` (string description), and `fourSetEffect` (string description). The catalog SHALL be exported as `ALL_HEAVENS_SETS`, ordered alphabetically by `name`. The catalog SHALL be the full canonical Heavens set list per the pinned source (Game8 — List of All Revelation Cards), not a subset. Existing set `id`s SHALL remain stable when the catalog is expanded (additive only — no renames or removals).
@@ -157,4 +159,3 @@ The system SHALL export a `CARD_RARITIES` array defining the quality tiers: `com
 
 - **WHEN** a card of `epic` rarity is created
 - **THEN** it supports up to 4 substats
-

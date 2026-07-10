@@ -61,6 +61,10 @@ export interface HsrTrackedCharacter extends Character {
       rope: StatPreference[];
     };
     subStats: StatPreference[];
+    /** Preferred 4-piece relic set (head/hands/body/feet) — single choice, feeds the set-term score. */
+    relicSetId?: string | null;
+    /** Preferred 2-piece planar ornament set (sphere/rope) — single choice, feeds the set-term score. */
+    planarSetId?: string | null;
     comments?: string;
   };
 }

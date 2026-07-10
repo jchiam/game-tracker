@@ -8,6 +8,7 @@ import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
 import { getRelicIconUrl } from '@/lib/imagekit';
 import { calculateRelicScore } from '@/utils/relicScoring';
+import { ScoreBadge } from '@/components/ScoreBadge';
 import { getProgressStyle } from '@/utils/progressGradient';
 import './CharacterCard.css';
 
@@ -30,18 +31,8 @@ export function CharacterCard({
   onToggleFavorite,
   onToggleRelic,
 }: CharacterCardProps) {
-  const hasPreferences =
-    char.buildPreferences?.subStats?.length > 0 ||
-    ['body', 'feet', 'sphere', 'rope'].some(
-      (s) =>
-        char.buildPreferences?.mainStats[s as keyof typeof char.buildPreferences.mainStats]
-          ?.length > 0,
-    );
-  const score = hasPreferences ? calculateRelicScore(char) : 0;
-  const showScore = hasPreferences;
-  let tierClass = 'tier-b';
-  if (score >= 80) tierClass = 'tier-s';
-  else if (score >= 50) tierClass = 'tier-a';
+  // The scorer owns the insufficient-data decision: -1 when no preferences or no relics.
+  const score = calculateRelicScore(char);
 
   // Collapsed-summary investment chips (shared gradient color language)
   const relicCount = (['head', 'hands', 'body', 'feet', 'sphere', 'rope'] as const).filter(
@@ -84,13 +75,7 @@ export function CharacterCard({
           )}
         </>
       }
-      headerExtra={
-        showScore && (
-          <div className={`score-badge ${tierClass}`}>
-            <span>{score.toFixed(1)}%</span>
-          </div>
-        )
-      }
+      headerExtra={<ScoreBadge score={score} />}
       summaryStats={
         <>
           <StatChip

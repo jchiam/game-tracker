@@ -10,8 +10,11 @@ export interface RosterSortMode<SortKey extends string> {
 }
 
 export interface RosterViewConfig<SortKey extends string, TEntity> {
-  /** Two-mode sort toggle; the first mode is the default. */
-  sortModes: [RosterSortMode<SortKey>, RosterSortMode<SortKey>];
+  /**
+   * Sort modes cycled by the single sort button; the first mode is the default.
+   * Two or more modes — the button advances to the next on each click and wraps.
+   */
+  sortModes: [RosterSortMode<SortKey>, ...RosterSortMode<SortKey>[]];
   searchPlaceholder: string;
   /** Tooltip/title of the add button — e.g. "Add Arcanist". */
   addTitle: string;
@@ -37,7 +40,7 @@ export function useRosterView<SortKey extends string, TEntity>(
   config: RosterViewConfig<SortKey, TEntity>,
 ) {
   const { sortModes, searchPlaceholder, addTitle, addDisabled, filterRoster } = config;
-  const [defaultMode, altMode] = sortModes;
+  const defaultMode = sortModes[0];
 
   const [view, setView] = useState<'roster' | 'second'>('roster');
   const [searchTerm, setSearchTerm] = useState('');
@@ -49,8 +52,12 @@ export function useRosterView<SortKey extends string, TEntity>(
     [filterRoster, searchTerm, sortBy],
   );
 
-  const activeMode = sortBy === defaultMode.key ? defaultMode : altMode;
-  const inactiveMode = activeMode === defaultMode ? altMode : defaultMode;
+  const activeIndex = Math.max(
+    0,
+    sortModes.findIndex((m) => m.key === sortBy),
+  );
+  const activeMode = sortModes[activeIndex];
+  const nextMode = sortModes[(activeIndex + 1) % sortModes.length];
 
   return {
     view,
@@ -62,9 +69,8 @@ export function useRosterView<SortKey extends string, TEntity>(
     sort: {
       active: sortBy === defaultMode.key,
       label: activeMode.label,
-      title: `Sorted ${activeMode.described} — click to sort ${inactiveMode.described}`,
-      onToggle: () =>
-        setSortBy((prev) => (prev === defaultMode.key ? altMode.key : defaultMode.key)),
+      title: `Sorted ${activeMode.described} — click to sort ${nextMode.described}`,
+      onToggle: () => setSortBy(nextMode.key),
     },
     add: {
       title: addTitle,

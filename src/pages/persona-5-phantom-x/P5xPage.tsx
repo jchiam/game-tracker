@@ -48,7 +48,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     : null;
 
   const filteredGetRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE') =>
       getFilteredRoster(
         searchTerm,
         sortBy,
@@ -62,6 +62,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
       sortModes: [
         { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
         { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+        { key: 'SCORE', label: '★', described: 'by Revelation Score' },
       ],
       searchPlaceholder: 'Search by name, codename, persona, role, or element...',
       addTitle: 'Add Phantom Thief',

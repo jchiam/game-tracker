@@ -8,7 +8,8 @@ import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { getProgressStyle } from '@/utils/progressGradient';
-import { calculateRevelationScore, getScoreGrade } from '@/utils/revelationScoring';
+import { calculateRevelationScore } from '@/utils/revelationScoring';
+import { ScoreBadge } from '@/components/ScoreBadge';
 import './ThiefCard.css';
 
 const AWARENESS_OPTIONS = [0, 1, 2, 3, 4, 5, 6].map((a) => ({ value: String(a), label: `A${a}` }));
@@ -104,13 +105,7 @@ export function ThiefCard({
           />
         </>
       }
-      headerExtra={
-        showScore && (
-          <div className={`score-badge grade-${getScoreGrade(revScore).toLowerCase()}`}>
-            <span>{revScore.toFixed(0)}%</span>
-          </div>
-        )
-      }
+      headerExtra={<ScoreBadge score={revScore} />}
       summaryStats={
         <>
           <StatChip

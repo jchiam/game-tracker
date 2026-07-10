@@ -143,6 +143,50 @@ describe('characterService', () => {
       expect(result[0].buildPreferences.comments).toBe('Rush CRIT stats');
     });
 
+    it('loadCharactersFromDB maps preferred relic and planar set ids', async () => {
+      const dbRow = {
+        id: 'db-uuid-1',
+        character_id: 'acheron',
+        level: 60,
+        traces_attained: false,
+        is_favorited: false,
+        build_comments: '',
+        relic_set_id: '108',
+        planar_set_id: '301',
+        hsr_equipped_relics: [],
+        hsr_build_preference_main_stats: [],
+        hsr_build_preference_sub_stats: [],
+      };
+
+      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+      const result = await service.loadCharactersFromDB('user-1');
+
+      expect(result[0].buildPreferences.relicSetId).toBe('108');
+      expect(result[0].buildPreferences.planarSetId).toBe('301');
+    });
+
+    it('loadCharactersFromDB defaults set ids to null when absent', async () => {
+      const dbRow = {
+        id: 'db-uuid-1',
+        character_id: 'acheron',
+        level: 60,
+        traces_attained: false,
+        is_favorited: false,
+        build_comments: '',
+        hsr_equipped_relics: [],
+        hsr_build_preference_main_stats: [],
+        hsr_build_preference_sub_stats: [],
+      };
+
+      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+      const result = await service.loadCharactersFromDB('user-1');
+
+      expect(result[0].buildPreferences.relicSetId).toBeNull();
+      expect(result[0].buildPreferences.planarSetId).toBeNull();
+    });
+
     it('insertCharacter inserts the entity FK column and configured defaults', async () => {
       const charBuilder = createBuilder({ data: { id: 'new-char-db-id' }, error: null });
       const profileBuilder = createBuilder({ data: null, error: null });
@@ -284,7 +328,30 @@ describe('characterService', () => {
         expect(mockFrom).toHaveBeenCalledWith('hsr_build_preference_main_stats');
         expect(mockFrom).toHaveBeenCalledWith('hsr_build_preference_sub_stats');
         expect(mockFrom).toHaveBeenCalledWith('hsr_tracked_characters');
-        expect(builder.update).toHaveBeenCalledWith({ build_comments: 'My build notes' });
+        expect(builder.update).toHaveBeenCalledWith({
+          build_comments: 'My build notes',
+          relic_set_id: null,
+          planar_set_id: null,
+        });
+      });
+
+      it('persists preferred relic and planar set ids on the parent row', async () => {
+        const builder = createBuilder({ data: null, error: null });
+        mockFrom.mockReturnValue(builder);
+
+        await service.saveBuildPrefs('db-uuid-1', {
+          mainStats: { body: [], feet: [], sphere: [], rope: [] },
+          subStats: [],
+          relicSetId: '108',
+          planarSetId: '301',
+          comments: '',
+        });
+
+        expect(builder.update).toHaveBeenCalledWith({
+          build_comments: '',
+          relic_set_id: '108',
+          planar_set_id: '301',
+        });
       });
 
       it('inserts main stat prefs across slots when present', async () => {

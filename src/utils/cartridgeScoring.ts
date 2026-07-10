@@ -1,4 +1,5 @@
-import type { N2ETrackedCharacter } from '../types';
+import type { N2ETrackedCharacter, StatPreference } from '../types';
+import { createEquipmentScore, matchStatShapes, type StatShape } from './scoring';
 
 export const CARTRIDGE_ID_WEIGHT = 0.35;
 export const MAIN_STAT_WEIGHT = 0.3;
@@ -26,86 +27,63 @@ export function getCartridgeIdMatchScore(preferredId: string, equippedId: string
   return RARITY_PENALTIES[delta] ?? 0.0;
 }
 
+// N2E stat-id vocabulary → normalized shape. Only the eight partial-match
+// participants are mapped; everything else falls back to an identity shape
+// (isPercent false) so non-participants can only exact-match.
+const N2E_STAT_SHAPES: Record<string, StatShape> = {
+  HP: { base: 'hp', isPercent: false },
+  'HP %': { base: 'hp', isPercent: true },
+  ATK: { base: 'atk', isPercent: false },
+  'ATK %': { base: 'atk', isPercent: true },
+  DEF: { base: 'def', isPercent: false },
+  'DEF %': { base: 'def', isPercent: true },
+  'CRIT Rate %': { base: 'crit-rate', isPercent: true },
+  'CRIT DMG %': { base: 'crit-mult', isPercent: true },
+};
+
+function toStatShape(id: string): StatShape {
+  return N2E_STAT_SHAPES[id] ?? { base: id, isPercent: false };
+}
+
 export function getStatMatchScore(preferredStat: string, equippedStat: string): number {
-  if (preferredStat === equippedStat) return 1.0;
-
-  // Partial match: % preferred but flat equipped → 0.5
-  if (preferredStat === 'HP %' && equippedStat === 'HP') return 0.5;
-  if (preferredStat === 'ATK %' && equippedStat === 'ATK') return 0.5;
-  if (preferredStat === 'DEF %' && equippedStat === 'DEF') return 0.5;
-
-  // Flat preferred but % equipped → 1.0 (% always trumps flat)
-  if (preferredStat === 'HP' && equippedStat === 'HP %') return 1.0;
-  if (preferredStat === 'ATK' && equippedStat === 'ATK %') return 1.0;
-  if (preferredStat === 'DEF' && equippedStat === 'DEF %') return 1.0;
-
-  // Cross-crit match → 0.5
-  if (preferredStat === 'CRIT Rate %' && equippedStat === 'CRIT DMG %') return 0.5;
-  if (preferredStat === 'CRIT DMG %' && equippedStat === 'CRIT Rate %') return 0.5;
-
-  return 0.0;
+  return matchStatShapes(toStatShape(preferredStat), toStatShape(equippedStat));
 }
 
-export function calculateCartridgeScore(character: N2ETrackedCharacter): number {
-  const {
-    cartridgePreferences: prefs,
-    cartridgeId,
-    cartridgeMainStat,
-    cartridgeSubStats,
-  } = character;
-
-  const hasPrefs =
-    prefs && (prefs.cartridgeId != null || prefs.mainStats.length > 0 || prefs.subStats.length > 0);
-  if (!hasPrefs) return -1;
-
-  const hasEquipped =
-    cartridgeId != null || cartridgeMainStat != null || cartridgeSubStats.length > 0;
-  if (!hasEquipped) return -1;
-
-  let idScore = 0;
-  if (prefs.cartridgeId && cartridgeId) {
-    idScore = getCartridgeIdMatchScore(prefs.cartridgeId, cartridgeId);
+function bestMatch(prefs: StatPreference[], equipped: string): number {
+  let best = 0;
+  for (const pref of prefs) {
+    const match = getStatMatchScore(pref.stat, equipped);
+    if (match > best) best = match;
   }
-
-  let mainScore = 0;
-  if (cartridgeMainStat && prefs.mainStats.length > 0) {
-    let bestMatch = 0;
-    for (const pref of prefs.mainStats) {
-      const match = getStatMatchScore(pref.stat, cartridgeMainStat);
-      if (match > bestMatch) bestMatch = match;
-    }
-    mainScore = bestMatch;
-  }
-
-  let subScore = 0;
-  if (prefs.subStats.length > 0 && cartridgeSubStats.length > 0) {
-    let totalMatch = 0;
-    for (const equipped of cartridgeSubStats) {
-      let bestMatch = 0;
-      for (const pref of prefs.subStats) {
-        const match = getStatMatchScore(pref.stat, equipped);
-        if (match > bestMatch) bestMatch = match;
-      }
-      totalMatch += bestMatch;
-    }
-    subScore = Math.min(4, totalMatch) / 4;
-  }
-
-  return Math.min(
-    100,
-    Math.max(
-      0,
-      (idScore * CARTRIDGE_ID_WEIGHT + mainScore * MAIN_STAT_WEIGHT + subScore * SUB_STAT_WEIGHT) *
-        100,
-    ),
-  );
+  return best;
 }
 
-export function getScoreGrade(score: number): string {
-  if (score < 0) return '';
-  if (score >= 90) return 'S';
-  if (score >= 70) return 'A';
-  if (score >= 50) return 'B';
-  if (score >= 30) return 'C';
-  return 'D';
-}
+export const calculateCartridgeScore = createEquipmentScore<N2ETrackedCharacter>({
+  hasPreferences: (c) => {
+    const p = c.cartridgePreferences;
+    return Boolean(p && (p.cartridgeId != null || p.mainStats.length > 0 || p.subStats.length > 0));
+  },
+  hasEquipment: (c) =>
+    c.cartridgeId != null || c.cartridgeMainStat != null || c.cartridgeSubStats.length > 0,
+  setTerm: (c) => {
+    const p = c.cartridgePreferences;
+    return p?.cartridgeId && c.cartridgeId
+      ? getCartridgeIdMatchScore(p.cartridgeId, c.cartridgeId)
+      : 0;
+  },
+  // N2E is a single-cartridge game: one pseudo-slot.
+  slots: (c) => {
+    const p = c.cartridgePreferences;
+    const mainMatch =
+      c.cartridgeMainStat && p.mainStats.length > 0
+        ? bestMatch(p.mainStats, c.cartridgeMainStat)
+        : 0;
+    const subMatches =
+      p.subStats.length > 0 && c.cartridgeSubStats.length > 0
+        ? c.cartridgeSubStats.map((s) => bestMatch(p.subStats, s))
+        : [];
+    return [{ mainMatch, subMatches }];
+  },
+});
+
+export { getScoreGrade } from './scoring';
