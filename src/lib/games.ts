@@ -98,7 +98,7 @@ export const GAMES: Game[] = [
     path: '/persona-5-phantom-x',
     developer: 'Black Wing Game Studio',
     description: 'Track phantom thieves, awareness, and party compositions.',
-    icon: '/assets/icons/p5x-icon.png',
+    icon: '/assets/icons/p5x-icon.webp',
     color: '#f84f36',
     coverImage: '/assets/persona-5-phantom-x/selection-cover.webp',
     bgClass: 'bg-p5x-sel',
