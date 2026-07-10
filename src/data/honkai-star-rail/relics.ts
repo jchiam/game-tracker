@@ -15,23 +15,23 @@ export interface EquippedRelic {
   subStats: RelicStat[];
 }
 
+// Pools are ordered per the shared semantic stat ordering: Offensive → Defensive →
+// Tempo → Supporting (flat before its percent within a bucket). See shared-ui-components.
 export const MAIN_STATS = {
   HEAD: ['HP'],
   HANDS: ['ATK'],
   BODY: [
-    'HP%',
     'ATK%',
-    'DEF%',
     'CRIT Rate',
     'CRIT DMG',
+    'HP%',
+    'DEF%',
     'Outgoing Healing Boost',
     'Effect Hit Rate',
   ],
-  FEET: ['HP%', 'ATK%', 'DEF%', 'SPD'],
+  FEET: ['ATK%', 'HP%', 'DEF%', 'SPD'],
   SPHERE: [
-    'HP%',
     'ATK%',
-    'DEF%',
     'Physical DMG Boost',
     'Fire DMG Boost',
     'Ice DMG Boost',
@@ -39,21 +39,27 @@ export const MAIN_STATS = {
     'Wind DMG Boost',
     'Quantum DMG Boost',
     'Imaginary DMG Boost',
+    'HP%',
+    'DEF%',
   ],
-  ROPE: ['HP%', 'ATK%', 'DEF%', 'Break Effect', 'Energy Regeneration Rate'],
+  ROPE: ['ATK%', 'Break Effect', 'HP%', 'DEF%', 'Energy Regeneration Rate'],
 };
 
 export const SUB_STATS = [
-  'HP',
+  // Offensive
   'ATK',
-  'DEF',
-  'HP%',
   'ATK%',
-  'DEF%',
-  'SPD',
   'CRIT Rate',
   'CRIT DMG',
-  'Effect Hit Rate',
-  'Effect RES',
   'Break Effect',
+  // Defensive
+  'HP',
+  'HP%',
+  'DEF',
+  'DEF%',
+  'Effect RES',
+  // Tempo
+  'SPD',
+  // Supporting
+  'Effect Hit Rate',
 ];

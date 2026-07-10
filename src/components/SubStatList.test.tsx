@@ -152,6 +152,22 @@ describe('SubStatList — id/label options', () => {
     { value: 'crit-mult', label: 'Crit Mult.' },
   ];
 
+  it('renders options in the given order, applying no reordering', () => {
+    render(
+      <SubStatList
+        variant="stat-value"
+        values={[{ type: 'attack', value: '1' }]}
+        options={ID_STATS}
+        namePrefix="substat"
+        onChange={vi.fn()}
+      />,
+    );
+    const opts = Array.from(document.querySelectorAll('select[name="substat-type-0"] option'))
+      .map((o) => (o as HTMLOptionElement).value)
+      .filter(Boolean); // drop the leading "- Stat -" placeholder option
+    expect(opts).toEqual(['attack', 'damage-mult', 'crit-mult']);
+  });
+
   it('displays the label but stores the value', () => {
     render(
       <SubStatList

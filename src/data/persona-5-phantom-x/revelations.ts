@@ -167,11 +167,13 @@ export const toStatOptions = (ids: readonly string[]): { value: string; label: s
 // Per-slot main stat pools, expressed as stat ids. SUN (`hp`) and SPACE (`attack`,
 // `defense`) are fixed — not user-selectable; SPACE carries two fixed mains. MOON/STAR/SKY
 // are variable pools chosen from these ids.
+// Pools are ordered per the shared semantic stat ordering: Offensive → Defensive →
+// Tempo → Supporting (flat before its percent within a bucket). See shared-ui-components.
 export const MAIN_STATS: Record<Uppercase<RevelationSlot>, string[]> = {
   SUN: ['hp'],
-  MOON: ['attack-pct', 'defense-pct', 'hp-pct', 'hp-recovery', 'damage-mult'],
-  STAR: ['attack-pct', 'defense-pct', 'hp-pct', 'crit-rate', 'crit-mult', 'ailment-acc'],
-  SKY: ['attack-pct', 'defense-pct', 'hp-pct', 'speed', 'sp-recovery'],
+  MOON: ['attack-pct', 'damage-mult', 'hp-pct', 'defense-pct', 'hp-recovery'],
+  STAR: ['attack-pct', 'crit-rate', 'crit-mult', 'hp-pct', 'defense-pct', 'ailment-acc'],
+  SKY: ['attack-pct', 'hp-pct', 'defense-pct', 'speed', 'sp-recovery'],
   SPACE: ['attack', 'defense'],
 };
 
@@ -179,19 +181,23 @@ export const MAIN_STATS: Record<Uppercase<RevelationSlot>, string[]> = {
 export const FIXED_MAIN_SLOTS: RevelationSlot[] = ['sun', 'space'];
 
 export const SUB_STATS: string[] = [
+  // Offensive
   'attack',
   'attack-pct',
-  'defense',
-  'defense-pct',
-  'hp',
-  'hp-pct',
-  'damage-mult',
-  'ailment-acc',
   'crit-rate',
   'crit-mult',
+  'damage-mult',
+  'pierce-rate',
+  // Defensive
+  'hp',
+  'hp-pct',
+  'defense',
+  'defense-pct',
+  // Tempo
   'speed',
   'sp-recovery',
-  'pierce-rate',
+  // Supporting
+  'ailment-acc',
 ];
 
 export const CARD_RARITIES: CardRarity[] = [

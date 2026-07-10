@@ -31,6 +31,7 @@ import {
   formatDiff,
   generatedHeader,
 } from './lib/pipeline.mjs';
+import { orderN2eStats } from './lib/statOrder.mjs';
 
 loadLocalEnv();
 const { ensureAsset } = initImageKit();
@@ -377,8 +378,8 @@ async function main() {
   const rawEspers = esperData.espers;
   const rawArcs = arcData.arcs;
   const rawShards = shardData.shards;
-  const mainStats = mainStatData.mainStatCore.map((s) => s.name);
-  const subStats = subStatData.subStats.map((s) => s.name);
+  const mainStats = orderN2eStats(mainStatData.mainStatCore.map((s) => s.name));
+  const subStats = orderN2eStats(subStatData.subStats.map((s) => s.name));
   console.log(
     `  Found ${rawEspers.length} espers, ${rawArcs.length} arcs, ${mainStats.length} main stats, ${subStats.length} sub stats`,
   );

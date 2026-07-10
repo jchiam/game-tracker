@@ -3,11 +3,8 @@
 
 export const CARTRIDGE_MAIN_STATS = [
   'ATK %',
-  'HP %',
-  'DEF %',
   'CRIT Rate %',
   'CRIT DMG %',
-  'Healing Bonus %',
   'Cosmos DMG Bonus %',
   'Anima DMG Bonus %',
   'Incantation DMG Bonus %',
@@ -15,22 +12,25 @@ export const CARTRIDGE_MAIN_STATS = [
   'Chaos DMG Bonus %',
   'Lakshana DMG Bonus %',
   'Mental DMG Bonus %',
-  'Cycle Intensity',
   'Break Intensity',
+  'HP %',
+  'DEF %',
+  'Cycle Intensity',
+  'Healing Bonus %',
 ] as const;
 
 export const CARTRIDGE_SUB_STATS = [
   'ATK',
   'ATK %',
+  'CRIT Rate %',
+  'CRIT DMG %',
+  'Universal DMG Bonus %',
+  'Break Intensity',
   'HP',
   'HP %',
   'DEF',
   'DEF %',
-  'CRIT Rate %',
-  'CRIT DMG %',
-  'Universal DMG Bonus %',
   'Cycle Intensity',
-  'Break Intensity',
 ] as const;
 
 export const CARTRIDGE_RARITIES = ['B', 'A', 'S'] as const;
