@@ -132,8 +132,12 @@ When revelations are equipped, the summary SHALL show a single revelation `StatC
 built from `getRevelationSummary` (see "Consolidated revelation set summary"): a
 **Space-first, lossless** consolidation of every active set bonus — the Space set (bare
 name) followed by each active Heavens bonus as `{name} {pieces}pc` — joined by `·`
-(e.g. `Meditation · Power 2pc · Peace 2pc`), colored via investment gradient. The chip is
-NOT limited to the single dominant Heavens set.
+(e.g. `Meditation · Power 2pc · Peace 2pc`). The chip is NOT limited to the single
+dominant Heavens set. The chip SHALL be colored by the **revelation match score** via
+`getProgressStyle(score, 0, 100)`, so its color reflects how well the equipped cards match
+preferences (not raw piece count); when the score is insufficient (`-1` — no preferences or
+no cards), the chip SHALL fall back to the top Heavens bonus piece count via
+`getProgressStyle(pieces, 0, 4)`.
 
 Summary chip ordering SHALL be: Level → Awareness → Weapon → **Mindscape →
 Revelations** → Skills. The Mindscape chip precedes the Revelations chip so the
@@ -182,10 +186,47 @@ which is unchanged.
 - **WHEN** a Thief has no revelation cards equipped, or only single-card Heavens sets with no Space set
 - **THEN** no revelation chip is shown in the summary
 
+#### Scenario: Revelation chip colored by match score
+
+- **WHEN** a Thief card renders its collapsed summary with an active revelation bonus and a computed score ≥ 0
+- **THEN** the revelation `StatChip` text and border color are computed via `getProgressStyle(score, 0, 100)`
+
+#### Scenario: Revelation chip color falls back to pieces when unscored
+
+- **WHEN** a Thief has an active revelation bonus but the score is `-1` (e.g. no preferences set)
+- **THEN** the revelation chip color falls back to `getProgressStyle(topHeavensPieces, 0, 4)`
+
 #### Scenario: Summary chip ordering places Mindscape before Revelations
 
 - **WHEN** the summary stat chips render with every chip present
 - **THEN** order is: Level → Awareness → Weapon → Mindscape → Revelations → Skills
+
+### Requirement: Revelation score header badge
+
+The Thief card SHALL render a revelation-score badge in `GameCardShell`'s `headerExtra` slot
+when `calculateRevelationScore(thief)` returns a non-negative score, matching the HSR relic /
+N2E cartridge header-badge convention. The badge SHALL display the score as a whole-number
+percentage and carry a grade class derived from the score. When the score is `-1`
+(insufficient data), no badge is rendered.
+
+Grade thresholds SHALL match N2E's `getScoreGrade` scale (S ≥ 90, A ≥ 70, B ≥ 50, C ≥ 30, else
+D). The `score-badge` and grade classes are defined in `ThiefCard.css` (per-game, mirroring the
+duplicated HSR/N2E convention).
+
+#### Scenario: Badge shown when a score is computed
+
+- **WHEN** a Thief has revelation preferences and at least one equipped card, yielding a score ≥ 0
+- **THEN** a score badge is rendered in the card header showing the score as a whole-number percentage with its grade class
+
+#### Scenario: Grade class reflects the score
+
+- **WHEN** the computed score is 82
+- **THEN** the badge carries the A grade class (score ≥ 70 and < 90)
+
+#### Scenario: No badge on insufficient data
+
+- **WHEN** `calculateRevelationScore(thief)` returns `-1`
+- **THEN** no score badge is rendered in the card header
 
 ### Requirement: Consolidated revelation set summary
 

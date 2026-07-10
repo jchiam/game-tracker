@@ -3,6 +3,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ThiefCard } from './ThiefCard';
 import type { P5xTrackedThief } from '@/types';
+import { getProgressStyle } from '@/utils/progressGradient';
+import { calculateRevelationScore } from '@/utils/revelationScoring';
 
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => path,
@@ -427,5 +429,86 @@ describe('ThiefCard', () => {
       'Meditation · Strife 4pc',
       'Skills ✓',
     ]);
+  });
+
+  // --- Revelation match-score badge + chip color ---
+
+  const scoredThief = () =>
+    makeThief({
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+      revelationPreferences: {
+        heavensSetId: 'strife',
+        spaceSetId: null,
+        mainStats: {
+          moon: [{ stat: 'attack-pct', operator: null, orderIndex: 0 }],
+          star: [],
+          sky: [],
+        },
+        subStats: [],
+      },
+    });
+
+  it('renders a header score badge with a grade class when prefs + cards yield a score', () => {
+    const thief = scoredThief();
+    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
+    const badge = container.querySelector('.score-badge');
+    expect(badge).not.toBeNull();
+    expect(badge!.textContent).toMatch(/^\d+%$/);
+    expect(badge!.className).toMatch(/grade-[sabcd]/);
+  });
+
+  it('renders no score badge when the score is insufficient data (no prefs / no cards)', () => {
+    // default thief: cards present would still be -1 without prefs; here no cards + no prefs
+    const { container: noData } = render(<ThiefCard {...defaultProps} />);
+    expect(noData.querySelector('.score-badge')).toBeNull();
+
+    // cards equipped but no preferences → still -1 → no badge
+    const cardsNoPrefs = makeThief({
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+    });
+    const { container } = render(<ThiefCard {...defaultProps} thief={cardsNoPrefs} />);
+    expect(container.querySelector('.score-badge')).toBeNull();
+  });
+
+  it('colors the revelation chip by the match score when scored', () => {
+    const thief = scoredThief();
+    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
+    const chip = container.querySelector<HTMLElement>(
+      '.game-card-static-stats .p5x-revelation-chip',
+    )!;
+    const expected = getProgressStyle(calculateRevelationScore(thief), 0, 100);
+    expect(chip.style.color).toBe(expected.color);
+    expect(chip.style.borderColor).toBe(expected.borderColor);
+  });
+
+  it('falls back to the piece-count color for the revelation chip when unscored (-1)', () => {
+    // Active Strife 2pc bonus but no preferences → score -1 → piece-count gradient (pieces = 2).
+    const thief = makeThief({
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+    });
+    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
+    const chip = container.querySelector<HTMLElement>(
+      '.game-card-static-stats .p5x-revelation-chip',
+    )!;
+    const expected = getProgressStyle(2, 0, 4);
+    expect(chip.style.color).toBe(expected.color);
   });
 });

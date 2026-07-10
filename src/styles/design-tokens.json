@@ -127,7 +127,12 @@
       "weaponRarity2": { "$value": "#8be28b", "$type": "color" },
       "weaponRarity3": { "$value": "#7fbfff", "$type": "color" },
       "weaponRarity4": { "$value": "#c9a8f8", "$type": "color" },
-      "weaponRarity5": { "$value": "#ffd700", "$type": "color" }
+      "weaponRarity5": { "$value": "#ffd700", "$type": "color" },
+      "scoreGradeS": { "$value": "#40c8a0", "$type": "color" },
+      "scoreGradeA": { "$value": "#d4af37", "$type": "color" },
+      "scoreGradeB": { "$value": "#c88040", "$type": "color" },
+      "scoreGradeC": { "$value": "#b48c64", "$type": "color" },
+      "scoreGradeD": { "$value": "#8a6050", "$type": "color" }
     },
     "r1999": {
       "afflatusPlant": { "$value": "#90e09a", "$type": "color" },

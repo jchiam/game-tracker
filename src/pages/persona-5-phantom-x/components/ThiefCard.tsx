@@ -8,6 +8,7 @@ import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { getProgressStyle } from '@/utils/progressGradient';
+import { calculateRevelationScore, getScoreGrade } from '@/utils/revelationScoring';
 import './ThiefCard.css';
 
 const AWARENESS_OPTIONS = [0, 1, 2, 3, 4, 5, 6].map((a) => ({ value: String(a), label: `A${a}` }));
@@ -75,8 +76,14 @@ export function ThiefCard({
   ];
   const revSummaryLabel = revSetParts.join(' · ');
   const hasRevSets = revSetParts.length > 0;
-  // Gradient from the best Heavens bonus (4pc → full, 2pc → half, space-only → low).
-  const revPs = getProgressStyle(revSummary.heavensBonuses[0]?.pieces ?? 0, 0, 4);
+
+  // Revelation match score → header badge + chip color. -1 = insufficient data (no prefs / no
+  // cards); the badge hides and the chip falls back to the best-Heavens-bonus piece gradient.
+  const revScore = calculateRevelationScore(thief);
+  const showScore = revScore >= 0;
+  const revPs = showScore
+    ? getProgressStyle(revScore, 0, 100)
+    : getProgressStyle(revSummary.heavensBonuses[0]?.pieces ?? 0, 0, 4);
 
   return (
     <GameCardShell
@@ -96,6 +103,13 @@ export function ThiefCard({
             modifier={toModifier(thief.element)}
           />
         </>
+      }
+      headerExtra={
+        showScore && (
+          <div className={`score-badge grade-${getScoreGrade(revScore).toLowerCase()}`}>
+            <span>{revScore.toFixed(0)}%</span>
+          </div>
+        )
       }
       summaryStats={
         <>

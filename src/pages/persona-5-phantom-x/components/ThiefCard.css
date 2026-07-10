@@ -199,3 +199,43 @@
   background: color-mix(in srgb, var(--color-p5x-element-none) 25%, transparent);
   border-color: color-mix(in srgb, var(--color-p5x-element-none) 60%, transparent);
 }
+
+/* Revelation match-score header badge (mirrors the HSR/N2E per-game score badge;
+   grade thresholds/colors duplicated pending the cross-game scoring-alignment change). */
+.score-badge {
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-bold);
+  padding: var(--spacing-1) var(--spacing-3);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid;
+}
+
+.score-badge.grade-s {
+  background: color-mix(in srgb, var(--color-p5x-score-grade-s) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-score-grade-s) 50%, transparent);
+  color: var(--color-p5x-score-grade-s);
+}
+
+.score-badge.grade-a {
+  background: color-mix(in srgb, var(--color-p5x-score-grade-a) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-score-grade-a) 50%, transparent);
+  color: var(--color-p5x-score-grade-a);
+}
+
+.score-badge.grade-b {
+  background: color-mix(in srgb, var(--color-p5x-score-grade-b) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-score-grade-b) 50%, transparent);
+  color: var(--color-p5x-score-grade-b);
+}
+
+.score-badge.grade-c {
+  background: color-mix(in srgb, var(--color-p5x-score-grade-c) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-score-grade-c) 50%, transparent);
+  color: var(--color-p5x-score-grade-c);
+}
+
+.score-badge.grade-d {
+  background: color-mix(in srgb, var(--color-p5x-score-grade-d) 15%, transparent);
+  border-color: color-mix(in srgb, var(--color-p5x-score-grade-d) 50%, transparent);
+  color: var(--color-p5x-score-grade-d);
+}
