@@ -95,7 +95,7 @@ describe('characterService', () => {
             slot: 'head',
             set_id: '101',
             main_stat: 'HP',
-            hsr_relic_substats: [{ stat_type: 'CRIT Rate', stat_value: '5.8' }],
+            hsr_relic_substats: [{ stat_type: 'CRIT Rate' }],
           },
         ],
         hsr_build_preference_main_stats: [],
@@ -109,7 +109,7 @@ describe('characterService', () => {
       expect(result[0].relics.head).toEqual({
         setId: '101',
         mainStat: 'HP',
-        subStats: [{ type: 'CRIT Rate', value: '5.8' }],
+        subStats: ['CRIT Rate'],
       });
     });
 
@@ -193,7 +193,7 @@ describe('characterService', () => {
         await service.upsertRelic('db-uuid-1', 'head', {
           setId: '101',
           mainStat: 'HP',
-          subStats: [{ type: 'CRIT Rate', value: '5.8' }],
+          subStats: ['CRIT Rate'],
         });
 
         expect(mockFrom).toHaveBeenCalledWith('hsr_equipped_relics');
@@ -211,13 +211,13 @@ describe('characterService', () => {
         await service.upsertRelic('db-uuid-1', 'head', {
           setId: '101',
           mainStat: 'HP',
-          subStats: [{ type: 'CRIT Rate', value: '5.8' }],
+          subStats: ['CRIT Rate'],
         });
 
         expect(substatBuilder.delete).toHaveBeenCalled();
         expect(substatBuilder.eq).toHaveBeenCalledWith('relic_id', 'relic-db-id');
         expect(substatBuilder.insert).toHaveBeenCalledWith([
-          { relic_id: 'relic-db-id', stat_type: 'CRIT Rate', stat_value: '5.8' },
+          { relic_id: 'relic-db-id', stat_type: 'CRIT Rate' },
         ]);
       });
 

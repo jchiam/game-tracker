@@ -51,7 +51,7 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
     },
   }),
   extras: {
-    selectFragment: `hsr_equipped_relics ( id, slot, set_id, main_stat, hsr_relic_substats ( stat_type, stat_value ) ),
+    selectFragment: `hsr_equipped_relics ( id, slot, set_id, main_stat, hsr_relic_substats ( stat_type ) ),
       hsr_build_preference_main_stats ( id, slot, stat, operator_to_next, order_index ),
       hsr_build_preference_sub_stats ( id, stat, operator_to_next, order_index )`,
     mapRow: (row, tracked) => {
@@ -60,10 +60,7 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
         structuredRelics[r.slot] = {
           setId: r.set_id,
           mainStat: r.main_stat,
-          subStats: (r.hsr_relic_substats || []).map((sub: any) => ({
-            type: sub.stat_type,
-            value: sub.stat_value,
-          })),
+          subStats: (r.hsr_relic_substats || []).map((sub: any) => sub.stat_type),
         };
       }
 
@@ -120,8 +117,7 @@ export async function upsertRelic(
     const { error: substatErr } = await supabase.from('hsr_relic_substats').insert(
       relicData.subStats.map((s) => ({
         relic_id: relicRow.id,
-        stat_type: s.type,
-        stat_value: s.value,
+        stat_type: s,
       })),
     );
     if (substatErr) {

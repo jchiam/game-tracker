@@ -146,7 +146,7 @@ interface RevelationRow {
   slot: string;
   set_id: string | null;
   main_stat: string | null;
-  sub_stats: Array<{ type: string; value: number }>;
+  sub_stats: string[];
 }
 
 export async function loadRevelations(

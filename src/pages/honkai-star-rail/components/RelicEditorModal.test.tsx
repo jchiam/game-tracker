@@ -309,7 +309,7 @@ describe('RelicEditorModal', () => {
       relics: {
         head: null,
         hands: null,
-        body: { setId: null, mainStat: null, subStats: [{ type: 'CRIT Rate', value: '3.2%' }] },
+        body: { setId: null, mainStat: null, subStats: ['CRIT Rate'] },
         feet: null,
         sphere: null,
         rope: null,
@@ -349,42 +349,10 @@ describe('RelicEditorModal', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /\+ add substat/i }));
-    // SubStatList adds a row with an empty value for the user to fill in.
+    // SubStatList adds a row seeded with the first allowed stat type.
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
-        subStats: expect.arrayContaining([expect.objectContaining({ value: '' })]),
-      }),
-    );
-  });
-
-  it('calls onSave when a substat value input is changed', () => {
-    const onSave = vi.fn();
-    const char = makeChar({
-      relics: {
-        head: null,
-        hands: null,
-        body: { setId: null, mainStat: null, subStats: [{ type: 'HP', value: '3.2%' }] },
-        feet: null,
-        sphere: null,
-        rope: null,
-      },
-    });
-    render(
-      <RelicEditorModal
-        char={char}
-        slot="body"
-        availableRelicSets={[]}
-        emptyRelic={emptyRelic}
-        onSave={onSave}
-        onRemove={vi.fn()}
-        onUpdateBuildPreferences={vi.fn()}
-        onClose={vi.fn()}
-      />,
-    );
-    fireEvent.change(screen.getByPlaceholderText('Value'), { target: { value: '5.0%' } });
-    expect(onSave).toHaveBeenCalledWith(
-      expect.objectContaining({
-        subStats: [expect.objectContaining({ value: '5.0%' })],
+        subStats: expect.arrayContaining([expect.any(String)]),
       }),
     );
   });
@@ -395,7 +363,7 @@ describe('RelicEditorModal', () => {
       relics: {
         head: null,
         hands: null,
-        body: { setId: null, mainStat: null, subStats: [{ type: 'HP', value: '3.2%' }] },
+        body: { setId: null, mainStat: null, subStats: ['HP'] },
         feet: null,
         sphere: null,
         rope: null,
@@ -607,7 +575,7 @@ describe('RelicEditorModal', () => {
       relics: {
         head: null,
         hands: null,
-        body: { setId: null, mainStat: null, subStats: [{ type: 'HP', value: '3.2%' }] },
+        body: { setId: null, mainStat: null, subStats: ['HP'] },
         feet: null,
         sphere: null,
         rope: null,
@@ -630,7 +598,7 @@ describe('RelicEditorModal', () => {
     fireEvent.change(selects[2], { target: { value: 'CRIT Rate' } });
     expect(onSave).toHaveBeenCalledWith(
       expect.objectContaining({
-        subStats: [expect.objectContaining({ type: 'CRIT Rate' })],
+        subStats: ['CRIT Rate'],
       }),
     );
   });

@@ -1,15 +1,10 @@
 // Static Revelation Card catalog for P5X.
 // Sets sourced from Prydwen/Fragster; stat pools from Prydwen Arcana Cards guide.
 
-export interface RevelationStat {
-  type: string;
-  value: number;
-}
-
 export interface EquippedRevelation {
   setId: string | null;
   mainStat: string | null;
-  subStats: RevelationStat[];
+  subStats: string[];
 }
 
 export type RevelationSlot = 'sun' | 'moon' | 'star' | 'sky' | 'space';
@@ -134,7 +129,7 @@ export const ALL_SPACE_SETS: SpaceSet[] = [
 
 /**
  * Verbatim in-game stat labels, keyed by stable stat id. The id is what's persisted
- * (on `EquippedRevelation.mainStat` / `RevelationStat.type` and preference rows); the
+ * (on `EquippedRevelation.mainStat` / `EquippedRevelation.subStats` and preference rows); the
  * label is display-only, mirroring the game's own text — the stat noun stays full and
  * only the trailing modifier is abbreviated (Multiplier → "Mult.", Accuracy → "Acc."),
  * with a trailing "%" (no space) marking only the Attack/Defense/HP percent variants.

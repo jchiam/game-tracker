@@ -1,76 +1,19 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { SubStatList, type SubStatValue } from '@/components/SubStatList';
+import { SubStatList } from '@/components/SubStatList';
 
 const STATS = ['HP', 'ATK', 'DEF', 'CRIT Rate', 'CRIT DMG'];
 
-describe('SubStatList — stat-value variant', () => {
-  it('renders a stat select plus a value input per row, with the Value placeholder', () => {
-    const values: SubStatValue[] = [{ type: 'HP', value: '3.2%' }];
-    render(
-      <SubStatList
-        variant="stat-value"
-        values={values}
-        options={STATS}
-        namePrefix="substat"
-        onChange={vi.fn()}
-      />,
-    );
-    expect(screen.getByPlaceholderText('Value')).toHaveValue('3.2%');
+describe('SubStatList — rows', () => {
+  it('renders a stat select per row', () => {
+    render(<SubStatList values={['HP']} options={STATS} namePrefix="substat" onChange={vi.fn()} />);
     expect(document.querySelector('select[name="substat-type-0"]')).toBeInTheDocument();
-    expect(document.querySelector('input[name="substat-value-0"]')).toBeInTheDocument();
   });
 
-  it('emits a new array with only the changed row replaced, not mutating the input', () => {
-    const onChange = vi.fn();
-    const values: SubStatValue[] = [
-      { type: 'HP', value: '1' },
-      { type: 'ATK', value: '2' },
-    ];
-    const frozen = Object.freeze([
-      Object.freeze({ ...values[0] }),
-      Object.freeze({ ...values[1] }),
-    ]);
-    render(
-      <SubStatList
-        variant="stat-value"
-        values={frozen as unknown as SubStatValue[]}
-        options={STATS}
-        namePrefix="substat"
-        onChange={onChange}
-      />,
-    );
-    fireEvent.change(screen.getAllByPlaceholderText('Value')[0], { target: { value: '9' } });
-    const emitted = onChange.mock.calls[0][0] as SubStatValue[];
-    expect(emitted[0]).toEqual({ type: 'HP', value: '9' });
-    expect(emitted[0]).not.toBe(frozen[0]);
-    expect(emitted[1]).toBe(frozen[1]); // untouched row kept by reference
-    expect(frozen[0].value).toBe('1'); // original not mutated
-  });
-
-  it('adds a row with an empty value on add', () => {
-    const onChange = vi.fn();
-    render(
-      <SubStatList
-        variant="stat-value"
-        values={[]}
-        options={STATS}
-        namePrefix="substat"
-        addLabel="+ Add Substat"
-        onChange={onChange}
-      />,
-    );
-    fireEvent.click(screen.getByText('+ Add Substat'));
-    expect(onChange).toHaveBeenCalledWith([{ type: 'HP', value: '' }]);
-  });
-});
-
-describe('SubStatList — stat-only variant', () => {
   it('emits a new string[] with only that index replaced', () => {
     const onChange = vi.fn();
     render(
       <SubStatList
-        variant="stat-only"
         values={['HP', 'ATK']}
         options={STATS}
         namePrefix="substat"
@@ -82,13 +25,40 @@ describe('SubStatList — stat-only variant', () => {
     });
     expect(onChange).toHaveBeenCalledWith(['HP', 'DEF']);
   });
+
+  it('does not mutate the input array on change', () => {
+    const onChange = vi.fn();
+    const frozen = Object.freeze(['HP', 'ATK']) as unknown as string[];
+    render(
+      <SubStatList values={frozen} options={STATS} namePrefix="substat" onChange={onChange} />,
+    );
+    fireEvent.change(document.querySelector('select[name="substat-type-0"]')!, {
+      target: { value: 'DEF' },
+    });
+    expect(onChange).toHaveBeenCalledWith(['DEF', 'ATK']);
+    expect(frozen).toEqual(['HP', 'ATK']); // original untouched
+  });
+
+  it('adds a row using the first allowed option on add', () => {
+    const onChange = vi.fn();
+    render(
+      <SubStatList
+        values={[]}
+        options={STATS}
+        namePrefix="substat"
+        addLabel="+ Add Substat"
+        onChange={onChange}
+      />,
+    );
+    fireEvent.click(screen.getByText('+ Add Substat'));
+    expect(onChange).toHaveBeenCalledWith(['HP']);
+  });
 });
 
 describe('SubStatList — shared behaviour', () => {
   it('hides the add button at the cap and shows it again below', () => {
     const { rerender } = render(
       <SubStatList
-        variant="stat-only"
         values={['HP', 'ATK', 'DEF', 'CRIT Rate']}
         options={STATS}
         namePrefix="substat"
@@ -99,7 +69,6 @@ describe('SubStatList — shared behaviour', () => {
     expect(screen.queryByText('+ Add Substat')).not.toBeInTheDocument();
     rerender(
       <SubStatList
-        variant="stat-only"
         values={['HP', 'ATK', 'DEF']}
         options={STATS}
         namePrefix="substat"
@@ -113,8 +82,7 @@ describe('SubStatList — shared behaviour', () => {
   it('omits excludeValues from a row except where it is the row’s own value', () => {
     render(
       <SubStatList
-        variant="stat-value"
-        values={[{ type: 'DEF', value: '1' }]}
+        values={['DEF']}
         options={STATS}
         namePrefix="substat"
         excludeValues={['ATK', 'DEF']}
@@ -131,13 +99,7 @@ describe('SubStatList — shared behaviour', () => {
 
   it('renders the canonical .substat-row / .remove-substat / .add-substat-btn classes', () => {
     const { container } = render(
-      <SubStatList
-        variant="stat-only"
-        values={['HP']}
-        options={STATS}
-        namePrefix="substat"
-        onChange={vi.fn()}
-      />,
+      <SubStatList values={['HP']} options={STATS} namePrefix="substat" onChange={vi.fn()} />,
     );
     expect(container.querySelector('.substat-row')).toBeInTheDocument();
     expect(container.querySelector('.remove-substat')).toBeInTheDocument();
@@ -155,8 +117,7 @@ describe('SubStatList — id/label options', () => {
   it('renders options in the given order, applying no reordering', () => {
     render(
       <SubStatList
-        variant="stat-value"
-        values={[{ type: 'attack', value: '1' }]}
+        values={['attack']}
         options={ID_STATS}
         namePrefix="substat"
         onChange={vi.fn()}
@@ -171,8 +132,7 @@ describe('SubStatList — id/label options', () => {
   it('displays the label but stores the value', () => {
     render(
       <SubStatList
-        variant="stat-value"
-        values={[{ type: 'damage-mult', value: '12%' }]}
+        values={['damage-mult']}
         options={ID_STATS}
         namePrefix="substat"
         onChange={vi.fn()}
@@ -180,7 +140,6 @@ describe('SubStatList — id/label options', () => {
     );
     const select = document.querySelector('select[name="substat-type-0"]') as HTMLSelectElement;
     expect(select.value).toBe('damage-mult');
-    // The chosen option renders its in-game label, not the id.
     const selected = select.selectedOptions[0];
     expect(selected.textContent).toBe('Damage Mult. +');
   });
@@ -189,7 +148,6 @@ describe('SubStatList — id/label options', () => {
     const onChange = vi.fn();
     render(
       <SubStatList
-        variant="stat-value"
         values={[]}
         options={ID_STATS}
         namePrefix="substat"
@@ -198,14 +156,13 @@ describe('SubStatList — id/label options', () => {
       />,
     );
     fireEvent.click(screen.getByText('+ Add Substat'));
-    expect(onChange).toHaveBeenCalledWith([{ type: 'attack', value: '' }]);
+    expect(onChange).toHaveBeenCalledWith(['attack']);
   });
 
   it('excludeValues compares against option values (ids)', () => {
     render(
       <SubStatList
-        variant="stat-value"
-        values={[{ type: 'crit-mult', value: '1' }]}
+        values={['crit-mult']}
         options={ID_STATS}
         namePrefix="substat"
         excludeValues={['attack', 'crit-mult']}

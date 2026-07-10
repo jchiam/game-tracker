@@ -77,7 +77,7 @@ export function calculateRelicScore(character: HsrTrackedCharacter): number {
         // Find best match among preferred sub stats
         let bestMatch = 0;
         for (const pref of subPrefs) {
-          const matchScore = getStatMatchScore(pref.stat, equippedSub.type);
+          const matchScore = getStatMatchScore(pref.stat, equippedSub);
           if (matchScore > bestMatch) {
             bestMatch = matchScore;
           }

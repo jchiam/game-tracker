@@ -69,62 +69,32 @@ describe('calculateRelicScore', () => {
       head: {
         setId: null,
         mainStat: 'HP',
-        subStats: [
-          { type: 'CRIT Rate', value: '1' },
-          { type: 'CRIT DMG', value: '1' },
-          { type: 'ATK%', value: '1' },
-          { type: 'SPD', value: '1' },
-        ],
+        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
       },
       hands: {
         setId: null,
         mainStat: 'ATK',
-        subStats: [
-          { type: 'CRIT Rate', value: '1' },
-          { type: 'CRIT DMG', value: '1' },
-          { type: 'ATK%', value: '1' },
-          { type: 'SPD', value: '1' },
-        ],
+        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
       },
       body: {
         setId: null,
         mainStat: 'CRIT Rate',
-        subStats: [
-          { type: 'CRIT Rate', value: '1' },
-          { type: 'CRIT DMG', value: '1' },
-          { type: 'ATK%', value: '1' },
-          { type: 'SPD', value: '1' },
-        ],
+        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
       },
       feet: {
         setId: null,
         mainStat: 'SPD',
-        subStats: [
-          { type: 'CRIT Rate', value: '1' },
-          { type: 'CRIT DMG', value: '1' },
-          { type: 'ATK%', value: '1' },
-          { type: 'SPD', value: '1' },
-        ],
+        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
       },
       sphere: {
         setId: null,
         mainStat: 'Fire DMG Boost',
-        subStats: [
-          { type: 'CRIT Rate', value: '1' },
-          { type: 'CRIT DMG', value: '1' },
-          { type: 'ATK%', value: '1' },
-          { type: 'SPD', value: '1' },
-        ],
+        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
       },
       rope: {
         setId: null,
         mainStat: 'ATK%',
-        subStats: [
-          { type: 'CRIT Rate', value: '1' },
-          { type: 'CRIT DMG', value: '1' },
-          { type: 'ATK%', value: '1' },
-          { type: 'SPD', value: '1' },
-        ],
+        subStats: ['CRIT Rate', 'CRIT DMG', 'ATK%', 'SPD'],
       },
     };
     // Should be very close to 100
@@ -139,10 +109,10 @@ describe('calculateRelicScore', () => {
       setId: null,
       mainStat: 'HP',
       subStats: [
-        { type: 'CRIT Rate', value: '1' }, // Match 1.0
-        { type: 'DEF', value: '1' }, // Match 0
-        { type: 'HP', value: '1' }, // Match 0
-        { type: 'Effect Hit Rate', value: '1' }, // Match 0
+        'CRIT Rate', // Match 1.0
+        'DEF', // Match 0
+        'HP', // Match 0
+        'Effect Hit Rate', // Match 0
       ],
     };
     const score = calculateRelicScore(char);
@@ -160,8 +130,8 @@ describe('calculateRelicScore', () => {
       setId: null,
       mainStat: 'ATK',
       subStats: [
-        { type: 'CRIT DMG', value: '1' }, // Match 0.5 because Pref is CRIT Rate
-        { type: 'DEF', value: '1' },
+        'CRIT DMG', // Match 0.5 because Pref is CRIT Rate
+        'DEF',
       ],
     };
 

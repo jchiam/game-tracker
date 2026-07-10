@@ -108,12 +108,12 @@ function EquipTab({
           const updated: EquippedRevelation = {
             setId: card?.setId ?? null,
             mainStat: stat || null,
-            subStats: (card?.subStats ?? []).filter((s) => s.type !== stat),
+            subStats: (card?.subStats ?? []).filter((s) => s !== stat),
           };
           onUpdateSlot(slot, updated);
         };
 
-        const handleSubStatsChange = (subStats: Array<{ type: string; value: number }>) => {
+        const handleSubStatsChange = (subStats: string[]) => {
           const updated: EquippedRevelation = {
             setId: card?.setId ?? null,
             mainStat: card?.mainStat ?? storedFixedMain,
@@ -149,14 +149,11 @@ function EquipTab({
               />
             )}
             <SubStatList
-              variant="stat-value"
               namePrefix={`rev-${slot}-sub`}
               options={toStatOptions(SUB_STATS)}
               excludeValues={equippedMainIds}
-              values={card?.subStats?.map((s) => ({ type: s.type, value: String(s.value) })) ?? []}
-              onChange={(vals) =>
-                handleSubStatsChange(vals.map((v) => ({ type: v.type, value: Number(v.value) })))
-              }
+              values={card?.subStats ?? []}
+              onChange={handleSubStatsChange}
               max={4}
               addLabel="+ Substat"
             />

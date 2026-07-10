@@ -89,7 +89,7 @@ export function RelicEditorModal({
 
     // Prune conflicting Substats
     if (newRelic.mainStat) {
-      newRelic.subStats = newRelic.subStats.filter((sub) => sub.type !== newRelic.mainStat);
+      newRelic.subStats = newRelic.subStats.filter((sub) => sub !== newRelic.mainStat);
     }
 
     onSave(newRelic);
@@ -177,7 +177,6 @@ export function RelicEditorModal({
             </FormGroup>
 
             <SubStatList
-              variant="stat-value"
               values={currentRelic.subStats}
               options={allSubStats}
               namePrefix="substat"

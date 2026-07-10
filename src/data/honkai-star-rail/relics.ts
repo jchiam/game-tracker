@@ -4,15 +4,10 @@ export interface RelicSet {
   icon: string;
 }
 
-export interface RelicStat {
-  type: string;
-  value: string;
-}
-
 export interface EquippedRelic {
   setId: string | null;
   mainStat: string | null;
-  subStats: RelicStat[];
+  subStats: string[];
 }
 
 // Pools are ordered per the shared semantic stat ordering: Offensive → Defensive →

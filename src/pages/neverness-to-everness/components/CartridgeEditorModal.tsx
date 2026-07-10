@@ -198,7 +198,6 @@ export function CartridgeEditorModal({
             </FormGroup>
 
             <SubStatList
-              variant="stat-only"
               values={currentSubStats}
               options={CARTRIDGE_SUB_STATS}
               namePrefix="substat"

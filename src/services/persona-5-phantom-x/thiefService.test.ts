@@ -140,10 +140,7 @@ describe('thiefService', () => {
       await service.upsertRevelationCard('db-uuid-1', 'moon', {
         setId: 'strife',
         mainStat: 'ATK%',
-        subStats: [
-          { type: 'Crit Rate%', value: 3.5 },
-          { type: 'Speed', value: 2.0 },
-        ],
+        subStats: ['Crit Rate%', 'Speed'],
       });
 
       expect(mockFrom).toHaveBeenCalledWith('p5x_revelation_cards');
@@ -153,10 +150,7 @@ describe('thiefService', () => {
           slot: 'moon',
           set_id: 'strife',
           main_stat: 'ATK%',
-          sub_stats: [
-            { type: 'Crit Rate%', value: 3.5 },
-            { type: 'Speed', value: 2.0 },
-          ],
+          sub_stats: ['Crit Rate%', 'Speed'],
         },
         { onConflict: 'thief_row_id,slot' },
       );

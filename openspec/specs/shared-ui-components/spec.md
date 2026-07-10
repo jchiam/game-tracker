@@ -8,9 +8,7 @@ behaviour is not already owned by another capability: `GameCardShell`, `StatChip
 behaviourally elsewhere are referenced, not redeclared: `AuthGate` (`shared-auth`), `SavingToast`
 / `ToastContainer` (`shared-save-behaviour`), `RosterPageLayout` / `LoadErrorState`
 (`shared-roster`), and `GameBadge` (`shared-card-badges`).
-
 ## Requirements
-
 ### Requirement: GameCardShell provides the shared roster-card structure
 
 The shared `GameCardShell` component SHALL render the structural shell of every game's roster card
@@ -278,39 +276,31 @@ rather than hand-writing the `.form-group` → `<label>` markup.
 
 The shared `SubStatList` component SHALL render an ordered list of removable stat rows plus an
 add button, capped at `max` (default 4), using the canonical `.substats-section` / `.substat-row` /
-`.add-substat-btn` / `.remove-substat` markup defined once in `src/styles/controls.css`. It SHALL
-support two variants: `stat-only` (each row is a stat `Select`; values are `string[]`) and
-`stat-value` (each row is a stat `Select` plus a free-text value `<input>`; values are
-`{ type, value }[]`). Props: `variant`, `values`, `options`, `onChange`, `namePrefix`, optional
-`max`, `addLabel`, `excludeValues` (a `readonly string[]` of option **values** omitted from every
-row's option list except the row whose own current value is already that value), and `placeholder`
-(the `stat-value` row's value input, default `"Value"`).
+`.add-substat-btn` / `.remove-substat` markup defined once in `src/styles/controls.css`. Each row is
+a stat `Select`; `values` are `string[]` (stat-type ids). Props: `values`, `options`, `onChange`,
+`namePrefix`, optional `max`, `addLabel`, and `excludeValues` (a `readonly string[]` of option
+**values** omitted from every row's option list except the row whose own current value is already
+that value). There is no per-row value input — substats are tracked as stat types only.
 
 `options` SHALL be a `readonly (string | { value, label })[]`: a bare string is an option whose
 value equals its label; a `{ value, label }` pair is an option whose stored value differs from its
 shown label. Rows SHALL display the option `label` and emit the option `value` (so a persisted stat
-id can differ from the in-game label shown). A `string[]` therefore behaves exactly as before
-(value === label), keeping existing HSR relic and N2E cartridge call sites unchanged. The add
-button SHALL be hidden when `values.length >= max`. `SubStatList` SHALL treat `values` as immutable
-— add, update, and remove SHALL each emit a new array of new row objects, never mutating the input.
-The HSR relic and N2E cartridge editors SHALL use `SubStatList` rather than re-implementing the
-sub-stat row markup and its duplicated CSS.
+id can differ from the in-game label shown). The add button SHALL be hidden when
+`values.length >= max`. `SubStatList` SHALL treat `values` as immutable — add, update, and remove
+SHALL each emit a new `string[]`, never mutating the input. The HSR relic, P5X revelation, and N2E
+cartridge editors SHALL use `SubStatList` rather than re-implementing the sub-stat row markup and
+its duplicated CSS.
 
 #### Scenario: Add button hidden at the cap
 
 - **WHEN** `SubStatList` has `max={4}` and four values
 - **THEN** no add button is rendered; **WHEN** a row is removed, the add button reappears
 
-#### Scenario: stat-value variant row
+#### Scenario: Row change emits a new string array
 
-- **WHEN** `variant="stat-value"` and a row's value input changes
-- **THEN** `onChange` emits a new array whose changed row is a new `{ type, value }` object and whose
-  other rows are unchanged references-by-value, with the original input array not mutated
-
-#### Scenario: stat-only variant row
-
-- **WHEN** `variant="stat-only"` and a row's `Select` changes
-- **THEN** `onChange` emits a new `string[]` with only that index replaced
+- **WHEN** a row's `Select` changes
+- **THEN** `onChange` emits a new `string[]` with only that index replaced, with the original input
+  array not mutated
 
 #### Scenario: excludeValues omits a conflicting option
 
@@ -322,11 +312,6 @@ sub-stat row markup and its duplicated CSS.
 
 - **WHEN** `options={[{ value: 'damage-mult', label: 'Damage Mult. +' }]}`
 - **THEN** each row's `Select` displays `Damage Mult. +` while `onChange` emits `damage-mult`
-
-#### Scenario: Bare string options unchanged
-
-- **WHEN** `options={['ATK', 'HP%']}`
-- **THEN** each option's value equals its label and behaviour is identical to before this change
 
 ### Requirement: LevelSlider renders the canonical range control
 
@@ -560,3 +545,4 @@ than being silently classified.
 - **WHEN** an auto-generated pool contains a stat not in the generator's ordered label list
 - **THEN** that stat is appended at the end of the pool (not dropped or silently bucketed), so the
   pinning test fails and a human places it
+

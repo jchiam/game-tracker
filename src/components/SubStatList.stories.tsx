@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Meta, StoryObj } from '@storybook/react-vite';
-import { SubStatList, type SubStatValue } from './SubStatList';
+import { SubStatList } from './SubStatList';
 import '@/styles/tokens.css';
 import '@/styles/controls.css';
 
@@ -18,7 +18,6 @@ const meta = {
     ),
   ],
   args: {
-    variant: 'stat-only',
     values: [],
     options: STATS,
     namePrefix: 'substat',
@@ -27,39 +26,18 @@ const meta = {
 } satisfies Meta<typeof SubStatList>;
 
 export default meta;
-// SubStatList's props are a discriminated union, which collapses StoryObj<typeof meta>
-// args to `never`; these stories are render-only, so use the unparameterized StoryObj.
-type Story = StoryObj;
+type Story = StoryObj<typeof meta>;
 
-function StatValueList() {
-  const [values, setValues] = useState<SubStatValue[]>([
-    { type: 'CRIT Rate', value: '3.2%' },
-    { type: 'CRIT DMG', value: '6.4%' },
-  ]);
-  return (
-    <SubStatList
-      variant="stat-value"
-      values={values}
-      options={STATS}
-      namePrefix="substat"
-      label="Substats (Max 4)"
-      addLabel="+ Add Substat"
-      excludeValues={['ATK%']}
-      onChange={setValues}
-    />
-  );
-}
-
-function StatOnlyList() {
+function StatList() {
   const [values, setValues] = useState<string[]>(['ATK', 'CRIT Rate']);
   return (
     <SubStatList
-      variant="stat-only"
       values={values}
       options={STATS}
       namePrefix="substat"
       label="Sub Stats (Max 4)"
       addLabel="+ Add Sub Stat"
+      excludeValues={['ATK%']}
       onChange={setValues}
     />
   );
@@ -76,13 +54,9 @@ const ID_STATS = [
 ];
 
 function IdLabelList() {
-  const [values, setValues] = useState<SubStatValue[]>([
-    { type: 'damage-mult', value: '12%' },
-    { type: 'crit-mult', value: '15%' },
-  ]);
+  const [values, setValues] = useState<string[]>(['damage-mult', 'crit-mult']);
   return (
     <SubStatList
-      variant="stat-value"
       values={values}
       options={ID_STATS}
       namePrefix="substat"
@@ -94,12 +68,8 @@ function IdLabelList() {
   );
 }
 
-export const StatValue: Story = {
-  render: () => <StatValueList />,
-};
-
 export const StatOnly: Story = {
-  render: () => <StatOnlyList />,
+  render: () => <StatList />,
 };
 
 export const IdLabelOptions: Story = {
