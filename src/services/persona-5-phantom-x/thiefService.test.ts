@@ -132,6 +132,81 @@ describe('thiefService', () => {
     expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
   });
 
+  describe('preference-state isolation on load', () => {
+    // Two thieves, each carrying a sub_stats preference row. The loader must give each
+    // thief a freshly-allocated subStats array that never aliases the module-level default
+    // or the other thief — otherwise push()es in mapRow mutate shared state (the aliasing bug).
+    const twoThiefRows = () => [
+      {
+        id: 'db-1',
+        thief_id: 'ann-takamaki',
+        level: 1,
+        awareness: 0,
+        is_favorited: false,
+        p5x_revelation_preferences: [
+          { category: 'sub_stats', stat: 'crit-rate', operator: null, order_index: 0 },
+          { category: 'moon_main', stat: 'attack-pct', operator: null, order_index: 0 },
+        ],
+      },
+      {
+        id: 'db-2',
+        thief_id: 'ryuji-sakamoto',
+        level: 1,
+        awareness: 0,
+        is_favorited: false,
+        p5x_revelation_preferences: [
+          { category: 'sub_stats', stat: 'attack-pct', operator: null, order_index: 0 },
+          { category: 'moon_main', stat: 'defense-pct', operator: null, order_index: 0 },
+        ],
+      },
+    ];
+
+    it('gives each thief a distinct subStats array reference', async () => {
+      mockFrom.mockReturnValue(createBuilder({ data: twoThiefRows(), error: null }));
+      const result = await service.loadThievesFromDB('user-1');
+
+      expect(result[0].revelationPreferences.subStats).toHaveLength(1);
+      expect(result[1].revelationPreferences.subStats).toHaveLength(1);
+      expect(result[0].revelationPreferences.subStats[0].stat).toBe('crit-rate');
+      expect(result[1].revelationPreferences.subStats[0].stat).toBe('attack-pct');
+      // Distinct references — the crux of the aliasing bug.
+      expect(result[0].revelationPreferences.subStats).not.toBe(
+        result[1].revelationPreferences.subStats,
+      );
+      // mainStats arrays are re-owned too — assert the same isolation.
+      expect(result[0].revelationPreferences.mainStats.moon[0].stat).toBe('attack-pct');
+      expect(result[1].revelationPreferences.mainStats.moon[0].stat).toBe('defense-pct');
+      expect(result[0].revelationPreferences.mainStats.moon).not.toBe(
+        result[1].revelationPreferences.mainStats.moon,
+      );
+    });
+
+    it('does not accumulate substats across repeated loads', async () => {
+      mockFrom.mockReturnValue(createBuilder({ data: twoThiefRows(), error: null }));
+
+      const first = await service.loadThievesFromDB('user-1');
+      const second = await service.loadThievesFromDB('user-1');
+
+      // A thief with one stored substat row reports exactly one after each load — never 2N.
+      expect(first[0].revelationPreferences.subStats).toHaveLength(1);
+      expect(second[0].revelationPreferences.subStats).toHaveLength(1);
+    });
+
+    it('mutating one thief substats does not bleed into another', async () => {
+      mockFrom.mockReturnValue(createBuilder({ data: twoThiefRows(), error: null }));
+      const result = await service.loadThievesFromDB('user-1');
+
+      result[0].revelationPreferences.subStats.push({
+        stat: 'speed',
+        operator: null,
+        orderIndex: 1,
+      });
+
+      expect(result[0].revelationPreferences.subStats).toHaveLength(2);
+      expect(result[1].revelationPreferences.subStats).toHaveLength(1);
+    });
+  });
+
   describe('upsertRevelationCard', () => {
     it('upserts with thief_row_id, slot, and JSONB sub_stats', async () => {
       const builder = createBuilder({ data: null, error: null });

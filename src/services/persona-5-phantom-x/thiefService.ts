@@ -69,7 +69,12 @@ const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
     weaponLevel: row.weapon_level ?? 1,
     weaponForge: row.weapon_forge ?? 0,
     revelations: { ...defaultRevelations },
-    revelationPreferences: { ...defaultRevelationPreferences },
+    // Fresh arrays — a bare spread aliases defaultRevelationPreferences' arrays by reference.
+    revelationPreferences: {
+      ...defaultRevelationPreferences,
+      mainStats: { moon: [], star: [], sky: [] },
+      subStats: [],
+    },
   }),
   extras: {
     selectFragment: `p5x_revelation_cards ( slot, set_id, main_stat, sub_stats ),
@@ -86,9 +91,13 @@ const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
       }
 
       const prefRows = row.p5x_revelation_preferences || [];
+      // Re-own every array (mainStats + subStats) so prefs never aliases the module-level
+      // default; a bare spread copies the default's arrays by reference and push()es below
+      // would then mutate shared state across thieves and reloads.
       const prefs: P5xRevelationPreferences = {
         ...defaultRevelationPreferences,
         mainStats: { moon: [], star: [], sky: [] },
+        subStats: [],
       };
       for (const p of prefRows) {
         switch (p.category) {
