@@ -3,17 +3,20 @@
 Static catalog of Persona 5: The Phantom X Revelation Card sets, per-slot main stat
 pools, shared substat pool, slot identifiers, and card rarity tiers. Provides the
 reference data consumed by the revelation tracking and preference systems.
-
 ## Requirements
-
 ### Requirement: Heavens set catalog
 
-The system SHALL maintain a static catalog of all Heavens Revelation Card sets. Each set entry SHALL include: `id` (kebab-case string), `name` (display string), `twoSetEffect` (string description), and `fourSetEffect` (string description). The catalog SHALL be exported as `ALL_HEAVENS_SETS`.
+The system SHALL maintain a static catalog of all Heavens Revelation Card sets. Each set entry SHALL include: `id` (kebab-case string), `name` (display string), `twoSetEffect` (string description), and `fourSetEffect` (string description). The catalog SHALL be exported as `ALL_HEAVENS_SETS`, ordered alphabetically by `name`. The catalog SHALL be the full canonical Heavens set list per the pinned source (Game8 — List of All Revelation Cards), not a subset. Existing set `id`s SHALL remain stable when the catalog is expanded (additive only — no renames or removals).
 
-#### Scenario: Catalog contains all known sets
+#### Scenario: Catalog contains the full canonical Heavens set list
 
 - **WHEN** the catalog is loaded
-- **THEN** it contains at least 12 Heavens sets (Abundance, Science, Completion, Dominion, Peace, Interference, Valor, Strife, Love, Luxury, Power, Victory)
+- **THEN** it contains at least 26 Heavens sets, including `control`, `courage`, `hindrance`, `labor`, `love`, `opulence`, `peace`, `pleasure`, `power`, `prosperity`, `renewal`, `strife`, `truth`, and `victory`
+
+#### Scenario: Previously-missing sets are present
+
+- **WHEN** the catalog is searched for the id `labor`
+- **THEN** an entry is found with a non-empty `name`, `twoSetEffect`, and `fourSetEffect`
 
 #### Scenario: Each set has both effects described
 
@@ -22,12 +25,22 @@ The system SHALL maintain a static catalog of all Heavens Revelation Card sets. 
 
 ### Requirement: Space set catalog
 
-The system SHALL maintain a static catalog of all Space Revelation Card sets. Each set entry SHALL include: `id` (kebab-case string), `name` (display string), and `effect` (string description). The catalog SHALL be exported as `ALL_SPACE_SETS`.
+The system SHALL maintain a static catalog of all Space Revelation Card sets. Each set entry SHALL include: `id` (kebab-case string), `name` (display string), and `effect` (string description). The catalog SHALL be exported as `ALL_SPACE_SETS`, ordered alphabetically by `name`. The catalog SHALL be the full canonical Space set list per the pinned source (Game8 — List of All Revelation Cards), not a subset. Existing set `id`s SHALL remain stable when the catalog is expanded (additive only — no renames or removals).
 
-#### Scenario: Catalog contains all known sets
+#### Scenario: Catalog contains the full canonical Space set list
 
 - **WHEN** the catalog is loaded
-- **THEN** it contains at least 8 Space sets (Acceptance, Awareness, Departure, Faith, Growth, Harmony, Meditation, Trust)
+- **THEN** it contains at least 16 Space sets, including `acceptance`, `awareness`, `departure`, `faith`, `growth`, `harmony`, `integrity`, `meditation`, and `trust`
+
+#### Scenario: Previously-missing sets are present
+
+- **WHEN** the catalog is searched for the id `integrity`
+- **THEN** an entry is found with a non-empty `name` and `effect`
+
+#### Scenario: Each set has an effect described
+
+- **WHEN** a Space set entry is read
+- **THEN** its `effect` is a non-empty string
 
 ### Requirement: Per-slot main stat pool
 
@@ -144,3 +157,4 @@ The system SHALL export a `CARD_RARITIES` array defining the quality tiers: `com
 
 - **WHEN** a card of `epic` rarity is created
 - **THEN** it supports up to 4 substats
+

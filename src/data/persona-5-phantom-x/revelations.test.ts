@@ -1,5 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
+  ALL_HEAVENS_SETS,
+  ALL_SPACE_SETS,
   MAIN_STATS,
   SUB_STATS,
   STAT_LABELS,
@@ -72,6 +74,44 @@ describe('P5X revelation stat catalog — id/label decoupling', () => {
 
   it('statLabel falls back to the raw id when unknown', () => {
     expect(statLabel('not-a-stat')).toBe('not-a-stat');
+  });
+});
+
+describe('revelation set catalog completeness', () => {
+  it('has the full canonical Heavens set list, including previously-missing sets', () => {
+    expect(ALL_HEAVENS_SETS.length).toBeGreaterThanOrEqual(26);
+    const ids = ALL_HEAVENS_SETS.map((s) => s.id);
+    expect(ids).toContain('labor');
+    expect(ids).toContain('pleasure');
+    expect(ids).toContain('oppression');
+  });
+
+  it('has the full canonical Space set list, including previously-missing sets', () => {
+    expect(ALL_SPACE_SETS.length).toBeGreaterThanOrEqual(16);
+    const ids = ALL_SPACE_SETS.map((s) => s.id);
+    expect(ids).toContain('integrity');
+    expect(ids).toContain('resolve');
+    expect(ids).toContain('wisdom');
+  });
+
+  it('every Heavens set has non-empty two- and four-piece effects', () => {
+    for (const s of ALL_HEAVENS_SETS) {
+      expect(s.twoSetEffect, `${s.id} twoSetEffect`).toBeTruthy();
+      expect(s.fourSetEffect, `${s.id} fourSetEffect`).toBeTruthy();
+    }
+  });
+
+  it('every Space set has a non-empty effect', () => {
+    for (const s of ALL_SPACE_SETS) {
+      expect(s.effect, `${s.id} effect`).toBeTruthy();
+    }
+  });
+
+  it('set ids are unique within each catalog', () => {
+    const heavensIds = ALL_HEAVENS_SETS.map((s) => s.id);
+    const spaceIds = ALL_SPACE_SETS.map((s) => s.id);
+    expect(new Set(heavensIds).size).toBe(heavensIds.length);
+    expect(new Set(spaceIds).size).toBe(spaceIds.length);
   });
 });
 

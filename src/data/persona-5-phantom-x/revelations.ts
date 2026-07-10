@@ -1,5 +1,11 @@
 // Static Revelation Card catalog for P5X.
-// Sets sourced from Prydwen/Fragster; stat pools from Prydwen Arcana Cards guide.
+// Canonical source: Game8 "List of All Revelation Cards"
+// (game8.co/games/Persona-5-Phantom-X/archives/532937) + its per-set pages.
+// Manually maintained — the P5X update script scrapes only thieves/personas
+// (Prydwen has no scrapeable card data), so re-align this file against Game8 by hand.
+// Heavens effects are condensed from the Game8 set effects; Space `effect` names the
+// Heavens sets each Space card pairs with (Space bonuses are pairing-conditional, not
+// standalone). Stat pools follow the in-game Arcana stat guide.
 
 export interface EquippedRevelation {
   setId: string | null;
@@ -37,6 +43,12 @@ export const HEAVENS_SLOTS: RevelationSlot[] = ['sun', 'moon', 'star', 'sky'];
 
 export const ALL_HEAVENS_SETS: HeavensSet[] = [
   {
+    id: 'change',
+    name: 'Change',
+    twoSetEffect: '10% electric damage',
+    fourSetEffect: '25% attack (2 turns, reactivates on crit)',
+  },
+  {
     id: 'control',
     name: 'Control',
     twoSetEffect: '12% max health',
@@ -49,16 +61,46 @@ export const ALL_HEAVENS_SETS: HeavensSet[] = [
     fourSetEffect: '30% crit damage (2 turns, reactivates on crit)',
   },
   {
+    id: 'defeat',
+    name: 'Defeat',
+    twoSetEffect: '15% ailment accuracy',
+    fourSetEffect: '20% fire damage vs debuffed enemies',
+  },
+  {
+    id: 'disappointment',
+    name: 'Disappointment',
+    twoSetEffect: '12% attack',
+    fourSetEffect: '25% skill damage when attribute differs from last skill',
+  },
+  {
+    id: 'futility',
+    name: 'Futility',
+    twoSetEffect: '12% attack',
+    fourSetEffect: '30% ailment accuracy (2 turns, reactivates after Technical)',
+  },
+  {
     id: 'hindrance',
     name: 'Hindrance',
     twoSetEffect: '10% curse damage',
     fourSetEffect: '20% skill damage vs debuffed enemies',
   },
   {
+    id: 'labor',
+    name: 'Labor',
+    twoSetEffect: '12% max health',
+    fourSetEffect: '8% party max HP/attack/defense in battle',
+  },
+  {
     id: 'love',
     name: 'Love',
     twoSetEffect: '9% healing effect',
     fourSetEffect: '23% healing boost for sub-50% allies',
+  },
+  {
+    id: 'oppression',
+    name: 'Oppression',
+    twoSetEffect: '10% physical damage',
+    fourSetEffect: '5% attack per Malice stack (2 turns, stacks 6x)',
   },
   {
     id: 'opulence',
@@ -73,6 +115,12 @@ export const ALL_HEAVENS_SETS: HeavensSet[] = [
     fourSetEffect: '18% shield increase',
   },
   {
+    id: 'pleasure',
+    name: 'Pleasure',
+    twoSetEffect: '10% psychokinesis damage',
+    fourSetEffect: '15% attack (30% if 4+ foes on field)',
+  },
+  {
     id: 'power',
     name: 'Power',
     twoSetEffect: '12% attack',
@@ -85,16 +133,46 @@ export const ALL_HEAVENS_SETS: HeavensSet[] = [
     fourSetEffect: '25% highlight gauge at battle start',
   },
   {
+    id: 'prudence',
+    name: 'Prudence',
+    twoSetEffect: '-3 speed, +18% attack',
+    fourSetEffect: '16% damage',
+  },
+  {
+    id: 'reconciliation',
+    name: 'Reconciliation',
+    twoSetEffect: '+6 speed',
+    fourSetEffect: '15% max HP/attack/defense in battle',
+  },
+  {
     id: 'renewal',
     name: 'Renewal',
     twoSetEffect: '10% electric damage',
     fourSetEffect: '9% electric damage buff (stacks 3x)',
   },
   {
+    id: 'ruin',
+    name: 'Ruin',
+    twoSetEffect: '12% attack',
+    fourSetEffect: '25% attack (3 turns, reactivates after Theurgy)',
+  },
+  {
+    id: 'sorrow',
+    name: 'Sorrow',
+    twoSetEffect: '12% attack',
+    fourSetEffect: '20% damage (3 turns, reactivates on Highlight)',
+  },
+  {
     id: 'strife',
     name: 'Strife',
     twoSetEffect: '10% fire damage',
     fourSetEffect: '15% attack (30% if enemy weak to fire)',
+  },
+  {
+    id: 'triumph',
+    name: 'Triumph',
+    twoSetEffect: '7.5% crit rate',
+    fourSetEffect: '40% resonance damage',
   },
   {
     id: 'truth',
@@ -108,25 +186,77 @@ export const ALL_HEAVENS_SETS: HeavensSet[] = [
     twoSetEffect: '10% wind damage',
     fourSetEffect: '25% chance for 20% bonus attack damage',
   },
+  {
+    id: 'virtue',
+    name: 'Virtue',
+    twoSetEffect: '10% bless damage',
+    fourSetEffect: '12% crit rate for Bless skills at 50%+ HP',
+  },
+  {
+    id: 'worry',
+    name: 'Worry',
+    twoSetEffect: '80% SP recovery',
+    fourSetEffect: '25% highlight gauge at battle start',
+  },
 ];
 
+// Space set bonuses are pairing-conditional: each Space card grants effects only in
+// combination with specific Heavens sets (e.g. Integrity's page lists "Integrity & Pleasure"
+// and "Integrity & Labor"). There is no standalone one-liner, so `effect` factually names the
+// Heavens sets each pairs with (from the Game8 list) rather than asserting numbers.
 export const ALL_SPACE_SETS: SpaceSet[] = [
-  { id: 'acceptance', name: 'Acceptance', effect: 'Increases attacking power after healing' },
-  { id: 'awareness', name: 'Awareness', effect: 'Increases damage vs ailing foes by 12%' },
-  { id: 'departure', name: 'Departure', effect: 'Increases damage after defeating an enemy' },
   {
-    id: 'faith',
-    name: 'Faith',
-    effect: 'Defense further buffed every time the user gains shields',
+    id: 'acceptance',
+    name: 'Acceptance',
+    effect: 'Paired bonuses with Love, Strife, and Peace sets',
   },
-  { id: 'growth', name: 'Growth', effect: 'Enhances character growth stats' },
-  { id: 'harmony', name: 'Harmony', effect: 'Party-wide 5% nuke damage boost on ailment inflict' },
+  {
+    id: 'awareness',
+    name: 'Awareness',
+    effect: 'Paired bonuses with Truth, Control, and Hindrance sets',
+  },
+  { id: 'creation', name: 'Creation', effect: 'Paired bonuses with Worry and Reconciliation sets' },
+  {
+    id: 'departure',
+    name: 'Departure',
+    effect: 'Paired bonuses with Control, Prosperity, and Hindrance sets',
+  },
+  { id: 'faith', name: 'Faith', effect: 'Paired bonuses with Love and Peace sets' },
+  { id: 'freedom', name: 'Freedom', effect: 'Paired bonuses with Triumph and Defeat sets' },
+  { id: 'growth', name: 'Growth', effect: 'Paired bonuses with Opulence, Renewal, and Power sets' },
+  {
+    id: 'harmony',
+    name: 'Harmony',
+    effect: 'Paired bonuses with Victory, Power, and Truth sets',
+  },
+  { id: 'hope', name: 'Hope', effect: 'Paired bonuses with Labor and Ruin sets' },
+  { id: 'integrity', name: 'Integrity', effect: 'Paired bonuses with Pleasure and Labor sets' },
   {
     id: 'meditation',
     name: 'Meditation',
-    effect: 'Physical and electrical damage +12%, +24% vs solo target',
+    effect: 'Paired bonuses with Love, Courage, and Opulence sets',
   },
-  { id: 'trust', name: 'Trust', effect: 'Party-wide damage boost when user buffs an ally' },
+  { id: 'nativity', name: 'Nativity', effect: 'Paired bonus with Power set' },
+  {
+    id: 'perseverance',
+    name: 'Perseverance',
+    effect: 'Paired bonuses with Change and Sorrow sets',
+  },
+  {
+    id: 'resolve',
+    name: 'Resolve',
+    effect: 'Paired bonuses with Virtue, Labor, and Prudence sets',
+  },
+  {
+    id: 'trust',
+    name: 'Trust',
+    effect: 'Paired bonuses with Renewal, Power, and Prosperity sets',
+  },
+  {
+    id: 'wisdom',
+    name: 'Wisdom',
+    effect: 'Paired bonuses with Oppression, Pleasure, and Virtue sets',
+  },
 ];
 
 export interface RevelationSetBonus {
