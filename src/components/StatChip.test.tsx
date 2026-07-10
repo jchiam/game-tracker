@@ -15,4 +15,11 @@ describe('StatChip', () => {
     const chip = screen.getByText('P5');
     expect(chip).toHaveStyle({ color: '#d4af37', borderColor: '#d4af37' });
   });
+
+  it('appends an optional className alongside the base class', () => {
+    render(<StatChip label="Strife 4pc" className="p5x-revelation-chip" />);
+    const chip = screen.getByText('Strife 4pc');
+    expect(chip).toHaveClass('stat-chip');
+    expect(chip).toHaveClass('p5x-revelation-chip');
+  });
 });

@@ -132,6 +132,11 @@
   border-radius: var(--border-radius-sm);
   padding: 2px 8px;
   letter-spacing: 0.03em;
+  /* Pin the line-height (matches `.game-badge`) so a chip's box height is
+     deterministic — the fixed-height summary reserve in card.css derives its
+     two-row min-height from exactly this metric (0.75rem × tight + padding +
+     border), so an inherited `normal` here would desync that calc. */
+  line-height: var(--typography-line-height-tight);
 }
 
 /* ─── Toggle button base (portrait, euphoria, awakening, etc.) ──── */

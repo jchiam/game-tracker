@@ -208,6 +208,23 @@
   flex-wrap: wrap;
 }
 
+/* Opt-in fixed-height reserve (shared-card-collapse): when GameCardShell is
+   given `reserveSummaryRows`, it tags the card with `.reserve-summary-rows` and
+   the chip row reserves two chip lines. A card whose chips fit on one line then
+   reports the same measured summary height as a two-line card, so the collapsed
+   grid is uniform. Default-off — no other game opts in. Height = two chip boxes
+   + one row gap; 0.75rem / 2px / 1px mirror `.stat-chip`'s own font-size,
+   vertical padding, and border. The reserve raises the measured
+   `.game-card-static-summary-inner` scrollHeight, so the shell's standard budget
+   measurement consumes it with no separate path. Two-line count is deliberate:
+   a future 7th summary chip would need this re-evaluated. */
+.game-card.reserve-summary-rows .game-card-static-stats {
+  min-height: calc(
+    2 * (0.75rem * var(--typography-line-height-tight) + 4px + 2px) + var(--spacing-sm)
+  );
+  align-content: flex-start;
+}
+
 .game-card-static-line {
   font-size: var(--typography-font-size-sm);
   color: var(--color-text-secondary);

@@ -83,6 +83,7 @@ export function ThiefCard({
       name={thief.name}
       imageUrl={thief.imageUrl}
       entityNoun="Phantom Thief"
+      reserveSummaryRows
       isFavorited={thief.isFavorited}
       onToggleFavorite={(value) => onToggleFavorite(thief.id, value)}
       onRemove={(e) => onRemove(thief.id, e)}
@@ -112,14 +113,15 @@ export function ThiefCard({
               style={{ color: weaponForgePs.color, borderColor: weaponForgePs.borderColor }}
             />
           )}
+          {thief.mindscapeMaxed && (
+            <StatChip label="MS ✓" style={{ color: miPs.color, borderColor: miPs.borderColor }} />
+          )}
           {hasRevSets && (
             <StatChip
+              className="p5x-revelation-chip"
               label={revSummaryLabel}
               style={{ color: revPs.color, borderColor: revPs.borderColor }}
             />
-          )}
-          {thief.mindscapeMaxed && (
-            <StatChip label="MS ✓" style={{ color: miPs.color, borderColor: miPs.borderColor }} />
           )}
           {(thief.skillsLeveled || thief.roseMaxed) && (
             <StatChip

@@ -21,6 +21,14 @@ interface GameCardShellProps {
   summaryLine: ReactNode;
   /** Edit-mode sections, expanded when the edit toggle is active. */
   editBody: ReactNode;
+  /**
+   * Opt into a fixed two-line reserve for the summary chip row. When true the
+   * shell tags the card with `.reserve-summary-rows`; the `min-height` rule
+   * lives once in card.css. Off by default — existing games are unaffected. The
+   * reserve raises the measured summary content height, so the standard budget
+   * measurement below picks it up with no separate path.
+   */
+  reserveSummaryRows?: boolean;
 }
 
 /**
@@ -41,6 +49,7 @@ export function GameCardShell({
   summaryStats,
   summaryLine,
   editBody,
+  reserveSummaryRows = false,
 }: GameCardShellProps) {
   const [imgLoading, setImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
@@ -77,7 +86,12 @@ export function GameCardShell({
   });
 
   return (
-    <div className={`game-card ${isEditing ? 'is-editing' : ''}`} ref={cardRef}>
+    <div
+      className={`game-card ${isEditing ? 'is-editing' : ''} ${
+        reserveSummaryRows ? 'reserve-summary-rows' : ''
+      }`}
+      ref={cardRef}
+    >
       <div className="game-card-header">
         <div className="game-card-image-wrapper">
           {imgLoading && !imgError && (

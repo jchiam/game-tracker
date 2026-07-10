@@ -3,11 +3,12 @@ import type { CSSProperties } from 'react';
 interface StatChipProps {
   label: string;
   style?: CSSProperties;
+  className?: string;
 }
 
-export function StatChip({ label, style }: StatChipProps) {
+export function StatChip({ label, style, className }: StatChipProps) {
   return (
-    <span className="stat-chip" style={style}>
+    <span className={className ? `stat-chip ${className}` : 'stat-chip'} style={style}>
       {label}
     </span>
   );

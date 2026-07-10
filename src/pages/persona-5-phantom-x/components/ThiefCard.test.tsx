@@ -376,4 +376,56 @@ describe('ThiefCard', () => {
     await user.click(screen.getByText('Edit Revelations'));
     expect(defaultProps.onOpenRevelations).toHaveBeenCalledWith('ann-takamaki');
   });
+
+  it('caps the revelation summary chip with the p5x-revelation-chip class', () => {
+    const thief = makeThief({
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+    });
+    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
+    const revChip = container.querySelector('.game-card-static-stats .p5x-revelation-chip');
+    expect(revChip).toHaveTextContent('Strife 2pc');
+    expect(revChip).toHaveClass('stat-chip');
+  });
+
+  // --- Fixed-height reserve + chip ordering ---
+
+  it('opts the card into the fixed-height summary reserve', () => {
+    const { container } = render(<ThiefCard {...defaultProps} />);
+    expect(container.querySelector('.game-card')).toHaveClass('reserve-summary-rows');
+  });
+
+  it('orders summary chips Level → Awareness → Weapon → Mindscape → Revelations → Skills', () => {
+    const thief = makeThief({
+      weaponRarity: 5,
+      weaponForge: 3,
+      mindscapeMaxed: true,
+      skillsLeveled: true,
+      roseMaxed: true,
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
+        star: { setId: 'strife', mainStat: 'hp-pct', subStats: [] },
+        sky: { setId: 'strife', mainStat: 'speed', subStats: [] },
+        space: { setId: 'meditation', mainStat: null, subStats: [] },
+      },
+    });
+    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
+    const labels = Array.from(container.querySelectorAll('.game-card-static-stats .stat-chip')).map(
+      (c) => c.textContent,
+    );
+    expect(labels).toEqual([
+      'Lv 45',
+      'A3',
+      '⚔ 5★ F3',
+      'MS ✓',
+      'Meditation · Strife 4pc',
+      'Skills ✓',
+    ]);
+  });
 });

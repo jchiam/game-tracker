@@ -109,6 +109,18 @@ describe('GameCardShell', () => {
     expect(body).not.toHaveClass('is-editing');
   });
 
+  // --- Fixed-height summary reserve (opt-in) ---
+
+  it('does not reserve summary rows by default', () => {
+    const { container } = render(<GameCardShell {...defaultProps} />);
+    expect(container.querySelector('.game-card')).not.toHaveClass('reserve-summary-rows');
+  });
+
+  it('tags the card with reserve-summary-rows when opted in', () => {
+    const { container } = render(<GameCardShell {...defaultProps} reserveSummaryRows />);
+    expect(container.querySelector('.game-card')).toHaveClass('reserve-summary-rows');
+  });
+
   it('marks the edit body aria-hidden until editing', () => {
     const { container } = render(<GameCardShell {...defaultProps} />);
     const editBody = container.querySelector('.game-card-edit-body') as HTMLElement;

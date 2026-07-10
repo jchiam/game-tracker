@@ -106,6 +106,43 @@ export const CollapseMechanism: Story = {
 };
 
 /**
+ * Opt-in fixed-height summary reserve. Adding `.reserve-summary-rows` to
+ * `.game-card` (via GameCardShell's `reserveSummaryRows` prop) makes the summary
+ * chip row reserve two chip lines, so a one-line card matches a two-line card's
+ * collapsed height. Off by default — only games that opt in are affected. Both
+ * cards below carry the reserve; the left has one chip line, the right two, yet
+ * the chip rows occupy the same height. (Used by P5X, whose variable-width
+ * Revelations chip is width-capped so the worst case stays two lines.)
+ */
+export const SummaryReserve: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
+      {[
+        ['Lv 80', 'A6'],
+        ['Lv 80', 'A6', '⚔ 5★ F6', 'MS ✓', 'Strife 4pc + Meditation', 'Skills ✓'],
+      ].map((chips, i) => (
+        <div key={i} className="game-card reserve-summary-rows" style={{ maxWidth: 200, flex: 1 }}>
+          <div className="game-card-body">
+            <div className="game-card-static-summary" style={{ maxHeight: 'none' }}>
+              <div className="game-card-static-summary-inner">
+                <div className="game-card-static-stats">
+                  {chips.map((c) => (
+                    <span key={c} className="stat-chip">
+                      {c}
+                    </span>
+                  ))}
+                </div>
+                <div className="game-card-static-line">Bound Persona</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  ),
+};
+
+/**
  * Canonical party/lineup card from src/styles/party.css — shared by all games'
  * Lineups view. Tier banner and favorite toggle are optional per game.
  * The favorite toggle uses `.party-favorite-btn` (not the roster card's

@@ -7,6 +7,28 @@
   font-style: italic;
 }
 
+/* Revelations summary chip: the one variable-width chip in the P5X summary row.
+   Cap it to a single content-relative slot and ellipsize so the widest label
+   (Heavens 4pc + Space) cannot push the chip row onto a third line — the fixed
+   two-line reserve on `.game-card-static-stats` then holds every card to the same
+   collapsed height. Full set names remain in the Revelation editor modal. */
+.p5x-revelation-chip {
+  max-width: 18ch;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Below 768px the roster grid drops to 240px columns (RosterPageLayout.css); at
+   that width 18ch lets a full six-chip card spill to a third line and break the
+   two-line reserve. Tighten the cap to 12ch there — measured as the widest cap
+   that keeps six chips on two lines at a 240px card. */
+@media (max-width: 768px) {
+  .p5x-revelation-chip {
+    max-width: 12ch;
+  }
+}
+
 /* Skill-progress toggles: the two coupled ConfirmCheckboxes stack in the
    Skills section. The rose-gated summary chip reuses the shared StatChip +
    getProgressStyle colour language, so no bespoke badge rule lives here. */
