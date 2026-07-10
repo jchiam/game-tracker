@@ -40,28 +40,22 @@ export const HEAVENS_SLOTS: RevelationSlot[] = ['sun', 'moon', 'star', 'sky'];
 
 export const ALL_HEAVENS_SETS: HeavensSet[] = [
   {
-    id: 'abundance',
-    name: 'Abundance',
-    twoSetEffect: '8% damage reduction',
-    fourSetEffect: '25% highlight gauge at battle start',
-  },
-  {
-    id: 'completion',
-    name: 'Completion',
-    twoSetEffect: '10% electric damage',
-    fourSetEffect: '9% electric damage buff (stacks 3x)',
-  },
-  {
-    id: 'dominion',
-    name: 'Dominion',
+    id: 'control',
+    name: 'Control',
     twoSetEffect: '12% max health',
     fourSetEffect: '8% health as bonus damage',
   },
   {
-    id: 'interference',
-    name: 'Interference',
+    id: 'courage',
+    name: 'Courage',
+    twoSetEffect: '10% physical damage',
+    fourSetEffect: '30% crit damage (2 turns, reactivates on crit)',
+  },
+  {
+    id: 'hindrance',
+    name: 'Hindrance',
     twoSetEffect: '10% curse damage',
-    fourSetEffect: '20% curse damage vs debuffed enemies',
+    fourSetEffect: '20% skill damage vs debuffed enemies',
   },
   {
     id: 'love',
@@ -70,8 +64,8 @@ export const ALL_HEAVENS_SETS: HeavensSet[] = [
     fourSetEffect: '23% healing boost for sub-50% allies',
   },
   {
-    id: 'luxury',
-    name: 'Luxury',
+    id: 'opulence',
+    name: 'Opulence',
     twoSetEffect: '10% ice damage',
     fourSetEffect: '40% resonance damage',
   },
@@ -88,10 +82,16 @@ export const ALL_HEAVENS_SETS: HeavensSet[] = [
     fourSetEffect: '10% attack (6 turns, stacks 3x)',
   },
   {
-    id: 'science',
-    name: 'Science',
-    twoSetEffect: '10% nuclear damage',
-    fourSetEffect: '30% skill damage boost vs ailmented targets',
+    id: 'prosperity',
+    name: 'Prosperity',
+    twoSetEffect: '8% damage reduction',
+    fourSetEffect: '25% highlight gauge at battle start',
+  },
+  {
+    id: 'renewal',
+    name: 'Renewal',
+    twoSetEffect: '10% electric damage',
+    fourSetEffect: '9% electric damage buff (stacks 3x)',
   },
   {
     id: 'strife',
@@ -100,10 +100,10 @@ export const ALL_HEAVENS_SETS: HeavensSet[] = [
     fourSetEffect: '15% attack (30% if enemy weak to fire)',
   },
   {
-    id: 'valor',
-    name: 'Valor',
-    twoSetEffect: '10% physical damage',
-    fourSetEffect: '30% crit damage (2 turns, reactivates on crit)',
+    id: 'truth',
+    name: 'Truth',
+    twoSetEffect: '10% nuclear damage',
+    fourSetEffect: '30% skill damage boost vs ailmented targets',
   },
   {
     id: 'victory',
