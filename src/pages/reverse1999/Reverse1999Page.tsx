@@ -7,6 +7,7 @@ import { AddArcanistModal } from './components/AddArcanistModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { Session } from '@supabase/supabase-js';
+import type { R1999TrackedArcanist } from '@/types';
 
 interface Reverse1999PageProps {
   session: Session | null;
@@ -37,15 +38,20 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
   const [resonanceGateFilter, setResonanceGateFilter] = useState(false);
+  const [gluttonyGateFilter, setGluttonyGateFilter] = useState(false);
 
   const filteredGetRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
-      getFilteredRoster(
-        searchTerm,
-        sortBy,
-        resonanceGateFilter ? (a) => a.resonanceLevel > 0 && a.resonanceLevel < 15 : undefined,
-      ),
-    [getFilteredRoster, resonanceGateFilter],
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') => {
+      const gates: Array<(a: R1999TrackedArcanist) => boolean> = [];
+      if (resonanceGateFilter) gates.push((a) => a.resonanceLevel > 0 && a.resonanceLevel < 15);
+      if (gluttonyGateFilter)
+        gates.push((a) => a.psychubeName !== null && a.psychubeAmplification < 5);
+      const predicate = gates.length
+        ? (a: R1999TrackedArcanist) => gates.every((g) => g(a))
+        : undefined;
+      return getFilteredRoster(searchTerm, sortBy, predicate);
+    },
+    [getFilteredRoster, resonanceGateFilter, gluttonyGateFilter],
   );
 
   const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
@@ -77,9 +83,13 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No arcanists tracked yet. Use the + button to begin!"
       noMatchMessage={
-        resonanceGateFilter
-          ? 'No arcanists with resonance in progress.'
-          : 'No arcanists match your search.'
+        resonanceGateFilter && gluttonyGateFilter
+          ? 'No arcanists match the active filters.'
+          : resonanceGateFilter
+            ? 'No arcanists with resonance in progress.'
+            : gluttonyGateFilter
+              ? 'No arcanists with un-maxed psychube amplification.'
+              : 'No arcanists match your search.'
       }
       filterRow={
         <div
@@ -96,6 +106,17 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
             }
           >
             💠 Resonating
+          </button>
+          <button
+            className={`filter-chip ${gluttonyGateFilter ? 'active' : ''}`}
+            onClick={() => setGluttonyGateFilter((v) => !v)}
+            title={
+              gluttonyGateFilter
+                ? 'Show all arcanists'
+                : 'Show only arcanists with an equipped psychube below max amplification'
+            }
+          >
+            🍽️ Amplifying
           </button>
         </div>
       }

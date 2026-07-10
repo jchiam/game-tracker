@@ -439,4 +439,174 @@ describe('Reverse1999Page', () => {
     fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
     expect(screen.getByText(/no arcanists with resonance in progress/i)).toBeInTheDocument();
   });
+
+  it('renders the gluttony-gate chip, off by default, when arcanists are tracked', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster: vi.fn().mockReturnValue(arcanists),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    const chip = screen.getByRole('button', { name: /amplifying/i });
+    expect(chip).toBeInTheDocument();
+    expect(chip).not.toHaveClass('active');
+  });
+
+  it('toggles the gluttony-gate chip active class on click', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster: vi.fn().mockReturnValue(arcanists),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    const chip = screen.getByRole('button', { name: /amplifying/i });
+    fireEvent.click(chip);
+    expect(chip).toHaveClass('active');
+    fireEvent.click(chip);
+    expect(chip).not.toHaveClass('active');
+  });
+
+  it('forwards a gluttony predicate excluding no-psychube and maxed arcanists', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    const getFilteredRoster = vi.fn().mockReturnValue(arcanists);
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster,
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(getFilteredRoster).toHaveBeenLastCalledWith('', 'ALPHA', undefined);
+
+    fireEvent.click(screen.getByRole('button', { name: /amplifying/i }));
+
+    const predicate = getFilteredRoster.mock.calls.at(-1)?.[2] as (
+      a: R1999TrackedArcanist,
+    ) => boolean;
+    expect(typeof predicate).toBe('function');
+    // no psychube equipped -> excluded
+    expect(predicate(makeArcanist('a', 'A'))).toBe(false);
+    // equipped, A1 -> included
+    expect(
+      predicate({ ...makeArcanist('b', 'B'), psychubeName: 'Gluttony', psychubeAmplification: 1 }),
+    ).toBe(true);
+    // equipped, A4 -> included
+    expect(
+      predicate({ ...makeArcanist('c', 'C'), psychubeName: 'Gluttony', psychubeAmplification: 4 }),
+    ).toBe(true);
+    // equipped, A5 (maxed) -> excluded
+    expect(
+      predicate({ ...makeArcanist('d', 'D'), psychubeName: 'Gluttony', psychubeAmplification: 5 }),
+    ).toBe(false);
+  });
+
+  it('composes both gates as an intersection when both are active', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    const getFilteredRoster = vi.fn().mockReturnValue(arcanists);
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster,
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
+    fireEvent.click(screen.getByRole('button', { name: /amplifying/i }));
+
+    const predicate = getFilteredRoster.mock.calls.at(-1)?.[2] as (
+      a: R1999TrackedArcanist,
+    ) => boolean;
+    expect(typeof predicate).toBe('function');
+    // satisfies BOTH: resonance in progress AND psychube below max
+    expect(
+      predicate({
+        ...makeArcanist('a', 'A'),
+        resonanceLevel: 5,
+        psychubeName: 'Gluttony',
+        psychubeAmplification: 2,
+      }),
+    ).toBe(true);
+    // satisfies gluttony only (resonance 0) -> excluded by intersection
+    expect(
+      predicate({
+        ...makeArcanist('b', 'B'),
+        resonanceLevel: 0,
+        psychubeName: 'Gluttony',
+        psychubeAmplification: 2,
+      }),
+    ).toBe(false);
+    // satisfies resonance only (psychube maxed) -> excluded by intersection
+    expect(
+      predicate({
+        ...makeArcanist('c', 'C'),
+        resonanceLevel: 5,
+        psychubeName: 'Gluttony',
+        psychubeAmplification: 5,
+      }),
+    ).toBe(false);
+  });
+
+  it('composes the gluttony gate with search (both forwarded)', () => {
+    const session = createMockSession();
+    const arcanists = [makeArcanist('regulus', 'Regulus')];
+    const getFilteredRoster = vi.fn().mockReturnValue(arcanists);
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: arcanists,
+      getFilteredRoster,
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /amplifying/i }));
+    fireEvent.change(screen.getByPlaceholderText(/search by name, afflatus/i), {
+      target: { value: 'Vertin' },
+    });
+    const [term, , predicate] = getFilteredRoster.mock.calls.at(-1)!;
+    expect(term).toBe('Vertin');
+    expect(typeof predicate).toBe('function');
+  });
+
+  it('shows the gluttony-specific empty message when only that gate matches nothing', () => {
+    const session = createMockSession();
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: [makeArcanist('regulus', 'Regulus')],
+      getFilteredRoster: vi.fn().mockReturnValue([]),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /amplifying/i }));
+    expect(
+      screen.getByText(/no arcanists with un-maxed psychube amplification/i),
+    ).toBeInTheDocument();
+  });
+
+  it('shows the generic active-filters empty message when both gates match nothing', () => {
+    const session = createMockSession();
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: [makeArcanist('regulus', 'Regulus')],
+      getFilteredRoster: vi.fn().mockReturnValue([]),
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
+    fireEvent.click(screen.getByRole('button', { name: /amplifying/i }));
+    expect(screen.getByText(/no arcanists match the active filters/i)).toBeInTheDocument();
+  });
 });
