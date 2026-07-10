@@ -1,7 +1,9 @@
 ## Purpose
 
 Honkai: Star Rail per-character tracked fields. Covers level, traces, 6 relic slots, build preference chains (main stat and sub-stat priority), and the stat preference chain structure shared with other games.
+
 ## Requirements
+
 ### Requirement: Character level field
 
 The system SHALL track a character's level as an integer in the range 1–80, defaulting to 1 on add. Updates SHALL be clamped to this range before persisting.
@@ -180,4 +182,3 @@ The HSR character card's collapsed summary SHALL include a `.game-card-static-li
 
 - **WHEN** the card is in collapsed state regardless of whether relics are equipped
 - **THEN** the `.game-card-static-line` area reserves exactly 1 line of vertical space via `min-height`, ensuring uniform collapsed card height across all HSR cards
-

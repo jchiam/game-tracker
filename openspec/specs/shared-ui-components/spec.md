@@ -8,7 +8,9 @@ behaviour is not already owned by another capability: `GameCardShell`, `StatChip
 behaviourally elsewhere are referenced, not redeclared: `AuthGate` (`shared-auth`), `SavingToast`
 / `ToastContainer` (`shared-save-behaviour`), `RosterPageLayout` / `LoadErrorState`
 (`shared-roster`), and `GameBadge` (`shared-card-badges`).
+
 ## Requirements
+
 ### Requirement: GameCardShell provides the shared roster-card structure
 
 The shared `GameCardShell` component SHALL render the structural shell of every game's roster card
@@ -545,4 +547,3 @@ than being silently classified.
 - **WHEN** an auto-generated pool contains a stat not in the generator's ordered label list
 - **THEN** that stat is appended at the end of the pool (not dropped or silently bucketed), so the
   pinning test fails and a human places it
-

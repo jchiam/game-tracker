@@ -3,7 +3,9 @@
 Per-thief Revelation Card equipped state: the 5-slot gear model (Sun, Moon, Star,
 Sky, Space), slot updates, DB schema, load/save lifecycle. Covers the "what is
 equipped" axis; build preferences live in `p5x-revelation-preferences`.
+
 ## Requirements
+
 ### Requirement: Per-thief revelation state shape
 
 The system SHALL track a `revelations` object on each `P5xTrackedThief` with five nullable slots: `sun`, `moon`, `star`, `sky`, `space`. Each slot holds an `EquippedRevelation | null`. An `EquippedRevelation` SHALL contain: `setId: string | null`, `mainStat: string | null`, `subStats: string[]` (max 4 entries — stat-type ids, no per-substat value).
@@ -166,4 +168,3 @@ row whose `sub_stats` array already holds strings SHALL be left unchanged.
 
 - **WHEN** the migration runs against a row whose `sub_stats` is already `['crit-mult', 'attack-pct']`
 - **THEN** the row is left unchanged
-
