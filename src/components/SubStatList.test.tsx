@@ -144,3 +144,63 @@ describe('SubStatList — shared behaviour', () => {
     expect(container.querySelector('.add-substat-btn')).toBeInTheDocument();
   });
 });
+
+describe('SubStatList — id/label options', () => {
+  const ID_STATS = [
+    { value: 'attack', label: 'Attack' },
+    { value: 'damage-mult', label: 'Damage Mult. +' },
+    { value: 'crit-mult', label: 'Crit Mult.' },
+  ];
+
+  it('displays the label but stores the value', () => {
+    render(
+      <SubStatList
+        variant="stat-value"
+        values={[{ type: 'damage-mult', value: '12%' }]}
+        options={ID_STATS}
+        namePrefix="substat"
+        onChange={vi.fn()}
+      />,
+    );
+    const select = document.querySelector('select[name="substat-type-0"]') as HTMLSelectElement;
+    expect(select.value).toBe('damage-mult');
+    // The chosen option renders its in-game label, not the id.
+    const selected = select.selectedOptions[0];
+    expect(selected.textContent).toBe('Damage Mult. +');
+  });
+
+  it('adds a row using the first option value (id), not the label', () => {
+    const onChange = vi.fn();
+    render(
+      <SubStatList
+        variant="stat-value"
+        values={[]}
+        options={ID_STATS}
+        namePrefix="substat"
+        addLabel="+ Add Substat"
+        onChange={onChange}
+      />,
+    );
+    fireEvent.click(screen.getByText('+ Add Substat'));
+    expect(onChange).toHaveBeenCalledWith([{ type: 'attack', value: '' }]);
+  });
+
+  it('excludeValues compares against option values (ids)', () => {
+    render(
+      <SubStatList
+        variant="stat-value"
+        values={[{ type: 'crit-mult', value: '1' }]}
+        options={ID_STATS}
+        namePrefix="substat"
+        excludeValues={['attack', 'crit-mult']}
+        onChange={vi.fn()}
+      />,
+    );
+    const opts = Array.from(document.querySelectorAll('select[name="substat-type-0"] option')).map(
+      (o) => (o as HTMLOptionElement).value,
+    );
+    expect(opts).not.toContain('attack'); // excluded by id
+    expect(opts).toContain('crit-mult'); // kept — this row's own value
+    expect(opts).toContain('damage-mult');
+  });
+});

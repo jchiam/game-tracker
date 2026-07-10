@@ -132,28 +132,66 @@ export const ALL_SPACE_SETS: SpaceSet[] = [
   { id: 'trust', name: 'Trust', effect: 'Party-wide damage boost when user buffs an ally' },
 ];
 
-export const MAIN_STATS: Record<Uppercase<RevelationSlot>, string[]> = {
-  SUN: ['HP'],
-  MOON: ['ATK%', 'DEF%', 'HP%', 'HP Recovery%', 'DMG Multiplier%'],
-  STAR: ['ATK%', 'DEF%', 'HP%', 'Crit Rate%', 'Crit Multiplier%', 'Ailment Accuracy%'],
-  SKY: ['ATK%', 'DEF%', 'HP%', 'Speed', 'SP Recovery%'],
-  SPACE: ['ATK & DEF'],
+/**
+ * Verbatim in-game stat labels, keyed by stable stat id. The id is what's persisted
+ * (on `EquippedRevelation.mainStat` / `RevelationStat.type` and preference rows); the
+ * label is display-only, mirroring the game's own text — the stat noun stays full and
+ * only the trailing modifier is abbreviated (Multiplier → "Mult.", Accuracy → "Acc."),
+ * with a trailing "%" (no space) marking only the Attack/Defense/HP percent variants.
+ * Re-pinning a label never invalidates a saved row.
+ */
+export const STAT_LABELS: Record<string, string> = {
+  attack: 'Attack',
+  'attack-pct': 'Attack%',
+  defense: 'Defense',
+  'defense-pct': 'Defense%',
+  hp: 'HP',
+  'hp-pct': 'HP%',
+  'hp-recovery': 'HP Recovery',
+  'damage-mult': 'Damage Mult. +',
+  'crit-rate': 'Crit Rate',
+  'crit-mult': 'Crit Mult.',
+  'ailment-acc': 'Ailment Acc.',
+  speed: 'Speed',
+  'sp-recovery': 'SP Recovery',
+  'pierce-rate': 'Pierce Rate',
 };
 
+/** Resolve a stat id to its verbatim in-game label; an unknown id falls back to itself. */
+export const statLabel = (id: string): string => STAT_LABELS[id] ?? id;
+
+/** Map stat ids to `{ value, label }` option objects for the shared input primitives. */
+export const toStatOptions = (ids: readonly string[]): { value: string; label: string }[] =>
+  ids.map((id) => ({ value: id, label: statLabel(id) }));
+
+// Per-slot main stat pools, expressed as stat ids. SUN (`hp`) and SPACE (`attack`,
+// `defense`) are fixed — not user-selectable; SPACE carries two fixed mains. MOON/STAR/SKY
+// are variable pools chosen from these ids.
+export const MAIN_STATS: Record<Uppercase<RevelationSlot>, string[]> = {
+  SUN: ['hp'],
+  MOON: ['attack-pct', 'defense-pct', 'hp-pct', 'hp-recovery', 'damage-mult'],
+  STAR: ['attack-pct', 'defense-pct', 'hp-pct', 'crit-rate', 'crit-mult', 'ailment-acc'],
+  SKY: ['attack-pct', 'defense-pct', 'hp-pct', 'speed', 'sp-recovery'],
+  SPACE: ['attack', 'defense'],
+};
+
+/** Slots whose main stats are fixed (not chosen from a pool): Sun (one) and Space (two). */
+export const FIXED_MAIN_SLOTS: RevelationSlot[] = ['sun', 'space'];
+
 export const SUB_STATS: string[] = [
-  'ATK',
-  'ATK%',
-  'DEF',
-  'DEF%',
-  'HP',
-  'HP%',
-  'DMG Multiplier%',
-  'Ailment Accuracy%',
-  'Crit Rate%',
-  'Crit Multiplier%',
-  'Speed',
-  'SP Recovery%',
-  'Pierce Rate%',
+  'attack',
+  'attack-pct',
+  'defense',
+  'defense-pct',
+  'hp',
+  'hp-pct',
+  'damage-mult',
+  'ailment-acc',
+  'crit-rate',
+  'crit-mult',
+  'speed',
+  'sp-recovery',
+  'pierce-rate',
 ];
 
 export const CARD_RARITIES: CardRarity[] = [

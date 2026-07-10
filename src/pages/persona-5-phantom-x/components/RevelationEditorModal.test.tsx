@@ -58,15 +58,15 @@ describe('RevelationEditorModal', () => {
     expect(screen.getByText('Space')).toBeInTheDocument();
   });
 
-  it('disables main stat select for Sun slot (fixed HP)', () => {
-    render(<RevelationEditorModal {...defaultProps} />);
-    const sunSelects = screen.getAllByRole('combobox');
-    // Sun slot: first select = set, second = main stat (disabled)
-    // Find the disabled one with value "HP"
-    const disabledSelect = sunSelects.find(
-      (s) => (s as HTMLSelectElement).disabled && (s as HTMLSelectElement).value === 'HP',
+  it('renders fixed mains as read-only labels (Sun: HP; Space: Attack + Defense)', () => {
+    const { container } = render(<RevelationEditorModal {...defaultProps} />);
+    const fixedLabels = Array.from(container.querySelectorAll('.rev-fixed-main')).map(
+      (e) => e.textContent,
     );
-    expect(disabledSelect).toBeDefined();
+    // Sun's single fixed main plus Space's two fixed mains — none is a <select>.
+    expect(fixedLabels).toContain('HP');
+    expect(fixedLabels).toContain('Attack');
+    expect(fixedLabels).toContain('Defense');
   });
 
   it('switches to Preferences tab on click', async () => {
@@ -116,14 +116,14 @@ describe('RevelationEditorModal', () => {
     const thief = makeThief({
       revelations: {
         sun: null,
-        moon: { setId: 'strife', mainStat: 'ATK%', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
         star: null,
         sky: null,
         space: null,
       },
     });
     render(<RevelationEditorModal {...defaultProps} thief={thief} />);
-    // The Moon slot's substat add should not offer "ATK%" since it's the main stat
+    // The Moon slot's substat add should not offer "Attack%" since it's the main stat
     // We verify by checking + Substat buttons exist (can add substats)
     const addButtons = screen.getAllByText('+ Substat');
     expect(addButtons.length).toBe(5); // one per slot

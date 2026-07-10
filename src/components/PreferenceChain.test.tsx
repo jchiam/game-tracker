@@ -114,6 +114,42 @@ describe('PreferenceChain', () => {
   });
 });
 
+describe('PreferenceChain — stat-chain id/label options', () => {
+  const idOptions = [
+    { value: 'damage-mult', label: 'Damage Mult. +' },
+    { value: 'crit-rate', label: 'Crit Rate' },
+    { value: 'crit-mult', label: 'Crit Mult.' },
+  ];
+
+  it('appends using the first option value (id), not the label', () => {
+    const onChange = vi.fn();
+    render(
+      <PreferenceChain
+        options={idOptions}
+        values={[]}
+        onChange={onChange}
+        namePrefix="test-idpref"
+      />,
+    );
+    fireEvent.click(screen.getByText('+ Add Priority'));
+    expect(onChange).toHaveBeenCalledWith([{ stat: 'damage-mult', operator: null, orderIndex: 0 }]);
+  });
+
+  it('displays the label while persisting the value', () => {
+    render(
+      <PreferenceChain
+        options={idOptions}
+        values={[{ stat: 'crit-mult', operator: null, orderIndex: 0 }]}
+        onChange={vi.fn()}
+        namePrefix="test-idpref"
+      />,
+    );
+    const select = screen.getByRole('combobox') as HTMLSelectElement;
+    expect(select.value).toBe('crit-mult');
+    expect(select.selectedOptions[0].textContent).toBe('Crit Mult.');
+  });
+});
+
 describe('PreferenceChain — ranked-list mode', () => {
   const weaponOptions = [
     { value: 'defender', label: 'Defender' },

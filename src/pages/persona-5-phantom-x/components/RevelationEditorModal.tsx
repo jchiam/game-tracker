@@ -7,6 +7,9 @@ import {
   REVELATION_SLOTS,
   MAIN_STATS,
   SUB_STATS,
+  FIXED_MAIN_SLOTS,
+  statLabel,
+  toStatOptions,
 } from '@/data/persona-5-phantom-x/revelations';
 import { Modal } from '@/components/Modal';
 import { FormGroup } from '@/components/FormGroup';
@@ -82,15 +85,20 @@ function EquipTab({
         const setOptions = isSpace
           ? ALL_SPACE_SETS.map((s) => ({ value: s.id, label: s.name }))
           : ALL_HEAVENS_SETS.map((s) => ({ value: s.id, label: s.name }));
-        const slotMainStats = MAIN_STATS[slot.toUpperCase() as Uppercase<RevelationSlot>];
-        const isFixedMain = slotMainStats.length === 1;
-        const mainStat = card?.mainStat ?? (isFixedMain ? slotMainStats[0] : '');
-        const availableSubStats = SUB_STATS.filter((s) => s !== mainStat);
+        const slotMainIds = MAIN_STATS[slot.toUpperCase() as Uppercase<RevelationSlot>];
+        const isFixed = FIXED_MAIN_SLOTS.includes(slot);
+        // Space has two fixed mains (Attack + Defense) that are derived, not stored;
+        // Sun has one fixed main (`hp`) that is stored. Variable slots store the choice.
+        const isDualFixed = isFixed && slotMainIds.length > 1;
+        const storedFixedMain = isFixed && !isDualFixed ? slotMainIds[0] : null;
+        const mainStat = card?.mainStat ?? storedFixedMain ?? '';
+        // Substat options exclude whichever main stat(s) the slot occupies.
+        const equippedMainIds = isDualFixed ? slotMainIds : mainStat ? [mainStat] : [];
 
         const handleSetChange = (setId: string) => {
           const updated: EquippedRevelation = {
             setId: setId || null,
-            mainStat: card?.mainStat ?? (isFixedMain ? slotMainStats[0] : null),
+            mainStat: card?.mainStat ?? storedFixedMain,
             subStats: card?.subStats ?? [],
           };
           onUpdateSlot(slot, setId ? updated : null);
@@ -108,7 +116,7 @@ function EquipTab({
         const handleSubStatsChange = (subStats: Array<{ type: string; value: number }>) => {
           const updated: EquippedRevelation = {
             setId: card?.setId ?? null,
-            mainStat: card?.mainStat ?? null,
+            mainStat: card?.mainStat ?? storedFixedMain,
             subStats,
           };
           onUpdateSlot(slot, updated);
@@ -123,17 +131,28 @@ function EquipTab({
               onChange={handleSetChange}
               placeholder="-- No Set --"
             />
-            <Select
-              name={`rev-${slot}-main`}
-              value={mainStat}
-              options={slotMainStats}
-              onChange={handleMainStatChange}
-              disabled={isFixedMain}
-            />
+            {isFixed ? (
+              // Fixed mains are read-only: Sun shows its single fixed stat, Space its two.
+              <div className="rev-fixed-mains">
+                {slotMainIds.map((id) => (
+                  <span key={id} className="rev-fixed-main">
+                    {statLabel(id)}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <Select
+                name={`rev-${slot}-main`}
+                value={mainStat}
+                options={toStatOptions(slotMainIds)}
+                onChange={handleMainStatChange}
+              />
+            )}
             <SubStatList
               variant="stat-value"
               namePrefix={`rev-${slot}-sub`}
-              options={availableSubStats}
+              options={toStatOptions(SUB_STATS)}
+              excludeValues={equippedMainIds}
               values={card?.subStats?.map((s) => ({ type: s.type, value: String(s.value) })) ?? []}
               onChange={(vals) =>
                 handleSubStatsChange(vals.map((v) => ({ type: v.type, value: Number(v.value) })))
@@ -180,7 +199,7 @@ function PreferencesTab({
       <FormGroup label="Moon Main Stat">
         <PreferenceChain
           values={prefs.mainStats.moon}
-          options={MAIN_STATS.MOON}
+          options={toStatOptions(MAIN_STATS.MOON)}
           namePrefix="rev-pref-moon"
           onChange={(values) =>
             onSave({ ...prefs, mainStats: { ...prefs.mainStats, moon: values } })
@@ -191,7 +210,7 @@ function PreferencesTab({
       <FormGroup label="Star Main Stat">
         <PreferenceChain
           values={prefs.mainStats.star}
-          options={MAIN_STATS.STAR}
+          options={toStatOptions(MAIN_STATS.STAR)}
           namePrefix="rev-pref-star"
           onChange={(values) =>
             onSave({ ...prefs, mainStats: { ...prefs.mainStats, star: values } })
@@ -202,7 +221,7 @@ function PreferencesTab({
       <FormGroup label="Sky Main Stat">
         <PreferenceChain
           values={prefs.mainStats.sky}
-          options={MAIN_STATS.SKY}
+          options={toStatOptions(MAIN_STATS.SKY)}
           namePrefix="rev-pref-sky"
           onChange={(values) =>
             onSave({ ...prefs, mainStats: { ...prefs.mainStats, sky: values } })
@@ -213,7 +232,7 @@ function PreferencesTab({
       <FormGroup label="Substats">
         <PreferenceChain
           values={prefs.subStats}
-          options={SUB_STATS}
+          options={toStatOptions(SUB_STATS)}
           namePrefix="rev-pref-sub"
           onChange={(values) => onSave({ ...prefs, subStats: values })}
         />

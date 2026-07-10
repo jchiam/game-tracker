@@ -65,10 +65,43 @@ function StatOnlyList() {
   );
 }
 
+// Options as `{ value, label }` pairs: the stored value (a stable id) differs from the
+// shown in-game label — e.g. P5X Revelation substats.
+const ID_STATS = [
+  { value: 'attack', label: 'Attack' },
+  { value: 'attack-pct', label: 'Attack%' },
+  { value: 'damage-mult', label: 'Damage Mult. +' },
+  { value: 'crit-rate', label: 'Crit Rate' },
+  { value: 'crit-mult', label: 'Crit Mult.' },
+];
+
+function IdLabelList() {
+  const [values, setValues] = useState<SubStatValue[]>([
+    { type: 'damage-mult', value: '12%' },
+    { type: 'crit-mult', value: '15%' },
+  ]);
+  return (
+    <SubStatList
+      variant="stat-value"
+      values={values}
+      options={ID_STATS}
+      namePrefix="substat"
+      label="Substats — id/label options"
+      addLabel="+ Add Substat"
+      excludeValues={['attack']}
+      onChange={setValues}
+    />
+  );
+}
+
 export const StatValue: Story = {
   render: () => <StatValueList />,
 };
 
 export const StatOnly: Story = {
   render: () => <StatOnlyList />,
+};
+
+export const IdLabelOptions: Story = {
+  render: () => <IdLabelList />,
 };

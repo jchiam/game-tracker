@@ -1,48 +1,4 @@
-## Purpose
-
-Build-preference tracking for P5X Revelation Cards: preferred Heavens/Space sets,
-main stat priority chains per variable-stat slot, and substat priority chain.
-Persisted via the shared `savePreferenceRows` pattern.
-
-## Requirements
-
-### Requirement: Revelation build-preference state shape
-
-The system SHALL track `revelationPreferences` on each `P5xTrackedThief` containing:
-
-- `heavensSetId: string | null` — preferred Heavens set
-- `spaceSetId: string | null` — preferred Space set
-- `mainStats`: per-slot preference chains for the variable-stat slots:
-  - `moon: StatPreference[]`
-  - `star: StatPreference[]`
-  - `sky: StatPreference[]`
-- `subStats: StatPreference[]` — preferred substats in priority order
-
-This reuses the existing `StatPreference` interface (`{ stat, operator, orderIndex }`).
-
-#### Scenario: Default preferences on add
-
-- **WHEN** a Thief is added to the roster
-- **THEN** `revelationPreferences` has null set IDs and empty preference chains
-
-#### Scenario: Preferences independent of equipped cards
-
-- **WHEN** a Thief has revelation preferences set but no cards equipped
-- **THEN** preferences are persisted and displayed independently
-
-### Requirement: Preferred set selection
-
-The system SHALL allow selecting a preferred Heavens set and a preferred Space set from the respective catalogs via `Select` dropdowns. Selection SHALL be persisted via debounced save.
-
-#### Scenario: Set preferred Heavens set
-
-- **WHEN** user selects a Heavens set from the dropdown
-- **THEN** `revelationPreferences.heavensSetId` updates in local state and is queued for DB write
-
-#### Scenario: Clear preferred set
-
-- **WHEN** user selects the empty/none option
-- **THEN** the set preference becomes `null`
+## MODIFIED Requirements
 
 ### Requirement: Main stat preference chains
 

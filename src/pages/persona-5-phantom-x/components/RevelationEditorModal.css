@@ -17,3 +17,19 @@
     max-height: 60vh;
   }
 }
+
+/* Read-only fixed main stats (Sun: one; Space: two) — displayed, not selectable. */
+.rev-fixed-mains {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+.rev-fixed-main {
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-sm);
+  background: var(--color-input-surface);
+  color: var(--color-text-secondary);
+  font-size: var(--typography-font-size-sm);
+}

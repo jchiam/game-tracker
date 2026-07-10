@@ -299,8 +299,8 @@ describe('ThiefCard', () => {
   it('shows revelation chip with Heavens set name and piece count', () => {
     const thief = makeThief({
       revelations: {
-        sun: { setId: 'strife', mainStat: 'HP', subStats: [] },
-        moon: { setId: 'strife', mainStat: 'ATK%', subStats: [] },
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
         star: null,
         sky: null,
         space: null,
@@ -313,11 +313,11 @@ describe('ThiefCard', () => {
   it('appends Space set name when Heavens 4pc is complete', () => {
     const thief = makeThief({
       revelations: {
-        sun: { setId: 'strife', mainStat: 'HP', subStats: [] },
-        moon: { setId: 'strife', mainStat: 'ATK%', subStats: [] },
-        star: { setId: 'strife', mainStat: 'HP%', subStats: [] },
-        sky: { setId: 'strife', mainStat: 'Speed', subStats: [] },
-        space: { setId: 'meditation', mainStat: 'ATK & DEF', subStats: [] },
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
+        star: { setId: 'strife', mainStat: 'hp-pct', subStats: [] },
+        sky: { setId: 'strife', mainStat: 'speed', subStats: [] },
+        space: { setId: 'meditation', mainStat: null, subStats: [] },
       },
     });
     render(<ThiefCard {...defaultProps} thief={thief} />);

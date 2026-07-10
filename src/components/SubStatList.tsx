@@ -5,9 +5,15 @@ export interface SubStatValue {
   value: string;
 }
 
+/** A row option — a bare string (value === label) or a distinct value/label pair. */
+export type StatOption = string | { value: string; label: string };
+
+/** The stored value of an option, whether it's a bare string or a value/label pair. */
+const optionValue = (o: StatOption): string => (typeof o === 'string' ? o : o.value);
+
 interface SubStatBaseProps {
-  /** Selectable stat options for every row. */
-  options: readonly string[];
+  /** Selectable stat options for every row (bare strings or `{ value, label }` pairs). */
+  options: readonly StatOption[];
   /** Prefix for row control `name`s — `${namePrefix}-type-${i}` / `${namePrefix}-value-${i}`. */
   namePrefix: string;
   /** Row cap; the add button hides at the cap. Default 4. */
@@ -16,7 +22,7 @@ interface SubStatBaseProps {
   addLabel?: string;
   /** Optional section label rendered above the rows. */
   label?: string;
-  /** Stats omitted from every row's options except a row whose own value is already that stat. */
+  /** Option values omitted from every row except a row whose own value is already that value. */
   excludeValues?: readonly string[];
 }
 
@@ -48,12 +54,13 @@ export function SubStatList(props: SubStatListProps) {
 
   // A row offers every non-excluded option, plus its own current value (so an
   // already-chosen-but-now-conflicting stat stays visible until the user changes it).
-  const rowOptions = (current: string) =>
+  const rowOptions = (current: string): readonly StatOption[] =>
     excludeValues && excludeValues.length > 0
-      ? options.filter((o) => o === current || !excludeValues.includes(o))
+      ? options.filter((o) => optionValue(o) === current || !excludeValues.includes(optionValue(o)))
       : options;
 
-  const firstAllowed = options.find((o) => !excludeValues?.includes(o)) ?? options[0];
+  const firstOption = options.find((o) => !excludeValues?.includes(optionValue(o))) ?? options[0];
+  const firstAllowed = firstOption === undefined ? '' : optionValue(firstOption);
 
   const atCap = props.values.length >= max;
 

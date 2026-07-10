@@ -52,6 +52,10 @@ The optional `extras: { selectFragment, mapRow }` seam on the roster-persistence
 
 Variable-length, ordered stat-preference chains (HSR build preferences, N2E cartridge preferences) persisted as child rows with sequential `order_index`. Saved exclusively through the shared `savePreferenceRows` helper in `src/services/rosterPersistence.ts`, which implements the delete-existing-rows-then-reinsert pattern — deliberately the _only_ implementation of that pattern, so the documented non-atomic-save limitation has exactly one future fix site (see Known Limitations in `CLAUDE.md`). Game-specific write functions that use it (`saveBuildPrefs`, `saveCartridgePreferences`) remain per-game exports.
 
+### Stat-Label Fidelity
+
+A stat's displayed label is the **verbatim in-game string for that game** — mirroring the game's own abbreviation and spacing conventions, never our own shorthand or an external guide's (HSR: `CRIT DMG`, `HP%`; N2E: `CRIT DMG %`; P5X: `Crit Mult.`, `Ailment Acc.`, `Attack%` — noun full, trailing modifier abbreviated, `%` no-space only on the plain stat percent variants). Labels are single-sourced in that game's `data/{game}/*.ts` catalog. Where a label may be re-pinned to track in-game text, the **stored value is a stable id decoupled from the label** (P5X `STAT_LABELS` id→label map; `toStatOptions` feeds `{ value, label }` to the shared `Select` / `SubStatList` / `PreferenceChain` primitives), so re-labelling never invalidates a saved row; an id with no label resolves to the raw id, never blank. New games inherit this rule.
+
 ### Party / Lineup
 
 A saved team of tracked entities: a row in `{game_prefix}_parties` plus member rows in `{game_prefix}_party_members`, each member carrying a `slot_index` (0–3, maximum 4 members, enforced by CHECK constraint and `UNIQUE(party_id, slot_index)`). "Lineups" is the UI name for the parties view on each game page. All games' parties carry an optional `tier` and an `is_favorited` flag. After a save, the DB is the source of truth: the party hook reloads all parties.

@@ -7,11 +7,18 @@ export interface RankedOption {
   label: string;
 }
 
+/** A stat-chain option — a bare string (value === label) or a distinct value/label pair. */
+export type StatChainOption = string | { value: string; label: string };
+
+const optionValue = (o: StatChainOption): string => (typeof o === 'string' ? o : o.value);
+const optionLabel = (o: StatChainOption): string => (typeof o === 'string' ? o : o.label);
+
 interface StatChainProps {
   /** Default mode: an ordered stat-priority chain joined by operators. */
   variant?: 'stat-chain';
   values: StatPreference[];
-  options: readonly string[];
+  /** Selectable stats (bare strings or `{ value, label }` pairs, so a stored id can differ). */
+  options: readonly StatChainOption[];
   onChange: (values: StatPreference[]) => void;
   /** Prefix for the select `name` attributes, e.g. "pref-sub-stat". */
   namePrefix: string;
@@ -52,7 +59,7 @@ function StatChain({ values, options, onChange, namePrefix }: StatChainProps) {
   const add = () => {
     const next = values.map((p) => ({ ...p }));
     if (next.length > 0) next[next.length - 1].operator = '>';
-    next.push({ stat: options[0], operator: null, orderIndex: next.length });
+    next.push({ stat: optionValue(options[0]), operator: null, orderIndex: next.length });
     onChange(next);
   };
 
@@ -76,9 +83,9 @@ function StatChain({ values, options, onChange, namePrefix }: StatChainProps) {
               value={pref.stat}
               onChange={(e) => update(idx, { stat: e.target.value })}
             >
-              {options.map((s) => (
-                <option key={s} value={s}>
-                  {s}
+              {options.map((o) => (
+                <option key={optionValue(o)} value={optionValue(o)}>
+                  {optionLabel(o)}
                 </option>
               ))}
             </select>

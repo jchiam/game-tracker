@@ -136,3 +136,43 @@ function MainStatChainInteractive() {
 export const MainStatChain: Story = {
   render: () => <MainStatChainInteractive />,
 };
+
+// Stat-chain with `{ value, label }` options: the persisted stat is a stable id while the
+// row shows the verbatim in-game label — e.g. P5X Revelation substat priorities.
+function IdLabelChainInteractive() {
+  const [values, setValues] = useState<StatPreference[]>([
+    { stat: 'damage-mult', operator: '>', orderIndex: 0 },
+    { stat: 'crit-mult', operator: null, orderIndex: 1 },
+  ]);
+
+  const options = [
+    { value: 'damage-mult', label: 'Damage Mult. +' },
+    { value: 'crit-rate', label: 'Crit Rate' },
+    { value: 'crit-mult', label: 'Crit Mult.' },
+    { value: 'ailment-acc', label: 'Ailment Acc.' },
+    { value: 'sp-recovery', label: 'SP Recovery' },
+  ];
+
+  return (
+    <div
+      style={{
+        maxWidth: '400px',
+        padding: '16px',
+        background: 'rgba(25, 25, 35, 0.95)',
+        borderRadius: '8px',
+        border: '1px solid var(--color-ui-border)',
+      }}
+    >
+      <PreferenceChain
+        values={values}
+        options={options}
+        onChange={setValues}
+        namePrefix="story-idlabel-chain"
+      />
+    </div>
+  );
+}
+
+export const IdLabelChain: Story = {
+  render: () => <IdLabelChainInteractive />,
+};
