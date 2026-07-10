@@ -92,9 +92,9 @@ describe('RevelationEditorModal', () => {
   it('calls onUpdateSlot when a set is selected', async () => {
     const user = userEvent.setup();
     render(<RevelationEditorModal {...defaultProps} />);
-    // Select a set in the Moon slot (second FormGroup's first select)
+    // Slots render space-first: [space, sun, moon, star, sky]; Moon is the third set select.
     const setSelects = screen.getAllByDisplayValue('-- No Set --');
-    await user.selectOptions(setSelects[1], 'strife');
+    await user.selectOptions(setSelects[2], 'strife');
     expect(defaultProps.onUpdateSlot).toHaveBeenCalledWith(
       'moon',
       expect.objectContaining({ setId: 'strife' }),

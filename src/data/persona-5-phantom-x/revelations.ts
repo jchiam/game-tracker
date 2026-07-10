@@ -29,7 +29,9 @@ export interface CardRarity {
   maxSubStats: number;
 }
 
-export const REVELATION_SLOTS: RevelationSlot[] = ['sun', 'moon', 'star', 'sky', 'space'];
+// Space-first display order: the equip editor and consolidated set summary lead with the
+// Space card. Heavens grouping uses HEAVENS_SLOTS below, independent of this order.
+export const REVELATION_SLOTS: RevelationSlot[] = ['space', 'sun', 'moon', 'star', 'sky'];
 
 export const HEAVENS_SLOTS: RevelationSlot[] = ['sun', 'moon', 'star', 'sky'];
 
@@ -126,6 +128,49 @@ export const ALL_SPACE_SETS: SpaceSet[] = [
   },
   { id: 'trust', name: 'Trust', effect: 'Party-wide damage boost when user buffs an ally' },
 ];
+
+export interface RevelationSetBonus {
+  id: string;
+  name: string;
+  pieces: 2 | 4;
+}
+
+export interface RevelationSummary {
+  spaceSet: { id: string; name: string } | null;
+  heavensBonuses: RevelationSetBonus[];
+}
+
+/**
+ * Consolidate equipped revelations into their active set bonuses — the single source for every
+ * set display (summary chip + edit readout). Heavens sets group over HEAVENS_SLOTS: a set with
+ * ≥2 matching cards grants a bonus (2pc for 2–3 cards, 4pc for 4); single-card sets are omitted.
+ * Ordered 4pc → 2pc, then by name. The Space slot's set (if any) is resolved separately. Callers
+ * render the Space set first, then the Heavens bonuses.
+ */
+export function getRevelationSummary(
+  revelations: Record<RevelationSlot, EquippedRevelation | null>,
+): RevelationSummary {
+  const counts: Record<string, number> = {};
+  for (const slot of HEAVENS_SLOTS) {
+    const setId = revelations[slot]?.setId;
+    if (setId) counts[setId] = (counts[setId] ?? 0) + 1;
+  }
+  const heavensBonuses: RevelationSetBonus[] = Object.entries(counts)
+    .filter(([, n]) => n >= 2)
+    .map(([id, n]) => ({
+      id,
+      name: ALL_HEAVENS_SETS.find((s) => s.id === id)?.name ?? id,
+      pieces: (n >= 4 ? 4 : 2) as 2 | 4,
+    }))
+    .sort((a, b) => b.pieces - a.pieces || a.name.localeCompare(b.name));
+
+  const spaceSetId = revelations.space?.setId ?? null;
+  const spaceSet = spaceSetId
+    ? { id: spaceSetId, name: ALL_SPACE_SETS.find((s) => s.id === spaceSetId)?.name ?? spaceSetId }
+    : null;
+
+  return { spaceSet, heavensBonuses };
+}
 
 /**
  * Verbatim in-game stat labels, keyed by stable stat id. The id is what's persisted

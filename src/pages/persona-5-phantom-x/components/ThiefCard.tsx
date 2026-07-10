@@ -1,9 +1,5 @@
 import type { P5xThiefPatch, P5xTrackedThief } from '@/types';
-import {
-  ALL_HEAVENS_SETS,
-  ALL_SPACE_SETS,
-  HEAVENS_SLOTS,
-} from '@/data/persona-5-phantom-x/revelations';
+import { getRevelationSummary } from '@/data/persona-5-phantom-x/revelations';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
 import { LevelSlider } from '@/components/LevelSlider';
@@ -70,20 +66,17 @@ export function ThiefCard({
   const miPs = getProgressStyle(1, 0, 1);
   const weaponForgePs = getProgressStyle(thief.weaponForge, 0, 6);
 
-  // Revelation summary: find dominant Heavens set + Space set
-  const heavensCards = HEAVENS_SLOTS.map((s) => thief.revelations[s]).filter(Boolean);
-  const heavensSetCounts: Record<string, number> = {};
-  for (const card of heavensCards) {
-    if (card?.setId) heavensSetCounts[card.setId] = (heavensSetCounts[card.setId] || 0) + 1;
-  }
-  const dominantSetId = Object.entries(heavensSetCounts).sort((a, b) => b[1] - a[1])[0]?.[0];
-  const dominantSetCount = dominantSetId ? heavensSetCounts[dominantSetId] : 0;
-  const dominantSetName = dominantSetId
-    ? ALL_HEAVENS_SETS.find((s) => s.id === dominantSetId)?.name
-    : null;
-  const spaceSetId = thief.revelations.space?.setId;
-  const spaceSetName = spaceSetId ? ALL_SPACE_SETS.find((s) => s.id === spaceSetId)?.name : null;
-  const revPs = getProgressStyle(dominantSetCount, 0, 4);
+  // Consolidated revelation set summary — Space-first, every active set bonus (not just the
+  // dominant Heavens set). Same helper feeds the summary chip and the edit-mode readout.
+  const revSummary = getRevelationSummary(thief.revelations);
+  const revSetParts = [
+    ...(revSummary.spaceSet ? [revSummary.spaceSet.name] : []),
+    ...revSummary.heavensBonuses.map((b) => `${b.name} ${b.pieces}pc`),
+  ];
+  const revSummaryLabel = revSetParts.join(' · ');
+  const hasRevSets = revSetParts.length > 0;
+  // Gradient from the best Heavens bonus (4pc → full, 2pc → half, space-only → low).
+  const revPs = getProgressStyle(revSummary.heavensBonuses[0]?.pieces ?? 0, 0, 4);
 
   return (
     <GameCardShell
@@ -119,13 +112,9 @@ export function ThiefCard({
               style={{ color: weaponForgePs.color, borderColor: weaponForgePs.borderColor }}
             />
           )}
-          {dominantSetName && (
+          {hasRevSets && (
             <StatChip
-              label={
-                spaceSetName && dominantSetCount === 4
-                  ? `${dominantSetName} 4pc + ${spaceSetName}`
-                  : `${dominantSetName} ${dominantSetCount}pc`
-              }
+              label={revSummaryLabel}
               style={{ color: revPs.color, borderColor: revPs.borderColor }}
             />
           )}
@@ -195,10 +184,19 @@ export function ThiefCard({
             />
           </ProgressSection>
 
-          <ProgressSection
-            label="Revelations"
-            value={dominantSetName ? `${dominantSetName} ${dominantSetCount}pc` : '—'}
-          >
+          {/* Value stays empty when sets are active — the consolidated list renders vertically in
+              the body below, so a long one-liner isn't crammed into the space-between header. */}
+          <ProgressSection label="Revelations" value={hasRevSets ? undefined : '—'}>
+            {hasRevSets && (
+              <ul className="rev-set-readout">
+                {revSummary.spaceSet && <li key="space">{revSummary.spaceSet.name} (Space)</li>}
+                {revSummary.heavensBonuses.map((b) => (
+                  <li key={b.id}>
+                    {b.name} {b.pieces}pc
+                  </li>
+                ))}
+              </ul>
+            )}
             <button className="toggle-btn" onClick={() => onOpenRevelations(thief.id)}>
               Edit Revelations
             </button>

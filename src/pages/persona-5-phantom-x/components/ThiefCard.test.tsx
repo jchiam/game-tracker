@@ -310,7 +310,7 @@ describe('ThiefCard', () => {
     expect(screen.getAllByText('Strife 2pc').length).toBeGreaterThanOrEqual(1);
   });
 
-  it('appends Space set name when Heavens 4pc is complete', () => {
+  it('leads with the Space set, then Heavens (space-first consolidation)', () => {
     const thief = makeThief({
       revelations: {
         sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
@@ -321,7 +321,52 @@ describe('ThiefCard', () => {
       },
     });
     render(<ThiefCard {...defaultProps} thief={thief} />);
-    expect(screen.getAllByText('Strife 4pc + Meditation').length).toBeGreaterThanOrEqual(1);
+    expect(screen.getAllByText('Meditation · Strife 4pc').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('shows every active set for a 2pc+2pc split (lossless, name-ordered)', () => {
+    const thief = makeThief({
+      revelations: {
+        sun: { setId: 'power', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'power', mainStat: 'attack-pct', subStats: [] },
+        star: { setId: 'peace', mainStat: 'hp-pct', subStats: [] },
+        sky: { setId: 'peace', mainStat: 'speed', subStats: [] },
+        space: null,
+      },
+    });
+    render(<ThiefCard {...defaultProps} thief={thief} />);
+    expect(screen.getAllByText('Peace 2pc · Power 2pc').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('renders a space-first per-set readout in the edit Revelations section', async () => {
+    const user = userEvent.setup();
+    const thief = makeThief({
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
+        star: { setId: 'strife', mainStat: 'hp-pct', subStats: [] },
+        sky: { setId: 'strife', mainStat: 'speed', subStats: [] },
+        space: { setId: 'meditation', mainStat: null, subStats: [] },
+      },
+    });
+    render(<ThiefCard {...defaultProps} thief={thief} />);
+    await user.click(screen.getByTitle('Edit'));
+    const readout = document.querySelector('.rev-set-readout');
+    expect(readout).not.toBeNull();
+    const lines = Array.from(readout!.querySelectorAll('li')).map((li) => li.textContent);
+    expect(lines).toEqual(['Meditation (Space)', 'Strife 4pc']);
+  });
+
+  it('edit Revelations section shows — and no readout when no set is active', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} />); // default thief: all slots null
+    await user.click(screen.getByTitle('Edit'));
+    expect(document.querySelector('.rev-set-readout')).toBeNull();
+    const revSection = Array.from(document.querySelectorAll('.progress-section')).find(
+      (s) => s.querySelector('.section-header span')?.textContent === 'Revelations',
+    );
+    expect(revSection).toBeTruthy();
+    expect(revSection!.querySelector('.section-value')?.textContent).toBe('—');
   });
 
   it('calls onOpenRevelations when Edit Revelations button is clicked', async () => {
