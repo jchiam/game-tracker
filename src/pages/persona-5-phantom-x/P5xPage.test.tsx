@@ -209,6 +209,84 @@ describe('P5xPage', () => {
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
     fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
-    expect(screen.getByText(/no rose-gated thieves/i)).toBeInTheDocument();
+    expect(screen.getByText(/no rose-gated thieves found/i)).toBeInTheDocument();
+  });
+
+  it('shows weapon-specific empty message when only the weapon filter is active', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: vi.fn().mockReturnValue([]),
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '⚔ <5★' }));
+    expect(screen.getByText(/no thieves with a sub-5★ weapon/i)).toBeInTheDocument();
+  });
+
+  it('renders the <5★ weapon filter chip', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: vi.fn().mockReturnValue(thieves),
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(screen.getByRole('button', { name: '⚔ <5★' })).toBeInTheDocument();
+  });
+
+  it('weapon filter predicate keeps sub-5★ weapons and drops 5★', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    const mockGetFiltered = vi.fn().mockReturnValue(thieves);
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: mockGetFiltered,
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '⚔ <5★' }));
+    const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
+    expect(predicate({ ...makeThief('a', 'A'), weaponRarity: 4 })).toBe(true);
+    expect(predicate({ ...makeThief('b', 'B'), weaponRarity: 2 })).toBe(true);
+    expect(predicate({ ...makeThief('c', 'C'), weaponRarity: 5 })).toBe(false);
+  });
+
+  it('both chips active compose as logical AND', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    const mockGetFiltered = vi.fn().mockReturnValue(thieves);
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: mockGetFiltered,
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
+    fireEvent.click(screen.getByRole('button', { name: '⚔ <5★' }));
+    const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
+    // rose-gated (skillsLeveled && !roseMaxed) AND weapon < 5
+    expect(
+      predicate({ ...makeThief('a', 'A'), skillsLeveled: true, roseMaxed: false, weaponRarity: 3 }),
+    ).toBe(true);
+    // weak weapon but not rose-gated → excluded
+    expect(
+      predicate({
+        ...makeThief('b', 'B'),
+        skillsLeveled: false,
+        roseMaxed: false,
+        weaponRarity: 3,
+      }),
+    ).toBe(false);
+    // rose-gated but 5★ weapon → excluded
+    expect(
+      predicate({ ...makeThief('c', 'C'), skillsLeveled: true, roseMaxed: false, weaponRarity: 5 }),
+    ).toBe(false);
   });
 });

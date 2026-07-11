@@ -8,6 +8,7 @@ import { RevelationEditorModal } from './components/RevelationEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { RevelationSlot } from '@/data/persona-5-phantom-x/revelations';
+import type { P5xTrackedThief } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 
 interface P5xPageProps {
@@ -42,6 +43,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
   const [roseGateFilter, setRoseGateFilter] = useState(false);
+  const [weaponFilter, setWeaponFilter] = useState(false);
   const [editingRev, setEditingRev] = useState<{
     thiefId: string;
     anchorSlot: RevelationSlot;
@@ -52,13 +54,18 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     : null;
 
   const filteredGetRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE') =>
-      getFilteredRoster(
-        searchTerm,
-        sortBy,
-        roseGateFilter ? (t) => t.skillsLeveled && !t.roseMaxed : undefined,
-      ),
-    [getFilteredRoster, roseGateFilter],
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE') => {
+      // Compose the active chip predicates as a logical AND; undefined when none
+      // active preserves the no-predicate fast path.
+      const predicate =
+        roseGateFilter || weaponFilter
+          ? (t: P5xTrackedThief) =>
+              (!roseGateFilter || (t.skillsLeveled && !t.roseMaxed)) &&
+              (!weaponFilter || t.weaponRarity < 5)
+          : undefined;
+      return getFilteredRoster(searchTerm, sortBy, predicate);
+    },
+    [getFilteredRoster, roseGateFilter, weaponFilter],
   );
 
   const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
@@ -91,7 +98,13 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No phantom thieves tracked yet. Use the + button to begin!"
       noMatchMessage={
-        roseGateFilter ? 'No rose-gated thieves found.' : 'No phantom thieves match your search.'
+        roseGateFilter && weaponFilter
+          ? 'No rose-gated thieves with a sub-5★ weapon.'
+          : roseGateFilter
+            ? 'No rose-gated thieves found.'
+            : weaponFilter
+              ? 'No thieves with a sub-5★ weapon.'
+              : 'No phantom thieves match your search.'
       }
       filterRow={
         <div
@@ -104,6 +117,13 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
             title={roseGateFilter ? 'Show all thieves' : 'Show only rose-gated thieves'}
           >
             🌹 Gated
+          </button>
+          <button
+            className={`filter-chip ${weaponFilter ? 'active' : ''}`}
+            onClick={() => setWeaponFilter((v) => !v)}
+            title={weaponFilter ? 'Show all thieves' : 'Show only thieves with a sub-5★ weapon'}
+          >
+            ⚔ &lt;5★
           </button>
         </div>
       }
