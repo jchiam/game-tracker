@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet, EquippedRelic } from '@/data/honkai-star-rail/relics';
-import { Modal } from '@/components/Modal';
+import { EquipmentEditorShell } from '@/components/EquipmentEditorShell';
+import { useScrollAnchor } from '@/hooks/useScrollAnchor';
 import { BuildComments } from '@/components/BuildComments';
 import { FormGroup } from '@/components/FormGroup';
 import { PreferenceChain } from '@/components/PreferenceChain';
@@ -81,53 +81,31 @@ export function RelicEditorModal({
   onUpdateBuildPreferences,
   onClose,
 }: RelicEditorModalProps) {
-  const [activeTab, setActiveTab] = useState<'equip' | 'preferences'>('equip');
-
   return (
-    <Modal
+    <EquipmentEditorShell
       title={`Relics — ${char.name}`}
-      onClose={onClose}
+      equipTabLabel="Equip Relics"
       className="relic-editor"
-      footer={
-        <button className="btn primary-action" onClick={onClose}>
-          Done
-        </button>
+      bodyClassName="relic-editor-body"
+      onClose={onClose}
+      equipContent={
+        <EquipTab
+          char={char}
+          anchorSlot={anchorSlot}
+          availableRelicSets={availableRelicSets}
+          emptyRelic={emptyRelic}
+          onSaveRelic={onSaveRelic}
+          onRemoveRelic={onRemoveRelic}
+        />
       }
-    >
-      <div className="modal-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'equip' ? 'active' : ''}`}
-          onClick={() => setActiveTab('equip')}
-        >
-          Equip Relics
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
-          onClick={() => setActiveTab('preferences')}
-        >
-          Build Preferences
-        </button>
-      </div>
-
-      <div className="relic-editor-body">
-        {activeTab === 'equip' ? (
-          <EquipTab
-            char={char}
-            anchorSlot={anchorSlot}
-            availableRelicSets={availableRelicSets}
-            emptyRelic={emptyRelic}
-            onSaveRelic={onSaveRelic}
-            onRemoveRelic={onRemoveRelic}
-          />
-        ) : (
-          <PreferencesTab
-            char={char}
-            availableRelicSets={availableRelicSets}
-            onUpdateBuildPreferences={onUpdateBuildPreferences}
-          />
-        )}
-      </div>
-    </Modal>
+      preferencesContent={
+        <PreferencesTab
+          char={char}
+          availableRelicSets={availableRelicSets}
+          onUpdateBuildPreferences={onUpdateBuildPreferences}
+        />
+      }
+    />
   );
 }
 
@@ -146,11 +124,7 @@ function EquipTab({
   onSaveRelic: (slot: RelicSlot, relicData: EquippedRelic) => void;
   onRemoveRelic: (slot: RelicSlot) => void;
 }) {
-  const anchorRef = useRef<HTMLDivElement | null>(null);
-  // Optional call — jsdom has no scrollIntoView.
-  useEffect(() => {
-    anchorRef.current?.scrollIntoView?.({ block: 'start' });
-  }, []);
+  const anchorRef = useScrollAnchor<HTMLDivElement>();
 
   const validateAndSave = (slot: RelicSlot, updates: Partial<EquippedRelic>) => {
     const newRelic = { ...(char.relics[slot] || emptyRelic), ...updates };

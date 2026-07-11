@@ -1,4 +1,3 @@
-import { useEffect, useRef, useState } from 'react';
 import type { P5xTrackedThief, P5xRevelationPreferences } from '@/types';
 import type { EquippedRevelation, RevelationSlot } from '@/data/persona-5-phantom-x/revelations';
 import {
@@ -11,7 +10,8 @@ import {
   statLabel,
   toStatOptions,
 } from '@/data/persona-5-phantom-x/revelations';
-import { Modal } from '@/components/Modal';
+import { EquipmentEditorShell } from '@/components/EquipmentEditorShell';
+import { useScrollAnchor } from '@/hooks/useScrollAnchor';
 import { BuildComments } from '@/components/BuildComments';
 import { FormGroup } from '@/components/FormGroup';
 import { Select } from '@/components/Select';
@@ -34,42 +34,18 @@ export function RevelationEditorModal({
   onSavePreferences,
   onClose,
 }: RevelationEditorModalProps) {
-  const [activeTab, setActiveTab] = useState<'equip' | 'preferences'>('equip');
-
   return (
-    <Modal
+    <EquipmentEditorShell
       title={`Revelations — ${thief.name}`}
-      onClose={onClose}
+      equipTabLabel="Equip Cards"
       className="revelation-editor-modal"
-      footer={
-        <button className="btn primary-action" onClick={onClose}>
-          Done
-        </button>
+      bodyClassName="revelation-editor-body"
+      onClose={onClose}
+      equipContent={<EquipTab thief={thief} anchorSlot={anchorSlot} onUpdateSlot={onUpdateSlot} />}
+      preferencesContent={
+        <PreferencesTab prefs={thief.revelationPreferences} onSave={onSavePreferences} />
       }
-    >
-      <div className="modal-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'equip' ? 'active' : ''}`}
-          onClick={() => setActiveTab('equip')}
-        >
-          Equip Cards
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
-          onClick={() => setActiveTab('preferences')}
-        >
-          Build Preferences
-        </button>
-      </div>
-
-      <div className="revelation-editor-body">
-        {activeTab === 'equip' ? (
-          <EquipTab thief={thief} anchorSlot={anchorSlot} onUpdateSlot={onUpdateSlot} />
-        ) : (
-          <PreferencesTab prefs={thief.revelationPreferences} onSave={onSavePreferences} />
-        )}
-      </div>
-    </Modal>
+    />
   );
 }
 
@@ -82,11 +58,7 @@ function EquipTab({
   anchorSlot?: RevelationSlot;
   onUpdateSlot: (slot: RevelationSlot, data: EquippedRevelation | null) => void;
 }) {
-  const anchorRef = useRef<HTMLDivElement | null>(null);
-  // Optional call — jsdom has no scrollIntoView.
-  useEffect(() => {
-    anchorRef.current?.scrollIntoView?.({ block: 'start' });
-  }, []);
+  const anchorRef = useScrollAnchor<HTMLDivElement>();
 
   return (
     <>

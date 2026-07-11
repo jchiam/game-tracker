@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import type { N2ETrackedCharacter, N2ECartridgePatch } from '@/types';
+import { EquipmentEditorShell } from '@/components/EquipmentEditorShell';
 import {
   CARTRIDGE_MAIN_STATS,
   CARTRIDGE_SUB_STATS,
 } from '@/data/neverness-to-everness/cartridge-stats';
 import { ALL_CARTRIDGES } from '@/data/neverness-to-everness/cartridges';
-import { Modal } from '@/components/Modal';
 import { BuildComments } from '@/components/BuildComments';
 import { FormGroup } from '@/components/FormGroup';
 import { LevelSlider } from '@/components/LevelSlider';
@@ -48,8 +48,6 @@ export function CartridgeEditorModal({
   onSavePreferences,
   onClose,
 }: CartridgeEditorModalProps) {
-  const [activeTab, setActiveTab] = useState<'equip' | 'preferences'>('equip');
-
   const currentCartridgeId = character.cartridgeId;
   const currentLevel = character.cartridgeLevel;
   const currentMainStat = character.cartridgeMainStat;
@@ -126,146 +124,122 @@ export function CartridgeEditorModal({
   };
 
   return (
-    <Modal
+    <EquipmentEditorShell
       title={`Edit Cartridge - ${character.name}`}
-      onClose={onClose}
+      equipTabLabel="Equip Cartridge"
       className="cartridge-editor"
-      footer={
+      bodyClassName="cartridge-editor-body"
+      onClose={onClose}
+      equipFooterExtra={
+        <button className="btn secondary-action danger" onClick={handleUnequip}>
+          Un-equip Cartridge
+        </button>
+      }
+      equipContent={
         <>
-          {activeTab === 'equip' && (
-            <button className="btn secondary-action danger" onClick={handleUnequip}>
-              Un-equip Cartridge
-            </button>
-          )}
-          <button className="btn primary-action" onClick={onClose}>
-            Done
-          </button>
+          <FormGroup label="Cartridge">
+            <Select
+              name="cartridge-name"
+              value={equipName}
+              placeholder="-- No Cartridge --"
+              options={CARTRIDGE_NAMES}
+              onChange={handleNameChange}
+            />
+          </FormGroup>
+
+          <FormGroup label="Rarity">
+            <SegmentedButtons
+              className="rarity-btn-row"
+              options={RARITY_OPTIONS}
+              value={equipRarity || null}
+              disabled={!equipName}
+              onChange={(v) => v && handleRarityChange(v)}
+            />
+          </FormGroup>
+
+          <FormGroup label="Main Stat" className={gatedClass}>
+            <Select
+              name="cartridge-main-stat"
+              value={currentMainStat || ''}
+              placeholder="-- No Main Stat --"
+              options={CARTRIDGE_MAIN_STATS}
+              onChange={(v) => onSaveCartridge({ cartridgeMainStat: v || null })}
+              disabled={!hasCartridge}
+            />
+          </FormGroup>
+
+          <FormGroup label="Level" className={gatedClass}>
+            <LevelSlider
+              name="cartridge-level"
+              value={currentLevel}
+              min={0}
+              max={20}
+              showValue
+              disabled={!hasCartridge}
+              onChange={(n) => onSaveCartridge({ cartridgeLevel: n })}
+            />
+          </FormGroup>
+
+          <div className={gatedClass}>
+            <SubStatList
+              values={currentSubStats}
+              options={CARTRIDGE_SUB_STATS}
+              namePrefix="substat"
+              label="Sub Stats (Max 4)"
+              addLabel="+ Add Sub Stat"
+              disabled={!hasCartridge}
+              onChange={(subs) => onSaveCartridge({ cartridgeSubStats: subs })}
+            />
+          </div>
         </>
       }
-    >
-      <div className="modal-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'equip' ? 'active' : ''}`}
-          onClick={() => setActiveTab('equip')}
-        >
-          Equip Cartridge
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
-          onClick={() => setActiveTab('preferences')}
-        >
-          Build Preferences
-        </button>
-      </div>
+      preferencesContent={
+        <div className="preferences-tab">
+          <p className="tab-description">Define the ideal cartridge build for {character.name}.</p>
 
-      <div className="cartridge-editor-body">
-        {activeTab === 'equip' ? (
-          <>
-            <FormGroup label="Cartridge">
+          <div className="pref-section">
+            <h3>Target Cartridge</h3>
+            <div className="form-group">
               <Select
-                name="cartridge-name"
-                value={equipName}
-                placeholder="-- No Cartridge --"
+                name="pref-cartridge-name"
+                value={prefName}
+                placeholder="-- No Preference --"
                 options={CARTRIDGE_NAMES}
-                onChange={handleNameChange}
-              />
-            </FormGroup>
-
-            <FormGroup label="Rarity">
-              <SegmentedButtons
-                className="rarity-btn-row"
-                options={RARITY_OPTIONS}
-                value={equipRarity || null}
-                disabled={!equipName}
-                onChange={(v) => v && handleRarityChange(v)}
-              />
-            </FormGroup>
-
-            <FormGroup label="Main Stat" className={gatedClass}>
-              <Select
-                name="cartridge-main-stat"
-                value={currentMainStat || ''}
-                placeholder="-- No Main Stat --"
-                options={CARTRIDGE_MAIN_STATS}
-                onChange={(v) => onSaveCartridge({ cartridgeMainStat: v || null })}
-                disabled={!hasCartridge}
-              />
-            </FormGroup>
-
-            <FormGroup label="Level" className={gatedClass}>
-              <LevelSlider
-                name="cartridge-level"
-                value={currentLevel}
-                min={0}
-                max={20}
-                showValue
-                disabled={!hasCartridge}
-                onChange={(n) => onSaveCartridge({ cartridgeLevel: n })}
-              />
-            </FormGroup>
-
-            <div className={gatedClass}>
-              <SubStatList
-                values={currentSubStats}
-                options={CARTRIDGE_SUB_STATS}
-                namePrefix="substat"
-                label="Sub Stats (Max 4)"
-                addLabel="+ Add Sub Stat"
-                disabled={!hasCartridge}
-                onChange={(subs) => onSaveCartridge({ cartridgeSubStats: subs })}
-              />
-            </div>
-          </>
-        ) : (
-          <div className="preferences-tab">
-            <p className="tab-description">
-              Define the ideal cartridge build for {character.name}.
-            </p>
-
-            <div className="pref-section">
-              <h3>Target Cartridge</h3>
-              <div className="form-group">
-                <Select
-                  name="pref-cartridge-name"
-                  value={prefName}
-                  placeholder="-- No Preference --"
-                  options={CARTRIDGE_NAMES}
-                  onChange={handlePrefNameChange}
-                />
-              </div>
-            </div>
-
-            <div className="pref-section">
-              <h3>Main Stat Priority</h3>
-              <PreferenceChain
-                values={currentPrefs.mainStats}
-                options={CARTRIDGE_MAIN_STATS}
-                namePrefix="pref-main-stat"
-                onChange={(mainStats) => onSavePreferences({ ...currentPrefs, mainStats })}
-              />
-            </div>
-
-            <div className="pref-section">
-              <h3>Sub Stat Priority</h3>
-              <PreferenceChain
-                values={currentPrefs.subStats}
-                options={CARTRIDGE_SUB_STATS}
-                namePrefix="pref-sub-stat"
-                onChange={(subStats) => onSavePreferences({ ...currentPrefs, subStats })}
-              />
-            </div>
-
-            <div className="pref-section">
-              <BuildComments
-                label="Build Comments"
-                value={currentPrefs.comments || ''}
-                placeholder="Additional notes about this cartridge build..."
-                onChange={(comments) => onSavePreferences({ ...currentPrefs, comments })}
+                onChange={handlePrefNameChange}
               />
             </div>
           </div>
-        )}
-      </div>
-    </Modal>
+
+          <div className="pref-section">
+            <h3>Main Stat Priority</h3>
+            <PreferenceChain
+              values={currentPrefs.mainStats}
+              options={CARTRIDGE_MAIN_STATS}
+              namePrefix="pref-main-stat"
+              onChange={(mainStats) => onSavePreferences({ ...currentPrefs, mainStats })}
+            />
+          </div>
+
+          <div className="pref-section">
+            <h3>Sub Stat Priority</h3>
+            <PreferenceChain
+              values={currentPrefs.subStats}
+              options={CARTRIDGE_SUB_STATS}
+              namePrefix="pref-sub-stat"
+              onChange={(subStats) => onSavePreferences({ ...currentPrefs, subStats })}
+            />
+          </div>
+
+          <div className="pref-section">
+            <BuildComments
+              label="Build Comments"
+              value={currentPrefs.comments || ''}
+              placeholder="Additional notes about this cartridge build..."
+              onChange={(comments) => onSavePreferences({ ...currentPrefs, comments })}
+            />
+          </div>
+        </div>
+      }
+    />
   );
 }
