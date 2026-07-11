@@ -117,8 +117,9 @@ describe('calculateCartridgeScore', () => {
     expect(calculateCartridgeScore(char)).toBe(-1);
   });
 
-  it('scores using cartridgeId pref alone when cartridgeId equipped and matched', () => {
-    // cartridgeId match = 1.0 × 0.35, no stat prefs → score = 35
+  it("scores 100 on cartridgeId pref alone when matched (stat terms are don't-care)", () => {
+    // cartridgeId match 1.0 × 0.35; empty main/sub chains are don't-care on the
+    // occupied slot → main 1.0 × 0.30 + sub 1.0 × 0.35 → 100
     const char = makeCharacter({
       cartridgeId: 'Cosmos_orange',
       cartridgePreferences: {
@@ -127,7 +128,7 @@ describe('calculateCartridgeScore', () => {
         subStats: [],
       },
     });
-    expect(calculateCartridgeScore(char)).toBe(35);
+    expect(calculateCartridgeScore(char)).toBeCloseTo(100, 5);
   });
 
   it('caps at 65 for wrong set with perfect stats', () => {
@@ -170,7 +171,7 @@ describe('calculateCartridgeScore', () => {
   });
 
   it('applies rarity penalty for same set one rarity below', () => {
-    // id match = 0.6 × 0.35 = 0.21, main = 1.0 × 0.30 = 0.30, sub = 0 → 51
+    // id match = 0.6 × 0.35 = 0.21, main = 1.0 × 0.30, sub don't-care = 1.0 × 0.35 → 86
     const char = makeCharacter({
       cartridgeId: 'Cosmos_purple',
       cartridgeMainStat: 'CRIT Rate %',
@@ -181,7 +182,40 @@ describe('calculateCartridgeScore', () => {
         subStats: [],
       },
     });
-    expect(calculateCartridgeScore(char)).toBeCloseTo(51, 5);
+    expect(calculateCartridgeScore(char)).toBeCloseTo(86, 5);
+  });
+
+  it('maxes the sub term when the equipped main occupies the only exact sub match', () => {
+    // Main 'HP %' excludes 'HP %' from the pool; sub pref [HP %] can only be met by
+    // flat HP at 0.5 → achievable 0.5; equipped [HP] sums 0.5 → sub 1.0.
+    // No set pref (0), main don't-care (1.0) → (0.30 + 0.35) × 100 = 65
+    const char = makeCharacter({
+      cartridgeId: 'Cosmos_orange',
+      cartridgeMainStat: 'HP %',
+      cartridgeSubStats: ['HP'],
+      cartridgePreferences: {
+        cartridgeId: null,
+        mainStats: [],
+        subStats: [{ stat: 'HP %', operator: null, orderIndex: 0 }],
+      },
+    });
+    expect(calculateCartridgeScore(char)).toBeCloseTo(65, 5);
+  });
+
+  it('maxes the sub term when nothing in the pool can match the chain (achievable-zero guard)', () => {
+    // Sub pref 'Cosmos DMG Bonus %' is a main-only stat — no substat in the pool can
+    // ever match it, so a perfect legal cartridge also achieves 0 there → sub 1.0.
+    // No set pref (0), main don't-care (1.0) → (0.30 + 0.35) × 100 = 65
+    const char = makeCharacter({
+      cartridgeId: 'Cosmos_orange',
+      cartridgeSubStats: ['ATK'],
+      cartridgePreferences: {
+        cartridgeId: null,
+        mainStats: [],
+        subStats: [{ stat: 'Cosmos DMG Bonus %', operator: null, orderIndex: 0 }],
+      },
+    });
+    expect(calculateCartridgeScore(char)).toBeCloseTo(65, 5);
   });
 
   it('returns partial score for some matching subs', () => {

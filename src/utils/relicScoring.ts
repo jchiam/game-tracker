@@ -1,5 +1,5 @@
 import type { HsrTrackedCharacter } from '../types';
-import { createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
+import { achievableSubSum, createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
 
 // Within the set term: a 4-piece relic (cavern) set vs a 2-piece planar set.
 const RELIC_SUBWEIGHT = 0.67;
@@ -29,6 +29,22 @@ const HSR_STAT_SHAPES: Record<string, StatShape> = {
 const { getStatMatchScore, bestMatch } = makeStatMatcher(HSR_STAT_SHAPES);
 export { getStatMatchScore };
 
+/** The HSR substat pool — every stat a relic substat can roll. Also feeds the editor UI. */
+export const ALL_SUB_STATS = [
+  'HP',
+  'HP%',
+  'DEF',
+  'DEF%',
+  'ATK',
+  'ATK%',
+  'SPD',
+  'CRIT Rate',
+  'CRIT DMG',
+  'Break Effect',
+  'Effect Hit Rate',
+  'Effect RES',
+] as const;
+
 /** Graded count of equipped pieces in `slots` whose set equals `preferredSetId`, over `denom`. */
 function familyMatch(
   char: HsrTrackedCharacter,
@@ -49,8 +65,10 @@ function familyMatch(
  * Overall relic match score for a character, in 0–100, or -1 for insufficient data.
  * Three unified terms via the shared scoring core:
  *   set  0.35 — two-family composition: relic (4pc, graded /4) + planar (2pc, graded /2)
- *   main 0.30 — per-slot main match averaged over all six slots (head/hands fixed = 1.0)
- *   sub  0.35 — per-slot sub match (best-per-sub, /4) averaged over all six slots
+ *   main 0.30 — per-slot main match averaged over all six slots
+ *               (head/hands fixed = 1.0; empty chain on an occupied slot = don't-care 1.0)
+ *   sub  0.35 — per-slot sub match normalized by the achievable sum (best legal item,
+ *               main-excluded pool, top 4), averaged over all six slots
  */
 export const calculateRelicScore = createEquipmentScore<HsrTrackedCharacter>({
   hasPreferences: (char) => {
@@ -72,22 +90,30 @@ export const calculateRelicScore = createEquipmentScore<HsrTrackedCharacter>({
     const bp = char.buildPreferences;
     return ALL_SLOTS.map((slot) => {
       const relic = char.relics[slot];
-      if (!relic) return { mainMatch: 0, subMatches: [] };
+      if (!relic) return null;
 
-      let mainMatch = 0;
+      let mainMatch: number;
       if (FIXED_MAIN_SLOTS.includes(slot)) {
         mainMatch = 1.0; // fixed mains always match
       } else {
         const chain = bp.mainStats[slot as (typeof VARIABLE_MAIN_SLOTS)[number]];
-        if (relic.mainStat && chain.length > 0) mainMatch = bestMatch(chain, relic.mainStat);
+        if (chain.length === 0)
+          mainMatch = 1.0; // don't-care: no preference expressed
+        else mainMatch = relic.mainStat ? bestMatch(chain, relic.mainStat) : 0;
       }
 
       const subMatches =
         bp.subStats.length > 0 && relic.subStats && relic.subStats.length > 0
           ? relic.subStats.map((s) => bestMatch(bp.subStats, s))
           : [];
+      const subAchievable = achievableSubSum(
+        bestMatch,
+        ALL_SUB_STATS,
+        relic.mainStat ? [relic.mainStat] : [],
+        bp.subStats,
+      );
 
-      return { mainMatch, subMatches };
+      return { mainMatch, subMatches, subAchievable };
     });
   },
 });

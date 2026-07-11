@@ -1,6 +1,11 @@
 import type { P5xTrackedThief } from '../types';
-import { HEAVENS_SLOTS, type RevelationSlot } from '../data/persona-5-phantom-x/revelations';
-import { createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
+import {
+  HEAVENS_SLOTS,
+  MAIN_STATS,
+  SUB_STATS,
+  type RevelationSlot,
+} from '../data/persona-5-phantom-x/revelations';
+import { achievableSubSum, createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
 
 // Within the set term: four Heavens cards vs one Space card.
 const HEAVENS_SUBWEIGHT = 0.75;
@@ -46,8 +51,11 @@ function setTerm(thief: P5xTrackedThief): number {
  * Overall revelation match score for a Thief, in 0–100, or -1 for insufficient data.
  * Three N2E-parity terms via the shared scoring core:
  *   set  0.35 — emergent composition: graded Heavens (min(matching,4)/4) + gated Space
- *   main 0.30 — per-slot main match averaged over all five slots (Sun/Space fixed = 1.0)
- *   sub  0.35 — per-slot sub match (best-per-sub, /4) averaged over all five slots
+ *   main 0.30 — per-slot main match averaged over all five slots (Sun/Space fixed = 1.0;
+ *               empty chain on an occupied slot = don't-care 1.0)
+ *   sub  0.35 — per-slot sub match normalized by the achievable sum (best legal card,
+ *               occupied-main-excluded pool incl. Space's dual fixed mains, top 4),
+ *               averaged over all five slots
  */
 export const calculateRevelationScore = createEquipmentScore<P5xTrackedThief>({
   hasPreferences: (thief) => {
@@ -66,22 +74,33 @@ export const calculateRevelationScore = createEquipmentScore<P5xTrackedThief>({
     const prefs = thief.revelationPreferences;
     return ALL_SLOTS.map((slot) => {
       const card = revelations[slot];
-      if (!card) return { mainMatch: 0, subMatches: [] };
+      if (!card) return null;
 
-      let mainMatch = 0;
-      if (slot === 'sun' || slot === 'space') {
+      const isFixed = slot === 'sun' || slot === 'space';
+      let mainMatch: number;
+      if (isFixed) {
         mainMatch = 1.0; // fixed mains always match
       } else {
         const chain = prefs.mainStats[slot as (typeof VARIABLE_MAIN_SLOTS)[number]];
-        if (card.mainStat && chain.length > 0) mainMatch = bestMatch(chain, card.mainStat);
+        if (chain.length === 0)
+          mainMatch = 1.0; // don't-care: no preference expressed
+        else mainMatch = card.mainStat ? bestMatch(chain, card.mainStat) : 0;
       }
 
       const subMatches =
         card.subStats.length > 0 && prefs.subStats.length > 0
           ? card.subStats.map((s) => bestMatch(prefs.subStats, s))
           : [];
+      // Space's dual fixed mains (attack + defense) are derived, not stored — take
+      // fixed-slot exclusions from the catalog, variable-slot ones from the card.
+      const occupiedMains = isFixed
+        ? MAIN_STATS[slot.toUpperCase() as Uppercase<RevelationSlot>]
+        : card.mainStat
+          ? [card.mainStat]
+          : [];
+      const subAchievable = achievableSubSum(bestMatch, SUB_STATS, occupiedMains, prefs.subStats);
 
-      return { mainMatch, subMatches };
+      return { mainMatch, subMatches, subAchievable };
     });
   },
 });

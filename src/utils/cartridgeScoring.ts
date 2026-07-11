@@ -1,5 +1,6 @@
 import type { N2ETrackedCharacter } from '../types';
-import { createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
+import { CARTRIDGE_SUB_STATS } from '../data/neverness-to-everness/cartridge-stats';
+import { achievableSubSum, createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
 
 const RARITY_ORDER: Record<string, number> = { B: 0, A: 1, S: 2 };
 const RARITY_PENALTIES = [1.0, 0.6, 0.3]; // index = rarity delta (0, 1, 2)
@@ -55,16 +56,28 @@ export const calculateCartridgeScore = createEquipmentScore<N2ETrackedCharacter>
   },
   // N2E is a single-cartridge game: one pseudo-slot.
   slots: (c) => {
+    const occupied =
+      c.cartridgeId != null || c.cartridgeMainStat != null || c.cartridgeSubStats.length > 0;
+    if (!occupied) return [null];
+
     const p = c.cartridgePreferences;
-    const mainMatch =
-      c.cartridgeMainStat && p.mainStats.length > 0
-        ? bestMatch(p.mainStats, c.cartridgeMainStat)
-        : 0;
+    let mainMatch: number;
+    if (p.mainStats.length === 0)
+      mainMatch = 1.0; // don't-care: no preference expressed
+    else mainMatch = c.cartridgeMainStat ? bestMatch(p.mainStats, c.cartridgeMainStat) : 0;
+
     const subMatches =
       p.subStats.length > 0 && c.cartridgeSubStats.length > 0
         ? c.cartridgeSubStats.map((s) => bestMatch(p.subStats, s))
         : [];
-    return [{ mainMatch, subMatches }];
+    const subAchievable = achievableSubSum(
+      bestMatch,
+      CARTRIDGE_SUB_STATS,
+      c.cartridgeMainStat ? [c.cartridgeMainStat] : [],
+      p.subStats,
+    );
+
+    return [{ mainMatch, subMatches, subAchievable }];
   },
 });
 

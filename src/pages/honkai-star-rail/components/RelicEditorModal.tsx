@@ -1,6 +1,7 @@
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet, EquippedRelic } from '@/data/honkai-star-rail/relics';
 import { EquipmentEditorShell } from '@/components/EquipmentEditorShell';
+import { ALL_SUB_STATS } from '@/utils/relicScoring';
 import { useScrollAnchor } from '@/hooks/useScrollAnchor';
 import { BuildComments } from '@/components/BuildComments';
 import { FormGroup } from '@/components/FormGroup';
@@ -42,21 +43,6 @@ const VALID_MAIN_STATS: Record<string, string[]> = {
   ],
   rope: ['HP%', 'DEF%', 'ATK%', 'Break Effect', 'Energy Regeneration Rate'],
 };
-
-const ALL_SUB_STATS = [
-  'HP',
-  'HP%',
-  'DEF',
-  'DEF%',
-  'ATK',
-  'ATK%',
-  'SPD',
-  'CRIT Rate',
-  'CRIT DMG',
-  'Break Effect',
-  'Effect Hit Rate',
-  'Effect RES',
-];
 
 const slotLabel = (slot: RelicSlot) => slot.charAt(0).toUpperCase() + slot.slice(1);
 

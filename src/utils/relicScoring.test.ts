@@ -112,7 +112,8 @@ describe('calculateRelicScore', () => {
       relicSetId: '101',
     };
     // 3 of 4 relic-set slots match → relicMatch 0.75 → setTerm 0.75 × 0.67 = 0.5025
-    // main term: head + hands fixed (1 each) out of 6 = 0.33333; sub 0
+    // Empty main chains and an empty sub chain are don't-care on the 4 occupied slots:
+    // main term 4/6, sub term 4/6 (the two empty slots dilute both).
     char.relics = {
       head: { setId: '101', mainStat: 'HP', subStats: [] },
       hands: { setId: '101', mainStat: 'ATK', subStats: [] },
@@ -121,8 +122,8 @@ describe('calculateRelicScore', () => {
       sphere: null,
       rope: null,
     };
-    // (0.5025 × 0.35 + (2/6) × 0.30) × 100 = 27.5875
-    expect(calculateRelicScore(char)).toBeCloseTo(27.5875, 3);
+    // (0.5025 × 0.35 + (4/6) × 0.30 + (4/6) × 0.35) × 100 = 60.92083
+    expect(calculateRelicScore(char)).toBeCloseTo(60.92083, 3);
   });
 
   it('scores the planar-set term over its 2-piece breakpoint', () => {
@@ -134,9 +135,10 @@ describe('calculateRelicScore', () => {
     };
     char.relics.sphere = { setId: '301', mainStat: 'Fire DMG Boost', subStats: [] };
     char.relics.rope = { setId: '301', mainStat: 'ATK%', subStats: [] };
-    // planarMatch 1.0 → setTerm 0.33; sphere/rope have empty main chains → main 0
-    // (0.33 × 0.35) × 100 = 11.55
-    expect(calculateRelicScore(char)).toBeCloseTo(11.55, 3);
+    // planarMatch 1.0 → setTerm 0.33; empty chains are don't-care on the 2 occupied
+    // slots → main 2/6, sub 2/6; the 4 empty slots dilute both.
+    // (0.33 × 0.35 + (2/6) × 0.30 + (2/6) × 0.35) × 100 = 33.21667
+    expect(calculateRelicScore(char)).toBeCloseTo(33.21667, 3);
   });
 
   it('does not credit the set term when the preference is null even if relics carry sets', () => {
@@ -147,9 +149,10 @@ describe('calculateRelicScore', () => {
       subStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
     };
     char.relics.head = { setId: '101', mainStat: 'HP', subStats: ['CRIT Rate', 'DEF', 'HP'] };
-    // setTerm 0 (null-guarded); head fixed main 1/6; sub best-1 → 0.25/6
-    // ((1/6) × 0.30 + (0.25/6) × 0.35) × 100 = 6.4583
-    expect(calculateRelicScore(char)).toBeCloseTo(6.4583, 3);
+    // setTerm 0 (null-guarded); head fixed main 1/6. Sub achievable (pool minus main
+    // HP) = CRIT Rate 1.0 + cross-crit CRIT DMG 0.5 = 1.5; equipped sum 1.0 → 2/3 per
+    // slot → /6. ((1/6) × 0.30 + ((1/1.5)/6) × 0.35) × 100 = 8.88889
+    expect(calculateRelicScore(char)).toBeCloseTo(8.88889, 3);
   });
 
   it('averages a single equipped slot with partial subs over six slots', () => {
@@ -163,8 +166,41 @@ describe('calculateRelicScore', () => {
         'DEF', // 0
       ],
     };
-    // setTerm 0 (no set pref); hands fixed main 1/6; sub 0.5/4 = 0.125 → /6
-    // ((1/6) × 0.30 + (0.125/6) × 0.35) × 100 = 5.72917
-    expect(calculateRelicScore(char)).toBeCloseTo(5.72917, 3);
+    // setTerm 0 (no set pref); hands fixed main 1/6. Sub achievable (pool minus main
+    // ATK) = CRIT Rate 1.0 + CRIT DMG 0.5 = 1.5; equipped sum 0.5 → 1/3 per slot → /6.
+    // ((1/6) × 0.30 + ((0.5/1.5)/6) × 0.35) × 100 = 6.94444
+    expect(calculateRelicScore(char)).toBeCloseTo(6.94444, 3);
+  });
+
+  it('maxes the stat terms for the best legal all-HP gear (canonical achievability case)', () => {
+    const char = getBaseCharacter();
+    // Only wish: HP. No set prefs, no main chains — don't-care.
+    char.buildPreferences = {
+      mainStats: { body: [], feet: [], sphere: [], rope: [] },
+      subStats: [{ stat: 'HP', operator: null, orderIndex: 0 }],
+    };
+    // Best legal item per slot: every HP-family substat the slot's main allows.
+    char.relics = {
+      head: { setId: '101', mainStat: 'HP', subStats: ['HP%'] }, // main HP excludes flat HP
+      hands: { setId: '101', mainStat: 'ATK', subStats: ['HP', 'HP%'] },
+      body: { setId: '101', mainStat: 'HP%', subStats: ['HP'] }, // main HP% excludes HP%
+      feet: { setId: '101', mainStat: 'SPD', subStats: ['HP', 'HP%'] },
+      sphere: { setId: '301', mainStat: 'HP%', subStats: ['HP'] },
+      rope: { setId: '301', mainStat: 'ATK%', subStats: ['HP', 'HP%'] },
+    };
+    // main term 1.0 (fixed + don't-care), sub term 1.0 (achievable fully covered),
+    // set term 0 → (0.30 + 0.35) × 100 = 65
+    expect(calculateRelicScore(char)).toBeCloseTo(65, 5);
+  });
+
+  it("scores main 0 when the chain is set but the item has no main entered (not don't-care)", () => {
+    const char = getBaseCharacter();
+    // Body chain is [CRIT Rate] (non-empty) but the equipped body has no main stat.
+    char.relics.body = { setId: '101', mainStat: '', subStats: ['CRIT Rate'] };
+    // main term 0 — a don't-care regression here would add (1/6) × 0.30 = 5.
+    // Sub achievable (no main to exclude): CRIT Rate/CRIT DMG/ATK%/SPD all 1.0 → top-4
+    // = 4.0; equipped sum 1.0 → 0.25 per slot → /6.
+    // ((0.25/6) × 0.35) × 100 = 1.45833
+    expect(calculateRelicScore(char)).toBeCloseTo(1.45833, 3);
   });
 });
