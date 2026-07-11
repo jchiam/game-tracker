@@ -481,25 +481,26 @@ section. The toggle SHALL be self-styled (not `.btn`).
 
 ### Requirement: Weapon rarity field
 
-The system SHALL track the rarity of a Thief's equipped weapon as a nullable
-integer in the set {2, 3, 4, 5}, defaulting to `null` on add. A `null` value
-means the user has not started tracking weapon investment for this Thief.
-Setting a rarity activates the weapon section (summary chip + edit controls).
+The system SHALL track the rarity of a Thief's equipped weapon as a **non-null**
+integer in the set {2, 3, 4, 5}, defaulting to `2` (the lowest tier) on add.
+Every Thief has the lowest-tier weapon equipped for free from day one, so the
+rarity is always present and can never be cleared. There is no "untracked"
+(`null`) weapon state.
 
 #### Scenario: Default weapon rarity state
 
 - **WHEN** a Thief is added to the roster
-- **THEN** `weaponRarity` is `null`
+- **THEN** `weaponRarity` is `2`
 
 #### Scenario: Weapon rarity set
 
 - **WHEN** user selects a weapon rarity (2, 3, 4, or 5)
 - **THEN** `weaponRarity` is updated in local state immediately and queued for DB write via debounced save
 
-#### Scenario: Weapon rarity cleared via allowDeselect
+#### Scenario: Weapon rarity cannot be cleared
 
-- **WHEN** user deselects the active rarity button
-- **THEN** `weaponRarity` is set to `null`, hiding the weapon summary chip
+- **WHEN** the weapon rarity control renders
+- **THEN** it offers no deselect affordance; `weaponRarity` always holds one of 2, 3, 4, or 5
 
 ### Requirement: Weapon level field
 
@@ -547,21 +548,20 @@ Updates SHALL be clamped to this range before persisting.
 ### Requirement: Weapon summary chip
 
 The collapsed (read-only) state of the Thief card SHALL present weapon
-investment as a single `StatChip` when `weaponRarity` is not `null`. The chip
-SHALL display the equipped rarity and forge level (e.g., `⚔ 5★ F4`). The chip
-color SHALL use `getProgressStyle` based on forge (0–6) to match the
-investment-gradient language used by other chips. When `weaponRarity` is `null`,
-no weapon chip is shown.
+investment as a single `StatChip`, always shown (rarity is never absent). The
+chip SHALL display the equipped rarity and forge level (e.g., `⚔ 5★ F4`). The
+chip color SHALL use `getProgressStyle` based on forge (0–6) to match the
+investment-gradient language used by other chips.
 
-#### Scenario: Weapon chip shown when rarity set
+#### Scenario: Weapon chip always shown
 
-- **WHEN** a Thief card renders its collapsed summary with `weaponRarity` set (e.g., 5) and `weaponForge` at 4
+- **WHEN** a Thief card renders its collapsed summary with `weaponRarity` (e.g., 5) and `weaponForge` at 4
 - **THEN** a `StatChip` with label `⚔ 5★ F4` is shown, colored via `getProgressStyle(weaponForge, 0, 6)`
 
-#### Scenario: No weapon chip when rarity null
+#### Scenario: Weapon chip shown at default rarity
 
-- **WHEN** a Thief card renders its collapsed summary with `weaponRarity` `null`
-- **THEN** no weapon `StatChip` is present
+- **WHEN** a freshly added Thief card renders its collapsed summary (`weaponRarity` 2, `weaponForge` 0)
+- **THEN** a `StatChip` with label `⚔ 2★ F0` is shown
 
 ### Requirement: Weapon edit section
 
@@ -569,8 +569,9 @@ The Thief card's edit body SHALL provide a "Weapon" `ProgressSection` after the
 Awareness section, containing three controls:
 
 1. **Rarity** — `SegmentedButtons` with options 2★, 3★, 4★, 5★ using
-   `coloring="static"` and `allowDeselect` (clearing sets `weaponRarity` to
-   `null`). Each option uses a rarity modifier class for per-star color coding.
+   `coloring="static"` and **no** `allowDeselect` (rarity is always one of the
+   four options and cannot be cleared). Each option uses a rarity modifier class
+   for per-star color coding.
 2. **Level** — `LevelSlider` (1–80) with `getProgressStyle(weaponLevel, 1, 80)`
    gradient fill, matching the thief level slider.
 3. **Forge** — `SegmentedButtons` with options F0–F6 using
@@ -581,10 +582,10 @@ Awareness section, containing three controls:
 - **WHEN** a Thief card's edit body renders
 - **THEN** a "Weapon" `ProgressSection` appears below the Awareness section
 
-#### Scenario: Rarity buttons use static coloring with allowDeselect
+#### Scenario: Rarity buttons use static coloring without deselect
 
 - **WHEN** the weapon rarity control renders
-- **THEN** it is a `SegmentedButtons` with `coloring="static"`, `allowDeselect`, and four options (2★–5★)
+- **THEN** it is a `SegmentedButtons` with `coloring="static"`, no `allowDeselect`, and four options (2★–5★)
 
 #### Scenario: Level slider shows weapon level
 
@@ -598,10 +599,8 @@ Awareness section, containing three controls:
 
 #### Scenario: Weapon section value label reflects state
 
-- **WHEN** `weaponRarity` is set (e.g., 5) with `weaponLevel` 45 and `weaponForge` 4
+- **WHEN** `weaponRarity` is 5 with `weaponLevel` 45 and `weaponForge` 4
 - **THEN** the `ProgressSection` value displays `5★ · Lv 45 · F4`
-- **WHEN** `weaponRarity` is `null`
-- **THEN** the `ProgressSection` value displays `—`
 
 ### Requirement: Revelation editor modal
 

@@ -24,7 +24,7 @@ function createTrackedThief(thief: P5xThief): P5xTrackedThief {
     skillsLeveled: false,
     roseMaxed: false,
     mindscapeMaxed: false,
-    weaponRarity: null,
+    weaponRarity: 2,
     weaponLevel: 1,
     weaponForge: 0,
     revelations: { sun: null, moon: null, star: null, sky: null, space: null },

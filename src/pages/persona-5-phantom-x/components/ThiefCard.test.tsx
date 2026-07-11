@@ -27,7 +27,7 @@ function makeThief(overrides: Partial<P5xTrackedThief> = {}): P5xTrackedThief {
     skillsLeveled: false,
     roseMaxed: false,
     mindscapeMaxed: false,
-    weaponRarity: null,
+    weaponRarity: 2,
     weaponLevel: 1,
     weaponForge: 0,
     revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -164,8 +164,8 @@ describe('ThiefCard', () => {
     );
     expect(screen.queryByText('🌹 Gated')).not.toBeInTheDocument();
     expect(screen.queryByText('Skills ✓')).not.toBeInTheDocument();
-    // only Lv + A chips in the summary
-    expect(container.querySelectorAll('.game-card-static-stats .stat-chip')).toHaveLength(2);
+    // Lv + A + weapon chips in the summary (weapon chip always present)
+    expect(container.querySelectorAll('.game-card-static-stats .stat-chip')).toHaveLength(3);
   });
 
   it('shows the rose-gated chip only in the leveled-but-not-maxed state', () => {
@@ -232,12 +232,12 @@ describe('ThiefCard', () => {
 
   // --- Weapon ---
 
-  it('shows no weapon chip when weaponRarity is null', () => {
-    render(<ThiefCard {...defaultProps} thief={makeThief({ weaponRarity: null })} />);
-    expect(screen.queryByText(/⚔/)).not.toBeInTheDocument();
+  it('always shows the weapon chip, at default 2★ for a fresh thief', () => {
+    render(<ThiefCard {...defaultProps} thief={makeThief({ weaponRarity: 2, weaponForge: 0 })} />);
+    expect(screen.getByText('⚔ 2★ F0')).toBeInTheDocument();
   });
 
-  it('shows weapon chip when weaponRarity is set', () => {
+  it('shows weapon chip at the tracked rarity', () => {
     render(
       <ThiefCard
         {...defaultProps}
@@ -245,6 +245,14 @@ describe('ThiefCard', () => {
       />,
     );
     expect(screen.getByText('⚔ 5★ F4')).toBeInTheDocument();
+  });
+
+  it('rarity cannot be deselected — clicking the active rarity keeps it set', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} thief={makeThief({ weaponRarity: 2 })} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByRole('button', { name: '2★' }));
+    expect(defaultProps.onUpdateWeaponRarity).toHaveBeenCalledWith('ann-takamaki', 2);
   });
 
   it('renders weapon rarity, level, and forge controls in edit mode', async () => {

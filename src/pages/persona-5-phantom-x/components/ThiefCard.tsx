@@ -58,7 +58,7 @@ interface ThiefCardProps {
   ) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
   onToggleMindscapeMaxed: (id: string, value: boolean) => void;
-  onUpdateWeaponRarity: (id: string, value: number | null) => void;
+  onUpdateWeaponRarity: (id: string, value: number) => void;
   onUpdateWeaponLevel: (id: string, value: number) => void;
   onUpdateWeaponForge: (id: string, value: number) => void;
   onOpenRevelations: (id: string, slot: RevelationSlot) => void;
@@ -157,12 +157,10 @@ export function ThiefCard({
             label={`A${thief.awareness}`}
             style={{ color: awarenessPs.color, borderColor: awarenessPs.borderColor }}
           />
-          {thief.weaponRarity !== null && (
-            <StatChip
-              label={`⚔ ${thief.weaponRarity}★ F${thief.weaponForge}`}
-              style={{ color: weaponForgePs.color, borderColor: weaponForgePs.borderColor }}
-            />
-          )}
+          <StatChip
+            label={`⚔ ${thief.weaponRarity}★ F${thief.weaponForge}`}
+            style={{ color: weaponForgePs.color, borderColor: weaponForgePs.borderColor }}
+          />
           {thief.mindscapeMaxed && (
             <StatChip label="MS ✓" style={{ color: miPs.color, borderColor: miPs.borderColor }} />
           )}
@@ -217,19 +215,15 @@ export function ThiefCard({
 
           <ProgressSection
             label="Weapon"
-            value={
-              thief.weaponRarity !== null
-                ? `${thief.weaponRarity}★ · Lv ${thief.weaponLevel} · F${thief.weaponForge}`
-                : '—'
-            }
+            value={`${thief.weaponRarity}★ · Lv ${thief.weaponLevel} · F${thief.weaponForge}`}
           >
             <SegmentedButtons
               className="weapon-rarity-row"
               options={WEAPON_RARITY_OPTIONS}
-              value={thief.weaponRarity !== null ? String(thief.weaponRarity) : null}
+              value={String(thief.weaponRarity)}
               coloring="static"
-              allowDeselect
-              onChange={(v) => onUpdateWeaponRarity(thief.id, v !== null ? Number(v) : null)}
+              // No allowDeselect, so v is never null; guard keeps the number type honest.
+              onChange={(v) => v !== null && onUpdateWeaponRarity(thief.id, Number(v))}
             />
             <LevelSlider
               name={`weapon-level-${thief.id}`}

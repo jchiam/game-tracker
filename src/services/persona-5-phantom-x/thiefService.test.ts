@@ -101,7 +101,7 @@ describe('thiefService', () => {
     expect(result[0].awareness).toBe(0);
     expect(result[0].skillsLeveled).toBe(false);
     expect(result[0].roseMaxed).toBe(false);
-    expect(result[0].weaponRarity).toBeNull();
+    expect(result[0].weaponRarity).toBe(2); // absent/null column defaults to 2★
     expect(result[0].weaponLevel).toBe(1);
     expect(result[0].weaponForge).toBe(0);
   });
@@ -124,7 +124,7 @@ describe('thiefService', () => {
       skills_leveled: false,
       rose_maxed: false,
       mindscape_maxed: false,
-      weapon_rarity: null,
+      weapon_rarity: 2,
       weapon_level: 1,
       weapon_forge: 0,
     });

@@ -95,7 +95,7 @@ describe('useThieves', () => {
     expect(result.current.trackedThieves[0].skillsLeveled).toBe(false);
     expect(result.current.trackedThieves[0].roseMaxed).toBe(false);
     expect(result.current.trackedThieves[0].mindscapeMaxed).toBe(false);
-    expect(result.current.trackedThieves[0].weaponRarity).toBeNull();
+    expect(result.current.trackedThieves[0].weaponRarity).toBe(2); // lowest-tier weapon from day one
     expect(result.current.trackedThieves[0].weaponLevel).toBe(1);
     expect(result.current.trackedThieves[0].weaponForge).toBe(0);
   });
@@ -146,14 +146,15 @@ describe('useThieves', () => {
     expect(mockUpdateThief).toHaveBeenCalledWith('new-db-id', { mindscapeMaxed: true });
   });
 
-  it('updateWeaponRarity sets rarity (nullable)', async () => {
+  it('updateWeaponRarity sets rarity', async () => {
     const { result } = await setupWithThief();
+    expect(result.current.trackedThieves[0].weaponRarity).toBe(2); // default 2★ on add
     act(() => result.current.updateWeaponRarity(firstThief.id, 5));
     expect(result.current.trackedThieves[0].weaponRarity).toBe(5);
     expect(mockUpdateThief).toHaveBeenCalledWith('new-db-id', { weaponRarity: 5 });
 
-    act(() => result.current.updateWeaponRarity(firstThief.id, null));
-    expect(result.current.trackedThieves[0].weaponRarity).toBeNull();
+    act(() => result.current.updateWeaponRarity(firstThief.id, 3));
+    expect(result.current.trackedThieves[0].weaponRarity).toBe(3);
   });
 
   it('updateWeaponLevel clamps to 1–80', async () => {
@@ -214,7 +215,7 @@ describe('useThieves', () => {
         skillsLeveled: false,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -235,7 +236,7 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -302,7 +303,7 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -323,7 +324,7 @@ describe('useThieves', () => {
         skillsLeveled: false,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -357,7 +358,7 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -378,7 +379,7 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -399,7 +400,7 @@ describe('useThieves', () => {
         skillsLeveled: false,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -434,7 +435,7 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -455,7 +456,7 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -489,7 +490,7 @@ describe('useThieves', () => {
         skillsLeveled: true,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -510,7 +511,7 @@ describe('useThieves', () => {
         skillsLeveled: false,
         roseMaxed: false,
         mindscapeMaxed: false,
-        weaponRarity: null,
+        weaponRarity: 2,
         weaponLevel: 1,
         weaponForge: 0,
         revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -566,7 +567,7 @@ describe('useThieves', () => {
       skillsLeveled: false,
       roseMaxed: false,
       mindscapeMaxed: false,
-      weaponRarity: null,
+      weaponRarity: 2,
       weaponLevel: 1,
       weaponForge: 0,
       revelations: { sun: null, moon: null, star: null, sky: null, space: null },
@@ -603,7 +604,7 @@ describe('useThieves', () => {
       skillsLeveled: false,
       roseMaxed: false,
       mindscapeMaxed: false,
-      weaponRarity: null,
+      weaponRarity: 2,
       weaponLevel: 1,
       weaponForge: 0,
       revelations: {
@@ -645,7 +646,7 @@ describe('useThieves', () => {
       skillsLeveled: false,
       roseMaxed: false,
       mindscapeMaxed: false,
-      weaponRarity: null,
+      weaponRarity: 2,
       weaponLevel: 1,
       weaponForge: 0,
       revelations: { sun: null, moon: null, star: null, sky: null, space: null },
