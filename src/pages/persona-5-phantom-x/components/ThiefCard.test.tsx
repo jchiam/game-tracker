@@ -294,12 +294,15 @@ describe('ThiefCard', () => {
 
   // --- Revelation summary chip ---
 
-  it('shows no revelation chip when all slots are empty', () => {
-    render(<ThiefCard {...defaultProps} />);
-    expect(screen.queryByText(/pc/)).toBeNull();
+  it('shows no revelation chip and a Persona-only summary line when all slots are empty', () => {
+    const { container } = render(<ThiefCard {...defaultProps} />);
+    expect(screen.queryByText(/^Rev /)).toBeNull();
+    expect(container.querySelector('.rev-set-summary')).toBeNull();
+    expect(container.querySelector('.summary-divider')).toBeNull();
+    expect(container.querySelector('.game-card-static-line')).toHaveTextContent('Carmen');
   });
 
-  it('shows revelation chip with Heavens set name and piece count', () => {
+  it('shows a Rev n/5 count chip and the set summary on the line when a bonus is active', () => {
     const thief = makeThief({
       revelations: {
         sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
@@ -309,8 +312,50 @@ describe('ThiefCard', () => {
         space: null,
       },
     });
-    render(<ThiefCard {...defaultProps} thief={thief} />);
-    expect(screen.getAllByText('Strife 2pc').length).toBeGreaterThanOrEqual(1);
+    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
+    // Count chip in the summary row — width independent of set names.
+    expect(screen.getByText('Rev 2/5')).toBeInTheDocument();
+    // Set names live on the summaryLine, not on a chip.
+    expect(container.querySelector('.rev-set-summary')).toHaveTextContent('Strife 2pc');
+    expect(container.querySelector('.summary-divider')).toBeInTheDocument();
+  });
+
+  it('shows the count chip but no set summary when cards are equipped without an active bonus', () => {
+    // A single lone card forms no 2pc bonus and no Space set: chip shown, line Persona-only.
+    const thief = makeThief({
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: null,
+        star: null,
+        sky: null,
+        space: null,
+      },
+    });
+    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
+    expect(screen.getByText('Rev 1/5')).toBeInTheDocument();
+    expect(container.querySelector('.rev-set-summary')).toBeNull();
+    expect(container.querySelector('.summary-divider')).toBeNull();
+    expect(container.querySelector('.game-card-static-line')).toHaveTextContent('Carmen');
+  });
+
+  it('renders the set summary distinct from the Persona name (score color, non-italic, divided)', () => {
+    const thief = makeThief({
+      revelations: {
+        sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+    });
+    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
+    const setSummary = container.querySelector<HTMLElement>('.rev-set-summary')!;
+    const persona = container.querySelector<HTMLElement>('.persona-line')!;
+    // Set summary carries the revelation gradient color inline; Persona line does not.
+    const expected = getProgressStyle(2, 0, 4); // no prefs → piece-count fallback, pieces = 2
+    expect(setSummary.style.color).toBe(expected.color);
+    expect(persona.style.color).toBe('');
+    expect(persona).toHaveTextContent('Carmen');
   });
 
   it('leads with the Space set, then Heavens (space-first consolidation)', () => {
@@ -429,7 +474,7 @@ describe('ThiefCard', () => {
     expect(document.querySelector('.build-prefs-display')).toBeNull();
   });
 
-  it('caps the revelation summary chip with the p5x-revelation-chip class', () => {
+  it('renders the revelation chip as a fixed-width count with no width-cap class', () => {
     const thief = makeThief({
       revelations: {
         sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
@@ -440,9 +485,10 @@ describe('ThiefCard', () => {
       },
     });
     const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
-    const revChip = container.querySelector('.game-card-static-stats .p5x-revelation-chip');
-    expect(revChip).toHaveTextContent('Strife 2pc');
+    const revChip = screen.getByText('Rev 2/5');
     expect(revChip).toHaveClass('stat-chip');
+    // The old variable-width chip class is gone — the count chip needs no cap.
+    expect(container.querySelector('.p5x-revelation-chip')).toBeNull();
   });
 
   // --- Fixed-height reserve + chip ordering ---
@@ -471,14 +517,7 @@ describe('ThiefCard', () => {
     const labels = Array.from(container.querySelectorAll('.game-card-static-stats .stat-chip')).map(
       (c) => c.textContent,
     );
-    expect(labels).toEqual([
-      'Lv 45',
-      'A3',
-      '⚔ 5★ F3',
-      'MS ✓',
-      'Meditation · Strife 4pc',
-      'Skills ✓',
-    ]);
+    expect(labels).toEqual(['Lv 45', 'A3', '⚔ 5★ F3', 'MS ✓', 'Rev 5/5', 'Skills ✓']);
   });
 
   // --- Revelation match-score badge + chip color ---
@@ -541,12 +580,10 @@ describe('ThiefCard', () => {
     expect(container.querySelector('.score-badge')).toBeNull();
   });
 
-  it('colors the revelation chip by the match score when scored', () => {
+  it('colors the revelation count chip by the match score when scored', () => {
     const thief = scoredThief();
-    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
-    const chip = container.querySelector<HTMLElement>(
-      '.game-card-static-stats .p5x-revelation-chip',
-    )!;
+    render(<ThiefCard {...defaultProps} thief={thief} />);
+    const chip = screen.getByText('Rev 2/5');
     const expected = getProgressStyle(calculateRevelationScore(thief), 0, 100);
     expect(chip.style.color).toBe(expected.color);
     expect(chip.style.borderColor).toBe(expected.borderColor);
@@ -563,10 +600,8 @@ describe('ThiefCard', () => {
         space: null,
       },
     });
-    const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
-    const chip = container.querySelector<HTMLElement>(
-      '.game-card-static-stats .p5x-revelation-chip',
-    )!;
+    render(<ThiefCard {...defaultProps} thief={thief} />);
+    const chip = screen.getByText('Rev 2/5');
     const expected = getProgressStyle(2, 0, 4);
     expect(chip.style.color).toBe(expected.color);
   });

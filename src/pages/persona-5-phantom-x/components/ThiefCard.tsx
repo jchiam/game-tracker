@@ -105,7 +105,8 @@ export function ThiefCard({
     ? getProgressStyle(revScore, 0, 100)
     : getProgressStyle(revSummary.heavensBonuses[0]?.pieces ?? 0, 0, 4);
 
-  const hasAnyRevCard = REVELATION_SLOTS.some((slot) => thief.revelations[slot]?.setId);
+  const revCardCount = REVELATION_SLOTS.filter((slot) => thief.revelations[slot]?.setId).length;
+  const hasAnyRevCard = revCardCount > 0;
 
   // Target Build readout — shown only when any revelation preference is set.
   const prefs = thief.revelationPreferences;
@@ -165,10 +166,9 @@ export function ThiefCard({
           {thief.mindscapeMaxed && (
             <StatChip label="MS ✓" style={{ color: miPs.color, borderColor: miPs.borderColor }} />
           )}
-          {hasRevSets && (
+          {hasAnyRevCard && (
             <StatChip
-              className="p5x-revelation-chip"
-              label={revSummaryLabel}
+              label={`Rev ${revCardCount}/5`}
               style={{ color: revPs.color, borderColor: revPs.borderColor }}
             />
           )}
@@ -180,7 +180,19 @@ export function ThiefCard({
           )}
         </>
       }
-      summaryLine={<span className="persona-line">{thief.personaName}</span>}
+      summaryLine={
+        <>
+          {hasRevSets && (
+            <>
+              <span className="rev-set-summary" style={{ color: revPs.color }}>
+                {revSummaryLabel}
+              </span>
+              <span className="summary-divider">|</span>
+            </>
+          )}
+          <span className="persona-line">{thief.personaName}</span>
+        </>
+      }
       editBody={
         <>
           <ProgressSection label="Level" value={`${thief.level} / 80`}>

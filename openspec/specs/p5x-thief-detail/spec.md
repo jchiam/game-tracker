@@ -13,9 +13,7 @@ Revelations → Mindscape → Skills; the collapsed summary chips reorder Mindsc
 ahead of Revelations (Level → Awareness → Weapon → Mindscape → Revelations →
 Skills) so the width-capped Revelations chip starts the second line and the card
 holds a fixed two-line summary height.
-
 ## Requirements
-
 ### Requirement: Thief level field
 
 The system SHALL track a Thief's level as an integer in the range 1–80, defaulting
@@ -128,27 +126,36 @@ personaName, role, element.
 The collapsed (read-only) state of the Thief card SHALL present investment as
 gradient-colored stat chips using the shared `getProgressStyle(value, min, max)`
 color language (rust → teal), matching the other four games. The card SHALL render
-the Thief's role and element as `GameBadge`s and the bound Persona's name as a
+the Thief's role and element as `GameBadge`s and the bound Persona's name on a
 static line. The card SHALL NOT render a rarity-star indicator (rarity remains a
 catalog field, matching AE).
 
-When revelations are equipped, the summary SHALL show a single revelation `StatChip`
-built from `getRevelationSummary` (see "Consolidated revelation set summary"): a
-**Space-first, lossless** consolidation of every active set bonus — the Space set (bare
-name) followed by each active Heavens bonus as `{name} {pieces}pc` — joined by `·`
-(e.g. `Meditation · Power 2pc · Peace 2pc`). The chip is NOT limited to the single
-dominant Heavens set. The chip SHALL be colored by the **revelation match score** via
-`getProgressStyle(score, 0, 100)`, so its color reflects how well the equipped cards match
-preferences (not raw piece count); when the score is insufficient (`-1` — no preferences or
-no cards), the chip SHALL fall back to the top Heavens bonus piece count via
-`getProgressStyle(pieces, 0, 4)`.
+When at least one revelation card is equipped, the summary SHALL show a single
+**set-independent count** revelation `StatChip` labelled `Rev {n}/5`, where `n` is
+the number of equipped revelation cards (across the five slots) and `5` is the slot
+count. The chip's width does NOT depend on which sets are equipped. The chip SHALL be
+colored by the **revelation match score** via `getProgressStyle(score, 0, 100)`, so
+its color reflects how well the equipped cards match preferences (not raw piece
+count); when the score is insufficient (`-1` — no preferences or no cards), the chip
+SHALL fall back to the top Heavens bonus piece count via `getProgressStyle(pieces, 0, 4)`.
+When no card is equipped, no revelation chip is shown.
+
+The equipped **set names** SHALL NOT appear on any chip. Instead, when an active set
+bonus exists, the card's `summaryLine` SHALL render the **Space-first, lossless**
+consolidation from `getRevelationSummary` (see "Consolidated revelation set summary")
+— the Space set (bare name) followed by each active Heavens bonus as `{name} {pieces}pc`,
+joined by `·` (e.g. `Meditation · Power 2pc · Peace 2pc`) — on the **same line** as the
+bound-Persona name but **visually distinct** from it: the set text SHALL carry the
+revelation-score gradient color (the same color as the `Rev {n}/5` chip) in normal
+(non-italic) weight, a divider glyph SHALL separate the set text from the Persona name,
+and the Persona name SHALL keep its dim italic treatment. When no active set bonus
+exists, the `summaryLine` SHALL show the Persona name alone (no divider).
 
 Summary chip ordering SHALL be: Level → Awareness → Weapon → **Mindscape →
-Revelations** → Skills. The Mindscape chip precedes the Revelations chip so the
-short fixed-width chips pack the first row and the single variable-width
-Revelations chip starts the second row. This deviates deliberately from the
-edit-body section ordering (Level → Weapon → Revelations → Mindscape → Skills),
-which is unchanged.
+Revelations** → Skills. The Mindscape chip precedes the Revelations chip so the short
+fixed-width chips pack the first row consistently. This deviates deliberately from the
+edit-body section ordering (Level → Weapon → Revelations → Mindscape → Skills), which
+is unchanged.
 
 #### Scenario: Level chip colored by investment
 
@@ -162,8 +169,13 @@ which is unchanged.
 
 #### Scenario: Persona name line present
 
-- **WHEN** a Thief card renders
-- **THEN** the bound Persona's name is shown as a static line in the card body
+- **WHEN** a Thief card renders with no active revelation set bonus
+- **THEN** the bound Persona's name is shown alone on the `summaryLine`, in its dim italic treatment, with no divider or set text
+
+#### Scenario: Set summary joins the Persona line, visually distinct
+
+- **WHEN** a Thief card renders with an active revelation set bonus (e.g. Meditation space + Power 2pc)
+- **THEN** the `summaryLine` shows the set summary (`Meditation · Power 2pc`) in the revelation-score gradient color, non-italic, followed by a divider glyph and then the bound-Persona name in its dim italic treatment
 
 #### Scenario: Level slider uses the canonical class and shared gradient
 
@@ -175,30 +187,40 @@ which is unchanged.
 - **WHEN** a Thief card renders
 - **THEN** no `.rarity-indicator` element is present
 
-#### Scenario: Consolidated revelation chip is space-first and lossless
+#### Scenario: Revelation count chip shows equipped-card count
+
+- **WHEN** a Thief has three revelation cards equipped
+- **THEN** a `StatChip` labelled `Rev 3/5` is shown in the summary, its width independent of the equipped set names
+
+#### Scenario: No revelation chip when no cards equipped
+
+- **WHEN** a Thief has no revelation cards equipped
+- **THEN** no revelation `StatChip` is shown in the summary and the `summaryLine` shows the Persona name alone
+
+#### Scenario: Set summary is space-first and lossless
 
 - **WHEN** a Thief has a Space set plus two Heavens sets at 2pc each (e.g. Meditation space, Peace×2, Power×2)
-- **THEN** the revelation `StatChip` reads `Meditation · Peace 2pc · Power 2pc` — the Space set first, then both Heavens bonuses in `4pc → 2pc → name` order (neither dropped)
+- **THEN** the `summaryLine` set text reads `Meditation · Peace 2pc · Power 2pc` — the Space set first, then both Heavens bonuses in `4pc → 2pc → name` order (neither dropped)
 
-#### Scenario: Heavens 4pc shown at 4pc
+#### Scenario: Heavens 4pc shown at 4pc on the summary line
 
 - **WHEN** a Thief has four cards of one Heavens set and no Space set
-- **THEN** the revelation chip shows `{Heavens} 4pc`
+- **THEN** the `summaryLine` set text shows `{Heavens} 4pc`
 
-#### Scenario: No revelation chip when no active bonus
+#### Scenario: No set summary when no active bonus
 
-- **WHEN** a Thief has no revelation cards equipped, or only single-card Heavens sets with no Space set
-- **THEN** no revelation chip is shown in the summary
+- **WHEN** a Thief has revelation cards equipped but only single-card Heavens sets with no Space set (no active bonus)
+- **THEN** no set text is rendered on the `summaryLine` (Persona name alone), while the `Rev {n}/5` count chip still reflects the equipped-card count
 
-#### Scenario: Revelation chip colored by match score
+#### Scenario: Revelation count chip colored by match score
 
-- **WHEN** a Thief card renders its collapsed summary with an active revelation bonus and a computed score ≥ 0
-- **THEN** the revelation `StatChip` text and border color are computed via `getProgressStyle(score, 0, 100)`
+- **WHEN** a Thief card renders its collapsed summary with an equipped card and a computed score ≥ 0
+- **THEN** the `Rev {n}/5` `StatChip` text and border color are computed via `getProgressStyle(score, 0, 100)`
 
 #### Scenario: Revelation chip color falls back to pieces when unscored
 
-- **WHEN** a Thief has an active revelation bonus but the score is `-1` (e.g. no preferences set)
-- **THEN** the revelation chip color falls back to `getProgressStyle(topHeavensPieces, 0, 4)`
+- **WHEN** a Thief has an equipped card but the score is `-1` (e.g. no preferences set)
+- **THEN** the `Rev {n}/5` chip color falls back to `getProgressStyle(topHeavensPieces, 0, 4)`
 
 #### Scenario: Summary chip ordering places Mindscape before Revelations
 
@@ -236,7 +258,7 @@ duplicated HSR/N2E convention).
 
 The system SHALL export a pure helper `getRevelationSummary(revelations)` returning
 `{ spaceSet: { id, name } | null, heavensBonuses: { id, name, pieces }[] }`, the single source for
-every revelation set display (summary chip and editor modal).
+every revelation set display (summary line and editor modal).
 
 - **heavensBonuses**: group the four Heavens slot cards (`sun`, `moon`, `star`, `sky`) by `setId`;
   for each set with **≥2** matching cards emit a bonus with `pieces = 4` when exactly four cards
@@ -254,7 +276,7 @@ The edit-mode "Revelations" `ProgressSection` SHALL render a five-cell slot grid
 per-slot glyph (no set art exists in the catalog), active-styled when the slot holds a card with a
 non-null `setId`. Clicking a cell opens the `RevelationEditorModal` anchored to that slot. The
 section header `value` SHALL show `—` when no card is equipped and be omitted otherwise. Full set
-names remain available on the collapsed-summary chip and inside the editor modal.
+names remain available on the collapsed-summary line and inside the editor modal.
 
 #### Scenario: Helper omits single-card sets and honors the 2/3-card breakpoint
 
@@ -671,33 +693,15 @@ every set-display surface — then a main stat `PreferenceChain` for Moon/Star/S
 - **WHEN** user enters text in the `BuildComments` field
 - **THEN** `revelationPreferences.comments` is updated and queued for persistence
 
-### Requirement: Revelation summary chip width cap
-
-The Revelations summary chip SHALL have a bounded maximum width and SHALL truncate
-overflowing label text with an ellipsis (single line), so that even the widest
-label (a Heavens 4pc set combined with a Space set) occupies at most one chip slot
-and cannot push the summary chip row onto a third line. The full, untruncated set
-name(s) SHALL remain visible in the Revelation editor modal, so no information is
-lost.
-
-#### Scenario: Long revelation label truncates in the summary
-
-- **WHEN** a Thief's revelation chip label exceeds the chip's maximum width (e.g. a long Heavens set name combined with a Space set)
-- **THEN** the chip clips the label to a single line with an ellipsis and does not grow wider than its cap
-
-#### Scenario: Full set name available in the editor
-
-- **WHEN** the user opens the Revelation editor modal for a Thief whose summary chip is truncated
-- **THEN** the full Heavens and Space set names are shown untruncated
-
 ### Requirement: P5X card fixed-height collapsed summary
 
 The P5X Thief card SHALL reserve a fixed two-line height for its collapsed summary
 chip row via the shared `GameCardShell` opt-in reserve (see `shared-card-collapse`),
 so that cards whose chips occupy only one line report the same measured summary
-height as cards whose chips occupy two lines. Combined with the Revelations chip
-width cap (which bounds the worst case to two lines), this yields a uniform
-collapsed body height across the P5X roster grid.
+height as cards whose chips occupy two lines. Because every summary chip — including
+the `Rev {n}/5` count chip — now has a fixed, set-independent width, the worst-case
+chip row is bounded to two lines, so this reserve yields a uniform collapsed body
+height across the P5X roster grid.
 
 #### Scenario: One-line card reserves two chip lines
 
@@ -722,3 +726,4 @@ The Thief card's edit body SHALL render a read-only "Target Build" `ProgressSect
 
 - **WHEN** a Thief has default (empty) revelation preferences
 - **THEN** no Target Build section renders in the edit body
+

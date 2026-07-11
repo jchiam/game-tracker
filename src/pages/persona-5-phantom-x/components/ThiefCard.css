@@ -1,32 +1,25 @@
 /* Card body layout (padding + name margin) is the canonical default in card.css;
    P5X matches it and contributes no body rule. */
 
-/* Bound-Persona static line: informational, not an investment signal. */
+/* Bound-Persona static line: informational, not an investment signal. Shares the
+   summaryLine with the revelation set summary — the divider keeps them distinct. */
 .persona-line {
   opacity: 0.75;
   font-style: italic;
 }
 
-/* Revelations summary chip: the one variable-width chip in the P5X summary row.
-   Cap it to a single content-relative slot and ellipsize so the widest label
-   (Heavens 4pc + Space) cannot push the chip row onto a third line — the fixed
-   two-line reserve on `.game-card-static-stats` then holds every card to the same
-   collapsed height. Full set names remain in the Revelation editor modal. */
-.p5x-revelation-chip {
-  max-width: 18ch;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* Revelation set summary on the summaryLine: the equipped-set signal, colored inline
+   by the revelation match score (same hue as the Rev n/5 count chip). Non-italic so it
+   reads distinct from the dim italic Persona name it sits beside. */
+.rev-set-summary {
+  font-style: normal;
 }
 
-/* Below 768px the roster grid drops to 240px columns (RosterPageLayout.css); at
-   that width 18ch lets a full six-chip card spill to a third line and break the
-   two-line reserve. Tighten the cap to 12ch there — measured as the widest cap
-   that keeps six chips on two lines at a 240px card. */
-@media (max-width: 768px) {
-  .p5x-revelation-chip {
-    max-width: 12ch;
-  }
+/* Divider between the set summary and the Persona name. Uses `|` (the set list uses
+   `·` internally), dimmed so it recedes behind both labels. */
+.summary-divider {
+  opacity: 0.4;
+  margin: 0 var(--spacing-xs);
 }
 
 /* Skill-progress toggles: the two coupled ConfirmCheckboxes stack in the
