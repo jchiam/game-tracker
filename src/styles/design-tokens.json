@@ -153,6 +153,11 @@
       "b": { "$value": "#8be28b", "$type": "color" }
     }
   },
+  "gradient": {
+    "temperRamp": {
+      "$value": "linear-gradient(90deg, {color.temper.rust} 0%, {color.temper.amber} 33%, {color.temper.gold} 67%, {color.temper.verdigris} 100%)"
+    }
+  },
   "typography": {
     "fontFamily": {
       "display": {

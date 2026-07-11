@@ -128,6 +128,7 @@
   --color-tier-s: #ffd700;
   --color-tier-a: #7fbfff;
   --color-tier-b: #8be28b;
+  --gradient-temper-ramp: linear-gradient(90deg, #8a6050 0%, #c88040 33%, #d4af37 67%, #40c8a0 100%);
   --typography-font-family-display: 'Bahnschrift', 'Avenir Next Condensed', 'Arial Narrow', system-ui, sans-serif;
   --typography-font-family-base: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
   --typography-font-family-data: 'Cascadia Mono', Consolas, 'SF Mono', 'Menlo', monospace;

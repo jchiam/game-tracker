@@ -7,9 +7,9 @@ shadow, transition, duration, and z-index values; `src/styles/tokens.css` is com
 `src/styles/design-tokens.json` by Style Dictionary and never hand-edited; game-specific colours
 live under a per-game `color.{gameId}` group; token names use their canonical form;
 `--duration-*` (animation) is kept distinct from `--transition-*` (transition); typography is
-carried by three system-native font roles; and the temper ramp anchors are the canonical named
-home of the investment-gradient colours. Documents the rules for using tokens, not an enumeration
-of token values.
+carried by three system-native font roles; the temper ramp anchors are the canonical named
+home of the investment-gradient colours; and the full-ramp gradient is itself a canonical token.
+Documents the rules for using tokens, not an enumeration of token values.
 
 ## Requirements
 
@@ -158,3 +158,17 @@ The four investment-gradient anchor colours SHALL live as the token group `color
 
 - **WHEN** the temper anchor tokens are compared against the `shared-progress-gradient` anchor stops
 - **THEN** all four hex values are identical
+
+### Requirement: Temper ramp gradient is a canonical token
+
+The token system SHALL define one canonical Temper ramp gradient token (`gradient.temperRamp`, compiled to `--gradient-temper-ramp`) — a `linear-gradient` whose colour stops are Style Dictionary references to the `color.temper.*` anchors at the positions fixed by `shared-progress-gradient`'s anchor stops (rust 0%, amber 33%, gold 67%, verdigris 100%). CSS surfaces that paint the full investment ramp (rail backgrounds, scale visualisations) SHALL reference this token rather than hand-writing the gradient's stops.
+
+#### Scenario: Rail surface uses the gradient token
+
+- **WHEN** a stylesheet paints a full-ramp gradient surface
+- **THEN** it sets `background: var(--gradient-temper-ramp)` rather than declaring its own `linear-gradient` of ramp hexes
+
+#### Scenario: Gradient stays locked to the anchors
+
+- **WHEN** the compiled `--gradient-temper-ramp` is inspected
+- **THEN** its four stops equal the `color.temper.*` values at 0%/33%/67%/100%, matching the `shared-progress-gradient` anchor stops

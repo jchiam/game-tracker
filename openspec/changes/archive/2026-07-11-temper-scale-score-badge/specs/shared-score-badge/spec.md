@@ -1,10 +1,6 @@
-# shared-score-badge Specification
+# shared-score-badge Delta
 
-## Purpose
-
-Shared score-badge presentation used by every game. Defines the single `ScoreBadge` component that renders a graded Temper-rail readout — percentage, grade letter, and a miniature investment-ramp rail with a marker at the score position (hidden on the negative insufficient-data sentinel) — and the game-agnostic `--color-score-grade-*` token ramp that colors it, replacing per-game score-badge classes and score-color tokens.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Shared score badge component
 

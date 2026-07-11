@@ -242,6 +242,22 @@ function ColorsSection() {
           '--color-score-grade-d',
         ]}
       />
+
+      <div>
+        <h3 style={subheadingStyle}>Temper Ramp Gradient</h3>
+        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', margin: '0 0 8px' }}>
+          <code>--gradient-temper-ramp</code> — the canonical full-ramp gradient (anchors at
+          0/33/67/100%, matching <code>COLOR_STOPS</code>). Used by rail surfaces like the
+          ScoreBadge rail.
+        </p>
+        <div
+          style={{
+            height: '12px',
+            borderRadius: 'var(--border-radius-full)',
+            background: 'var(--gradient-temper-ramp)',
+          }}
+        />
+      </div>
     </section>
   );
 }

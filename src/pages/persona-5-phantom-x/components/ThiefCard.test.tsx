@@ -510,7 +510,7 @@ describe('ThiefCard', () => {
     const { container } = render(<ThiefCard {...defaultProps} thief={thief} />);
     const badge = container.querySelector('.score-badge');
     expect(badge).not.toBeNull();
-    expect(badge!.textContent).toMatch(/^\d+%$/);
+    expect(badge!.querySelector('.score-badge-value')!.textContent).toMatch(/^\d+%$/);
     expect(badge!.className).toMatch(/grade-[sabcd]/);
   });
 

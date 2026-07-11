@@ -17,6 +17,8 @@ export interface ProgressStyle {
 // These four values must stay identical to the `color.temper.*` tokens in
 // design-tokens.json — the ramp is the brand; runtime interpolation is the
 // only reason they exist here as numeric rgb rather than token references.
+// The `--gradient-temper-ramp` token mirrors these stop positions
+// (0/33/67/100%) for CSS surfaces that paint the full ramp.
 export const COLOR_STOPS = [
   { pct: 0, r: 138, g: 96, b: 80 }, // #8a6050 rust — lacking / uninvested
   { pct: 0.33, r: 200, g: 128, b: 64 }, // #c88040 amber — kindling

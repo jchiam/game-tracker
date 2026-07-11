@@ -27,7 +27,7 @@ test.describe('Temper typography roles', () => {
     // element so the assertion doesn't depend on auth-gated roster content.
     const probe = await page.evaluate(() => {
       const results: Record<string, { font: string; numeric: string }> = {};
-      for (const cls of ['level-value', 'stat-chip', 'score-badge']) {
+      for (const cls of ['level-value', 'stat-chip', 'score-badge-value']) {
         const el = document.createElement('span');
         el.className = cls;
         document.body.appendChild(el);
@@ -38,7 +38,7 @@ test.describe('Temper typography roles', () => {
       return results;
     });
 
-    for (const cls of ['level-value', 'stat-chip', 'score-badge'] as const) {
+    for (const cls of ['level-value', 'stat-chip', 'score-badge-value'] as const) {
       expect(probe[cls].font, `${cls} font-family`).toContain('Cascadia Mono');
       expect(probe[cls].numeric, `${cls} font-variant-numeric`).toBe('tabular-nums');
     }

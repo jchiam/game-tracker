@@ -16,6 +16,8 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+/** Each grade colours the percentage; the rail gradient is identical for every grade —
+ * the marker position, not the hue, encodes the score. */
 export const GradeS: Story = { args: { score: 95 } };
 export const GradeA: Story = { args: { score: 82 } };
 export const GradeB: Story = { args: { score: 58 } };
@@ -33,6 +35,20 @@ export const AllGrades: Story = {
       <ScoreBadge score={58} />
       <ScoreBadge score={34} />
       <ScoreBadge score={12} />
+    </div>
+  ),
+};
+
+/** Marker positions at the grade boundaries (30/50/70/90) and the rail extremes. */
+export const BoundaryMarkers: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+      <ScoreBadge score={0} />
+      <ScoreBadge score={30} />
+      <ScoreBadge score={50} />
+      <ScoreBadge score={70} />
+      <ScoreBadge score={90} />
+      <ScoreBadge score={100} />
     </div>
   ),
 };

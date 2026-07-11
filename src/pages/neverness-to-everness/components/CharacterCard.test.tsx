@@ -106,7 +106,7 @@ describe('CharacterCard', () => {
     });
     const { container } = render(<CharacterCard character={char} {...defaultProps} />);
     expect(screen.queryByText(/^Cart \d+%$/)).not.toBeInTheDocument();
-    expect(container.querySelector('.score-badge')?.textContent).toBe('82%');
+    expect(container.querySelector('.score-badge-value')?.textContent).toBe('82%');
   });
 
   // --- Favorite ---

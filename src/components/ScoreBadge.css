@@ -1,42 +1,74 @@
-/* Shared roster-card score badge — one flat graded pill for every game.
-   Grade colours come from the game-agnostic --color-score-grade-* ramp. */
+/* Shared roster-card score badge — a miniature Temper-rail readout for every game.
+   The percentage colour comes from the game-agnostic --color-score-grade-* ramp; the
+   rail is the canonical ramp gradient, identical for every grade — the marker position,
+   not the hue, encodes the score. Neutral glass backing keeps it legible over card art. */
 .score-badge {
+  display: inline-flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  padding: var(--spacing-1) var(--spacing-2);
+  border-radius: var(--border-radius-sm);
+  background: rgba(0, 0, 0, 0.45);
+  white-space: nowrap;
+}
+
+.score-badge-readout {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--spacing-2);
+}
+
+.score-badge-value {
   font-family: var(--typography-font-family-data);
   font-variant-numeric: tabular-nums;
   font-size: var(--typography-font-size-xs);
   font-weight: var(--typography-font-weight-bold);
-  padding: var(--spacing-1) var(--spacing-3);
-  border-radius: var(--border-radius-sm);
-  border: 1px solid;
-  white-space: nowrap;
 }
 
-.score-badge.grade-s {
-  background: color-mix(in srgb, var(--color-score-grade-s) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-score-grade-s) 50%, transparent);
+.score-badge-grade {
+  font-family: var(--typography-font-family-display);
+  font-size: var(--typography-font-size-xs);
+  letter-spacing: 0.15em;
+  color: var(--color-text-secondary);
+}
+
+.score-badge-rail {
+  position: relative;
+  width: 64px;
+  height: 3px;
+  border-radius: var(--border-radius-full);
+  background: var(--gradient-temper-ramp);
+}
+
+.score-badge-rail::after {
+  content: '';
+  position: absolute;
+  top: -2.5px;
+  left: var(--score-pos, 0%);
+  width: 2px;
+  height: 8px;
+  border-radius: 1px;
+  background: var(--color-text-primary);
+  transform: translateX(-50%);
+}
+
+.score-badge.grade-s .score-badge-value {
   color: var(--color-score-grade-s);
 }
 
-.score-badge.grade-a {
-  background: color-mix(in srgb, var(--color-score-grade-a) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-score-grade-a) 50%, transparent);
+.score-badge.grade-a .score-badge-value {
   color: var(--color-score-grade-a);
 }
 
-.score-badge.grade-b {
-  background: color-mix(in srgb, var(--color-score-grade-b) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-score-grade-b) 50%, transparent);
+.score-badge.grade-b .score-badge-value {
   color: var(--color-score-grade-b);
 }
 
-.score-badge.grade-c {
-  background: color-mix(in srgb, var(--color-score-grade-c) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-score-grade-c) 50%, transparent);
+.score-badge.grade-c .score-badge-value {
   color: var(--color-score-grade-c);
 }
 
-.score-badge.grade-d {
-  background: color-mix(in srgb, var(--color-score-grade-d) 15%, transparent);
-  border-color: color-mix(in srgb, var(--color-score-grade-d) 50%, transparent);
+.score-badge.grade-d .score-badge-value {
   color: var(--color-score-grade-d);
 }
