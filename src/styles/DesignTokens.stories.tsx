@@ -8,10 +8,10 @@ function getVar(name: string): string {
 
 /* ─── Shared layout styles ─── */
 const pageStyle: React.CSSProperties = {
-  background: '#0a0a0f',
+  background: '#0e1014',
   padding: '32px',
-  fontFamily: "'Inter', system-ui, sans-serif",
-  color: '#f0f0f5',
+  fontFamily: "'Segoe UI', system-ui, sans-serif",
+  color: '#e9e4d8',
   minHeight: '100vh',
 };
 
@@ -31,7 +31,7 @@ const subheadingStyle: React.CSSProperties = {
   fontWeight: 600,
   marginBottom: '12px',
   marginTop: '24px',
-  color: '#a0a0b5',
+  color: '#b3ad9e',
 };
 
 const gridStyle: React.CSSProperties = {
@@ -80,7 +80,7 @@ function Swatch({ variable }: SwatchProps) {
           style={{
             fontSize: '0.75rem',
             fontWeight: 500,
-            color: '#f0f0f5',
+            color: '#e9e4d8',
             whiteSpace: 'nowrap',
             overflow: 'hidden',
             textOverflow: 'ellipsis',
@@ -91,7 +91,7 @@ function Swatch({ variable }: SwatchProps) {
         <div
           style={{
             fontSize: '0.7rem',
-            color: '#a0a0b5',
+            color: '#b3ad9e',
             fontFamily: 'monospace',
           }}
         >
@@ -223,6 +223,16 @@ function ColorsSection() {
       />
 
       <ColorGroup
+        label="Temper Ramp Anchors (brand — investment gradient)"
+        variables={[
+          '--color-temper-rust',
+          '--color-temper-amber',
+          '--color-temper-gold',
+          '--color-temper-verdigris',
+        ]}
+      />
+
+      <ColorGroup
         label="Score Grades (shared across games)"
         variables={[
           '--color-score-grade-s',
@@ -261,9 +271,66 @@ function TypographySection() {
     { label: 'extrabold', value: 800 },
   ];
 
+  const families = [
+    {
+      variable: '--typography-font-family-display',
+      label: 'display',
+      sample: 'ACHERON — RELICS · TARGET BUILD',
+    },
+    {
+      variable: '--typography-font-family-base',
+      label: 'base',
+      sample: 'The quick brown fox jumps over the lazy dog',
+    },
+    {
+      variable: '--typography-font-family-data',
+      label: 'data',
+      sample: '92% · Lv 80 · 30 / 50 / 70 / 90',
+    },
+  ];
+
   return (
     <section style={sectionStyle}>
       <h2 style={headingStyle}>Typography</h2>
+
+      <h3 style={subheadingStyle}>Font Families (roles)</h3>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {families.map(({ variable, label, sample }) => (
+          <div
+            key={variable}
+            style={{
+              display: 'flex',
+              alignItems: 'baseline',
+              gap: '16px',
+              padding: '8px 12px',
+              borderRadius: '6px',
+              background: 'rgba(255,255,255,0.03)',
+              border: '1px solid rgba(255,255,255,0.08)',
+            }}
+          >
+            <span
+              style={{
+                fontFamily: `var(${variable})`,
+                fontVariantNumeric: label === 'data' ? 'tabular-nums' : undefined,
+                fontSize: '1.1rem',
+                minWidth: '340px',
+              }}
+            >
+              {sample}
+            </span>
+            <span
+              style={{
+                fontSize: '0.75rem',
+                color: '#b3ad9e',
+                fontFamily: 'monospace',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {variable}
+            </span>
+          </div>
+        ))}
+      </div>
 
       <h3 style={subheadingStyle}>Font Sizes</h3>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -292,7 +359,7 @@ function TypographySection() {
             <span
               style={{
                 fontSize: '0.75rem',
-                color: '#a0a0b5',
+                color: '#b3ad9e',
                 fontFamily: 'monospace',
                 whiteSpace: 'nowrap',
               }}
@@ -330,7 +397,7 @@ function TypographySection() {
             <span
               style={{
                 fontSize: '0.75rem',
-                color: '#a0a0b5',
+                color: '#b3ad9e',
                 fontFamily: 'monospace',
                 whiteSpace: 'nowrap',
               }}
@@ -389,7 +456,7 @@ function SpacingSection() {
             <span
               style={{
                 fontSize: '0.75rem',
-                color: '#a0a0b5',
+                color: '#b3ad9e',
                 fontFamily: 'monospace',
                 whiteSpace: 'nowrap',
               }}
@@ -450,7 +517,7 @@ function BorderRadiusSection() {
             <span
               style={{
                 fontSize: '0.75rem',
-                color: '#f0f0f5',
+                color: '#e9e4d8',
                 fontWeight: 500,
                 textAlign: 'center',
               }}
@@ -460,7 +527,7 @@ function BorderRadiusSection() {
             <span
               style={{
                 fontSize: '0.7rem',
-                color: '#a0a0b5',
+                color: '#b3ad9e',
                 fontFamily: 'monospace',
               }}
             >
@@ -521,7 +588,7 @@ function ShadowsSection() {
             <span
               style={{
                 fontSize: '0.75rem',
-                color: '#f0f0f5',
+                color: '#e9e4d8',
                 fontWeight: 500,
                 textAlign: 'center',
               }}
@@ -544,7 +611,7 @@ function DesignTokens() {
           fontSize: '2rem',
           fontWeight: 800,
           marginBottom: '8px',
-          color: '#f0f0f5',
+          color: '#e9e4d8',
         }}
       >
         Design Tokens
@@ -552,7 +619,7 @@ function DesignTokens() {
       <p
         style={{
           fontSize: '0.9rem',
-          color: '#a0a0b5',
+          color: '#b3ad9e',
           marginBottom: '40px',
         }}
       >

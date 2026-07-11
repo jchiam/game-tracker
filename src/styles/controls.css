@@ -65,6 +65,8 @@
 }
 
 .level-value {
+  font-family: var(--typography-font-family-data);
+  font-variant-numeric: tabular-nums;
   font-size: var(--typography-font-size-md);
   font-weight: var(--typography-font-weight-bold);
   color: var(--color-text-primary);
@@ -124,6 +126,8 @@
 /* ─── Stat chip ──────────────────────────────────────────────────── */
 
 .stat-chip {
+  font-family: var(--typography-font-family-data);
+  font-variant-numeric: tabular-nums;
   font-size: 0.75rem;
   font-weight: var(--typography-font-weight-semibold);
   color: var(--color-text-secondary);

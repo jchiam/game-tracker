@@ -2,12 +2,13 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { COLOR_STOPS, getProgressStyle } from '@/utils/progressGradient';
 
 /**
- * The cross-game **investment-color language**. A single normalized progress
- * value (0 → 1) is mapped to a continuous rust → amber → gold → teal gradient by
- * `getProgressStyle(value, min, max)` in `src/utils/progressGradient.ts`. Every
- * game uses it to color a card's collapsed-summary stat chips and the fill/glow of
- * its level slider, so "how invested is this unit" reads the same color everywhere:
- * dull rust = untouched, teal = complete.
+ * The cross-game **investment-color language** — the Temper ramp. A single
+ * normalized progress value (0 → 1) is mapped to a continuous rust → amber →
+ * gold → verdigris gradient by `getProgressStyle(value, min, max)` in
+ * `src/utils/progressGradient.ts`; the four anchors are the `color.temper.*`
+ * brand tokens. Every game uses it to color a card's collapsed-summary stat
+ * chips and the fill/glow of its level slider, so "how invested is this unit"
+ * reads the same color everywhere: dull rust = untouched, verdigris = complete.
  */
 const meta = {
   title: 'Design System/Investment Color',
@@ -44,7 +45,8 @@ export const GradientRamp: Story = {
         ))}
       </div>
       <p style={{ color: 'var(--color-text-secondary)', fontSize: '0.8rem' }}>
-        Rust (uninvested) → amber (kindling) → gold (forged) → teal (complete).
+        Rust (uninvested) → amber (kindling) → gold (forged) → verdigris (complete). Anchors are the{' '}
+        <code>--color-temper-*</code> tokens.
       </p>
     </div>
   ),

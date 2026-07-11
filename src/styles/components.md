@@ -2,7 +2,7 @@
 
 Design system for a dark-themed game progression tracker. All tokens referenced here are defined in `src/styles/design-tokens.json` and generated into `src/styles/tokens.css`.
 
-**Theme summary:** Dark cosmic background (`--color-bg-base: #0a0a0f`), gold primary accent (`--color-brand-primary: #d4af37`), purple secondary accent (`--color-brand-accent: #8b5cf6`), glassmorphism surfaces with backdrop blur.
+**Theme summary (Temper):** Warm Ink background (`--color-bg-base: #0e1014`), Slate glass surfaces with backdrop blur, Porcelain text (`--color-text-primary: #e9e4d8`), the rust→amber→gold→verdigris temper ramp (`--color-temper-*`) as brand — gold (`--color-brand-primary: #d4af37`) is its third anchor — purple secondary accent (`--color-brand-accent: #8b5cf6`). System-native type: Bahnschrift display, Segoe UI body, Cascadia Mono data.
 
 ---
 

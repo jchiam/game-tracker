@@ -158,6 +158,7 @@
 }
 
 .game-card-name {
+  font-family: var(--typography-font-family-display);
   font-size: var(--typography-font-size-2xl);
   margin-bottom: 0;
   color: var(--color-text-primary);
@@ -360,12 +361,13 @@
 }
 
 .section-header {
+  font-family: var(--typography-font-family-display);
   font-size: 0.85rem;
   color: var(--color-text-secondary);
   display: flex;
   justify-content: space-between;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   font-weight: var(--typography-font-weight-semibold);
   margin-bottom: var(--spacing-2);
 }

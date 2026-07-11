@@ -1,20 +1,26 @@
 {
-  "$description": "Game Tracker design system — dark cosmic theme with gold/purple accents",
+  "$description": "Game Tracker design system — Temper: warm Ink/Slate/Porcelain neutrals with the rust→verdigris investment ramp as brand",
   "color": {
     "bg": {
-      "base": { "$value": "#0a0a0f", "$type": "color" },
-      "surface": { "$value": "rgba(25,25,35,0.7)", "$type": "color" },
-      "surfaceHover": { "$value": "rgba(40,40,55,0.8)", "$type": "color" },
-      "elevated": { "$value": "rgba(30,30,42,0.9)", "$type": "color" }
+      "base": { "$value": "#0e1014", "$type": "color" },
+      "surface": { "$value": "rgba(26,30,38,0.7)", "$type": "color" },
+      "surfaceHover": { "$value": "rgba(38,44,56,0.8)", "$type": "color" },
+      "elevated": { "$value": "rgba(30,35,45,0.9)", "$type": "color" }
     },
     "text": {
-      "primary": { "$value": "#f0f0f5", "$type": "color" },
-      "secondary": { "$value": "#a0a0b5", "$type": "color" },
-      "dim": { "$value": "#8a8aa0", "$type": "color" },
+      "primary": { "$value": "#e9e4d8", "$type": "color" },
+      "secondary": { "$value": "#b3ad9e", "$type": "color" },
+      "dim": { "$value": "#9a9484", "$type": "color" },
       "onPrimary": { "$value": "#000000", "$type": "color" }
     },
+    "temper": {
+      "rust": { "$value": "#8a6050", "$type": "color" },
+      "amber": { "$value": "#c88040", "$type": "color" },
+      "gold": { "$value": "#d4af37", "$type": "color" },
+      "verdigris": { "$value": "#40c8a0", "$type": "color" }
+    },
     "brand": {
-      "primary": { "$value": "#d4af37", "$type": "color" },
+      "primary": { "$value": "{color.temper.gold}", "$type": "color" },
       "primaryGlow": { "$value": "rgba(212,175,55,0.4)", "$type": "color" },
       "primaryMuted": { "$value": "rgba(212,175,55,0.15)", "$type": "color" },
       "accent": { "$value": "#8b5cf6", "$type": "color" }
@@ -63,11 +69,11 @@
       "pathElation": { "$value": "#ffc875", "$type": "color" }
     },
     "score": {
-      "gradeS": { "$value": "#40c8a0", "$type": "color" },
-      "gradeA": { "$value": "#d4af37", "$type": "color" },
-      "gradeB": { "$value": "#c88040", "$type": "color" },
+      "gradeS": { "$value": "{color.temper.verdigris}", "$type": "color" },
+      "gradeA": { "$value": "{color.temper.gold}", "$type": "color" },
+      "gradeB": { "$value": "{color.temper.amber}", "$type": "color" },
       "gradeC": { "$value": "#b48c64", "$type": "color" },
-      "gradeD": { "$value": "#8a6050", "$type": "color" }
+      "gradeD": { "$value": "{color.temper.rust}", "$type": "color" }
     },
     "n2e": {
       "esperAnima": { "$value": "#f5b080", "$type": "color" },
@@ -149,7 +155,18 @@
   },
   "typography": {
     "fontFamily": {
-      "base": { "$value": "'Inter', system-ui, sans-serif", "$type": "fontFamily" }
+      "display": {
+        "$value": "'Bahnschrift', 'Avenir Next Condensed', 'Arial Narrow', system-ui, sans-serif",
+        "$type": "fontFamily"
+      },
+      "base": {
+        "$value": "'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif",
+        "$type": "fontFamily"
+      },
+      "data": {
+        "$value": "'Cascadia Mono', Consolas, 'SF Mono', 'Menlo', monospace",
+        "$type": "fontFamily"
+      }
     },
     "fontSize": {
       "xs": { "$value": "0.7rem", "$type": "dimension" },

@@ -1,6 +1,8 @@
 /* Shared roster-card score badge — one flat graded pill for every game.
    Grade colours come from the game-agnostic --color-score-grade-* ramp. */
 .score-badge {
+  font-family: var(--typography-font-family-data);
+  font-variant-numeric: tabular-nums;
   font-size: var(--typography-font-size-xs);
   font-weight: var(--typography-font-weight-bold);
   padding: var(--spacing-1) var(--spacing-3);

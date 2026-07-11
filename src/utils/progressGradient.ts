@@ -13,12 +13,15 @@ export interface ProgressStyle {
 }
 
 // Anchor points for the continuous gradient
-// Rust → Amber → Gold → Teal (absence → radiance)
+// Rust → Amber → Gold → Verdigris (absence → radiance)
+// These four values must stay identical to the `color.temper.*` tokens in
+// design-tokens.json — the ramp is the brand; runtime interpolation is the
+// only reason they exist here as numeric rgb rather than token references.
 export const COLOR_STOPS = [
-  { pct: 0, r: 138, g: 96, b: 80 }, // #8a6050 dull rust, lacking / uninvested
-  { pct: 0.33, r: 200, g: 128, b: 64 }, // #c88040 warm amber, kindling
-  { pct: 0.67, r: 212, g: 175, b: 55 }, // #d4af37 gold, forged
-  { pct: 1, r: 64, g: 200, b: 160 }, // #40c8a0 teal, complete
+  { pct: 0, r: 138, g: 96, b: 80 }, // #8a6050 rust — lacking / uninvested
+  { pct: 0.33, r: 200, g: 128, b: 64 }, // #c88040 amber — kindling
+  { pct: 0.67, r: 212, g: 175, b: 55 }, // #d4af37 gold — forged
+  { pct: 1, r: 64, g: 200, b: 160 }, // #40c8a0 verdigris — complete
 ];
 
 function lerpColor(pct: number): [number, number, number] {
