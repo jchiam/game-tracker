@@ -3,18 +3,20 @@
 //   - src/data/neverness-to-everness/characters.ts
 //   - src/data/neverness-to-everness/arcs.ts
 //
-// Downloads images from Waifus-Grace/NTE_Assets GitHub repo and uploads to ImageKit:
-//   - character avatars (256px PNG)  → ImageKit: /neverness_to_everness/characters
-//   - arc icons (256px PNG)          → ImageKit: /neverness_to_everness/arcs
+// Downloads images and uploads to ImageKit:
+//   - character busts (from gacha splash art)  → ImageKit: /neverness_to_everness/characters
+//   - arc icons (256px)                        → ImageKit: /neverness_to_everness/arcs
 //
 // Data sources:
-//   - everness.info/api/graphql: esper list, attributes, arc list
-//   - github.com/Waifus-Grace/NTE_Assets: avatar and arc icon images
+//   - everness.info/api/graphql: esper list, attributes, arc list, gacha art path (iconGacha)
+//   - api.everness.info/data/assets: character gacha splash art (cropped to a head+shoulders bust)
+//   - github.com/Waifus-Grace/NTE_Assets: arc icon images
 //
 // Usage:
-//   node scripts/update-n2e-data.mjs                    # only upload missing assets
-//   node scripts/update-n2e-data.mjs --reupload-all     # force reupload all assets
-//   node scripts/update-n2e-data.mjs --reupload-arcs    # force reupload arc icons only
+//   node scripts/update-n2e-data.mjs                       # only upload missing assets
+//   node scripts/update-n2e-data.mjs --reupload-all        # force reupload all assets
+//   node scripts/update-n2e-data.mjs --reupload-characters # force reupload character busts only
+//   node scripts/update-n2e-data.mjs --reupload-arcs       # force reupload arc icons only
 
 import { readFile, writeFile } from 'fs/promises';
 import { resolve } from 'path';
@@ -36,36 +38,41 @@ import { orderN2eStats } from './lib/statOrder.mjs';
 loadLocalEnv();
 const { ensureAsset } = initImageKit();
 
-const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags(['arcs']);
+const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags(['arcs', 'characters']);
 const reuploadArcs = reuploadFlags.arcs;
+const reuploadCharacters = reuploadFlags.characters;
 
 // ─── Constants & Mappings ──────────────────────────────────────────
 
 const GRAPHQL_URL = 'https://everness.info/api/graphql';
-const AVATAR_BASE =
-  'https://raw.githubusercontent.com/Waifus-Grace/NTE_Assets/main/UI_Icon/AvatarImage/256';
+// everness.info serves game assets from this CDN; the site maps internal `/Game/UI[_Icon]/...`
+// asset paths to `${ASSET_BASE}/{path}.{ext}` (see `assetUrl` below). Character portraits are
+// only exposed as full-body gacha splash art (esper.iconGacha) — cropped to a bust before upload.
+const ASSET_BASE = 'https://api.everness.info/data/assets';
 const ARC_ICON_BASE = 'https://raw.githubusercontent.com/Waifus-Grace/NTE_Assets/main/UI_Icon/Fork';
 
 const RARITY_MAP = { 5: 'S', 4: 'A' };
 const QUALITY_MAP = { orange: 'S', purple: 'A', blue: 'B' };
 const ARC_TYPE_MAP = { 1: 'Solid', 2: 'Liquid', 3: 'Plasma', 4: 'Gas', 5: 'Synthesis' };
 
-// Esper IDs whose avatar filename doesn't follow the player_{suffix}_256.png pattern.
-const AVATAR_OVERRIDES = {
-  1052: 'player_052_3_256.png', // Hotori
-  1070: 'player_haiyue_256.png', // Aurelia
-};
+// Bust crop applied to the 1024×1024 gacha splash art: a square covering `side` of the width,
+// horizontally centred on `cx`, offset `top` down from the top, then downscaled to `size`px.
+// The default (centred, zoomed-out) suits the majority whose head sits high and centre-frame.
+const BUST_CROP = { side: 0.6, cx: 0.5, top: 0.04, size: 256 };
 
-// Male/female variants to merge into a single 50:50 composite avatar.
-// Key = canonical ID to keep, value = alternate ID to merge and discard.
-// Zero: only male avatar (player_046) exists in NTE_Assets — merge disabled until female appears.
-const MERGE_IDS = {};
+// Per-character crop overrides (keyed by slug id) for off-centre or reclining poses the default
+// crop frames poorly — tighter zoom + a horizontal shift onto the face. Verified visually.
+const CROP_OVERRIDES = {
+  jiuyuan: { side: 0.5, cx: 0.54, top: 0.14 }, // wide hat pushes the default crop too far out
+  hathor: { side: 0.46, cx: 0.55, top: 0.12 }, // reclining pose, face high-right
+};
 
 // Combat roles — not available in the API (char_tags is null). Hardcoded per character.
 const ROLE_OVERRIDES = {
   Adler: ['Survival', 'Shield', 'DoT'],
   Aurelia: ['Damage', 'Control'],
   Baicang: ['Damage', 'Main DPS', 'DoT'],
+  Chaos: ['Damage', 'Main DPS', 'DMG Boost'],
   Chiz: ['Damage', 'Main DPS'],
   Daffodill: ['Damage', 'Burst DPS', 'Break Boost'],
   Edgar: ['Survival', 'Healing'],
@@ -74,11 +81,13 @@ const ROLE_OVERRIDES = {
   Haniel: ['Buff', 'DMG Boost'],
   Hathor: ['Damage', 'Burst DPS'],
   Hotori: ['Buff', 'Burst DPS', 'DMG Boost'],
+  Iroi: ['Survival', 'Healing', 'Buff'],
   Jiuyuan: ['Damage', 'Burst DPS', 'Control'],
   Lacrimosa: ['Damage', 'Burst DPS'],
   Mint: ['Damage', 'Main DPS'],
   Nanally: ['Damage', 'Main DPS', 'Follow-up Attack'],
   Sakiri: ['Buff', 'Control', 'DMG Boost'],
+  Shinku: ['Damage', 'Main DPS', 'Burst DPS'],
   Skia: ['Damage', 'Main DPS'],
 };
 
@@ -99,10 +108,29 @@ async function fetchGraphQL(query) {
   return json.data;
 }
 
-function avatarFilename(esperId) {
-  if (AVATAR_OVERRIDES[esperId]) return AVATAR_OVERRIDES[esperId];
-  const suffix = String(esperId).slice(1); // 1003 → 003
-  return `player_${suffix}_256.png`;
+// Resolve an internal everness asset path (e.g. `/Game/UI/UI/Gacha/YH_lihui_...`) to a CDN URL.
+// Mirrors the site's own transform: strip the `/Game/UI[_Icon]/` prefix, append the extension.
+function assetUrl(path, ext = 'webp') {
+  const rel = path
+    .replace(/^\/Game\/UI_Icon\//, '')
+    .replace(/^\/Game\/UI\//, '')
+    .replace(/^\//, '');
+  return `${ASSET_BASE}/${rel}.${ext}`;
+}
+
+// Crop full-body gacha splash art down to a head+shoulders bust (see BUST_CROP / CROP_OVERRIDES).
+async function cropBust(buffer, override = {}) {
+  const { side, cx, top, size } = { ...BUST_CROP, ...override };
+  const img = sharp(buffer);
+  const { width, height } = await img.metadata();
+  const sidePx = Math.round(width * side);
+  const left = Math.max(0, Math.min(Math.round(width * cx - sidePx / 2), width - sidePx));
+  const topPx = Math.round(height * top);
+  return img
+    .extract({ left, top: topPx, width: sidePx, height: Math.min(sidePx, height - topPx) })
+    .resize(size, size)
+    .webp({ quality: 90 })
+    .toBuffer();
 }
 
 async function loadExistingCharacters() {
@@ -155,29 +183,6 @@ async function loadExistingCartridges() {
   } catch {
     return [];
   }
-}
-
-// Merge two avatar images into a 50:50 left/right composite.
-async function mergeAvatars(leftBuffer, rightBuffer) {
-  const left = sharp(leftBuffer);
-  const right = sharp(rightBuffer);
-  const { width, height } = await left.metadata();
-  const halfW = Math.floor(width / 2);
-
-  const leftHalf = await left.extract({ left: 0, top: 0, width: halfW, height }).toBuffer();
-  const rightHalf = await right
-    .extract({ left: halfW, top: 0, width: width - halfW, height })
-    .toBuffer();
-
-  return sharp({
-    create: { width, height, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } },
-  })
-    .composite([
-      { input: leftHalf, left: 0, top: 0 },
-      { input: rightHalf, left: halfW, top: 0 },
-    ])
-    .png()
-    .toBuffer();
 }
 
 // ─── Code Generation ───────────────────────────────────────────────
@@ -357,7 +362,7 @@ async function main() {
   ] = await Promise.all([
     fetchGraphQL(`{
       espers {
-        id name element rarity
+        id name element rarity iconGacha
         arcs_tags { name }
         char_tags { name }
       }
@@ -387,7 +392,7 @@ async function main() {
   // ── Process Espers ───────────────────────────────────────────────
 
   // Skip duplicate/alternate IDs (female Zero 1051 is a duplicate of male Zero 1046)
-  const skipIds = new Set([...Object.values(MERGE_IDS), '1051']);
+  const skipIds = new Set(['1051']);
 
   const espers = rawEspers.filter((e) => !skipIds.has(e.id));
   espers.sort((a, b) => {
@@ -412,25 +417,20 @@ async function main() {
 
     console.log(`  [${idx + 1}/${espers.length}] ${e.name} (${e.id})`);
 
+    if (!e.iconGacha) {
+      console.warn(`    No gacha art (iconGacha) for ${e.name} — skipping image`);
+      missingImages.push(e.name);
+      characters.push({ id, name: e.name, rarity, esperType, arcType, roles, imageUrl });
+      continue;
+    }
+
     const charResult = await ensureAsset({
       localPath: resolve(ROOT, `public/assets/neverness-to-everness/characters/${id}.webp`),
       label: 'Image',
-      reupload: reuploadAll,
-      fetchBuffer: async () => {
-        const mergeAltId = MERGE_IDS[e.id];
-        if (mergeAltId) {
-          // Download both variants and merge 50:50
-          const leftUrl = `${AVATAR_BASE}/${avatarFilename(Number(e.id))}`;
-          const rightUrl = `${AVATAR_BASE}/${avatarFilename(Number(mergeAltId))}`;
-          console.log(`    Merging ${e.id} + ${mergeAltId} into composite`);
-          const [leftBuf, rightBuf] = await Promise.all([
-            downloadImage(leftUrl),
-            downloadImage(rightUrl),
-          ]);
-          return mergeAvatars(leftBuf, rightBuf);
-        }
-        return downloadImage(`${AVATAR_BASE}/${avatarFilename(Number(e.id))}`);
-      },
+      reupload: reuploadCharacters,
+      mimeType: 'image/webp',
+      fetchBuffer: async () =>
+        cropBust(await downloadImage(assetUrl(e.iconGacha)), CROP_OVERRIDES[id]),
     });
     if (charResult === 'uploaded') charImageCount++;
     if (charResult === 'failed') missingImages.push(e.name);

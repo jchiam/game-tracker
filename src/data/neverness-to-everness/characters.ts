@@ -28,7 +28,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     rarity: 'S',
     esperType: 'Lakshana',
     arcType: 'Condensate',
-    roles: [],
+    roles: ['Damage', 'Main DPS', 'DMG Boost'],
     imageUrl: '/assets/neverness-to-everness/characters/chaos.webp',
   },
   {
@@ -82,7 +82,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     rarity: 'S',
     esperType: 'Anima',
     arcType: 'Liquid',
-    roles: [],
+    roles: ['Survival', 'Healing', 'Buff'],
     imageUrl: '/assets/neverness-to-everness/characters/iroi.webp',
   },
   {
@@ -127,7 +127,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     rarity: 'S',
     esperType: 'Cosmos',
     arcType: 'Condensate',
-    roles: [],
+    roles: ['Damage', 'Main DPS', 'Burst DPS'],
     imageUrl: '/assets/neverness-to-everness/characters/shinku.webp',
   },
   {
