@@ -1,7 +1,12 @@
 import { supabase } from '@/lib/supabase';
-import { createRosterPersistence, savePreferenceRows } from '@/services/rosterPersistence';
+import {
+  chainToRows,
+  createRosterPersistence,
+  rowsToChain,
+  savePreferenceRows,
+} from '@/services/rosterPersistence';
 import type { EquippedRelic } from '@/data/honkai-star-rail/relics';
-import type { HsrCharacterPatch, HsrTrackedCharacter, StatPreference } from '@/types';
+import type { HsrCharacterPatch, HsrTrackedCharacter } from '@/types';
 import { ALL_CHARACTERS, type Character } from '@/data/honkai-star-rail/characters';
 
 const defaultRelics = { head: null, hands: null, body: null, feet: null, sphere: null, rope: null };
@@ -16,16 +21,6 @@ const CHARACTER_COLUMNS: Record<keyof HsrCharacterPatch, string> = {
   tracesAttained: 'traces_attained',
   isFavorited: 'is_favorited',
 };
-
-function toStatPreferences(raw: any[]): StatPreference[] {
-  return raw
-    .sort((a: any, b: any) => a.order_index - b.order_index)
-    .map((p: any) => ({
-      stat: p.stat,
-      operator: p.operator_to_next,
-      orderIndex: p.order_index,
-    }));
-}
 
 const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacterPatch>({
   table: 'hsr_tracked_characters',
@@ -70,7 +65,7 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
       const rawMainPrefs = row.hsr_build_preference_main_stats || [];
       const mainStats = {} as HsrTrackedCharacter['buildPreferences']['mainStats'];
       for (const slot of MAIN_STAT_SLOTS) {
-        mainStats[slot] = toStatPreferences(rawMainPrefs.filter((p: any) => p.slot === slot));
+        mainStats[slot] = rowsToChain(rawMainPrefs.filter((p: any) => p.slot === slot));
       }
 
       return {
@@ -78,7 +73,7 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
         relics: structuredRelics,
         buildPreferences: {
           mainStats,
-          subStats: toStatPreferences(row.hsr_build_preference_sub_stats || []),
+          subStats: rowsToChain(row.hsr_build_preference_sub_stats || []),
           relicSetId: row.relic_set_id ?? null,
           planarSetId: row.planar_set_id ?? null,
           comments: row.build_comments || '',
@@ -141,18 +136,10 @@ export async function saveBuildPrefs(
   dbId: string,
   prefs: HsrTrackedCharacter['buildPreferences'],
 ): Promise<void> {
-  const mainInserts: Record<string, unknown>[] = [];
-  MAIN_STAT_SLOTS.forEach((slot) => {
-    prefs.mainStats[slot].forEach((pref, idx) => {
-      mainInserts.push({
-        tracked_character_id: dbId,
-        slot,
-        stat: pref.stat,
-        operator_to_next: pref.operator,
-        order_index: idx,
-      });
-    });
-  });
+  const fkColumn = 'tracked_character_id';
+  const mainInserts = MAIN_STAT_SLOTS.flatMap((slot) =>
+    chainToRows(prefs.mainStats[slot], { dbId, fkColumn, extra: { slot } }),
+  );
 
   await savePreferenceRows({
     dbId,
@@ -172,12 +159,7 @@ export async function saveBuildPrefs(
       { table: 'hsr_build_preference_main_stats', rows: mainInserts },
       {
         table: 'hsr_build_preference_sub_stats',
-        rows: prefs.subStats.map((pref, idx) => ({
-          tracked_character_id: dbId,
-          stat: pref.stat,
-          operator_to_next: pref.operator,
-          order_index: idx,
-        })),
+        rows: chainToRows(prefs.subStats, { dbId, fkColumn }),
       },
     ],
   });

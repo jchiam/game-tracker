@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import type { StatPreference } from '@/types';
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
 
@@ -277,4 +278,43 @@ export async function savePreferenceRows(opts: {
       throw error;
     }
   }
+}
+
+/**
+ * The chain↔rows codec for preference chains — intentionally the only
+ * implementation of chain serialization/reconstruction, living beside
+ * `savePreferenceRows` so the whole Preference Rows pattern has one home.
+ * All preference tables share the column vocabulary `stat` / `operator_to_next`
+ * / `order_index`. Non-chain scalars (parent-column updates, single-row set
+ * categories) are per-game glue and stay outside the codec.
+ */
+
+/** Reconstruct an ordered chain from DB rows: sort by `order_index`, map columns. */
+export function rowsToChain(raw: any[]): StatPreference[] {
+  return [...raw]
+    .sort((a: any, b: any) => a.order_index - b.order_index)
+    .map((p: any) => ({
+      stat: p.stat,
+      operator: p.operator_to_next,
+      orderIndex: p.order_index,
+    }));
+}
+
+/**
+ * Serialize a chain to insert rows. `order_index` is re-derived from array
+ * position (`0..n-1`) — never taken from the entries' stored `orderIndex`,
+ * which the shared chain editor lets go stale (gaps/duplicates after
+ * mid-chain deletes). Array order is the order the user saw.
+ */
+export function chainToRows(
+  chain: StatPreference[],
+  opts: { dbId: string; fkColumn: string; extra?: Record<string, unknown> },
+): Record<string, unknown>[] {
+  return chain.map((pref, idx) => ({
+    [opts.fkColumn]: opts.dbId,
+    ...opts.extra,
+    stat: pref.stat,
+    operator_to_next: pref.operator,
+    order_index: idx,
+  }));
 }

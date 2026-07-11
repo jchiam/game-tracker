@@ -221,6 +221,23 @@ describe('useCharacters', () => {
       expect(mockInsertCharacter).toHaveBeenCalledWith('test-user-123', 'acheron');
     });
 
+    it('gives each freshly-added character a distinct relics object reference', async () => {
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      await act(async () => {
+        await result.current.addCharacter(baseChar);
+        await result.current.addCharacter({ ...baseChar, id: 'argenti', name: 'Argenti' });
+      });
+
+      expect(result.current.trackedCharacters).toHaveLength(2);
+      // Distinct references — a bare `relics: defaultRelics` would share one
+      // module-level object identity across every added character.
+      expect(result.current.trackedCharacters[0].relics).not.toBe(
+        result.current.trackedCharacters[1].relics,
+      );
+    });
+
     it('does not add a duplicate character already in state', async () => {
       mockLoadCharactersFromDB.mockResolvedValue([trackedChar('acheron', 'Acheron')]);
 

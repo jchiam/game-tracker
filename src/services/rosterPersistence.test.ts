@@ -359,6 +359,69 @@ describe('rosterPersistence', () => {
       });
     });
 
+    describe('preference-chain codec (chainToRows / rowsToChain)', () => {
+      it('round-trips a chain preserving stats and operators in order', () => {
+        const chain = [
+          { stat: 'attack-pct', operator: '>' as const, orderIndex: 0 },
+          { stat: 'crit-rate', operator: '>=' as const, orderIndex: 1 },
+          { stat: 'speed', operator: null, orderIndex: 2 },
+        ];
+        const rows = mod.chainToRows(chain, { dbId: 'db-1', fkColumn: 'tracked_id' });
+        const back = mod.rowsToChain(rows);
+        expect(back.map((p: any) => [p.stat, p.operator])).toEqual([
+          ['attack-pct', '>'],
+          ['crit-rate', '>='],
+          ['speed', null],
+        ]);
+      });
+
+      it('re-derives order_index 0..n-1 from array position, ignoring stale orderIndex', () => {
+        // Mid-chain delete then add in the shared chain editor produces gaps and
+        // duplicates (here: 0, 2, 2). Written rows must follow array order.
+        const degenerate = [
+          { stat: 'a', operator: '>' as const, orderIndex: 0 },
+          { stat: 'c', operator: '>' as const, orderIndex: 2 },
+          { stat: 'd', operator: null, orderIndex: 2 },
+        ];
+        const rows = mod.chainToRows(degenerate, { dbId: 'db-1', fkColumn: 'tracked_id' });
+        expect(rows.map((r: any) => [r.stat, r.order_index])).toEqual([
+          ['a', 0],
+          ['c', 1],
+          ['d', 2],
+        ]);
+      });
+
+      it('stamps fkColumn and extra static columns on every row', () => {
+        const chain = [
+          { stat: 'a', operator: '>' as const, orderIndex: 0 },
+          { stat: 'b', operator: null, orderIndex: 1 },
+        ];
+        const rows = mod.chainToRows(chain, {
+          dbId: 'db-9',
+          fkColumn: 'thief_row_id',
+          extra: { category: 'moon_main' },
+        });
+        for (const r of rows) {
+          expect(r.thief_row_id).toBe('db-9');
+          expect(r.category).toBe('moon_main');
+        }
+        expect(rows[0].operator_to_next).toBe('>');
+        expect(rows[1].operator_to_next).toBeNull();
+      });
+
+      it('rowsToChain sorts arbitrary row order by order_index without mutating input', () => {
+        const raw = [
+          { stat: 'c', operator_to_next: null, order_index: 2 },
+          { stat: 'a', operator_to_next: '>', order_index: 0 },
+          { stat: 'b', operator_to_next: '>=', order_index: 1 },
+        ];
+        const chain = mod.rowsToChain(raw);
+        expect(chain.map((p: any) => p.stat)).toEqual(['a', 'b', 'c']);
+        // Input order untouched (sort works on a copy).
+        expect(raw[0].stat).toBe('c');
+      });
+    });
+
     describe('createPartyPersistence', () => {
       function makePartyService(extras?: {
         extraSelect: string;

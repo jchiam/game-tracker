@@ -24,7 +24,10 @@ function createTrackedCharacter(char: Character): HsrTrackedCharacter {
     isFavorited: false,
     level: 1,
     tracesAttained: false,
-    relics: defaultRelics,
+    // Spread — assigning the module-level default directly would share one object
+    // identity across every freshly-added character (same aliasing class as the
+    // P5X substat-preference bug); the service load path already spreads.
+    relics: { ...defaultRelics },
     buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] },
   };
 }

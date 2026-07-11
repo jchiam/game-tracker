@@ -1,11 +1,11 @@
-import { createRosterPersistence, savePreferenceRows } from '@/services/rosterPersistence';
+import {
+  chainToRows,
+  createRosterPersistence,
+  rowsToChain,
+  savePreferenceRows,
+} from '@/services/rosterPersistence';
 import { supabase } from '@/lib/supabase';
-import type {
-  P5xThiefPatch,
-  P5xTrackedThief,
-  P5xRevelationPreferences,
-  StatPreference,
-} from '@/types';
+import type { P5xThiefPatch, P5xTrackedThief, P5xRevelationPreferences } from '@/types';
 import { ALL_THIEVES, type P5xThief } from '@/data/persona-5-phantom-x/thieves';
 import type { EquippedRevelation, RevelationSlot } from '@/data/persona-5-phantom-x/revelations';
 
@@ -79,7 +79,7 @@ const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
   }),
   extras: {
     selectFragment: `p5x_revelation_cards ( slot, set_id, main_stat, sub_stats ),
-      p5x_revelation_preferences ( category, stat, operator, order_index )`,
+      p5x_revelation_preferences ( category, stat, operator_to_next, order_index )`,
     mapRow: (row: any, tracked: P5xTrackedThief) => {
       const revelations: P5xTrackedThief['revelations'] = { ...defaultRevelations };
       for (const r of row.p5x_revelation_cards || []) {
@@ -91,54 +91,23 @@ const svc = createRosterPersistence<P5xThief, P5xTrackedThief, P5xThiefPatch>({
         };
       }
 
-      const prefRows = row.p5x_revelation_preferences || [];
-      // Re-own every array (mainStats + subStats) so prefs never aliases the module-level
-      // default; a bare spread copies the default's arrays by reference and push()es below
-      // would then mutate shared state across thieves and reloads.
+      const prefRows: any[] = row.p5x_revelation_preferences || [];
+      const byCategory = (category: string) =>
+        rowsToChain(prefRows.filter((p) => p.category === category));
+      // Chains reconstruct through the shared codec (fresh arrays, so no aliasing of the
+      // module-level default); the set-id scalars are single rows, not chains.
       const prefs: P5xRevelationPreferences = {
         ...defaultRevelationPreferences,
-        mainStats: { moon: [], star: [], sky: [] },
-        subStats: [],
+        heavensSetId: prefRows.find((p) => p.category === 'heavens_set')?.stat ?? null,
+        spaceSetId: prefRows.find((p) => p.category === 'space_set')?.stat ?? null,
+        mainStats: {
+          moon: byCategory('moon_main'),
+          star: byCategory('star_main'),
+          sky: byCategory('sky_main'),
+        },
+        subStats: byCategory('sub_stats'),
         comments: row.build_comments || '',
       };
-      for (const p of prefRows) {
-        switch (p.category) {
-          case 'heavens_set':
-            prefs.heavensSetId = p.stat;
-            break;
-          case 'space_set':
-            prefs.spaceSetId = p.stat;
-            break;
-          case 'moon_main':
-            prefs.mainStats.moon.push({
-              stat: p.stat,
-              operator: p.operator,
-              orderIndex: p.order_index,
-            });
-            break;
-          case 'star_main':
-            prefs.mainStats.star.push({
-              stat: p.stat,
-              operator: p.operator,
-              orderIndex: p.order_index,
-            });
-            break;
-          case 'sky_main':
-            prefs.mainStats.sky.push({
-              stat: p.stat,
-              operator: p.operator,
-              orderIndex: p.order_index,
-            });
-            break;
-          case 'sub_stats':
-            prefs.subStats.push({ stat: p.stat, operator: p.operator, orderIndex: p.order_index });
-            break;
-        }
-      }
-      prefs.mainStats.moon.sort((a, b) => a.orderIndex - b.orderIndex);
-      prefs.mainStats.star.sort((a, b) => a.orderIndex - b.orderIndex);
-      prefs.mainStats.sky.sort((a, b) => a.orderIndex - b.orderIndex);
-      prefs.subStats.sort((a, b) => a.orderIndex - b.orderIndex);
 
       return { ...tracked, revelations, revelationPreferences: prefs };
     },
@@ -201,14 +170,16 @@ export async function saveRevelationPreferences(
   thiefDbId: string,
   prefs: P5xRevelationPreferences,
 ): Promise<void> {
+  const fkColumn = 'thief_row_id';
   const rows: Record<string, unknown>[] = [];
 
+  // Set-id scalars: single rows, not chains — outside the codec by design.
   if (prefs.heavensSetId) {
     rows.push({
       thief_row_id: thiefDbId,
       category: 'heavens_set',
       stat: prefs.heavensSetId,
-      operator: null,
+      operator_to_next: null,
       order_index: 0,
     });
   }
@@ -217,26 +188,29 @@ export async function saveRevelationPreferences(
       thief_row_id: thiefDbId,
       category: 'space_set',
       stat: prefs.spaceSetId,
-      operator: null,
+      operator_to_next: null,
       order_index: 0,
     });
   }
 
-  const addChain = (category: string, chain: StatPreference[]) => {
-    for (const p of chain) {
-      rows.push({
-        thief_row_id: thiefDbId,
-        category,
-        stat: p.stat,
-        operator: p.operator,
-        order_index: p.orderIndex,
-      });
-    }
-  };
-  addChain('moon_main', prefs.mainStats.moon);
-  addChain('star_main', prefs.mainStats.star);
-  addChain('sky_main', prefs.mainStats.sky);
-  addChain('sub_stats', prefs.subStats);
+  rows.push(
+    ...chainToRows(prefs.mainStats.moon, {
+      dbId: thiefDbId,
+      fkColumn,
+      extra: { category: 'moon_main' },
+    }),
+    ...chainToRows(prefs.mainStats.star, {
+      dbId: thiefDbId,
+      fkColumn,
+      extra: { category: 'star_main' },
+    }),
+    ...chainToRows(prefs.mainStats.sky, {
+      dbId: thiefDbId,
+      fkColumn,
+      extra: { category: 'sky_main' },
+    }),
+    ...chainToRows(prefs.subStats, { dbId: thiefDbId, fkColumn, extra: { category: 'sub_stats' } }),
+  );
 
   await savePreferenceRows({
     dbId: thiefDbId,

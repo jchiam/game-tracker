@@ -172,8 +172,8 @@ describe('thiefService', () => {
         awareness: 0,
         is_favorited: false,
         p5x_revelation_preferences: [
-          { category: 'sub_stats', stat: 'crit-rate', operator: null, order_index: 0 },
-          { category: 'moon_main', stat: 'attack-pct', operator: null, order_index: 0 },
+          { category: 'sub_stats', stat: 'crit-rate', operator_to_next: null, order_index: 0 },
+          { category: 'moon_main', stat: 'attack-pct', operator_to_next: null, order_index: 0 },
         ],
       },
       {
@@ -183,8 +183,8 @@ describe('thiefService', () => {
         awareness: 0,
         is_favorited: false,
         p5x_revelation_preferences: [
-          { category: 'sub_stats', stat: 'attack-pct', operator: null, order_index: 0 },
-          { category: 'moon_main', stat: 'defense-pct', operator: null, order_index: 0 },
+          { category: 'sub_stats', stat: 'attack-pct', operator_to_next: null, order_index: 0 },
+          { category: 'moon_main', stat: 'defense-pct', operator_to_next: null, order_index: 0 },
         ],
       },
     ];
@@ -288,8 +288,10 @@ describe('thiefService', () => {
           sky: [],
         },
         subStats: [
+          // Degenerate stored orderIndex (0, 5) — the shared chain editor never renumbers;
+          // written order_index must be re-derived 0..n-1 from array position.
           { stat: 'Crit Rate%', operator: '>', orderIndex: 0 },
-          { stat: 'ATK%', operator: null, orderIndex: 1 },
+          { stat: 'ATK%', operator: null, orderIndex: 5 },
         ],
         comments: 'Focus crit',
       });
@@ -315,7 +317,15 @@ describe('thiefService', () => {
         expect.objectContaining({ category: 'moon_main', stat: 'ATK%', order_index: 0 }),
       );
       expect(insertedRows).toContainEqual(
-        expect.objectContaining({ category: 'sub_stats', stat: 'Crit Rate%', operator: '>' }),
+        expect.objectContaining({
+          category: 'sub_stats',
+          stat: 'Crit Rate%',
+          operator_to_next: '>',
+        }),
+      );
+      // order_index re-derived from array position — the stored orderIndex 5 is ignored.
+      expect(insertedRows).toContainEqual(
+        expect.objectContaining({ category: 'sub_stats', stat: 'ATK%', order_index: 1 }),
       );
     });
   });

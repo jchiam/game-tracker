@@ -1,5 +1,10 @@
-import { createRosterPersistence, savePreferenceRows } from '@/services/rosterPersistence';
-import type { N2ECharacterPatch, N2ETrackedCharacter, StatPreference } from '@/types';
+import {
+  chainToRows,
+  createRosterPersistence,
+  rowsToChain,
+  savePreferenceRows,
+} from '@/services/rosterPersistence';
+import type { N2ECharacterPatch, N2ETrackedCharacter } from '@/types';
 import { ALL_CHARACTERS, type N2ECharacter } from '@/data/neverness-to-everness/characters';
 
 /** Maps each camelCase patch key to its DB column. Schema stays service-private. */
@@ -16,16 +21,6 @@ const CHARACTER_COLUMNS: Record<keyof N2ECharacterPatch, string> = {
   cartridgeSubStats: 'cartridge_sub_stats',
   isFavorited: 'is_favorited',
 };
-
-function toStatPreferences(raw: any[]): StatPreference[] {
-  return raw
-    .sort((a: any, b: any) => a.order_index - b.order_index)
-    .map((p: any) => ({
-      stat: p.stat,
-      operator: p.operator_to_next,
-      orderIndex: p.order_index,
-    }));
-}
 
 const svc = createRosterPersistence<N2ECharacter, N2ETrackedCharacter, N2ECharacterPatch>({
   table: 'n2e_tracked_characters',
@@ -70,8 +65,8 @@ const svc = createRosterPersistence<N2ECharacter, N2ETrackedCharacter, N2ECharac
       ...tracked,
       cartridgePreferences: {
         cartridgeId: row.cartridge_preference_id ?? null,
-        mainStats: toStatPreferences(row.n2e_cartridge_preference_main_stats || []),
-        subStats: toStatPreferences(row.n2e_cartridge_preference_sub_stats || []),
+        mainStats: rowsToChain(row.n2e_cartridge_preference_main_stats || []),
+        subStats: rowsToChain(row.n2e_cartridge_preference_sub_stats || []),
         comments: row.cartridge_comments || '',
       },
     }),
@@ -103,21 +98,11 @@ export async function saveCartridgePreferences(
     inserts: [
       {
         table: 'n2e_cartridge_preference_main_stats',
-        rows: prefs.mainStats.map((pref, idx) => ({
-          tracked_character_id: dbId,
-          stat: pref.stat,
-          operator_to_next: pref.operator,
-          order_index: idx,
-        })),
+        rows: chainToRows(prefs.mainStats, { dbId, fkColumn: 'tracked_character_id' }),
       },
       {
         table: 'n2e_cartridge_preference_sub_stats',
-        rows: prefs.subStats.map((pref, idx) => ({
-          tracked_character_id: dbId,
-          stat: pref.stat,
-          operator_to_next: pref.operator,
-          order_index: idx,
-        })),
+        rows: chainToRows(prefs.subStats, { dbId, fkColumn: 'tracked_character_id' }),
       },
     ],
   });
