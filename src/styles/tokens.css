@@ -9,6 +9,7 @@
   --color-bg-surface: rgba(26, 30, 38, 0.7);
   --color-bg-surface-hover: rgba(38, 44, 56, 0.8);
   --color-bg-elevated: rgba(30, 35, 45, 0.9);
+  --color-bg-selection-fade: #0a0a1a;
   --color-text-primary: #e9e4d8;
   --color-text-secondary: #b3ad9e;
   --color-text-dim: #9a9484;
@@ -39,6 +40,8 @@
   --color-toast-success-border: rgba(74, 222, 128, 0.5);
   --color-toast-info-bg: rgba(30, 58, 138, 0.95);
   --color-toast-info-border: rgba(96, 165, 250, 0.5);
+  --color-hsr-sel-start: #0a1e2e;
+  --color-hsr-sel-mid: #16405a;
   --color-hsr-element-lightning: #d97afe;
   --color-hsr-element-imaginary: #f4d258;
   --color-hsr-element-fire: #f84f36;
@@ -61,6 +64,8 @@
   --color-score-grade-b: #c88040;
   --color-score-grade-c: #b48c64;
   --color-score-grade-d: #8a6050;
+  --color-n2e-sel-start: #1a0a2e;
+  --color-n2e-sel-mid: #2d1b4e;
   --color-n2e-esper-anima: #f5b080;
   --color-n2e-esper-chaos: #c9a8f8;
   --color-n2e-esper-cosmos: #90d0f0;
@@ -75,6 +80,8 @@
   --color-n2e-rarity-s: #d4af37;
   --color-n2e-rarity-a: #c9a8f8;
   --color-n2e-rarity-b: #90d0f0;
+  --color-ae-sel-start: #0a1a2e;
+  --color-ae-sel-mid: #1b2d4e;
   --color-ae-element-physical: #bcbcbc;
   --color-ae-element-cryo: #47c7fd;
   --color-ae-element-electric: #d97afe;
@@ -91,6 +98,8 @@
   --color-ae-weapon-polearm: #90d0f0;
   --color-ae-weapon-handcannon: #f5d68a;
   --color-ae-weapon-arts-unit: #c9a8f8;
+  --color-p5x-sel-start: #2e0a0a;
+  --color-p5x-sel-mid: #4e1b1b;
   --color-p5x-element-physical: #bcbcbc;
   --color-p5x-element-gun: #f5b080;
   --color-p5x-element-fire: #f84f36;
@@ -115,6 +124,8 @@
   --color-p5x-weapon-rarity3: #7fbfff;
   --color-p5x-weapon-rarity4: #c9a8f8;
   --color-p5x-weapon-rarity5: #ffd700;
+  --color-r1999-sel-start: #2e230a;
+  --color-r1999-sel-mid: #4e3d1b;
   --color-r1999-afflatus-plant: #90e09a;
   --color-r1999-afflatus-star: #f5d68a;
   --color-r1999-afflatus-beast: #f5b080;

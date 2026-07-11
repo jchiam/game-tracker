@@ -23,7 +23,7 @@ const headingStyle: React.CSSProperties = {
   fontSize: '1.5rem',
   fontWeight: 700,
   marginBottom: '16px',
-  color: '#d4af37',
+  color: 'var(--color-temper-gold)',
 };
 
 const subheadingStyle: React.CSSProperties = {
@@ -220,6 +220,23 @@ function ColorsSection() {
       <ColorGroup
         label="Tier"
         variables={['--color-tier-splus', '--color-tier-s', '--color-tier-a', '--color-tier-b']}
+      />
+
+      <ColorGroup
+        label="Selection Scenes (per-game header gradients + shared fade)"
+        variables={[
+          '--color-hsr-sel-start',
+          '--color-hsr-sel-mid',
+          '--color-r1999-sel-start',
+          '--color-r1999-sel-mid',
+          '--color-n2e-sel-start',
+          '--color-n2e-sel-mid',
+          '--color-ae-sel-start',
+          '--color-ae-sel-mid',
+          '--color-p5x-sel-start',
+          '--color-p5x-sel-mid',
+          '--color-bg-selection-fade',
+        ]}
       />
 
       <ColorGroup
@@ -464,7 +481,7 @@ function SpacingSection() {
               style={{
                 width: `var(${variable})`,
                 height: '16px',
-                backgroundColor: '#d4af37',
+                backgroundColor: 'var(--color-temper-gold)',
                 borderRadius: '2px',
                 flexShrink: 0,
               }}
@@ -526,7 +543,7 @@ function BorderRadiusSection() {
               style={{
                 width: '64px',
                 height: '64px',
-                backgroundColor: '#d4af37',
+                backgroundColor: 'var(--color-temper-gold)',
                 borderRadius: `var(${variable})`,
               }}
             />

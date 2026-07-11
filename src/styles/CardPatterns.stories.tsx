@@ -33,6 +33,36 @@ export const CardStructure: Story = {
   ),
 };
 
+/**
+ * The anodized temper edge — a card's equipment-match score worn as a 3px crown,
+ * coloured by the score's position on the investment ramp. GameCardShell sets the
+ * inline `--temper` (via the shared progress gradient) and the `has-temper-edge`
+ * class from its `temperScore` prop; cards without a score render no edge. Hovering
+ * an edged card intensifies the glow.
+ */
+export const AnodizedEdge: Story = {
+  render: () => (
+    <div style={{ display: 'flex', gap: 'var(--spacing-md)' }}>
+      {/* --temper values are getProgressStyle(score, 0, 100).color at 12 / 58 / 92 */}
+      {[
+        ['12% — rust', 'rgb(161, 108, 74)'],
+        ['58% — amber→gold', 'rgb(209, 163, 57)'],
+        ['92% — toward verdigris', 'rgb(100, 194, 135)'],
+      ].map(([label, temper]) => (
+        <div
+          key={label}
+          className="game-card has-temper-edge"
+          style={{ maxWidth: 200, flex: 1, '--temper': temper } as React.CSSProperties}
+        >
+          <div className="game-card-body">
+            <h3 className="game-card-name">{label}</h3>
+          </div>
+        </div>
+      ))}
+    </div>
+  ),
+};
+
 export const Buttons: Story = {
   render: () => (
     <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>

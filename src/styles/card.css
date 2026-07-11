@@ -102,7 +102,7 @@
     to bottom,
     rgba(0, 0, 0, 0.4) 0%,
     transparent 40%,
-    rgba(20, 20, 30, 0.9) 100%
+    color-mix(in srgb, var(--color-bg-base) 90%, transparent) 100%
   );
   z-index: 1;
 }

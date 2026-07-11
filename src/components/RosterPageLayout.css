@@ -195,7 +195,7 @@
 .retry-button {
   margin-top: var(--spacing-md);
   padding: var(--spacing-sm) var(--spacing-lg);
-  background: var(--color-brand-accent, #6c63ff);
+  background: var(--color-brand-accent);
   color: var(--color-text-primary);
   border: none;
   border-radius: var(--border-radius-md);

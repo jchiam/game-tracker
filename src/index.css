@@ -173,23 +173,48 @@ button {
    Never hotlink external art here — the CSP img-src allowlist blocks foreign
    origins in production (the old hoyolab/prydwen URLs were dead AND blocked). */
 .selection-card-header.bg-honkai-star-rail-sel {
-  background: linear-gradient(135deg, #0a1e2e 0%, #16405a 50%, #0a0a1a 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-hsr-sel-start) 0%,
+    var(--color-hsr-sel-mid) 50%,
+    var(--color-bg-selection-fade) 100%
+  );
 }
 
 .selection-card-header.bg-r1999-sel {
-  background: linear-gradient(135deg, #2e230a 0%, #4e3d1b 50%, #0a0a1a 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-r1999-sel-start) 0%,
+    var(--color-r1999-sel-mid) 50%,
+    var(--color-bg-selection-fade) 100%
+  );
 }
 
 .selection-card-header.bg-n2e-sel {
-  background: linear-gradient(135deg, #1a0a2e 0%, #2d1b4e 50%, #0a0a1a 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-n2e-sel-start) 0%,
+    var(--color-n2e-sel-mid) 50%,
+    var(--color-bg-selection-fade) 100%
+  );
 }
 
 .selection-card-header.bg-ae-sel {
-  background: linear-gradient(135deg, #0a1a2e 0%, #1b2d4e 50%, #0a0a1a 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-ae-sel-start) 0%,
+    var(--color-ae-sel-mid) 50%,
+    var(--color-bg-selection-fade) 100%
+  );
 }
 
 .selection-card-header.bg-p5x-sel {
-  background: linear-gradient(135deg, #2e0a0a 0%, #4e1b1b 50%, #0a0a1a 100%);
+  background: linear-gradient(
+    135deg,
+    var(--color-p5x-sel-start) 0%,
+    var(--color-p5x-sel-mid) 50%,
+    var(--color-bg-selection-fade) 100%
+  );
 }
 
 .game-character-image {
@@ -231,9 +256,9 @@ button {
   height: 100%;
   background: linear-gradient(
     to bottom,
-    rgba(10, 10, 15, 0.3) 0%,
+    rgba(0, 0, 0, 0.3) 0%,
     transparent 50%,
-    rgba(20, 20, 30, 0.95) 100%
+    color-mix(in srgb, var(--color-bg-base) 95%, transparent) 100%
   );
   z-index: 2;
   transition: opacity var(--transition-normal);
@@ -251,7 +276,7 @@ button {
 }
 
 .requires-login-badge {
-  background: rgba(40, 40, 55, 0.8);
+  background: var(--color-bg-elevated);
   border: 1px solid var(--color-brand-primary);
   color: var(--color-brand-primary);
   padding: var(--spacing-2) var(--spacing-5);
@@ -269,7 +294,7 @@ button {
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-  background: rgba(20, 20, 30, 0.4);
+  background: color-mix(in srgb, var(--color-bg-base) 40%, transparent);
   z-index: 3;
 }
 

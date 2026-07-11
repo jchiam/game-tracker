@@ -5,7 +5,8 @@
       "base": { "$value": "#0e1014", "$type": "color" },
       "surface": { "$value": "rgba(26,30,38,0.7)", "$type": "color" },
       "surfaceHover": { "$value": "rgba(38,44,56,0.8)", "$type": "color" },
-      "elevated": { "$value": "rgba(30,35,45,0.9)", "$type": "color" }
+      "elevated": { "$value": "rgba(30,35,45,0.9)", "$type": "color" },
+      "selectionFade": { "$value": "#0a0a1a", "$type": "color" }
     },
     "text": {
       "primary": { "$value": "#e9e4d8", "$type": "color" },
@@ -50,6 +51,8 @@
       "infoBorder": { "$value": "rgba(96,165,250,0.5)", "$type": "color" }
     },
     "hsr": {
+      "selStart": { "$value": "#0a1e2e", "$type": "color" },
+      "selMid": { "$value": "#16405a", "$type": "color" },
       "elementLightning": { "$value": "#d97afe", "$type": "color" },
       "elementImaginary": { "$value": "#f4d258", "$type": "color" },
       "elementFire": { "$value": "#f84f36", "$type": "color" },
@@ -76,6 +79,8 @@
       "gradeD": { "$value": "{color.temper.rust}", "$type": "color" }
     },
     "n2e": {
+      "selStart": { "$value": "#1a0a2e", "$type": "color" },
+      "selMid": { "$value": "#2d1b4e", "$type": "color" },
       "esperAnima": { "$value": "#f5b080", "$type": "color" },
       "esperChaos": { "$value": "#c9a8f8", "$type": "color" },
       "esperCosmos": { "$value": "#90d0f0", "$type": "color" },
@@ -92,6 +97,8 @@
       "rarityB": { "$value": "#90d0f0", "$type": "color" }
     },
     "ae": {
+      "selStart": { "$value": "#0a1a2e", "$type": "color" },
+      "selMid": { "$value": "#1b2d4e", "$type": "color" },
       "elementPhysical": { "$value": "#bcbcbc", "$type": "color" },
       "elementCryo": { "$value": "#47c7fd", "$type": "color" },
       "elementElectric": { "$value": "#d97afe", "$type": "color" },
@@ -110,6 +117,8 @@
       "weaponArtsUnit": { "$value": "#c9a8f8", "$type": "color" }
     },
     "p5x": {
+      "selStart": { "$value": "#2e0a0a", "$type": "color" },
+      "selMid": { "$value": "#4e1b1b", "$type": "color" },
       "elementPhysical": { "$value": "#bcbcbc", "$type": "color" },
       "elementGun": { "$value": "#f5b080", "$type": "color" },
       "elementFire": { "$value": "#f84f36", "$type": "color" },
@@ -136,6 +145,8 @@
       "weaponRarity5": { "$value": "#ffd700", "$type": "color" }
     },
     "r1999": {
+      "selStart": { "$value": "#2e230a", "$type": "color" },
+      "selMid": { "$value": "#4e3d1b", "$type": "color" },
       "afflatusPlant": { "$value": "#90e09a", "$type": "color" },
       "afflatusStar": { "$value": "#f5d68a", "$type": "color" },
       "afflatusBeast": { "$value": "#f5b080", "$type": "color" },
