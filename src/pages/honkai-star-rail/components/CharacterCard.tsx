@@ -5,6 +5,7 @@ import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
 import { LevelSlider } from '@/components/LevelSlider';
+import { PreferenceChainReadout } from '@/components/PreferenceChainReadout';
 import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
 import { getRelicIconUrl } from '@/lib/imagekit';
@@ -217,47 +218,15 @@ export function CharacterCard({
                     </div>
                   )}
 
-                  {(['body', 'feet', 'sphere', 'rope'] as const).map((slot) => {
-                    const prefs = char.buildPreferences?.mainStats[slot];
-                    if (!prefs || prefs.length === 0) return null;
-                    return (
-                      <div key={slot} className="pref-display-row">
-                        <span className="pref-display-label">
-                          {slot.charAt(0).toUpperCase() + slot.slice(1)}
-                        </span>
-                        <div className="pref-display-chain">
-                          {prefs.map((p, i) => (
-                            <span key={i}>
-                              <span className="pref-stat-badge">{p.stat}</span>
-                              {p.operator && (
-                                <span className="pref-operator-badge">
-                                  {p.operator === '>=' ? '≥' : p.operator}
-                                </span>
-                              )}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {(['body', 'feet', 'sphere', 'rope'] as const).map((slot) => (
+                    <PreferenceChainReadout
+                      key={slot}
+                      label={slot.charAt(0).toUpperCase() + slot.slice(1)}
+                      chain={char.buildPreferences?.mainStats[slot] ?? []}
+                    />
+                  ))}
 
-                  {char.buildPreferences?.subStats.length > 0 && (
-                    <div className="pref-display-row">
-                      <span className="pref-display-label">Subs</span>
-                      <div className="pref-display-chain">
-                        {char.buildPreferences.subStats.map((p, i) => (
-                          <span key={i}>
-                            <span className="pref-stat-badge">{p.stat}</span>
-                            {p.operator && (
-                              <span className="pref-operator-badge">
-                                {p.operator === '>=' ? '≥' : p.operator}
-                              </span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <PreferenceChainReadout label="Subs" chain={char.buildPreferences.subStats} />
 
                   {char.buildPreferences?.comments && (
                     <div className="pref-display-row build-comments-row">

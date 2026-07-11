@@ -8,6 +8,7 @@ import { LevelSlider } from '@/components/LevelSlider';
 import { ScoreBadge } from '@/components/ScoreBadge';
 import { Select } from '@/components/Select';
 import { getProgressStyle } from '@/utils/progressGradient';
+import { PreferenceChainReadout } from '@/components/PreferenceChainReadout';
 import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { StatChip } from '@/components/StatChip';
@@ -277,40 +278,14 @@ export function CharacterCard({
                       </div>
                     </div>
                   )}
-                  {character.cartridgePreferences.mainStats.length > 0 && (
-                    <div className="pref-display-row">
-                      <span className="pref-display-label">Main</span>
-                      <div className="pref-display-chain">
-                        {character.cartridgePreferences.mainStats.map((p, i) => (
-                          <span key={i}>
-                            <span className="pref-stat-badge">{p.stat}</span>
-                            {p.operator && (
-                              <span className="pref-operator-badge">
-                                {p.operator === '>=' ? '≥' : p.operator}
-                              </span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  {character.cartridgePreferences.subStats.length > 0 && (
-                    <div className="pref-display-row">
-                      <span className="pref-display-label">Subs</span>
-                      <div className="pref-display-chain">
-                        {character.cartridgePreferences.subStats.map((p, i) => (
-                          <span key={i}>
-                            <span className="pref-stat-badge">{p.stat}</span>
-                            {p.operator && (
-                              <span className="pref-operator-badge">
-                                {p.operator === '>=' ? '≥' : p.operator}
-                              </span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  <PreferenceChainReadout
+                    label="Main"
+                    chain={character.cartridgePreferences.mainStats}
+                  />
+                  <PreferenceChainReadout
+                    label="Subs"
+                    chain={character.cartridgePreferences.subStats}
+                  />
                   {character.cartridgePreferences.comments && (
                     <div className="pref-display-row build-comments-row">
                       <div className="pref-comments-text">

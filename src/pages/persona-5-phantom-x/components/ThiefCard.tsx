@@ -11,6 +11,7 @@ import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
 import { LevelSlider } from '@/components/LevelSlider';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
+import { PreferenceChainReadout } from '@/components/PreferenceChainReadout';
 import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
@@ -268,45 +269,20 @@ export function ThiefCard({
                   </div>
                 )}
 
-                {(['moon', 'star', 'sky'] as const).map((slot) => {
-                  const chain = prefs.mainStats[slot];
-                  if (chain.length === 0) return null;
-                  return (
-                    <div key={slot} className="pref-display-row">
-                      <span className="pref-display-label">{capitalize(slot)}</span>
-                      <div className="pref-display-chain">
-                        {chain.map((p, i) => (
-                          <span key={i}>
-                            <span className="pref-stat-badge">{statLabel(p.stat)}</span>
-                            {p.operator && (
-                              <span className="pref-operator-badge">
-                                {p.operator === '>=' ? '≥' : p.operator}
-                              </span>
-                            )}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })}
+                {(['moon', 'star', 'sky'] as const).map((slot) => (
+                  <PreferenceChainReadout
+                    key={slot}
+                    label={capitalize(slot)}
+                    chain={prefs.mainStats[slot]}
+                    formatStat={statLabel}
+                  />
+                ))}
 
-                {prefs.subStats.length > 0 && (
-                  <div className="pref-display-row">
-                    <span className="pref-display-label">Subs</span>
-                    <div className="pref-display-chain">
-                      {prefs.subStats.map((p, i) => (
-                        <span key={i}>
-                          <span className="pref-stat-badge">{statLabel(p.stat)}</span>
-                          {p.operator && (
-                            <span className="pref-operator-badge">
-                              {p.operator === '>=' ? '≥' : p.operator}
-                            </span>
-                          )}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                <PreferenceChainReadout
+                  label="Subs"
+                  chain={prefs.subStats}
+                  formatStat={statLabel}
+                />
 
                 {prefs.comments && (
                   <div className="pref-display-row build-comments-row">
