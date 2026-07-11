@@ -9,23 +9,23 @@ import type { N2ETrackedCharacter } from '../types';
 
 describe('getStatMatchScore', () => {
   it('returns 1.0 for exact match', () => {
-    expect(getStatMatchScore('CRIT Rate %', 'CRIT Rate %')).toBe(1.0);
+    expect(getStatMatchScore('CRIT Rate', 'CRIT Rate')).toBe(1.0);
   });
 
   it('returns 0.5 for % preferred but flat equipped', () => {
-    expect(getStatMatchScore('ATK %', 'ATK')).toBe(0.5);
+    expect(getStatMatchScore('ATK%', 'ATK')).toBe(0.5);
   });
 
   it('returns 1.0 for flat preferred but % equipped', () => {
-    expect(getStatMatchScore('ATK', 'ATK %')).toBe(1.0);
+    expect(getStatMatchScore('ATK', 'ATK%')).toBe(1.0);
   });
 
   it('returns 0.5 for cross-crit match', () => {
-    expect(getStatMatchScore('CRIT Rate %', 'CRIT DMG %')).toBe(0.5);
+    expect(getStatMatchScore('CRIT Rate', 'CRIT DMG')).toBe(0.5);
   });
 
   it('returns 0.0 for unrelated stats', () => {
-    expect(getStatMatchScore('HP %', 'CRIT Rate %')).toBe(0.0);
+    expect(getStatMatchScore('HP%', 'CRIT Rate')).toBe(0.0);
   });
 });
 
@@ -96,7 +96,7 @@ describe('calculateCartridgeScore', () => {
     const char = makeCharacter({
       cartridgePreferences: {
         cartridgeId: null,
-        mainStats: [{ stat: 'CRIT Rate %', operator: null, orderIndex: 0 }],
+        mainStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
         subStats: [],
       },
     });
@@ -135,16 +135,16 @@ describe('calculateCartridgeScore', () => {
     // id=0, main=1.0×0.30, sub=1.0×0.35 → 65
     const char = makeCharacter({
       cartridgeId: 'Attack_orange',
-      cartridgeMainStat: 'CRIT Rate %',
-      cartridgeSubStats: ['ATK %', 'CRIT DMG %', 'HP %', 'DEF %'],
+      cartridgeMainStat: 'CRIT Rate',
+      cartridgeSubStats: ['ATK%', 'CRIT DMG', 'HP%', 'DEF%'],
       cartridgePreferences: {
         cartridgeId: 'Cosmos_orange',
-        mainStats: [{ stat: 'CRIT Rate %', operator: null, orderIndex: 0 }],
+        mainStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
         subStats: [
-          { stat: 'ATK %', operator: '>', orderIndex: 0 },
-          { stat: 'CRIT DMG %', operator: '>', orderIndex: 1 },
-          { stat: 'HP %', operator: '>', orderIndex: 2 },
-          { stat: 'DEF %', operator: null, orderIndex: 3 },
+          { stat: 'ATK%', operator: '>', orderIndex: 0 },
+          { stat: 'CRIT DMG', operator: '>', orderIndex: 1 },
+          { stat: 'HP%', operator: '>', orderIndex: 2 },
+          { stat: 'DEF%', operator: null, orderIndex: 3 },
         ],
       },
     });
@@ -154,16 +154,16 @@ describe('calculateCartridgeScore', () => {
   it('returns 100 for perfect set + main + all 4 subs matching', () => {
     const char = makeCharacter({
       cartridgeId: 'Cosmos_orange',
-      cartridgeMainStat: 'CRIT Rate %',
-      cartridgeSubStats: ['ATK %', 'CRIT DMG %', 'HP %', 'DEF %'],
+      cartridgeMainStat: 'CRIT Rate',
+      cartridgeSubStats: ['ATK%', 'CRIT DMG', 'HP%', 'DEF%'],
       cartridgePreferences: {
         cartridgeId: 'Cosmos_orange',
-        mainStats: [{ stat: 'CRIT Rate %', operator: null, orderIndex: 0 }],
+        mainStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
         subStats: [
-          { stat: 'ATK %', operator: '>', orderIndex: 0 },
-          { stat: 'CRIT DMG %', operator: '>', orderIndex: 1 },
-          { stat: 'HP %', operator: '>', orderIndex: 2 },
-          { stat: 'DEF %', operator: null, orderIndex: 3 },
+          { stat: 'ATK%', operator: '>', orderIndex: 0 },
+          { stat: 'CRIT DMG', operator: '>', orderIndex: 1 },
+          { stat: 'HP%', operator: '>', orderIndex: 2 },
+          { stat: 'DEF%', operator: null, orderIndex: 3 },
         ],
       },
     });
@@ -174,11 +174,11 @@ describe('calculateCartridgeScore', () => {
     // id match = 0.6 × 0.35 = 0.21, main = 1.0 × 0.30, sub don't-care = 1.0 × 0.35 → 86
     const char = makeCharacter({
       cartridgeId: 'Cosmos_purple',
-      cartridgeMainStat: 'CRIT Rate %',
+      cartridgeMainStat: 'CRIT Rate',
       cartridgeSubStats: [],
       cartridgePreferences: {
         cartridgeId: 'Cosmos_orange',
-        mainStats: [{ stat: 'CRIT Rate %', operator: null, orderIndex: 0 }],
+        mainStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
         subStats: [],
       },
     });
@@ -186,24 +186,24 @@ describe('calculateCartridgeScore', () => {
   });
 
   it('maxes the sub term when the equipped main occupies the only exact sub match', () => {
-    // Main 'HP %' excludes 'HP %' from the pool; sub pref [HP %] can only be met by
+    // Main 'HP%' excludes 'HP%' from the pool; sub pref [HP%] can only be met by
     // flat HP at 0.5 → achievable 0.5; equipped [HP] sums 0.5 → sub 1.0.
     // No set pref (0), main don't-care (1.0) → (0.30 + 0.35) × 100 = 65
     const char = makeCharacter({
       cartridgeId: 'Cosmos_orange',
-      cartridgeMainStat: 'HP %',
+      cartridgeMainStat: 'HP%',
       cartridgeSubStats: ['HP'],
       cartridgePreferences: {
         cartridgeId: null,
         mainStats: [],
-        subStats: [{ stat: 'HP %', operator: null, orderIndex: 0 }],
+        subStats: [{ stat: 'HP%', operator: null, orderIndex: 0 }],
       },
     });
     expect(calculateCartridgeScore(char)).toBeCloseTo(65, 5);
   });
 
   it('maxes the sub term when nothing in the pool can match the chain (achievable-zero guard)', () => {
-    // Sub pref 'Cosmos DMG Bonus %' is a main-only stat — no substat in the pool can
+    // Sub pref 'Cosmos DMG Bonus' is a main-only stat — no substat in the pool can
     // ever match it, so a perfect legal cartridge also achieves 0 there → sub 1.0.
     // No set pref (0), main don't-care (1.0) → (0.30 + 0.35) × 100 = 65
     const char = makeCharacter({
@@ -212,7 +212,7 @@ describe('calculateCartridgeScore', () => {
       cartridgePreferences: {
         cartridgeId: null,
         mainStats: [],
-        subStats: [{ stat: 'Cosmos DMG Bonus %', operator: null, orderIndex: 0 }],
+        subStats: [{ stat: 'Cosmos DMG Bonus', operator: null, orderIndex: 0 }],
       },
     });
     expect(calculateCartridgeScore(char)).toBeCloseTo(65, 5);
@@ -220,14 +220,14 @@ describe('calculateCartridgeScore', () => {
 
   it('returns partial score for some matching subs', () => {
     const char = makeCharacter({
-      cartridgeMainStat: 'CRIT Rate %',
-      cartridgeSubStats: ['ATK %', 'HP', 'Break Intensity', 'Cycle Intensity'],
+      cartridgeMainStat: 'CRIT Rate',
+      cartridgeSubStats: ['ATK%', 'HP', 'Break Intensity', 'Cycle Intensity'],
       cartridgePreferences: {
         cartridgeId: null,
-        mainStats: [{ stat: 'CRIT Rate %', operator: null, orderIndex: 0 }],
+        mainStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
         subStats: [
-          { stat: 'ATK %', operator: '>', orderIndex: 0 },
-          { stat: 'CRIT DMG %', operator: null, orderIndex: 1 },
+          { stat: 'ATK%', operator: '>', orderIndex: 0 },
+          { stat: 'CRIT DMG', operator: null, orderIndex: 1 },
         ],
       },
     });

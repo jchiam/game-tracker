@@ -215,16 +215,16 @@ describe('useCharacters', () => {
         cartridgeId: 'Cosmos_orange',
         cartridgeRarity: 'S',
         cartridgeLevel: 15,
-        cartridgeMainStat: 'ATK %',
-        cartridgeSubStats: ['CRIT Rate %', 'CRIT DMG %'],
+        cartridgeMainStat: 'ATK%',
+        cartridgeSubStats: ['CRIT Rate', 'CRIT DMG'],
       }),
     );
     const char = result.current.trackedCharacters[0];
     expect(char.cartridgeId).toBe('Cosmos_orange');
     expect(char.cartridgeRarity).toBe('S');
     expect(char.cartridgeLevel).toBe(15);
-    expect(char.cartridgeMainStat).toBe('ATK %');
-    expect(char.cartridgeSubStats).toEqual(['CRIT Rate %', 'CRIT DMG %']);
+    expect(char.cartridgeMainStat).toBe('ATK%');
+    expect(char.cartridgeSubStats).toEqual(['CRIT Rate', 'CRIT DMG']);
   });
 
   it('toggleFavoriteCharacter updates isFavorited', async () => {
@@ -243,7 +243,7 @@ describe('useCharacters', () => {
     const id = result.current.trackedCharacters[0].id;
     const prefs = {
       cartridgeId: null,
-      mainStats: [{ stat: 'ATK %', operator: null, orderIndex: 0 }],
+      mainStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
       subStats: [],
       comments: 'Test',
     };

@@ -108,10 +108,10 @@ describe('CartridgeEditorModal', () => {
     const select = document.querySelector(
       'select[name="cartridge-main-stat"]',
     ) as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'ATK %' } });
+    fireEvent.change(select, { target: { value: 'ATK%' } });
     // Main-stat change also carries a substat prune (none here → empty list).
     expect(onSaveCartridge).toHaveBeenCalledWith({
-      cartridgeMainStat: 'ATK %',
+      cartridgeMainStat: 'ATK%',
       cartridgeSubStats: [],
     });
   });
@@ -137,7 +137,7 @@ describe('CartridgeEditorModal', () => {
         character={makeChar({
           cartridgeId: firstCartridge.id,
           cartridgeRarity: 'S',
-          cartridgeMainStat: 'ATK %',
+          cartridgeMainStat: 'ATK%',
         })}
         {...defaultProps}
         onSaveCartridge={onSaveCartridge}
@@ -167,7 +167,7 @@ describe('CartridgeEditorModal', () => {
         character={makeChar({
           cartridgeId: firstCartridge.id,
           cartridgeRarity: 'S',
-          cartridgeMainStat: 'CRIT Rate %',
+          cartridgeMainStat: 'CRIT Rate',
         })}
         {...defaultProps}
         onSaveCartridge={onSaveCartridge}
@@ -189,7 +189,7 @@ describe('CartridgeEditorModal', () => {
         character={makeChar({
           cartridgeId: firstCartridge.id,
           cartridgeRarity: 'S',
-          cartridgeMainStat: 'CRIT Rate %',
+          cartridgeMainStat: 'CRIT Rate',
           cartridgeSubStats: ['ATK', 'HP'],
         })}
         {...defaultProps}
@@ -205,7 +205,7 @@ describe('CartridgeEditorModal', () => {
   it('hides add sub stat button when 4 subs are equipped', () => {
     render(
       <CartridgeEditorModal
-        character={makeChar({ cartridgeSubStats: ['ATK', 'HP', 'DEF', 'CRIT Rate %'] })}
+        character={makeChar({ cartridgeSubStats: ['ATK', 'HP', 'DEF', 'CRIT Rate'] })}
         {...defaultProps}
       />,
     );
@@ -238,7 +238,7 @@ describe('CartridgeEditorModal', () => {
     const char = makeChar({
       cartridgePreferences: {
         cartridgeId: null,
-        mainStats: [{ stat: 'ATK %', operator: null, orderIndex: 0 }],
+        mainStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
         subStats: [],
         comments: '',
       },
@@ -279,7 +279,7 @@ describe('CartridgeEditorModal', () => {
     const char = makeChar({
       cartridgePreferences: {
         cartridgeId: null,
-        mainStats: [{ stat: 'ATK %', operator: null, orderIndex: 0 }],
+        mainStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
         subStats: [],
         comments: '',
       },
@@ -297,7 +297,7 @@ describe('CartridgeEditorModal', () => {
     expect(onSavePreferences).toHaveBeenCalledWith(
       expect.objectContaining({
         mainStats: expect.arrayContaining([
-          expect.objectContaining({ stat: 'ATK %', operator: '>', orderIndex: 0 }),
+          expect.objectContaining({ stat: 'ATK%', operator: '>', orderIndex: 0 }),
         ]),
       }),
     );
@@ -370,7 +370,7 @@ describe('CartridgeEditorModal', () => {
         character={makeChar({
           cartridgeId: firstCartridge.id,
           cartridgeRarity: 'S',
-          cartridgeMainStat: 'CRIT Rate %',
+          cartridgeMainStat: 'CRIT Rate',
         })}
         {...defaultProps}
       />,
@@ -410,7 +410,7 @@ describe('CartridgeEditorModal', () => {
         character={makeChar({
           cartridgeId: firstCartridge.id,
           cartridgeRarity: 'S',
-          cartridgeMainStat: 'CRIT Rate %',
+          cartridgeMainStat: 'CRIT Rate',
           cartridgeSubStats: ['ATK'],
         })}
         {...defaultProps}
@@ -419,7 +419,7 @@ describe('CartridgeEditorModal', () => {
     const opts = Array.from(document.querySelectorAll('select[name="substat-type-0"] option')).map(
       (o) => (o as HTMLOptionElement).value,
     );
-    expect(opts).not.toContain('CRIT Rate %'); // the equipped main
+    expect(opts).not.toContain('CRIT Rate'); // the equipped main
   });
 
   it('prunes a colliding substat when the main stat changes to it', () => {
@@ -429,8 +429,8 @@ describe('CartridgeEditorModal', () => {
         character={makeChar({
           cartridgeId: firstCartridge.id,
           cartridgeRarity: 'S',
-          cartridgeMainStat: 'ATK %',
-          cartridgeSubStats: ['CRIT Rate %', 'HP %'],
+          cartridgeMainStat: 'ATK%',
+          cartridgeSubStats: ['CRIT Rate', 'HP%'],
         })}
         {...defaultProps}
         onSaveCartridge={onSaveCartridge}
@@ -439,10 +439,10 @@ describe('CartridgeEditorModal', () => {
     const select = document.querySelector(
       'select[name="cartridge-main-stat"]',
     ) as HTMLSelectElement;
-    fireEvent.change(select, { target: { value: 'CRIT Rate %' } });
+    fireEvent.change(select, { target: { value: 'CRIT Rate' } });
     expect(onSaveCartridge).toHaveBeenCalledWith({
-      cartridgeMainStat: 'CRIT Rate %',
-      cartridgeSubStats: ['HP %'], // colliding CRIT Rate % pruned
+      cartridgeMainStat: 'CRIT Rate',
+      cartridgeSubStats: ['HP%'], // colliding CRIT Rate pruned
     });
   });
 });

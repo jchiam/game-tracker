@@ -62,6 +62,38 @@ describe('characterService', () => {
     expect(result[0].name).toBe('Baicang');
   });
 
+  it('loadCharactersFromDB remaps legacy everness.info stat labels to in-game form', async () => {
+    const dbRow = {
+      id: 'db-uuid-legacy',
+      character_id: 'baicang',
+      level: 45,
+      cartridge_id: 'Cosmos_orange',
+      cartridge_rarity: 'S',
+      cartridge_main_stat: 'Cosmos DMG Bonus %',
+      cartridge_sub_stats: ['HP %', 'CRIT DMG %', 'ATK %', 'Break Intensity'],
+      n2e_cartridge_preference_main_stats: [
+        { stat: 'CRIT Rate %', operator_to_next: null, order_index: 0 },
+      ],
+      n2e_cartridge_preference_sub_stats: [
+        { stat: 'Universal DMG Bonus %', operator_to_next: null, order_index: 0 },
+      ],
+    };
+
+    mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+    const result = await service.loadCharactersFromDB('user-1');
+
+    expect(result[0].cartridgeMainStat).toBe('Cosmos DMG Bonus');
+    // 'Break Intensity' is unchanged (identity); the rest are remapped.
+    expect(result[0].cartridgeSubStats).toEqual(['HP%', 'CRIT DMG', 'ATK%', 'Break Intensity']);
+    expect(result[0].cartridgePreferences.mainStats).toEqual([
+      { stat: 'CRIT Rate', operator: null, orderIndex: 0 },
+    ]);
+    expect(result[0].cartridgePreferences.subStats).toEqual([
+      { stat: 'DMG%', operator: null, orderIndex: 0 },
+    ]);
+  });
+
   it('loadCharactersFromDB maps cartridge preference main and sub stats correctly', async () => {
     const dbRow = {
       id: 'db-uuid-1',

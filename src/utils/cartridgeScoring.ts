@@ -29,13 +29,13 @@ export function getCartridgeIdMatchScore(preferredId: string, equippedId: string
 // (isPercent false) so non-participants can only exact-match.
 const N2E_STAT_SHAPES: Record<string, StatShape> = {
   HP: { base: 'hp', isPercent: false },
-  'HP %': { base: 'hp', isPercent: true },
+  'HP%': { base: 'hp', isPercent: true },
   ATK: { base: 'atk', isPercent: false },
-  'ATK %': { base: 'atk', isPercent: true },
+  'ATK%': { base: 'atk', isPercent: true },
   DEF: { base: 'def', isPercent: false },
-  'DEF %': { base: 'def', isPercent: true },
-  'CRIT Rate %': { base: 'crit-rate', isPercent: true },
-  'CRIT DMG %': { base: 'crit-mult', isPercent: true },
+  'DEF%': { base: 'def', isPercent: true },
+  'CRIT Rate': { base: 'crit-rate', isPercent: true },
+  'CRIT DMG': { base: 'crit-mult', isPercent: true },
 };
 
 const { getStatMatchScore, bestMatch } = makeStatMatcher(N2E_STAT_SHAPES);

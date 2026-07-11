@@ -1,5 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
-import { N2E_STAT_ORDER, orderByList, unlistedStats, orderN2eStats } from './statOrder.mjs';
+import {
+  N2E_STAT_ORDER,
+  N2E_STAT_RENAME,
+  orderByList,
+  unlistedStats,
+  orderN2eStats,
+} from './statOrder.mjs';
+import { N2E_STAT_RENAME as RUNTIME_RENAME } from '../../src/data/neverness-to-everness/statLabelRename';
 
 describe('orderByList', () => {
   it('sorts labels by their index in the order list', () => {
@@ -30,7 +37,7 @@ describe('unlistedStats', () => {
 });
 
 describe('orderN2eStats', () => {
-  it('orders the current N2E sub-stat set semantically', () => {
+  it('renames raw API sub-stat labels to in-game form and orders them semantically', () => {
     const rawSub = [
       'ATK',
       'ATK %',
@@ -46,20 +53,20 @@ describe('orderN2eStats', () => {
     ];
     expect(orderN2eStats(rawSub)).toEqual([
       'ATK',
-      'ATK %',
-      'CRIT Rate %',
-      'CRIT DMG %',
-      'Universal DMG Bonus %',
+      'ATK%',
+      'CRIT Rate',
+      'CRIT DMG',
+      'DMG%',
       'Break Intensity',
       'HP',
-      'HP %',
+      'HP%',
       'DEF',
-      'DEF %',
+      'DEF%',
       'Cycle Intensity',
     ]);
   });
 
-  it('orders the current N2E main-stat set semantically', () => {
+  it('renames raw API main-stat labels to in-game form and orders them semantically', () => {
     const rawMain = [
       'ATK %',
       'HP %',
@@ -78,21 +85,21 @@ describe('orderN2eStats', () => {
       'Break Intensity',
     ];
     expect(orderN2eStats(rawMain)).toEqual([
-      'ATK %',
-      'CRIT Rate %',
-      'CRIT DMG %',
-      'Cosmos DMG Bonus %',
-      'Anima DMG Bonus %',
-      'Incantation DMG Bonus %',
-      'Psyche DMG Bonus %',
-      'Chaos DMG Bonus %',
-      'Lakshana DMG Bonus %',
-      'Mental DMG Bonus %',
+      'ATK%',
+      'CRIT Rate',
+      'CRIT DMG',
+      'Cosmos DMG Bonus',
+      'Anima DMG Bonus',
+      'Incantation DMG Bonus',
+      'Psyche DMG Bonus',
+      'Chaos DMG Bonus',
+      'Lakshana DMG Bonus',
+      'Mental DMG Bonus',
       'Break Intensity',
-      'HP %',
-      'DEF %',
+      'HP%',
+      'DEF%',
       'Cycle Intensity',
-      'Healing Bonus %',
+      'Healing Bonus',
     ]);
   });
 
@@ -106,5 +113,11 @@ describe('orderN2eStats', () => {
 
   it('N2E_STAT_ORDER has no duplicates', () => {
     expect(new Set(N2E_STAT_ORDER).size).toBe(N2E_STAT_ORDER.length);
+  });
+
+  it('runtime back-compat rename map covers every generation-time pair (no silent divergence)', () => {
+    for (const [oldLabel, newLabel] of Object.entries(N2E_STAT_RENAME)) {
+      expect(RUNTIME_RENAME[oldLabel]).toBe(newLabel);
+    }
   });
 });

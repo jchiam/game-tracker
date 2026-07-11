@@ -69,36 +69,36 @@ describe('semantic stat ordering — N2E', () => {
   it('CARTRIDGE_SUB_STATS', () => {
     expect(N2E_SUB).toEqual([
       'ATK',
-      'ATK %',
-      'CRIT Rate %',
-      'CRIT DMG %',
-      'Universal DMG Bonus %',
+      'ATK%',
+      'CRIT Rate',
+      'CRIT DMG',
+      'DMG%',
       'Break Intensity',
       'HP',
-      'HP %',
+      'HP%',
       'DEF',
-      'DEF %',
+      'DEF%',
       'Cycle Intensity',
     ]);
   });
 
   it('CARTRIDGE_MAIN_STATS', () => {
     expect(N2E_MAIN).toEqual([
-      'ATK %',
-      'CRIT Rate %',
-      'CRIT DMG %',
-      'Cosmos DMG Bonus %',
-      'Anima DMG Bonus %',
-      'Incantation DMG Bonus %',
-      'Psyche DMG Bonus %',
-      'Chaos DMG Bonus %',
-      'Lakshana DMG Bonus %',
-      'Mental DMG Bonus %',
+      'ATK%',
+      'CRIT Rate',
+      'CRIT DMG',
+      'Cosmos DMG Bonus',
+      'Anima DMG Bonus',
+      'Incantation DMG Bonus',
+      'Psyche DMG Bonus',
+      'Chaos DMG Bonus',
+      'Lakshana DMG Bonus',
+      'Mental DMG Bonus',
       'Break Intensity',
-      'HP %',
-      'DEF %',
+      'HP%',
+      'DEF%',
       'Cycle Intensity',
-      'Healing Bonus %',
+      'Healing Bonus',
     ]);
   });
 });

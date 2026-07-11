@@ -6,6 +6,12 @@ import {
 } from '@/services/rosterPersistence';
 import type { N2ECharacterPatch, N2ETrackedCharacter } from '@/types';
 import { ALL_CHARACTERS, type N2ECharacter } from '@/data/neverness-to-everness/characters';
+import { renameN2EStatLabel } from '@/data/neverness-to-everness/statLabelRename';
+
+/** Remap a loaded preference chain's stat labels to their in-game form (back-compat). */
+function renameChainStats<T extends { stat: string }>(chain: T[]): T[] {
+  return chain.map((entry) => ({ ...entry, stat: renameN2EStatLabel(entry.stat) }));
+}
 
 /** Maps each camelCase patch key to its DB column. Schema stays service-private. */
 const CHARACTER_COLUMNS: Record<keyof N2ECharacterPatch, string> = {
@@ -54,8 +60,8 @@ const svc = createRosterPersistence<N2ECharacter, N2ETrackedCharacter, N2ECharac
     cartridgeId: row.cartridge_id ?? null,
     cartridgeRarity: row.cartridge_rarity ?? null,
     cartridgeLevel: row.cartridge_level ?? 0,
-    cartridgeMainStat: row.cartridge_main_stat ?? null,
-    cartridgeSubStats: row.cartridge_sub_stats ?? [],
+    cartridgeMainStat: row.cartridge_main_stat ? renameN2EStatLabel(row.cartridge_main_stat) : null,
+    cartridgeSubStats: (row.cartridge_sub_stats ?? []).map(renameN2EStatLabel),
     cartridgePreferences: { cartridgeId: null, mainStats: [], subStats: [], comments: '' },
   }),
   extras: {
@@ -65,8 +71,8 @@ const svc = createRosterPersistence<N2ECharacter, N2ETrackedCharacter, N2ECharac
       ...tracked,
       cartridgePreferences: {
         cartridgeId: row.cartridge_preference_id ?? null,
-        mainStats: rowsToChain(row.n2e_cartridge_preference_main_stats || []),
-        subStats: rowsToChain(row.n2e_cartridge_preference_sub_stats || []),
+        mainStats: renameChainStats(rowsToChain(row.n2e_cartridge_preference_main_stats || [])),
+        subStats: renameChainStats(rowsToChain(row.n2e_cartridge_preference_sub_stats || [])),
         comments: row.cartridge_comments || '',
       },
     }),
