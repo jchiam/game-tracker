@@ -13,7 +13,9 @@ Revelations → Mindscape → Skills; the collapsed summary chips reorder Mindsc
 ahead of Revelations (Level → Awareness → Weapon → Mindscape → Revelations →
 Skills) so the width-capped Revelations chip starts the second line and the card
 holds a fixed two-line summary height.
+
 ## Requirements
+
 ### Requirement: Thief level field
 
 The system SHALL track a Thief's level as an integer in the range 1–80, defaulting
@@ -765,4 +767,3 @@ The Thief card's edit body SHALL render a read-only "Target Build" `ProgressSect
 
 - **WHEN** a Thief has default (empty) revelation preferences
 - **THEN** no Target Build section renders in the edit body
-

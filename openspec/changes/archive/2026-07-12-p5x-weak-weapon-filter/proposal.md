@@ -15,7 +15,7 @@ _None._
 
 ### Modified Capabilities
 
-- `p5x-thief-detail`: adds a *P5X weapon-rarity roster filter* requirement (a sibling of the existing *Rose-gated roster filter*), plus the AND-composition behaviour when both P5X filter chips are active.
+- `p5x-thief-detail`: adds a _P5X weapon-rarity roster filter_ requirement (a sibling of the existing _Rose-gated roster filter_), plus the AND-composition behaviour when both P5X filter chips are active.
 
 ## Impact
 

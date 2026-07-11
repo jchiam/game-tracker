@@ -67,7 +67,7 @@ supplied inline from `getProgressStyle` exactly as the chips already do.
 
 ## Risks / Trade-offs
 
-- **[Set text + Persona could crowd a narrow card and wrap to two lines on the summaryLine.]** → The summaryLine sits *below* the fixed two-line chip reserve (like HSR's), so its own wrapping does not disturb the reserved chip height or the uniform-grid guarantee. A long set-summary + long Persona wrapping to two lines is acceptable (matches HSR, where the set line already wraps freely) and no longer clips information.
+- **[Set text + Persona could crowd a narrow card and wrap to two lines on the summaryLine.]** → The summaryLine sits _below_ the fixed two-line chip reserve (like HSR's), so its own wrapping does not disturb the reserved chip height or the uniform-grid guarantee. A long set-summary + long Persona wrapping to two lines is acceptable (matches HSR, where the set line already wraps freely) and no longer clips information.
 - **[Losing the standalone chip label changes existing tests.]** → `ThiefCard.test.tsx` assertions on the old chip label move to (a) the `Rev {n}/5` chip and (b) the summaryLine set text. Covered in tasks.
 - **[Ordering rationale in the spec previously leaned on the chip being "variable-width."]** → Ordering is unchanged behaviorally; the spec's rationale text is updated to drop the variable-width justification. No code impact.
 

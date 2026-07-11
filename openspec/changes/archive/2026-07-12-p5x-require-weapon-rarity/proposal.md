@@ -18,7 +18,7 @@ _None._
 
 ### Modified Capabilities
 
-- `p5x-thief-detail`: the *Weapon rarity field*, *Weapon summary chip*, and *Weapon edit section* requirements change — rarity is non-null with default `2`, not clearable, and the chip/value-label always reflect a present weapon.
+- `p5x-thief-detail`: the _Weapon rarity field_, _Weapon summary chip_, and _Weapon edit section_ requirements change — rarity is non-null with default `2`, not clearable, and the chip/value-label always reflect a present weapon.
 
 ## Impact
 
