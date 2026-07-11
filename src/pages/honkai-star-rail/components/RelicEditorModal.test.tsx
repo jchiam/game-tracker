@@ -247,6 +247,29 @@ describe('RelicEditorModal', () => {
       renderModal();
       expect(spy).not.toHaveBeenCalled();
     });
+
+    it('tab-return lands at the top, not the anchor', () => {
+      const anchorSpy = vi.fn();
+      Element.prototype.scrollIntoView = anchorSpy;
+      const { container } = renderModal({ anchorSlot: 'feet' });
+      const body = container.querySelector('.relic-editor-body') as HTMLDivElement & {
+        scrollTo: ReturnType<typeof vi.fn>;
+      };
+      body.scrollTo = vi.fn();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+      anchorSpy.mockClear();
+      body.scrollTo.mockClear();
+      fireEvent.click(screen.getByRole('button', { name: 'Equip Relics' }));
+
+      // The anchor re-fires on EquipTab remount (child effect), but the shell's
+      // reset flushes after it (parent effect) — the top position wins.
+      expect(anchorSpy).toHaveBeenCalledTimes(1);
+      expect(body.scrollTo).toHaveBeenCalledWith({ top: 0 });
+      expect(body.scrollTo.mock.invocationCallOrder[0]).toBeGreaterThan(
+        anchorSpy.mock.invocationCallOrder[0],
+      );
+    });
   });
 
   // --- Footer ---

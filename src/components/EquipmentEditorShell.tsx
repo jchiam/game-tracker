@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Modal } from '@/components/Modal';
 
 interface EquipmentEditorShellProps {
@@ -32,6 +32,19 @@ export function EquipmentEditorShell({
 }: EquipmentEditorShellProps) {
   const [activeTab, setActiveTab] = useState<'equip' | 'preferences'>('equip');
 
+  // Navigating onto a tab always lands at the top. Skipped on initial mount so an
+  // anchor-slot scroll on modal open is preserved; on tab-return the equip tab's
+  // anchor effect (child) flushes before this one (parent), so top wins.
+  const bodyRef = useRef<HTMLDivElement | null>(null);
+  const isFirstTab = useRef(true);
+  useEffect(() => {
+    if (isFirstTab.current) {
+      isFirstTab.current = false;
+      return;
+    }
+    bodyRef.current?.scrollTo?.({ top: 0 });
+  }, [activeTab]);
+
   return (
     <Modal
       title={title}
@@ -61,7 +74,7 @@ export function EquipmentEditorShell({
         </button>
       </div>
 
-      <div className={bodyClassName}>
+      <div ref={bodyRef} className={bodyClassName}>
         {activeTab === 'equip' ? equipContent : preferencesContent}
       </div>
     </Modal>
