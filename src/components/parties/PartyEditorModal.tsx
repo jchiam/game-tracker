@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import Fuse from 'fuse.js';
 import type { Party, PartyMember } from '@/types';
 import { addToast } from '@/utils/toast';
 import { Modal } from '@/components/Modal';
@@ -41,13 +42,18 @@ export function PartyEditorModal<E extends PartyEntity>({
     activeSlot === null ? null : (slots.find((s) => s.index === activeSlot) ?? null);
 
   const filteredEntities = useMemo(() => {
-    return entities.filter(
+    const term = searchTerm.trim();
+    const matched = term
+      ? new Fuse(entities, { keys: config.searchKeys ?? ['name'], threshold: 0.3 })
+          .search(term)
+          .map((r) => r.item)
+      : entities;
+    return matched.filter(
       (e) =>
-        e.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
         !members.some((m) => m.entityId === e.id) &&
         (!activeSlotConfig?.entityFilter || activeSlotConfig.entityFilter(e)),
     );
-  }, [entities, searchTerm, members, activeSlotConfig]);
+  }, [entities, searchTerm, config.searchKeys, members, activeSlotConfig]);
 
   const handleSelectEntity = (entityId: string) => {
     if (activeSlot === null) return;

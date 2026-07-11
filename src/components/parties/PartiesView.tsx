@@ -58,6 +58,12 @@ export interface PartyViewConfig<E extends PartyEntity> {
     /** Placeholder for the member picker search input. */
     searchPlaceholder: string;
   };
+  /**
+   * Entity fields the member picker searches, matched with Fuse.js (threshold
+   * 0.3, matching the roster search). Omit to search `name` only. Set to a
+   * game's roster `fuseKeys` for search parity between roster and picker.
+   */
+  searchKeys?: string[];
   /** Resolves the image shown in team slots (builder and card). */
   resolveSlotImage: (entity: E) => string;
   /** Resolves the image shown in the member picker list. */

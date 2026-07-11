@@ -425,4 +425,132 @@ describe('PartiesView', () => {
       expect(screen.getByPlaceholderText('Search character...')).toBeInTheDocument();
     });
   });
+
+  describe('member picker search', () => {
+    interface SearchEntity {
+      id: string;
+      name: string;
+      imageUrl: string;
+      element: string;
+      codename: string;
+    }
+
+    const searchEntities: SearchEntity[] = [
+      { id: 'ren', name: 'Ren Amamiya', imageUrl: '/ren.webp', element: 'Fire', codename: 'Joker' },
+      {
+        id: 'ann',
+        name: 'Ann Takamaki',
+        imageUrl: '/ann.webp',
+        element: 'Fire',
+        codename: 'Panther',
+      },
+      { id: 'bob', name: 'Bob', imageUrl: '/bob.webp', element: 'Ice', codename: 'Robo' },
+    ];
+
+    const baseSearchConfig: PartyViewConfig<SearchEntity> = {
+      nouns: {
+        party: 'Party',
+        partiesLower: 'parties',
+        entity: 'character',
+        header: 'Your Lineups',
+        namePlaceholder: 'e.g. Test Stage 1-1',
+        searchPlaceholder: 'Search character...',
+      },
+      resolveSlotImage: (e) => e.imageUrl,
+      resolveListImage: (e) => e.imageUrl,
+      supportsTier: false,
+      supportsFavorite: false,
+    };
+
+    function openPicker(name = 'Create New Party') {
+      fireEvent.click(screen.getByRole('button', { name }));
+      fireEvent.click(screen.getByText('Slot 1'));
+      return screen
+        .getByPlaceholderText('Search character...')
+        .closest('.character-picker') as HTMLElement;
+    }
+
+    it('matches a configured non-name field (codename) via searchKeys', () => {
+      const config: PartyViewConfig<SearchEntity> = {
+        ...baseSearchConfig,
+        searchKeys: ['name', 'codename'],
+      };
+      renderWithProviders(
+        <PartiesView
+          config={config}
+          {...defaultProps}
+          entities={searchEntities}
+          session={createMockSession()}
+        />,
+      );
+      const picker = openPicker();
+      fireEvent.change(within(picker).getByPlaceholderText('Search character...'), {
+        target: { value: 'Joker' },
+      });
+      expect(within(picker).getByText('Ren Amamiya')).toBeInTheDocument();
+      expect(within(picker).queryByText('Ann Takamaki')).not.toBeInTheDocument();
+    });
+
+    it('defaults to matching name only when searchKeys is omitted', () => {
+      renderWithProviders(
+        <PartiesView
+          config={baseSearchConfig}
+          {...defaultProps}
+          entities={searchEntities}
+          session={createMockSession()}
+        />,
+      );
+      const picker = openPicker();
+      // "Joker" is Ren's codename, not searched by default → no match.
+      fireEvent.change(within(picker).getByPlaceholderText('Search character...'), {
+        target: { value: 'Joker' },
+      });
+      expect(within(picker).queryByText('Ren Amamiya')).not.toBeInTheDocument();
+      // A name term still matches.
+      fireEvent.change(within(picker).getByPlaceholderText('Search character...'), {
+        target: { value: 'Amamiya' },
+      });
+      expect(within(picker).getByText('Ren Amamiya')).toBeInTheDocument();
+    });
+
+    it('composes searchKeys with the slot entityFilter and already-added exclusion', () => {
+      const config: PartyViewConfig<SearchEntity> = {
+        ...baseSearchConfig,
+        searchKeys: ['name', 'codename'],
+        slots: [
+          { index: 0, label: 'Fire Slot A', entityFilter: (e) => e.element === 'Fire' },
+          { index: 1, label: 'Fire Slot B', entityFilter: (e) => e.element === 'Fire' },
+          { index: 2, label: 'Ice Slot', entityFilter: (e) => e.element === 'Ice' },
+        ],
+      };
+      renderWithProviders(
+        <PartiesView
+          config={config}
+          {...defaultProps}
+          entities={searchEntities}
+          session={createMockSession()}
+        />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      // Add Ren (Joker) to the first fire slot.
+      fireEvent.click(screen.getByText('Fire Slot A'));
+      let picker = screen
+        .getByPlaceholderText('Search character...')
+        .closest('.character-picker') as HTMLElement;
+      fireEvent.click(within(picker).getByText('Ren Amamiya'));
+
+      // Open the second fire slot and search by codename.
+      fireEvent.click(screen.getByText('Fire Slot B'));
+      picker = screen
+        .getByPlaceholderText('Search character...')
+        .closest('.character-picker') as HTMLElement;
+      fireEvent.change(within(picker).getByPlaceholderText('Search character...'), {
+        target: { value: 'Panther' },
+      });
+      // Ann (Panther, Fire) matches; Ren is already added; Bob is filtered out (Ice).
+      expect(within(picker).getByText('Ann Takamaki')).toBeInTheDocument();
+      expect(within(picker).queryByText('Ren Amamiya')).not.toBeInTheDocument();
+      expect(within(picker).queryByText('Bob')).not.toBeInTheDocument();
+    });
+  });
 });

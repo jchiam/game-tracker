@@ -92,6 +92,10 @@ export const P5X_PARTY_VIEW: PartyViewConfig<P5xPartyEntity> = {
     namePlaceholder: 'e.g. Kamoshida Palace Crew',
     searchPlaceholder: 'Search...',
   },
+  // Parity with the roster search (useThieves fuseKeys): a codename like "Joker"
+  // finds "Ren Amamiya" in the picker just as it does in the roster. Fuse skips
+  // keys absent on an entity, so persona-slot entities match on name only.
+  searchKeys: ['name', 'codename', 'personaName', 'role', 'element'],
   resolveSlotImage: (e) =>
     isPersona(e) ? getPersonaMugshotUrl(e.imageUrl) : getMugshotUrl(e.imageUrl),
   resolveListImage: (e) =>
