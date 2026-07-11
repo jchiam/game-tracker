@@ -72,6 +72,7 @@ describe('p5x partyService', () => {
       members: [
         { entityId: 'arsene', slotIndex: 1 },
         { entityId: 'ann-takamaki', slotIndex: 4 },
+        { entityId: 'futaba-sakura', slotIndex: 7 },
       ],
     });
 
@@ -84,6 +85,12 @@ describe('p5x partyService', () => {
     expect(memberBuilder.insert).toHaveBeenCalledWith([
       { party_id: 'new-party-id', entity_id: 'arsene', slot_index: 1, member_type: 'persona' },
       { party_id: 'new-party-id', entity_id: 'ann-takamaki', slot_index: 4, member_type: 'thief' },
+      {
+        party_id: 'new-party-id',
+        entity_id: 'futaba-sakura',
+        slot_index: 7,
+        member_type: 'navigator',
+      },
     ]);
   });
 

@@ -73,7 +73,17 @@ The system SHALL enforce slot index constraints per game when saving party membe
 #### Scenario: P5X party slots
 
 - **WHEN** saving a P5X party
-- **THEN** member slot indices are in range 1–6: slots 1–3 hold up to 3 personas (`member_type = 'persona'`) and slots 4–6 hold up to 3 thieves (`member_type = 'thief'`). Wonder is implicit (never stored) and occupies no DB slot.
+- **THEN** member slot indices are in range 1–7: slots 1–3 hold up to 3 personas (`member_type = 'persona'`), slots 4–6 hold up to 3 active thieves (`member_type = 'thief'`), and slot 7 holds a single Navigator (`member_type = 'navigator'`). Wonder is implicit (never stored) and occupies no DB slot.
+
+#### Scenario: Navigator slot restricted to Navigator role
+
+- **WHEN** the P5X party editor renders the Navigator slot (index 7)
+- **THEN** its member picker lists only thieves with `role === 'Navigator'`
+
+#### Scenario: Active thief slots exclude Navigators
+
+- **WHEN** the P5X party editor renders an active thief slot (index 4–6)
+- **THEN** its member picker lists thieves with `role !== 'Navigator'`, so a Navigator can never be picked into an active slot
 
 #### Scenario: Wonder fixed slot rendered
 
@@ -153,4 +163,4 @@ The shared party editor and card SHALL support an optional per-slot configuratio
 #### Scenario: Per-slot entity filter
 
 - **WHEN** a slot config declares an `entityFilter`
-- **THEN** the member picker for that slot lists only entities satisfying the filter (e.g. personas for P5X slots 1–3, thieves for slots 4–6)
+- **THEN** the member picker for that slot lists only entities satisfying the filter (e.g. personas for P5X slots 1–3, active thieves for slots 4–6, and Navigator-role thieves for slot 7)

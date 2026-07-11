@@ -1,5 +1,6 @@
 /* P5X parties use slot groups: Wonder's Team panel (4 cols) and Thieves panel
-   (3 cols). The party-members-row becomes a flex container of group panels. */
+   (4 cols: 3 active thieves + the Navigator). The party-members-row becomes a
+   flex container of group panels. */
 
 .p5x-party .party-members-row {
   display: flex;
@@ -17,7 +18,7 @@
 }
 
 .p5x-party .p5x-thief-panel .slot-group-row {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 
 /* Panel accent tints */
@@ -29,13 +30,13 @@
   background: color-mix(in srgb, var(--color-p5x-element-curse) 6%, transparent);
 }
 
-/* Editor: Wonder panel gets 4-col sub-grid, Thieves panel gets 3-col */
+/* Editor: both Wonder and Thieves panels get a 4-col sub-grid */
 .p5x-party .p5x-wonder-panel .slot-group-slots {
   grid-template-columns: repeat(4, 1fr);
 }
 
 .p5x-party .p5x-thief-panel .slot-group-slots {
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
 }
 
 /* Fixed Wonder slot: the always-present protagonist, not an editable pick.

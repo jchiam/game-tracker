@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { screen, fireEvent } from '@testing-library/react';
 import { PartiesTab } from '@/pages/persona-5-phantom-x/components/PartiesTab';
+import { P5X_SLOTS } from '@/pages/persona-5-phantom-x/components/partyConfig';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import type { Party } from '@/types';
 import { ALL_THIEVES } from '@/data/persona-5-phantom-x/thieves';
@@ -64,5 +65,29 @@ describe('PartiesTab (P5X config wiring)', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
     const img = screen.getByAltText(firstThief.name);
     expect(img).toHaveAttribute('src', `mugshot:${firstThief.imageUrl}`);
+  });
+});
+
+describe('PartiesTab (P5X slot filters)', () => {
+  const navigator = ALL_THIEVES.find((t) => t.role === 'Navigator')!;
+  const activeThief = ALL_THIEVES.find((t) => t.role !== 'Navigator')!;
+  const navEntity = { ...navigator, entityType: 'thief' as const };
+  const activeEntity = { ...activeThief, entityType: 'thief' as const };
+
+  const slot = (index: number) => P5X_SLOTS.find((s) => s.index === index)!;
+
+  it('restricts the Navigator slot (7) to role === Navigator', () => {
+    const filter = slot(7).entityFilter!;
+    expect(slot(7).label).toBe('Navigator');
+    expect(filter(navEntity)).toBe(true);
+    expect(filter(activeEntity)).toBe(false);
+  });
+
+  it('excludes Navigators from the active thief slots (4–6)', () => {
+    for (const index of [4, 5, 6]) {
+      const filter = slot(index).entityFilter!;
+      expect(filter(navEntity)).toBe(false);
+      expect(filter(activeEntity)).toBe(true);
+    }
   });
 });
