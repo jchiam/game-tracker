@@ -145,6 +145,7 @@ export function ThiefCard({
         </>
       }
       headerExtra={<ScoreBadge score={revScore} />}
+      temperScore={revScore}
       summaryStats={
         <>
           <StatChip

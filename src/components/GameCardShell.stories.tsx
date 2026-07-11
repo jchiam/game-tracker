@@ -9,6 +9,9 @@ const meta = {
   title: 'Components/GameCardShell',
   component: GameCardShell,
   tags: ['autodocs'],
+  argTypes: {
+    temperScore: { control: { type: 'range', min: -1, max: 100, step: 1 } },
+  },
   args: {
     name: 'Acheron',
     imageUrl: 'https://picsum.photos/seed/gamecard/250/250',
@@ -75,6 +78,14 @@ export const WithHeaderExtra: Story = {
         92.5%
       </div>
     ),
+  },
+};
+
+/** The anodized temper edge — a 3px crown coloured by the card's score position on
+ * the investment ramp. Omitted or negative scores render no edge. */
+export const WithTemperEdge: Story = {
+  args: {
+    temperScore: 92,
   },
 };
 

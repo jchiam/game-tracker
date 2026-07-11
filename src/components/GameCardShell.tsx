@@ -1,5 +1,6 @@
-import { useLayoutEffect, useRef, useState, type ReactNode } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { getMugshotUrl } from '@/lib/imagekit';
+import { getProgressStyle } from '@/utils/progressGradient';
 
 interface GameCardShellProps {
   /** Display name — card title and image alt text. */
@@ -21,6 +22,12 @@ interface GameCardShellProps {
   summaryLine: ReactNode;
   /** Edit-mode sections, expanded when the edit toggle is active. */
   editBody: ReactNode;
+  /**
+   * Equipment-match score (0–100) driving the anodized temper edge — the card
+   * wears the ramp colour at this score as a 3px crown. Omitted or negative
+   * (the insufficient-data sentinel), the card renders with no edge.
+   */
+  temperScore?: number;
   /**
    * Opt into a fixed two-line reserve for the summary chip row. When true the
    * shell tags the card with `.reserve-summary-rows`; the `min-height` rule
@@ -50,6 +57,7 @@ export function GameCardShell({
   summaryLine,
   editBody,
   reserveSummaryRows = false,
+  temperScore,
 }: GameCardShellProps) {
   const [imgLoading, setImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
@@ -85,11 +93,20 @@ export function GameCardShell({
     }
   });
 
+  // The anodized temper edge — the card's score position on the ramp, worn as
+  // a 3px crown. Colour comes from the shared progress gradient so the edge,
+  // score badge, and investment sliders all speak the same ramp.
+  const hasTemperEdge = temperScore !== undefined && temperScore >= 0;
+  const temperStyle = hasTemperEdge
+    ? ({ '--temper': getProgressStyle(temperScore, 0, 100).color } as CSSProperties)
+    : undefined;
+
   return (
     <div
       className={`game-card ${isEditing ? 'is-editing' : ''} ${
         reserveSummaryRows ? 'reserve-summary-rows' : ''
-      }`}
+      } ${hasTemperEdge ? 'has-temper-edge' : ''}`}
+      style={temperStyle}
       ref={cardRef}
     >
       <div className="game-card-header">

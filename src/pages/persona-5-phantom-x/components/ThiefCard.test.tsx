@@ -514,6 +514,14 @@ describe('ThiefCard', () => {
     expect(badge!.className).toMatch(/grade-[sabcd]/);
   });
 
+  it('wears the temper edge when scored, none for the sentinel', () => {
+    const scored = render(<ThiefCard {...defaultProps} thief={scoredThief()} />);
+    expect(scored.container.querySelector('.game-card.has-temper-edge')).toBeInTheDocument();
+    scored.unmount();
+    const sentinel = render(<ThiefCard {...defaultProps} />);
+    expect(sentinel.container.querySelector('.game-card.has-temper-edge')).not.toBeInTheDocument();
+  });
+
   it('renders no score badge when the score is insufficient data (no prefs / no cards)', () => {
     // default thief: cards present would still be -1 without prefs; here no cards + no prefs
     const { container: noData } = render(<ThiefCard {...defaultProps} />);

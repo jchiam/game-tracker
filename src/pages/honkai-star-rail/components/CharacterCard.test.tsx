@@ -178,6 +178,16 @@ describe('CharacterCard', () => {
     expect(container.querySelector('.score-badge.grade-a')).toBeInTheDocument();
   });
 
+  it('wears the temper edge when scored, none for the sentinel', () => {
+    vi.mocked(calculateRelicScore).mockReturnValue(80);
+    const scored = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    expect(scored.container.querySelector('.game-card.has-temper-edge')).toBeInTheDocument();
+    scored.unmount();
+    vi.mocked(calculateRelicScore).mockReturnValue(-1);
+    const sentinel = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    expect(sentinel.container.querySelector('.game-card.has-temper-edge')).not.toBeInTheDocument();
+  });
+
   it('applies grade-b class to score badge for a score of 65', () => {
     vi.mocked(calculateRelicScore).mockReturnValue(65);
     const char = makeChar({

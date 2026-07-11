@@ -1,6 +1,7 @@
 /* ─── Shared game-card structure ─────────────────────────────────── */
 
 .game-card {
+  position: relative;
   background: var(--color-bg-surface);
   border: 1px solid var(--color-ui-border);
   border-radius: var(--border-radius-lg);
@@ -36,6 +37,26 @@
 .game-card:hover {
   border-color: var(--color-brand-primary);
   box-shadow: var(--shadow-card-hover);
+}
+
+/* The anodized temper edge — the card's score position on the ramp, worn as a
+   3px crown. `--temper` is set inline per card by GameCardShell from the shared
+   progress gradient; cards without the class render no edge at all. */
+.game-card.has-temper-edge::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--temper);
+  box-shadow: 0 1px 10px color-mix(in srgb, var(--temper) 40%, transparent);
+  z-index: 1;
+  transition: box-shadow var(--transition-normal);
+}
+
+.game-card.has-temper-edge:hover::before {
+  box-shadow: 0 1px 10px color-mix(in srgb, var(--temper) 60%, transparent);
 }
 
 /* ─── Card header ────────────────────────────────────────────────── */

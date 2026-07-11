@@ -109,6 +109,16 @@ describe('CharacterCard', () => {
     expect(container.querySelector('.score-badge-value')?.textContent).toBe('82%');
   });
 
+  it('wears the temper edge when scored, none for the sentinel', () => {
+    vi.mocked(calculateCartridgeScore).mockReturnValue(82);
+    const scored = render(<CharacterCard character={makeChar()} {...defaultProps} />);
+    expect(scored.container.querySelector('.game-card.has-temper-edge')).toBeInTheDocument();
+    scored.unmount();
+    vi.mocked(calculateCartridgeScore).mockReturnValue(-1);
+    const sentinel = render(<CharacterCard character={makeChar()} {...defaultProps} />);
+    expect(sentinel.container.querySelector('.game-card.has-temper-edge')).not.toBeInTheDocument();
+  });
+
   // --- Favorite ---
 
   it('shows filled star when favorited', () => {

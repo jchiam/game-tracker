@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { GameCardShell } from '@/components/GameCardShell';
+import { getProgressStyle } from '@/utils/progressGradient';
 
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => `https://ik.imagekit.io/test${path}`,
@@ -148,5 +149,35 @@ describe('GameCardShell', () => {
     fireEvent.error(img);
     expect(container.querySelector('.game-card-image-spinner')).not.toBeInTheDocument();
     expect(img).toHaveAttribute('src', expect.stringContaining('ui-avatars.com'));
+  });
+
+  describe('anodized temper edge', () => {
+    it('wears the ramp colour at the given score', () => {
+      const { container } = render(<GameCardShell {...defaultProps} temperScore={92} />);
+      const card = container.querySelector('.game-card') as HTMLElement;
+      expect(card).toHaveClass('has-temper-edge');
+      expect(card.style.getPropertyValue('--temper')).toBe(getProgressStyle(92, 0, 100).color);
+    });
+
+    it('edges a score of exactly 0 in rust', () => {
+      const { container } = render(<GameCardShell {...defaultProps} temperScore={0} />);
+      const card = container.querySelector('.game-card') as HTMLElement;
+      expect(card).toHaveClass('has-temper-edge');
+      expect(card.style.getPropertyValue('--temper')).toBe(getProgressStyle(0, 0, 100).color);
+    });
+
+    it('renders no edge for the negative insufficient-data sentinel', () => {
+      const { container } = render(<GameCardShell {...defaultProps} temperScore={-1} />);
+      const card = container.querySelector('.game-card') as HTMLElement;
+      expect(card).not.toHaveClass('has-temper-edge');
+      expect(card.style.getPropertyValue('--temper')).toBe('');
+    });
+
+    it('renders no edge when the prop is omitted', () => {
+      const { container } = render(<GameCardShell {...defaultProps} />);
+      const card = container.querySelector('.game-card') as HTMLElement;
+      expect(card).not.toHaveClass('has-temper-edge');
+      expect(card.style.getPropertyValue('--temper')).toBe('');
+    });
   });
 });

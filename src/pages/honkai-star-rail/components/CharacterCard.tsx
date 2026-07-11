@@ -78,6 +78,7 @@ export function CharacterCard({
         </>
       }
       headerExtra={<ScoreBadge score={score} />}
+      temperScore={score}
       summaryStats={
         <>
           <StatChip
