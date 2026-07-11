@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   matchStatShapes,
+  makeStatMatcher,
   createEquipmentScore,
   getScoreGrade,
   SCORE_WEIGHTS,
@@ -37,6 +38,41 @@ describe('matchStatShapes', () => {
 
   it('never cross-matches non-crit bases that happen to differ', () => {
     expect(matchStatShapes(shape('break-effect'), shape('effect-res'))).toBe(0.0);
+  });
+});
+
+describe('makeStatMatcher', () => {
+  // Toy vocabulary — the adapter supplies only this map, no matching code.
+  const { getStatMatchScore, bestMatch } = makeStatMatcher({
+    PWR: { base: 'power', isPercent: false },
+    'PWR%': { base: 'power', isPercent: true },
+    'C-Rate': { base: 'crit-rate', isPercent: false },
+    'C-Dmg': { base: 'crit-mult', isPercent: false },
+  });
+
+  it('applies the shared match rules over the supplied vocabulary', () => {
+    expect(getStatMatchScore('PWR', 'PWR')).toBe(1.0);
+    expect(getStatMatchScore('PWR', 'PWR%')).toBe(1.0); // % trumps flat
+    expect(getStatMatchScore('PWR%', 'PWR')).toBe(0.5);
+    expect(getStatMatchScore('C-Rate', 'C-Dmg')).toBe(0.5); // cross-crit
+    expect(getStatMatchScore('PWR', 'C-Rate')).toBe(0.0);
+  });
+
+  it('lets an unmapped id exact-match only', () => {
+    expect(getStatMatchScore('speed', 'speed')).toBe(1.0);
+    expect(getStatMatchScore('speed', 'anchor')).toBe(0.0);
+    expect(getStatMatchScore('speed', 'PWR')).toBe(0.0);
+  });
+
+  it('returns the best match over a preference chain', () => {
+    const prefs = [{ stat: 'PWR%' }, { stat: 'PWR' }];
+    expect(bestMatch(prefs, 'PWR%')).toBe(1.0); // exact beats the 0.5 partial
+    expect(bestMatch(prefs, 'PWR')).toBe(1.0);
+    expect(bestMatch([{ stat: 'PWR%' }], 'PWR')).toBe(0.5);
+  });
+
+  it('returns 0 for an empty chain', () => {
+    expect(bestMatch([], 'PWR')).toBe(0);
   });
 });
 

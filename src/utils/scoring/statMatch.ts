@@ -35,3 +35,33 @@ export function matchStatShapes(preferred: StatShape, equipped: StatShape): numb
   if (isCrossCrit(preferred.base, equipped.base)) return 0.5;
   return 0.0;
 }
+
+export interface StatMatcher {
+  /** Match score in [0, 1] between a preferred and an equipped stat id, via the bound vocabulary. */
+  getStatMatchScore: (preferredStat: string, equippedStat: string) => number;
+  /** Highest match score of any preference in the chain against the equipped stat; 0 for an empty chain. */
+  bestMatch: (prefs: { stat: string }[], equipped: string) => number;
+}
+
+/**
+ * Bind a game's stat-id vocabulary map to the shared match rules. Ids absent
+ * from the map fall back to an identity shape (isPercent false), so
+ * non-participating stats can only exact-match.
+ */
+export function makeStatMatcher(shapeMap: Record<string, StatShape>): StatMatcher {
+  const toStatShape = (id: string): StatShape => shapeMap[id] ?? { base: id, isPercent: false };
+
+  const getStatMatchScore = (preferredStat: string, equippedStat: string): number =>
+    matchStatShapes(toStatShape(preferredStat), toStatShape(equippedStat));
+
+  const bestMatch = (prefs: { stat: string }[], equipped: string): number => {
+    let best = 0;
+    for (const pref of prefs) {
+      const match = getStatMatchScore(pref.stat, equipped);
+      if (match > best) best = match;
+    }
+    return best;
+  };
+
+  return { getStatMatchScore, bestMatch };
+}

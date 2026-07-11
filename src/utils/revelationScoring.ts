@@ -1,11 +1,6 @@
-import type { P5xTrackedThief, StatPreference } from '../types';
+import type { P5xTrackedThief } from '../types';
 import { HEAVENS_SLOTS, type RevelationSlot } from '../data/persona-5-phantom-x/revelations';
-import { createEquipmentScore, matchStatShapes, type StatShape } from './scoring';
-
-// N2E-parity term weights. Set (emergent composition) and sub are the heavier terms.
-export const SET_WEIGHT = 0.35;
-export const MAIN_STAT_WEIGHT = 0.3;
-export const SUB_STAT_WEIGHT = 0.35;
+import { createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
 
 // Within the set term: four Heavens cards vs one Space card.
 const HEAVENS_SUBWEIGHT = 0.75;
@@ -28,28 +23,8 @@ const P5X_STAT_SHAPES: Record<string, StatShape> = {
   'crit-mult': { base: 'crit-mult', isPercent: false },
 };
 
-function toStatShape(id: string): StatShape {
-  return P5X_STAT_SHAPES[id] ?? { base: id, isPercent: false };
-}
-
-/**
- * Stat-match score in [0, 1] between a preferred stat id and an equipped stat id.
- * Exact = 1.0; flat-pref satisfied by its percent = 1.0; percent-pref satisfied by
- * its flat = 0.5; cross-crit (rate ↔ mult) = 0.5; otherwise 0. Delegates to the
- * shared shape matcher via the P5X vocabulary map.
- */
-export function getStatMatchScore(preferredStat: string, equippedStat: string): number {
-  return matchStatShapes(toStatShape(preferredStat), toStatShape(equippedStat));
-}
-
-function bestMatch(prefs: StatPreference[], equipped: string): number {
-  let best = 0;
-  for (const pref of prefs) {
-    const match = getStatMatchScore(pref.stat, equipped);
-    if (match > best) best = match;
-  }
-  return best;
-}
+const { getStatMatchScore, bestMatch } = makeStatMatcher(P5X_STAT_SHAPES);
+export { getStatMatchScore };
 
 function setTerm(thief: P5xTrackedThief): number {
   const { revelations } = thief;

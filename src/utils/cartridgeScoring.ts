@@ -1,9 +1,5 @@
-import type { N2ETrackedCharacter, StatPreference } from '../types';
-import { createEquipmentScore, matchStatShapes, type StatShape } from './scoring';
-
-export const CARTRIDGE_ID_WEIGHT = 0.35;
-export const MAIN_STAT_WEIGHT = 0.3;
-export const SUB_STAT_WEIGHT = 0.35;
+import type { N2ETrackedCharacter } from '../types';
+import { createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
 
 const RARITY_ORDER: Record<string, number> = { B: 0, A: 1, S: 2 };
 const RARITY_PENALTIES = [1.0, 0.6, 0.3]; // index = rarity delta (0, 1, 2)
@@ -41,22 +37,8 @@ const N2E_STAT_SHAPES: Record<string, StatShape> = {
   'CRIT DMG %': { base: 'crit-mult', isPercent: true },
 };
 
-function toStatShape(id: string): StatShape {
-  return N2E_STAT_SHAPES[id] ?? { base: id, isPercent: false };
-}
-
-export function getStatMatchScore(preferredStat: string, equippedStat: string): number {
-  return matchStatShapes(toStatShape(preferredStat), toStatShape(equippedStat));
-}
-
-function bestMatch(prefs: StatPreference[], equipped: string): number {
-  let best = 0;
-  for (const pref of prefs) {
-    const match = getStatMatchScore(pref.stat, equipped);
-    if (match > best) best = match;
-  }
-  return best;
-}
+const { getStatMatchScore, bestMatch } = makeStatMatcher(N2E_STAT_SHAPES);
+export { getStatMatchScore };
 
 export const calculateCartridgeScore = createEquipmentScore<N2ETrackedCharacter>({
   hasPreferences: (c) => {

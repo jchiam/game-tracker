@@ -1,11 +1,5 @@
-import type { HsrTrackedCharacter, StatPreference } from '../types';
-import { createEquipmentScore, matchStatShapes, type StatShape } from './scoring';
-
-// Unified three-term weights (set/main/sub). Kept as named exports for parity
-// with the other game scorers; the shared core owns the actual application.
-export const SET_WEIGHT = 0.35;
-export const MAIN_STAT_WEIGHT = 0.3;
-export const SUB_STAT_WEIGHT = 0.35;
+import type { HsrTrackedCharacter } from '../types';
+import { createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
 
 // Within the set term: a 4-piece relic (cavern) set vs a 2-piece planar set.
 const RELIC_SUBWEIGHT = 0.67;
@@ -32,22 +26,8 @@ const HSR_STAT_SHAPES: Record<string, StatShape> = {
   'CRIT DMG': { base: 'crit-mult', isPercent: false },
 };
 
-function toStatShape(id: string): StatShape {
-  return HSR_STAT_SHAPES[id] ?? { base: id, isPercent: false };
-}
-
-export function getStatMatchScore(preferredStat: string, equippedStat: string): number {
-  return matchStatShapes(toStatShape(preferredStat), toStatShape(equippedStat));
-}
-
-function bestMatch(prefs: StatPreference[], equipped: string): number {
-  let best = 0;
-  for (const pref of prefs) {
-    const match = getStatMatchScore(pref.stat, equipped);
-    if (match > best) best = match;
-  }
-  return best;
-}
+const { getStatMatchScore, bestMatch } = makeStatMatcher(HSR_STAT_SHAPES);
+export { getStatMatchScore };
 
 /** Graded count of equipped pieces in `slots` whose set equals `preferredSetId`, over `denom`. */
 function familyMatch(
