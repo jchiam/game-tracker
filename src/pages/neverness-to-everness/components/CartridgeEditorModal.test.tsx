@@ -109,7 +109,11 @@ describe('CartridgeEditorModal', () => {
       'select[name="cartridge-main-stat"]',
     ) as HTMLSelectElement;
     fireEvent.change(select, { target: { value: 'ATK %' } });
-    expect(onSaveCartridge).toHaveBeenCalledWith({ cartridgeMainStat: 'ATK %' });
+    // Main-stat change also carries a substat prune (none here → empty list).
+    expect(onSaveCartridge).toHaveBeenCalledWith({
+      cartridgeMainStat: 'ATK %',
+      cartridgeSubStats: [],
+    });
   });
 
   it('calls onSaveCartridge when level slider changes', () => {
@@ -160,7 +164,11 @@ describe('CartridgeEditorModal', () => {
     const onSaveCartridge = vi.fn();
     render(
       <CartridgeEditorModal
-        character={makeChar({ cartridgeId: firstCartridge.id, cartridgeRarity: 'S' })}
+        character={makeChar({
+          cartridgeId: firstCartridge.id,
+          cartridgeRarity: 'S',
+          cartridgeMainStat: 'CRIT Rate %',
+        })}
         {...defaultProps}
         onSaveCartridge={onSaveCartridge}
       />,
@@ -181,6 +189,7 @@ describe('CartridgeEditorModal', () => {
         character={makeChar({
           cartridgeId: firstCartridge.id,
           cartridgeRarity: 'S',
+          cartridgeMainStat: 'CRIT Rate %',
           cartridgeSubStats: ['ATK', 'HP'],
         })}
         {...defaultProps}
@@ -355,10 +364,14 @@ describe('CartridgeEditorModal', () => {
     expect(container.querySelectorAll('.is-gated').length).toBe(3);
   });
 
-  it('enables main stat / level / substats once a cartridge is selected', () => {
+  it('enables main stat / level / substats once a cartridge and main stat are set', () => {
     const { container } = render(
       <CartridgeEditorModal
-        character={makeChar({ cartridgeId: firstCartridge.id, cartridgeRarity: 'S' })}
+        character={makeChar({
+          cartridgeId: firstCartridge.id,
+          cartridgeRarity: 'S',
+          cartridgeMainStat: 'CRIT Rate %',
+        })}
         {...defaultProps}
       />,
     );
@@ -370,5 +383,66 @@ describe('CartridgeEditorModal', () => {
     expect(level?.disabled).toBe(false);
     expect(screen.getByText('+ Add Sub Stat')).toBeInTheDocument();
     expect(container.querySelectorAll('.is-gated').length).toBe(0);
+  });
+
+  // --- Equip tab: main-gated substats + main/sub collision ---
+
+  it('gates substats until a main stat is chosen, even with a cartridge equipped', () => {
+    const { container } = render(
+      <CartridgeEditorModal
+        character={makeChar({ cartridgeId: firstCartridge.id, cartridgeRarity: 'S' })}
+        {...defaultProps}
+      />,
+    );
+    // Cartridge is set but main is null → main/level enabled, substats still gated.
+    const mainSelect = container.querySelector<HTMLSelectElement>(
+      'select[name="cartridge-main-stat"]',
+    );
+    expect(mainSelect?.disabled).toBe(false);
+    expect(screen.queryByText('+ Add Sub Stat')).toBeNull();
+    // Only the substats group carries the dim.
+    expect(container.querySelectorAll('.is-gated').length).toBe(1);
+  });
+
+  it('excludes the equipped main stat from the substat options', () => {
+    render(
+      <CartridgeEditorModal
+        character={makeChar({
+          cartridgeId: firstCartridge.id,
+          cartridgeRarity: 'S',
+          cartridgeMainStat: 'CRIT Rate %',
+          cartridgeSubStats: ['ATK'],
+        })}
+        {...defaultProps}
+      />,
+    );
+    const opts = Array.from(document.querySelectorAll('select[name="substat-type-0"] option')).map(
+      (o) => (o as HTMLOptionElement).value,
+    );
+    expect(opts).not.toContain('CRIT Rate %'); // the equipped main
+  });
+
+  it('prunes a colliding substat when the main stat changes to it', () => {
+    const onSaveCartridge = vi.fn();
+    render(
+      <CartridgeEditorModal
+        character={makeChar({
+          cartridgeId: firstCartridge.id,
+          cartridgeRarity: 'S',
+          cartridgeMainStat: 'ATK %',
+          cartridgeSubStats: ['CRIT Rate %', 'HP %'],
+        })}
+        {...defaultProps}
+        onSaveCartridge={onSaveCartridge}
+      />,
+    );
+    const select = document.querySelector(
+      'select[name="cartridge-main-stat"]',
+    ) as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'CRIT Rate %' } });
+    expect(onSaveCartridge).toHaveBeenCalledWith({
+      cartridgeMainStat: 'CRIT Rate %',
+      cartridgeSubStats: ['HP %'], // colliding CRIT Rate % pruned
+    });
   });
 });

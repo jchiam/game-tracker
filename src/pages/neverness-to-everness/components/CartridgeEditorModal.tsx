@@ -57,6 +57,10 @@ export function CartridgeEditorModal({
   // is selected — a valid cartridgeId requires both a name and a rarity.
   const hasCartridge = Boolean(currentCartridgeId);
   const gatedClass = hasCartridge ? undefined : 'is-gated';
+  // Substats are additionally gated behind the (variable) main stat: a substat can never
+  // equal or precede the main choice, so keep the list disabled until a main is picked.
+  const subsEnabled = hasCartridge && Boolean(currentMainStat);
+  const subGatedClass = subsEnabled ? undefined : 'is-gated';
 
   const currentPrefs = character.cartridgePreferences ?? {
     cartridgeId: null,
@@ -163,7 +167,13 @@ export function CartridgeEditorModal({
               value={currentMainStat || ''}
               placeholder="-- No Main Stat --"
               options={CARTRIDGE_MAIN_STATS}
-              onChange={(v) => onSaveCartridge({ cartridgeMainStat: v || null })}
+              onChange={(v) =>
+                onSaveCartridge({
+                  cartridgeMainStat: v || null,
+                  // A substat may not duplicate the main — prune any that now collide.
+                  cartridgeSubStats: v ? currentSubStats.filter((s) => s !== v) : currentSubStats,
+                })
+              }
               disabled={!hasCartridge}
             />
           </FormGroup>
@@ -180,14 +190,15 @@ export function CartridgeEditorModal({
             />
           </FormGroup>
 
-          <div className={gatedClass}>
+          <div className={subGatedClass}>
             <SubStatList
               values={currentSubStats}
               options={CARTRIDGE_SUB_STATS}
               namePrefix="substat"
               label="Sub Stats (Max 4)"
               addLabel="+ Add Sub Stat"
-              disabled={!hasCartridge}
+              excludeValues={currentMainStat ? [currentMainStat] : []}
+              disabled={!subsEnabled}
               onChange={(subs) => onSaveCartridge({ cartridgeSubStats: subs })}
             />
           </div>

@@ -125,6 +125,103 @@ describe('SubStatList — shared behaviour', () => {
   });
 });
 
+describe('SubStatList — sibling dedupe', () => {
+  it('omits stats chosen by other rows, keeping each row’s own value', () => {
+    render(
+      <SubStatList
+        values={['HP', 'DEF']}
+        options={STATS}
+        namePrefix="substat"
+        onChange={vi.fn()}
+      />,
+    );
+    const row0 = Array.from(document.querySelectorAll('select[name="substat-type-0"] option')).map(
+      (o) => (o as HTMLOptionElement).value,
+    );
+    const row1 = Array.from(document.querySelectorAll('select[name="substat-type-1"] option')).map(
+      (o) => (o as HTMLOptionElement).value,
+    );
+    // Row 0 (HP) hides DEF (row 1's pick) but keeps its own HP.
+    expect(row0).toContain('HP');
+    expect(row0).not.toContain('DEF');
+    // Row 1 (DEF) hides HP but keeps its own DEF.
+    expect(row1).toContain('DEF');
+    expect(row1).not.toContain('HP');
+  });
+
+  it('stacks sibling dedupe with excludeValues', () => {
+    render(
+      <SubStatList
+        values={['HP']}
+        options={STATS}
+        namePrefix="substat"
+        excludeValues={['ATK']}
+        onChange={vi.fn()}
+      />,
+    );
+    // A second row would exclude ATK (main) and HP (sibling); assert on row 0's peers via add.
+    const row0 = Array.from(document.querySelectorAll('select[name="substat-type-0"] option')).map(
+      (o) => (o as HTMLOptionElement).value,
+    );
+    expect(row0).not.toContain('ATK'); // excludeValues
+    expect(row0).toContain('HP'); // own value kept
+  });
+
+  it('adds the first option not already chosen', () => {
+    const onChange = vi.fn();
+    render(
+      <SubStatList
+        values={['HP', 'ATK']}
+        options={STATS}
+        namePrefix="substat"
+        addLabel="+ Add Substat"
+        onChange={onChange}
+      />,
+    );
+    fireEvent.click(screen.getByText('+ Add Substat'));
+    // HP and ATK taken → first free is DEF.
+    expect(onChange).toHaveBeenCalledWith(['HP', 'ATK', 'DEF']);
+  });
+
+  it('hides the add button when every option is chosen or excluded', () => {
+    render(
+      <SubStatList
+        values={['HP', 'ATK', 'DEF']}
+        options={STATS}
+        namePrefix="substat"
+        max={5}
+        excludeValues={['CRIT Rate', 'CRIT DMG']}
+        addLabel="+ Add Substat"
+        onChange={vi.fn()}
+      />,
+    );
+    // HP/ATK/DEF chosen, CRIT Rate/CRIT DMG excluded → nothing left despite being below cap.
+    expect(screen.queryByText('+ Add Substat')).not.toBeInTheDocument();
+  });
+
+  it('dedupes by value with { value, label } options', () => {
+    const ID_STATS = [
+      { value: 'attack', label: 'Attack' },
+      { value: 'defense', label: 'Defense' },
+      { value: 'hp', label: 'HP' },
+    ];
+    render(
+      <SubStatList
+        values={['attack', 'defense']}
+        options={ID_STATS}
+        namePrefix="substat"
+        onChange={vi.fn()}
+      />,
+    );
+    const row0 = Array.from(document.querySelectorAll('select[name="substat-type-0"] option')).map(
+      (o) => (o as HTMLOptionElement).value,
+    );
+    expect(row0).toContain('attack'); // own
+    expect(row0).not.toContain('defense'); // sibling
+    expect(row0).toContain('hp'); // free
+  });
+});
+
 describe('SubStatList — id/label options', () => {
   const ID_STATS = [
     { value: 'attack', label: 'Attack' },

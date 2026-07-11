@@ -114,6 +114,46 @@ describe('PreferenceChain', () => {
   });
 });
 
+describe('PreferenceChain — stat-chain dedupe', () => {
+  it('omits stats chosen by other rows, keeping each row’s own value', () => {
+    const values: StatPreference[] = [
+      { stat: 'CRIT Rate', operator: '>', orderIndex: 0 },
+      { stat: 'CRIT DMG', operator: null, orderIndex: 1 },
+    ];
+    render(<PreferenceChain {...defaultProps} values={values} />);
+    const selects = screen.getAllByRole('combobox');
+    // selects[0] = row0 stat, selects[1] = operator, selects[2] = row1 stat
+    const row0 = Array.from(selects[0].querySelectorAll('option')).map((o) => o.value);
+    const row1 = Array.from(selects[2].querySelectorAll('option')).map((o) => o.value);
+    expect(row0).toContain('CRIT Rate'); // own
+    expect(row0).not.toContain('CRIT DMG'); // sibling
+    expect(row1).toContain('CRIT DMG'); // own
+    expect(row1).not.toContain('CRIT Rate'); // sibling
+  });
+
+  it('appends the first stat not already in the chain', () => {
+    const onChange = vi.fn();
+    const values: StatPreference[] = [{ stat: 'ATK%', operator: null, orderIndex: 0 }];
+    render(<PreferenceChain {...defaultProps} values={values} onChange={onChange} />);
+    fireEvent.click(screen.getByText('+ Add Priority'));
+    // ATK% taken → first free is CRIT Rate.
+    expect(onChange).toHaveBeenCalledWith([
+      { stat: 'ATK%', operator: '>', orderIndex: 0 },
+      { stat: 'CRIT Rate', operator: null, orderIndex: 1 },
+    ]);
+  });
+
+  it('disables the add button when every stat is chosen', () => {
+    const values: StatPreference[] = sampleOptions.map((stat, i) => ({
+      stat,
+      operator: i < sampleOptions.length - 1 ? '>' : null,
+      orderIndex: i,
+    }));
+    render(<PreferenceChain {...defaultProps} values={values} />);
+    expect(screen.getByText('+ Add Priority')).toBeDisabled();
+  });
+});
+
 describe('PreferenceChain — stat-chain id/label options', () => {
   const idOptions = [
     { value: 'damage-mult', label: 'Damage Mult. +' },

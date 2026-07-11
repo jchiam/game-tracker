@@ -139,6 +139,11 @@ function EquipTab({
         // fixed head/hands mains are read-only and stay ungated.
         const hasSet = Boolean(currentRelic.setId);
         const gatedClass = hasSet ? undefined : 'is-gated';
+        // Substats are additionally gated behind the main on variable-main slots — a substat
+        // may never equal or precede the main. Fixed head/hands mains are always known, so
+        // those slots stay set-gated only.
+        const subsEnabled = hasSet && (isFixedSlot || Boolean(currentRelic.mainStat));
+        const subGatedClass = subsEnabled ? undefined : 'is-gated';
 
         return (
           <div
@@ -176,7 +181,7 @@ function EquipTab({
               )}
             </FormGroup>
 
-            <div className={gatedClass}>
+            <div className={subGatedClass}>
               <SubStatList
                 values={currentRelic.subStats}
                 options={ALL_SUB_STATS}
@@ -185,7 +190,7 @@ function EquipTab({
                 addLabel="+ Add Substat"
                 excludeValues={excludeSubStats}
                 onChange={(subStats) => validateAndSave(slot, { subStats })}
-                disabled={!hasSet}
+                disabled={!subsEnabled}
               />
             </div>
           </div>

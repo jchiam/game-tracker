@@ -43,17 +43,23 @@ export function SubStatList({
   excludeValues,
   disabled,
 }: SubStatListProps) {
-  // A row offers every non-excluded option, plus its own current value (so an
-  // already-chosen-but-now-conflicting stat stays visible until the user changes it).
-  const rowOptions = (current: string): readonly StatOption[] =>
-    excludeValues && excludeValues.length > 0
-      ? options.filter((o) => optionValue(o) === current || !excludeValues.includes(optionValue(o)))
-      : options;
+  // A stat is blocked for a row when it's in excludeValues (e.g. the equipped main) or
+  // already chosen by another row — but a row always keeps its own current value visible,
+  // so an already-chosen-but-now-conflicting stat stays editable rather than disappearing.
+  const isBlocked = (value: string, current: string): boolean =>
+    value !== current && ((excludeValues?.includes(value) ?? false) || values.includes(value));
 
-  const firstOption = options.find((o) => !excludeValues?.includes(optionValue(o))) ?? options[0];
+  const rowOptions = (current: string): readonly StatOption[] =>
+    options.filter((o) => !isBlocked(optionValue(o), current));
+
+  // The add button appends the first option that is neither excluded nor already chosen.
+  const firstOption = options.find(
+    (o) => !(excludeValues?.includes(optionValue(o)) ?? false) && !values.includes(optionValue(o)),
+  );
   const firstAllowed = firstOption === undefined ? '' : optionValue(firstOption);
 
   const atCap = values.length >= max;
+  const noOptionLeft = firstOption === undefined;
 
   return (
     <div className="substats-section">
@@ -79,7 +85,7 @@ export function SubStatList({
         </div>
       ))}
 
-      {!atCap && !disabled && (
+      {!atCap && !disabled && !noOptionLeft && (
         <button className="add-substat-btn" onClick={() => onChange([...values, firstAllowed])}>
           {addLabel}
         </button>

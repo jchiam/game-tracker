@@ -166,6 +166,12 @@ label; a `{ value, label }` pair is an option whose stored value (e.g. a stat id
 its shown label. Rows SHALL display the `label` and persist the `value`. A `string[]` behaves
 exactly as before, keeping existing HSR and N2E call sites unchanged.
 
+Stat-chain mode SHALL dedupe across rows, matching ranked-list mode: each row's stat
+`<select>` SHALL omit stats chosen by other rows (keeping the row's own current value
+visible); appending SHALL add the first option not already present in the chain rather than a
+fixed `options[0]`; and the add button SHALL be disabled when every option is already chosen.
+Dedupe is by option **value**.
+
 **Ranked-list mode** (AE weapon preferences): rows stack full-width in a
 `.pref-chain-ranked` container; each `.pref-ranked-item` row is a rank label, a single
 `<select>` carrying the shared `.game-select` control styling (so it matches standalone
@@ -184,23 +190,29 @@ shape, and the mode/variant selector) are defined by the component's TypeScript 
 
 - **WHEN** "+ Add Priority" is clicked on a non-empty stat-chain
 - **THEN** the previous tail's operator becomes `>` and a new tail item is appended with operator
-  `null`
+  `null`, taking the first stat not already present in the chain
 
 #### Scenario: Removing the tail
 
 - **WHEN** the tail item's remove button is clicked in stat-chain mode
 - **THEN** the item is dropped and the new tail's operator is reset to `null`
 
+#### Scenario: Stat-chain rows dedupe across the chain
+
+- **WHEN** a stat-chain holds `crit-rate` and `crit-mult` and another row's stat `<select>` is opened
+- **THEN** that row's options exclude `crit-rate` and `crit-mult` except its own current value, and
+  **WHEN** every option is already chosen the add button is disabled
+
 #### Scenario: Stat-chain distinct value and label
 
 - **WHEN** stat-chain `options` are provided as `{ value, label }[]`
 - **THEN** each row's stat `<select>` displays the label while `onChange` persists the corresponding
-  value, and a newly appended item uses the first option's value
+  value, and a newly appended item uses the first not-yet-chosen option's value
 
 #### Scenario: Stat-chain bare string options unchanged
 
 - **WHEN** stat-chain `options` are a `readonly string[]`
-- **THEN** each option's value equals its label and behaviour is identical to before this change
+- **THEN** each option's value equals its label and appending/dedupe behave over those values
 
 #### Scenario: Appending in ranked-list mode
 
@@ -295,6 +307,16 @@ stat types only. When `disabled` is set, every row `Select` and every row remove
 disabled and the add button SHALL be suppressed, so a host can gate the whole list behind a
 precondition with no editing (add, change, or remove) possible.
 
+`SubStatList` SHALL also dedupe across its own rows: a row's option list SHALL omit any stat
+already chosen by another row, keeping only the row's own current value visible (so a
+pre-existing duplicate stays editable rather than disappearing). Sibling exclusion SHALL
+compose with `excludeValues` — a row offers a stat only when it is neither in `excludeValues`
+nor selected by a sibling, plus always its own current value. The add button SHALL append the
+first option that is neither excluded (`excludeValues`) nor already chosen by an existing row,
+and SHALL be suppressed when no such option remains (in addition to the existing cap and
+`disabled` suppressions). Dedupe is by option **value**, so it works for both bare-string and
+`{ value, label }` options.
+
 `options` SHALL be a `readonly (string | { value, label })[]`: a bare string is an option whose
 value equals its label; a `{ value, label }` pair is an option whose stored value differs from its
 shown label. Rows SHALL display the option `label` and emit the option `value` (so a persisted stat
@@ -320,6 +342,19 @@ its duplicated CSS.
 - **WHEN** `excludeValues={['attack']}` is passed (e.g. the equipped main stat id)
 - **THEN** no row offers the `attack` option as selectable, except a row whose own current value is
   already `attack`
+
+#### Scenario: Sibling rows never offer a stat another row already holds
+
+- **WHEN** two rows hold `hp` and `def` and a third row's `Select` is opened
+- **THEN** the third row's options exclude `hp` and `def`, while the `hp` and `def` rows each still
+  show their own current value
+
+#### Scenario: Add button appends the first unchosen option and hides when exhausted
+
+- **WHEN** the add button is clicked with some options already chosen or excluded
+- **THEN** the appended row takes the first option that is neither in `excludeValues` nor already
+  chosen by a row; **WHEN** every option is excluded or already chosen, the add button is not
+  rendered
 
 #### Scenario: Distinct value and label options
 
@@ -513,11 +548,11 @@ surfaces, preference-chain rows, substat rows, the slot grouping card, the share
 
 ### Requirement: Equipment editors share labeled, set-gated stat controls
 
-Every Set/Main/Sub equipment editor SHALL present its Equip form consistently, per the three rules
+Every Set/Main/Sub equipment editor SHALL present its Equip form consistently, per the rules
 below. This covers the HSR `RelicEditorModal`, N2E `CartridgeEditorModal`, and P5X
 `RevelationEditorModal` — editors that model an equipped item as a Set/item plus a Main Stat and a
-Substats list. The rules are labeled controls, read-only fixed mains, and set-gated editable
-controls:
+Substats list. The rules are labeled controls, read-only fixed mains, set-gated editable
+controls, main-gated substats, and the substats-exclude-main invariant:
 
 - **Labeled controls**: every editable stat control SHALL be wrapped in a `FormGroup` with an
   explicit label (`Set` / `Relic Set` / `Cartridge`, `Main Stat`, `Substats`), so the main-stat
@@ -530,6 +565,17 @@ controls:
   editable level control SHALL be **dimmed (`is-gated`) and disabled** while no Set / Cartridge is
   selected, and enabled once one is; a fixed-main read-only display is exempt. Gating uses the
   primitives' `disabled` prop for interaction and an `is-gated` wrapper for the dim.
+- **Main-gated substats**: on a slot with a **variable** main stat (HSR body/feet/sphere/rope, P5X
+  Moon/Star/Sky, the N2E cartridge), the Substats list SHALL stay gated (`is-gated` + disabled)
+  until the slot's main stat has a value, in addition to the set gate. The gate SHALL key off the
+  slot's main-stat **type** (variable vs fixed), not the presence of a stored `mainStat` value: a
+  fixed-main slot SHALL NOT be main-gated, so P5X Space (whose dual fixed mains are derived, not
+  stored) is never locked out.
+- **Substats exclude and never duplicate the main**: each editor SHALL pass the slot's equipped
+  main stat to `SubStatList` as `excludeValues`, and SHALL prune from the substats any value equal
+  to a newly chosen main stat within its main-stat change handler. This SHALL hold for all three
+  editors — the N2E cartridge editor SHALL supply `excludeValues` and prune in its
+  `cartridgeMainStat` handler to match the HSR and P5X editors.
 
 This standard SHALL apply only to Set/Main/Sub equipment editors and SHALL NOT apply to the AE
 weapon editor (a single inline weapon `Select` + `LevelSlider` in the operator card, with no
@@ -548,6 +594,26 @@ set/main/substat model and no fixed main).
   disabled and carry the `is-gated` dim
 - **WHEN** a Set / Cartridge is then selected
 - **THEN** those controls become enabled
+
+#### Scenario: Variable-main substats are gated until a main is chosen
+
+- **WHEN** a variable-main slot has a Set / Cartridge selected but no main stat value
+- **THEN** the Substats list stays disabled and `is-gated`
+- **WHEN** a main stat is then chosen
+- **THEN** the Substats list becomes enabled
+
+#### Scenario: Fixed-main substats are not main-gated
+
+- **WHEN** a fixed-main slot (HSR head/hands, P5X Sun/Space) has its Set selected
+- **THEN** its Substats list is enabled without requiring a separate main-stat selection, and P5X
+  Space (derived dual main, no stored `mainStat`) is not locked out
+
+#### Scenario: Substats never offer or keep the equipped main stat
+
+- **WHEN** any of the three editors has an equipped main stat
+- **THEN** the Substats list does not offer that stat as an option
+- **WHEN** the main stat is changed to a value already present in the substats
+- **THEN** that substat is pruned from the list, in every one of the three editors including N2E
 
 #### Scenario: Fixed main renders read-only and is never gated
 

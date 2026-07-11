@@ -112,6 +112,11 @@ function EquipTab({
         const hasSet = Boolean(card?.setId);
         const gatedClass = hasSet ? undefined : 'is-gated';
         const mainGatedClass = isFixed ? undefined : gatedClass;
+        // Substats are additionally gated behind the main on variable-main slots. Fixed slots
+        // (Sun, Space) always have a known main — Space's is derived, not stored, so it must
+        // stay exempt (gating on `mainStat` truthiness would lock its substats forever).
+        const subsEnabled = hasSet && (isFixed || Boolean(mainStat));
+        const subGatedClass = subsEnabled ? undefined : 'is-gated';
 
         return (
           <div
@@ -150,7 +155,7 @@ function EquipTab({
                 />
               )}
             </FormGroup>
-            <div className={gatedClass}>
+            <div className={subGatedClass}>
               <SubStatList
                 namePrefix={`rev-${slot}-sub`}
                 label="Substats"
@@ -160,7 +165,7 @@ function EquipTab({
                 onChange={handleSubStatsChange}
                 max={4}
                 addLabel="+ Substat"
-                disabled={!hasSet}
+                disabled={!subsEnabled}
               />
             </div>
           </div>

@@ -63,6 +63,12 @@ const bodyWithSet = (): HsrTrackedCharacter =>
     relics: { ...emptyRelics, body: { setId: '101', mainStat: null, subStats: [] } },
   });
 
+// Body with a set AND a main — substats are main-gated, so exercising them needs both.
+const bodyWithSetAndMain = (subStats: string[] = []): HsrTrackedCharacter =>
+  makeChar({
+    relics: { ...emptyRelics, body: { setId: '101', mainStat: 'CRIT Rate', subStats } },
+  });
+
 describe('RelicEditorModal', () => {
   it('renders the character name in the title', () => {
     renderModal();
@@ -165,8 +171,8 @@ describe('RelicEditorModal', () => {
   });
 
   it('calls onSaveRelic with a new substat when "+ Add Substat" is clicked', () => {
-    const { props } = renderModal({ char: bodyWithSet() });
-    // Only the body slot has a set, so exactly one add button is enabled/rendered.
+    const { props } = renderModal({ char: bodyWithSetAndMain() });
+    // Only the body slot has a set + main, so exactly one add button is rendered.
     fireEvent.click(screen.getByRole('button', { name: /\+ add substat/i }));
     expect(props.onSaveRelic).toHaveBeenCalledWith(
       'body',
@@ -175,10 +181,7 @@ describe('RelicEditorModal', () => {
   });
 
   it('calls onSaveRelic with the substat removed when its remove button is clicked', () => {
-    const char = makeChar({
-      relics: { ...emptyRelics, body: { setId: '101', mainStat: null, subStats: ['HP'] } },
-    });
-    const { container, props } = renderModal({ char });
+    const { container, props } = renderModal({ char: bodyWithSetAndMain(['HP']) });
     fireEvent.click(container.querySelector('.remove-substat')!);
     expect(props.onSaveRelic).toHaveBeenCalledWith(
       'body',
@@ -187,15 +190,13 @@ describe('RelicEditorModal', () => {
   });
 
   it('calls onSaveRelic when a substat type select is changed', () => {
-    const char = makeChar({
-      relics: { ...emptyRelics, body: { setId: '101', mainStat: null, subStats: ['HP'] } },
-    });
-    const { container, props } = renderModal({ char });
+    const { container, props } = renderModal({ char: bodyWithSetAndMain(['HP']) });
     const subSelect = container.querySelector('select[name="relic-body-substat-type-0"]')!;
-    fireEvent.change(subSelect, { target: { value: 'CRIT Rate' } });
+    // Change to a non-main stat (CRIT Rate is the main here and would be pruned).
+    fireEvent.change(subSelect, { target: { value: 'CRIT DMG' } });
     expect(props.onSaveRelic).toHaveBeenCalledWith(
       'body',
-      expect.objectContaining({ subStats: ['CRIT Rate'] }),
+      expect.objectContaining({ subStats: ['CRIT DMG'] }),
     );
   });
 
@@ -212,14 +213,32 @@ describe('RelicEditorModal', () => {
     expect(screen.queryByRole('button', { name: /\+ add substat/i })).toBeNull();
   });
 
-  it('ungates a slot once it has a set', () => {
+  it('ungates a slot’s main once it has a set, but keeps substats main-gated', () => {
     const { container } = renderModal({ char: bodyWithSet() });
-    // Body's two groups ungate: 10 - 2 = 8.
-    expect(container.querySelectorAll('.is-gated').length).toBe(8);
+    // Body's main group ungates (10 - 1 = 9); its substats stay gated until a main is chosen.
+    expect(container.querySelectorAll('.is-gated').length).toBe(9);
     const mainSelect = container.querySelector<HTMLSelectElement>(
       'select[name="relic-body-main-stat"]',
     );
     expect(mainSelect?.disabled).toBe(false);
+    // No main yet → substats still gated, no add button.
+    expect(screen.queryByRole('button', { name: /\+ add substat/i })).toBeNull();
+  });
+
+  it('ungates a slot’s substats once it has both a set and a main', () => {
+    const { container } = renderModal({ char: bodyWithSetAndMain() });
+    // Body's main + substat groups both ungate: 10 - 2 = 8.
+    expect(container.querySelectorAll('.is-gated').length).toBe(8);
+    expect(screen.getByRole('button', { name: /\+ add substat/i })).toBeInTheDocument();
+  });
+
+  it('ungates a fixed-main slot’s substats on its set alone (no separate main pick)', () => {
+    // Head's main is fixed HP — a set alone must ungate its substats; fixed slots are never
+    // main-gated. Its substat list is the only enabled one, so exactly one add button shows.
+    const char = makeChar({
+      relics: { ...emptyRelics, head: { setId: '101', mainStat: 'HP', subStats: [] } },
+    });
+    renderModal({ char });
     expect(screen.getByRole('button', { name: /\+ add substat/i })).toBeInTheDocument();
   });
 

@@ -56,10 +56,15 @@ export function PreferenceChain(props: PreferenceChainProps) {
 }
 
 function StatChain({ values, options, onChange, namePrefix }: StatChainProps) {
+  const chosen = values.map((p) => p.stat);
+  // The next addable stat is the first option not already in the chain (enforces dedupe).
+  const nextOption = options.find((o) => !chosen.includes(optionValue(o)));
+
   const add = () => {
+    if (!nextOption) return;
     const next = values.map((p) => ({ ...p }));
     if (next.length > 0) next[next.length - 1].operator = '>';
-    next.push({ stat: optionValue(options[0]), operator: null, orderIndex: next.length });
+    next.push({ stat: optionValue(nextOption), operator: null, orderIndex: next.length });
     onChange(next);
   };
 
@@ -76,39 +81,45 @@ function StatChain({ values, options, onChange, namePrefix }: StatChainProps) {
   return (
     <>
       <div className="pref-chain">
-        {values.map((pref, idx) => (
-          <div key={idx} className="pref-item">
-            <select
-              name={`${namePrefix}-${idx}`}
-              value={pref.stat}
-              onChange={(e) => update(idx, { stat: e.target.value })}
-            >
-              {options.map((o) => (
-                <option key={optionValue(o)} value={optionValue(o)}>
-                  {optionLabel(o)}
-                </option>
-              ))}
-            </select>
-            {idx < values.length - 1 ? (
+        {values.map((pref, idx) => {
+          // Each row offers its own stat plus options not chosen by another row.
+          const rowOptions = options.filter(
+            (o) => optionValue(o) === pref.stat || !chosen.includes(optionValue(o)),
+          );
+          return (
+            <div key={idx} className="pref-item">
               <select
-                name={`${namePrefix}-operator-${idx}`}
-                className="operator-select"
-                value={pref.operator || '>'}
-                onChange={(e) => update(idx, { operator: e.target.value })}
+                name={`${namePrefix}-${idx}`}
+                value={pref.stat}
+                onChange={(e) => update(idx, { stat: e.target.value })}
               >
-                <option value=">">&gt;</option>
-                <option value=">=">&ge;</option>
-                <option value="OR">OR</option>
+                {rowOptions.map((o) => (
+                  <option key={optionValue(o)} value={optionValue(o)}>
+                    {optionLabel(o)}
+                  </option>
+                ))}
               </select>
-            ) : (
-              <button className="remove-pref-btn" onClick={() => remove(idx)}>
-                ✕
-              </button>
-            )}
-          </div>
-        ))}
+              {idx < values.length - 1 ? (
+                <select
+                  name={`${namePrefix}-operator-${idx}`}
+                  className="operator-select"
+                  value={pref.operator || '>'}
+                  onChange={(e) => update(idx, { operator: e.target.value })}
+                >
+                  <option value=">">&gt;</option>
+                  <option value=">=">&ge;</option>
+                  <option value="OR">OR</option>
+                </select>
+              ) : (
+                <button className="remove-pref-btn" onClick={() => remove(idx)}>
+                  ✕
+                </button>
+              )}
+            </div>
+          );
+        })}
       </div>
-      <button className="add-pref-btn" onClick={add}>
+      <button className="add-pref-btn" onClick={add} disabled={!nextOption}>
         + Add Priority
       </button>
     </>

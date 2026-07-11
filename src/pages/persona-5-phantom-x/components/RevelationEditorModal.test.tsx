@@ -123,7 +123,7 @@ describe('RevelationEditorModal', () => {
     for (const g of fixedGroups) expect(g.classList.contains('is-gated')).toBe(false);
   });
 
-  it('enables a slot’s stat controls once its Set is equipped', () => {
+  it('enables a slot’s main once its Set is equipped, but keeps substats main-gated', () => {
     const thief = makeThief({
       revelations: {
         sun: null,
@@ -136,10 +136,44 @@ describe('RevelationEditorModal', () => {
     const { container } = render(<RevelationEditorModal {...defaultProps} thief={thief} />);
     const moonMain = container.querySelector<HTMLSelectElement>('select[name="rev-moon-main"]');
     expect(moonMain?.disabled).toBe(false);
-    // Only Moon (the sole slot with a set) offers its add-substat button.
+    // No main chosen yet → Moon's substats stay gated, so no add-substat button anywhere.
+    expect(screen.queryByText('+ Substat')).toBeNull();
+    // Gated: Star + Sky Main Stat (2) + all 5 Substats lists (incl. Moon) = 7.
+    expect(container.querySelectorAll('.is-gated').length).toBe(7);
+  });
+
+  it('enables a slot’s substats once its Set and variable main are set', () => {
+    const thief = makeThief({
+      revelations: {
+        sun: null,
+        moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+    });
+    const { container } = render(<RevelationEditorModal {...defaultProps} thief={thief} />);
+    // Only Moon (set + main) offers its add-substat button.
     expect(screen.getAllByText('+ Substat')).toHaveLength(1);
-    // Remaining gated: Star + Sky Main Stat (2) + Sun/Star/Sky/Space Substats (4) = 6.
+    // Gated: Star + Sky Main Stat (2) + Sun/Star/Sky/Space Substats (4) = 6.
     expect(container.querySelectorAll('.is-gated').length).toBe(6);
+  });
+
+  it('never main-gates a fixed slot: Space substats enable on Set alone (derived main)', () => {
+    const thief = makeThief({
+      revelations: {
+        sun: null,
+        moon: null,
+        star: null,
+        sky: null,
+        // Space's dual main (Attack + Defense) is derived, never stored → mainStat null.
+        space: { setId: 'integrity', mainStat: null, subStats: [] },
+      },
+    });
+    render(<RevelationEditorModal {...defaultProps} thief={thief} />);
+    // Space is fixed-main: a set alone must ungate its substats (regression guard — a
+    // truthiness gate on `card.mainStat` would lock it forever).
+    expect(screen.getAllByText('+ Substat')).toHaveLength(1);
   });
 
   it('switches to Preferences tab on click', async () => {
