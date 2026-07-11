@@ -255,7 +255,7 @@ describe('RelicEditorModal', () => {
       const body = container.querySelector('.relic-editor-body') as HTMLDivElement & {
         scrollTo: ReturnType<typeof vi.fn>;
       };
-      body.scrollTo = vi.fn();
+      body.scrollTo = vi.fn() as unknown as typeof body.scrollTo;
 
       fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
       anchorSpy.mockClear();

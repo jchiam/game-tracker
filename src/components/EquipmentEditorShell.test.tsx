@@ -58,7 +58,7 @@ describe('EquipmentEditorShell', () => {
       const body = document.querySelector('.test-editor-body') as HTMLDivElement & {
         scrollTo: ReturnType<typeof vi.fn>;
       };
-      body.scrollTo = vi.fn();
+      body.scrollTo = vi.fn() as unknown as typeof body.scrollTo;
       return body;
     }
 
