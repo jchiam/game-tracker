@@ -51,11 +51,12 @@ async function loadExistingOperators() {
   try {
     const content = await readFile(filePath, 'utf-8');
     const entries = [];
-    // Matches the single-quoted, esc()-escaped strings formatEntry emits.
-    const regex = /id:\s*'([^']+)'[^}]*?name:\s*'((?:\\.|[^'\\])*)'/gs;
+    // Matches the id + name strings formatEntry emits (name may be single- or
+    // double-quoted per jsStr's Prettier-stable quoting).
+    const regex = /id:\s*'([^']+)'[^}]*?name:\s*(['"])((?:\\.|(?!\2)[^\\])*)\2/gs;
     let match;
     while ((match = regex.exec(content)) !== null) {
-      entries.push({ id: match[1], name: match[2].replace(/\\(.)/g, '$1') });
+      entries.push({ id: match[1], name: match[3].replace(/\\(.)/g, '$1') });
     }
     return entries;
   } catch {
