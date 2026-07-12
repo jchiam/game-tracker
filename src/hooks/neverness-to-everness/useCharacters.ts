@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
-import { ALL_CHARACTERS, type N2ECharacter } from '@/data/neverness-to-everness/characters';
+import { type N2ECharacter } from '@/data/neverness-to-everness/characters';
+import { ALL_CHARACTERS } from '@/data/neverness-to-everness/characterOverrides';
 import type { N2ECharacterPatch, N2ECartridgePatch, N2ETrackedCharacter } from '@/types';
 import {
   loadCharactersFromDB,

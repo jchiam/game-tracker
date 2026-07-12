@@ -5,7 +5,8 @@ import {
   savePreferenceRows,
 } from '@/services/rosterPersistence';
 import type { N2ECharacterPatch, N2ETrackedCharacter } from '@/types';
-import { ALL_CHARACTERS, type N2ECharacter } from '@/data/neverness-to-everness/characters';
+import { type N2ECharacter } from '@/data/neverness-to-everness/characters';
+import { ALL_CHARACTERS } from '@/data/neverness-to-everness/characterOverrides';
 import { renameN2EStatLabel } from '@/data/neverness-to-everness/statLabelRename';
 
 /** Remap a loaded preference chain's stat labels to their in-game form (back-compat). */

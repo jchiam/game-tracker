@@ -67,6 +67,13 @@ const CROP_OVERRIDES = {
   hathor: { side: 0.46, cx: 0.55, top: 0.12 }, // reclining pose, face high-right
 };
 
+// Alternate art variants: extra busts saved under their own slug but NOT emitted as separate
+// catalog entries (their esper id is in `skipIds`). The app decides which variant to display via
+// src/data/neverness-to-everness/characterOverrides.ts. Crop overrides key off the variant slug.
+const ALT_VARIANTS = [
+  { slug: 'zero-female', esperId: '1051' }, // female Zero — preferred art (see characterOverrides.ts)
+];
+
 // Combat roles — not available in the API (char_tags is null). Hardcoded per character.
 const ROLE_OVERRIDES = {
   Adler: ['Survival', 'Shield', 'DoT'],
@@ -391,7 +398,9 @@ async function main() {
 
   // ── Process Espers ───────────────────────────────────────────────
 
-  // Skip duplicate/alternate IDs (female Zero 1051 is a duplicate of male Zero 1046)
+  // Skip duplicate/alternate IDs from the catalog (female Zero 1051 is an alternate of male Zero
+  // 1046). Only one Zero catalog entry is emitted; both busts are still saved (see ALT_VARIANTS) so
+  // the app can pick which art to show (src/data/neverness-to-everness/characterOverrides.ts).
   const skipIds = new Set(['1051']);
 
   const espers = rawEspers.filter((e) => !skipIds.has(e.id));
@@ -436,6 +445,33 @@ async function main() {
     if (charResult === 'failed') missingImages.push(e.name);
 
     characters.push({ id, name: e.name, rarity, esperType, arcType, roles, imageUrl });
+  }
+
+  // ── Process alternate art variants ───────────────────────────────
+  // Saved as extra busts only — not added to the catalog. See ALT_VARIANTS / characterOverrides.ts.
+
+  for (const { slug, esperId } of ALT_VARIANTS) {
+    const e = rawEspers.find((esper) => esper.id === esperId);
+    if (!e) {
+      console.warn(`  Alt variant ${slug}: esper ${esperId} not found — skipping`);
+      continue;
+    }
+    if (!e.iconGacha) {
+      console.warn(`  Alt variant ${slug}: no gacha art (iconGacha) for ${e.name} — skipping`);
+      missingImages.push(slug);
+      continue;
+    }
+    console.log(`  [alt] ${slug} (${e.name} ${esperId})`);
+    const altResult = await ensureAsset({
+      localPath: resolve(ROOT, `public/assets/neverness-to-everness/characters/${slug}.webp`),
+      label: 'Image',
+      reupload: reuploadCharacters,
+      mimeType: 'image/webp',
+      fetchBuffer: async () =>
+        cropBust(await downloadImage(assetUrl(e.iconGacha)), CROP_OVERRIDES[slug]),
+    });
+    if (altResult === 'uploaded') charImageCount++;
+    if (altResult === 'failed') missingImages.push(slug);
   }
 
   // ── Process Arcs ─────────────────────────────────────────────────
