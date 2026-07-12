@@ -90,14 +90,14 @@ export const ALL_ARCS: N2EArc[] = [
   },
   {
     id: 'fork_mofeikesi',
-    name: 'Good Boy\'s Grand Adventure',
+    name: "Good Boy's Grand Adventure",
     rarity: 'S',
     arcType: 'Gas',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_mofeikesi.webp',
   },
   {
     id: 'fork_PoliceRat',
-    name: 'Hethereau\'s Keeper',
+    name: "Hethereau's Keeper",
     rarity: 'S',
     arcType: 'Solid',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_PoliceRat.webp',
@@ -174,7 +174,7 @@ export const ALL_ARCS: N2EArc[] = [
   },
   {
     id: 'fork_GoldWool',
-    name: 'What\'s Desired',
+    name: "What's Desired",
     rarity: 'S',
     arcType: 'Synthesis',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_GoldWool.webp',
@@ -259,7 +259,7 @@ export const ALL_ARCS: N2EArc[] = [
   },
   {
     id: 'fork_snowman',
-    name: 'The Fools\' Spring',
+    name: "The Fools' Spring",
     rarity: 'A',
     arcType: 'Synthesis',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_snowman.webp',

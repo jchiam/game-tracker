@@ -16,7 +16,7 @@ export const ALL_CARTRIDGES: N2ECartridge[] = [
   },
   {
     id: 'Psyche_orange',
-    name: 'Devil\'s Blood: Curse',
+    name: "Devil's Blood: Curse",
     rarity: 'S',
   },
   {
@@ -31,7 +31,7 @@ export const ALL_CARTRIDGES: N2ECartridge[] = [
   },
   {
     id: 'Shield_orange',
-    name: 'Kingdom\'s Guard',
+    name: "Kingdom's Guard",
     rarity: 'S',
   },
   {
@@ -61,7 +61,7 @@ export const ALL_CARTRIDGES: N2ECartridge[] = [
   },
   {
     id: 'Heal_orange',
-    name: 'Thea\'s Night Tavern',
+    name: "Thea's Night Tavern",
     rarity: 'S',
   },
   {
@@ -77,7 +77,7 @@ export const ALL_CARTRIDGES: N2ECartridge[] = [
   },
   {
     id: 'Psyche_purple',
-    name: 'Devil\'s Blood: Curse',
+    name: "Devil's Blood: Curse",
     rarity: 'A',
   },
   {
@@ -92,7 +92,7 @@ export const ALL_CARTRIDGES: N2ECartridge[] = [
   },
   {
     id: 'Shield_purple',
-    name: 'Kingdom\'s Guard',
+    name: "Kingdom's Guard",
     rarity: 'A',
   },
   {
@@ -122,7 +122,7 @@ export const ALL_CARTRIDGES: N2ECartridge[] = [
   },
   {
     id: 'Heal_purple',
-    name: 'Thea\'s Night Tavern',
+    name: "Thea's Night Tavern",
     rarity: 'A',
   },
   {
@@ -138,7 +138,7 @@ export const ALL_CARTRIDGES: N2ECartridge[] = [
   },
   {
     id: 'Psyche_blue',
-    name: 'Devil\'s Blood: Curse',
+    name: "Devil's Blood: Curse",
     rarity: 'B',
   },
   {
@@ -153,7 +153,7 @@ export const ALL_CARTRIDGES: N2ECartridge[] = [
   },
   {
     id: 'Shield_blue',
-    name: 'Kingdom\'s Guard',
+    name: "Kingdom's Guard",
     rarity: 'B',
   },
   {
@@ -183,7 +183,7 @@ export const ALL_CARTRIDGES: N2ECartridge[] = [
   },
   {
     id: 'Heal_blue',
-    name: 'Thea\'s Night Tavern',
+    name: "Thea's Night Tavern",
     rarity: 'B',
   },
   {
