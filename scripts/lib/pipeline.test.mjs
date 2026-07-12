@@ -8,6 +8,7 @@ import {
   parseReuploadFlags,
   slugify,
   esc,
+  jsStr,
   diffByKey,
   formatDiff,
   generatedHeader,
@@ -34,6 +35,25 @@ describe('esc', () => {
   it('escapes single quotes and backslashes for single-quoted literals', () => {
     expect(esc("Ms. Moissan's")).toBe("Ms. Moissan\\'s");
     expect(esc('back\\slash')).toBe('back\\\\slash');
+  });
+});
+
+describe('jsStr', () => {
+  it('single-quotes plain strings (Prettier singleQuote default)', () => {
+    expect(jsStr('Zero')).toBe("'Zero'");
+  });
+
+  it('double-quotes strings with an apostrophe and no double quote (no escape churn)', () => {
+    expect(jsStr("Good Boy's Grand Adventure")).toBe('"Good Boy\'s Grand Adventure"');
+    expect(jsStr("Hethereau's Keeper")).toBe('"Hethereau\'s Keeper"');
+  });
+
+  it('keeps single quotes when the string contains a double quote', () => {
+    expect(jsStr('he said "hi"')).toBe('\'he said "hi"\'');
+  });
+
+  it('escapes backslashes', () => {
+    expect(jsStr('back\\slash')).toBe("'back\\\\slash'");
   });
 });
 

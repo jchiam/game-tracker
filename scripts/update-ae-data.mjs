@@ -27,7 +27,7 @@ import {
   parseReuploadFlags,
   fetchJSON,
   downloadImage,
-  esc,
+  jsStr,
   diffByKey,
   formatDiff,
   generatedHeader,
@@ -90,18 +90,18 @@ function generateOperatorsTs(operators) {
     'export const ALL_OPERATORS: AeOperator[] = [',
   ];
 
-  // Single-quoted via esc() so the output is already Prettier-stable —
-  // JSON.stringify's double quotes would be re-quoted by `npm run format`,
-  // breaking the loadExistingOperators diff on the next run.
+  // jsStr() keeps the output Prettier-stable (see its definition) — a naive esc()
+  // wrapper emits escaped single quotes that `npm run format` rewrites to double
+  // quotes, churning the file and breaking the loadExistingOperators diff next run.
   const formatEntry = (o) =>
     [
       `  {`,
       `    id: '${o.id}',`,
-      `    name: '${esc(o.name)}',`,
+      `    name: ${jsStr(o.name)},`,
       `    rarity: ${o.rarity},`,
-      `    class: '${esc(o.class)}',`,
-      `    element: '${esc(o.element)}',`,
-      `    weapon: '${esc(o.weapon)}',`,
+      `    class: ${jsStr(o.class)},`,
+      `    element: ${jsStr(o.element)},`,
+      `    weapon: ${jsStr(o.weapon)},`,
       `    imageUrl: '${o.imageUrl}',`,
       `  },`,
     ].join('\n');

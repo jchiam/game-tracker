@@ -29,7 +29,7 @@ import {
   fetchJSON,
   downloadImage,
   slugify,
-  esc,
+  jsStr,
   diffByKey,
   formatDiff,
   generatedHeader,
@@ -75,19 +75,6 @@ function gatsbyImagePath(imageNode) {
   const src = imageNode?.localFile?.childImageSharp?.gatsbyImageData?.images?.fallback?.src;
   if (!src) return null;
   return `${PRYDWEN_ORIGIN}${src}`;
-}
-
-// Mirror Prettier's singleQuote behaviour so generated string literals are
-// format-stable across runs: prefer single quotes, but switch to double quotes
-// when the value contains a single quote and no double quote (fewer escapes) —
-// e.g. "Jack-o'-Lantern". Plain esc() emits an escaped single quote that
-// `npm run format` rewrites to double quotes, breaking the next run's diff.
-function jsStr(value) {
-  const s = String(value);
-  if (s.includes("'") && !s.includes('"')) {
-    return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
-  }
-  return `'${esc(s)}'`;
 }
 
 function generateThievesTs(thieves) {

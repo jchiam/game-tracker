@@ -181,6 +181,20 @@ export function esc(str) {
   return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 }
 
+// Quote a string as a Prettier-stable JS literal for codegen. Prettier prefers double quotes and
+// only switches to single quotes to avoid escaping, so a naive `'${esc(s)}'` wrapper produces
+// output Prettier immediately rewrites (e.g. `'Good Boy\'s'` → `"Good Boy's"`), churning the
+// generated files. Match Prettier's rule: use double quotes for strings containing `'` but no `"`,
+// single quotes otherwise. (Strings with both quote kinds are vanishingly rare in these datasets
+// and left on the single-quote path.)
+export function jsStr(value) {
+  const s = String(value);
+  if (s.includes("'") && !s.includes('"')) {
+    return `"${s.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`;
+  }
+  return `'${esc(s)}'`;
+}
+
 /** Diff two catalog arrays by key: entries in next but not existing are added, and vice versa. */
 export function diffByKey(existing, next, keyFn) {
   const existingKeys = new Set(existing.map(keyFn));

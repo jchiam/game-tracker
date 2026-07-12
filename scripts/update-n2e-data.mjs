@@ -28,7 +28,7 @@ import {
   parseReuploadFlags,
   downloadImage,
   slugify,
-  esc,
+  jsStr,
   diffByKey,
   formatDiff,
   generatedHeader,
@@ -215,11 +215,11 @@ function generateCharactersTs(characters) {
   ];
 
   const formatEntry = (c) => {
-    const rolesStr = c.roles.map((r) => `'${esc(r)}'`).join(', ');
+    const rolesStr = c.roles.map((r) => jsStr(r)).join(', ');
     return [
       '  {',
       `    id: '${c.id}',`,
-      `    name: '${esc(c.name)}',`,
+      `    name: ${jsStr(c.name)},`,
       `    rarity: '${c.rarity}',`,
       `    esperType: '${c.esperType}',`,
       `    arcType: '${c.arcType}',`,
@@ -265,7 +265,7 @@ function generateArcsTs(arcs) {
     [
       '  {',
       `    id: '${a.id}',`,
-      `    name: '${esc(a.name)}',`,
+      `    name: ${jsStr(a.name)},`,
       `    rarity: '${a.rarity}',`,
       `    arcType: '${a.arcType}',`,
       `    imageUrl: '${a.imageUrl}',`,
@@ -310,7 +310,7 @@ function generateCartridgesTs(cartridges) {
     [
       '  {',
       `    id: '${c.id}',`,
-      `    name: '${esc(c.name)}',`,
+      `    name: ${jsStr(c.name)},`,
       `    rarity: '${c.rarity}',`,
       '  },',
     ].join('\n');
@@ -335,11 +335,11 @@ function generateCartridgeStatsTs(mainStats, subStats) {
     ...generatedHeader('everness.info GraphQL API', 'update-n2e-data.mjs'),
     '',
     'export const CARTRIDGE_MAIN_STATS = [',
-    ...mainStats.map((s) => `  '${esc(s)}',`),
+    ...mainStats.map((s) => `  ${jsStr(s)},`),
     '] as const;',
     '',
     'export const CARTRIDGE_SUB_STATS = [',
-    ...subStats.map((s) => `  '${esc(s)}',`),
+    ...subStats.map((s) => `  ${jsStr(s)},`),
     '] as const;',
     '',
     "export const CARTRIDGE_RARITIES = ['B', 'A', 'S'] as const;",

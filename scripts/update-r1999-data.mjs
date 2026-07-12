@@ -30,7 +30,7 @@ import {
   fetchJSON,
   downloadImage,
   slugify,
-  esc,
+  jsStr,
   diffByKey,
   formatDiff,
   generatedHeader,
@@ -199,7 +199,7 @@ function generateArcanistsTs(arcanists) {
     return [
       `  {`,
       `    id: '${a.id}',`,
-      `    name: '${esc(a.name)}',`,
+      `    name: ${jsStr(a.name)},`,
       `    afflatus: '${a.afflatus}',`,
       `    damageType: '${a.damageType}',`,
       `    imageUrl: '${a.imageUrl}',`,
@@ -262,7 +262,7 @@ function generatePsychubesTs(psychubes) {
   const formatEntry = (p) => {
     return [
       '  {',
-      `    name: '${esc(p.name)}',`,
+      `    name: ${jsStr(p.name)},`,
       `    rarity: ${p.rarity},`,
       `    tag: '${p.tag}',`,
       `    imageUrl: '/assets/reverse-1999/psychubes/${slugify(p.name)}.webp',`,
