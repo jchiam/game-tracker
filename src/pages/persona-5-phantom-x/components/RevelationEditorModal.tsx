@@ -151,6 +151,7 @@ function EquipTab({
                   value={mainStat}
                   options={toStatOptions(slotMainIds)}
                   onChange={handleMainStatChange}
+                  placeholder="-- No Main Stat --"
                   disabled={!hasSet}
                 />
               )}

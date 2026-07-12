@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
+import { useState } from 'react';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { RevelationEditorModal } from './RevelationEditorModal';
@@ -140,6 +141,58 @@ describe('RevelationEditorModal', () => {
     expect(screen.queryByText('+ Substat')).toBeNull();
     // Gated: Star + Sky Main Stat (2) + all 5 Substats lists (incl. Moon) = 7.
     expect(container.querySelectorAll('.is-gated').length).toBe(7);
+  });
+
+  it('gives the variable main select an empty placeholder option so an unset main is selectable', () => {
+    // Regression: without a placeholder, a controlled `value=""` has no matching option, so the
+    // browser paints the first stat while state stays "" — picking that same stat fires no change
+    // event, the main never sets, and substats stay gated forever.
+    const thief = makeThief({
+      revelations: {
+        sun: null,
+        moon: { setId: 'strife', mainStat: null, subStats: [] },
+        star: null,
+        sky: null,
+        space: null,
+      },
+    });
+    const { container } = render(<RevelationEditorModal {...defaultProps} thief={thief} />);
+    const moonMain = container.querySelector<HTMLSelectElement>('select[name="rev-moon-main"]')!;
+    const emptyOpt = moonMain.querySelector<HTMLOptionElement>('option[value=""]');
+    expect(emptyOpt).not.toBeNull();
+    expect(moonMain.value).toBe('');
+  });
+
+  it('ungates substats after the variable main is picked interactively', async () => {
+    const user = userEvent.setup();
+    // Parent re-feeds a fresh thief on each slot update, matching P5xPage's live-derived prop.
+    function Harness() {
+      const [thief, setThief] = useState<P5xTrackedThief>(
+        makeThief({
+          revelations: {
+            sun: null,
+            moon: { setId: 'strife', mainStat: null, subStats: [] },
+            star: null,
+            sky: null,
+            space: null,
+          },
+        }),
+      );
+      return (
+        <RevelationEditorModal
+          {...defaultProps}
+          thief={thief}
+          onUpdateSlot={(slot, data) =>
+            setThief((t) => ({ ...t, revelations: { ...t.revelations, [slot]: data } }))
+          }
+        />
+      );
+    }
+    render(<Harness />);
+    expect(screen.queryByText('+ Substat')).toBeNull();
+    const moonMain = document.querySelector<HTMLSelectElement>('select[name="rev-moon-main"]')!;
+    await user.selectOptions(moonMain, 'attack-pct');
+    expect(screen.getAllByText('+ Substat')).toHaveLength(1);
   });
 
   it('enables a slot’s substats once its Set and variable main are set', () => {
