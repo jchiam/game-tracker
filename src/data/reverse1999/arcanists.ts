@@ -111,14 +111,6 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: false,
   },
   {
-    id: 'cornerstone',
-    name: 'Cornerstone',
-    afflatus: 'Mineral',
-    damageType: 'Unknown',
-    imageUrl: '/assets/reverse-1999/arcanists-mugshots/cornerstone.webp',
-    hasEuphoria: false,
-  },
-  {
     id: 'corvus',
     name: 'Corvus',
     afflatus: 'Intellect',
@@ -292,7 +284,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/lopera.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'lorentz_butterfly',
@@ -383,6 +375,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: false,
   },
   {
+    id: 'paper_heron',
+    name: 'Paper Heron',
+    afflatus: 'Plant',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/paper_heron.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'pickles',
     name: 'Pickles',
     afflatus: 'Mineral',
@@ -455,6 +455,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: true,
   },
   {
+    id: 'the_twins',
+    name: 'The Twins',
+    afflatus: 'Mineral & star',
+    damageType: 'Reality',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/the_twins.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'tooth_fairy',
     name: 'Tooth Fairy',
     afflatus: 'Star',
@@ -508,7 +516,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/windsong.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   // 5-Stars
   {
