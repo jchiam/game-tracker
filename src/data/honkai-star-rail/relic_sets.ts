@@ -54,6 +54,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     icon: '/assets/honkai-star-rail/relics/326.png',
   },
   {
+    id: '328',
+    name: 'Cosmic Life Sciences Institute',
+    icon: '/assets/honkai-star-rail/relics/328.png',
+  },
+  {
     id: '132',
     name: 'Divine-Querying Master Smith',
     icon: '/assets/honkai-star-rail/relics/132.png',
@@ -77,6 +82,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     id: '129',
     name: 'Ever-Glorious Magical Girl',
     icon: '/assets/honkai-star-rail/relics/129.png',
+  },
+  {
+    id: '327',
+    name: 'Fallen Star Anchorage',
+    icon: '/assets/honkai-star-rail/relics/327.png',
   },
   {
     id: '107',
