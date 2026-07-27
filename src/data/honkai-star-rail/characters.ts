@@ -201,11 +201,25 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/gepard.webp',
   },
   {
+    id: 'gilgamesh',
+    name: 'Gilgamesh',
+    element: 'Thunder',
+    path: 'Destruction',
+    imageUrl: '/assets/honkai-star-rail/characters/gilgamesh.webp',
+  },
+  {
     id: 'himeko',
     name: 'Himeko',
     element: 'Fire',
     path: 'Erudition',
     imageUrl: '/assets/honkai-star-rail/characters/himeko.webp',
+  },
+  {
+    id: 'himeko-nova',
+    name: 'Himeko • Nova',
+    element: 'Fire',
+    path: 'Erudition',
+    imageUrl: '/assets/honkai-star-rail/characters/himeko-nova.webp',
   },
   {
     id: 'huohuo',
@@ -304,6 +318,13 @@ export const ALL_CHARACTERS: Character[] = [
     element: 'Imaginary',
     path: 'Erudition',
     imageUrl: '/assets/honkai-star-rail/characters/rappa.webp',
+  },
+  {
+    id: 'rin-tohsaka',
+    name: 'Rin Tohsaka',
+    element: 'Quantum',
+    path: 'Erudition',
+    imageUrl: '/assets/honkai-star-rail/characters/rin-tohsaka.webp',
   },
   {
     id: 'robin',
