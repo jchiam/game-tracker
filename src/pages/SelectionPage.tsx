@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router';
 import type { Session } from '@supabase/supabase-js';
 import { GAMES } from '@/lib/games';
 import './SelectionPage.css';
