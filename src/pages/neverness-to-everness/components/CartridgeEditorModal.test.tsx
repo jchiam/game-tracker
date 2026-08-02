@@ -109,11 +109,8 @@ describe('CartridgeEditorModal', () => {
       'select[name="cartridge-main-stat"]',
     ) as HTMLSelectElement;
     fireEvent.change(select, { target: { value: 'ATK%' } });
-    // Main-stat change also carries a substat prune (none here → empty list).
-    expect(onSaveCartridge).toHaveBeenCalledWith({
-      cartridgeMainStat: 'ATK%',
-      cartridgeSubStats: [],
-    });
+    // Main-stat change saves only the main stat — N2E never prunes substats.
+    expect(onSaveCartridge).toHaveBeenCalledWith({ cartridgeMainStat: 'ATK%' });
   });
 
   it('calls onSaveCartridge when level slider changes', () => {
@@ -404,7 +401,7 @@ describe('CartridgeEditorModal', () => {
     expect(container.querySelectorAll('.is-gated').length).toBe(1);
   });
 
-  it('excludes the equipped main stat from the substat options', () => {
+  it('offers the equipped main stat as a substat option (N2E main/sub roll independently)', () => {
     render(
       <CartridgeEditorModal
         character={makeChar({
@@ -419,10 +416,30 @@ describe('CartridgeEditorModal', () => {
     const opts = Array.from(document.querySelectorAll('select[name="substat-type-0"] option')).map(
       (o) => (o as HTMLOptionElement).value,
     );
-    expect(opts).not.toContain('CRIT Rate'); // the equipped main
+    expect(opts).toContain('CRIT Rate'); // the equipped main is a legal substat in N2E
   });
 
-  it('prunes a colliding substat when the main stat changes to it', () => {
+  it('still dedupes a substat already chosen by a sibling row', () => {
+    render(
+      <CartridgeEditorModal
+        character={makeChar({
+          cartridgeId: firstCartridge.id,
+          cartridgeRarity: 'S',
+          cartridgeMainStat: 'CRIT Rate',
+          cartridgeSubStats: ['ATK%', 'HP%'],
+        })}
+        {...defaultProps}
+      />,
+    );
+    // Row 0 holds 'ATK%'; row 1 (holding 'HP%') must not offer 'ATK%'.
+    const row1 = Array.from(document.querySelectorAll('select[name="substat-type-1"] option')).map(
+      (o) => (o as HTMLOptionElement).value,
+    );
+    expect(row1).not.toContain('ATK%');
+    expect(row1).toContain('HP%'); // its own current value stays visible
+  });
+
+  it('does not prune a colliding substat when the main stat changes to it', () => {
     const onSaveCartridge = vi.fn();
     render(
       <CartridgeEditorModal
@@ -440,9 +457,7 @@ describe('CartridgeEditorModal', () => {
       'select[name="cartridge-main-stat"]',
     ) as HTMLSelectElement;
     fireEvent.change(select, { target: { value: 'CRIT Rate' } });
-    expect(onSaveCartridge).toHaveBeenCalledWith({
-      cartridgeMainStat: 'CRIT Rate',
-      cartridgeSubStats: ['HP%'], // colliding CRIT Rate pruned
-    });
+    // Only the main stat is saved; substats untouched (CRIT Rate stays as both main and sub).
+    expect(onSaveCartridge).toHaveBeenCalledWith({ cartridgeMainStat: 'CRIT Rate' });
   });
 });

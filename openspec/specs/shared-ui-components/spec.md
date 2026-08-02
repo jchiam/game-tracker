@@ -552,7 +552,8 @@ Every Set/Main/Sub equipment editor SHALL present its Equip form consistently, p
 below. This covers the HSR `RelicEditorModal`, N2E `CartridgeEditorModal`, and P5X
 `RevelationEditorModal` — editors that model an equipped item as a Set/item plus a Main Stat and a
 Substats list. The rules are labeled controls, read-only fixed mains, set-gated editable
-controls, main-gated substats, and the substats-exclude-main invariant:
+controls, main-gated substats, and the substats-exclude-main invariant (which applies to the
+hoyoverse-style editors only):
 
 - **Labeled controls**: every editable stat control SHALL be wrapped in a `FormGroup` with an
   explicit label (`Set` / `Relic Set` / `Cartridge`, `Main Stat`, `Substats`), so the main-stat
@@ -570,12 +571,17 @@ controls, main-gated substats, and the substats-exclude-main invariant:
   until the slot's main stat has a value, in addition to the set gate. The gate SHALL key off the
   slot's main-stat **type** (variable vs fixed), not the presence of a stored `mainStat` value: a
   fixed-main slot SHALL NOT be main-gated, so P5X Space (whose dual fixed mains are derived, not
-  stored) is never locked out.
-- **Substats exclude and never duplicate the main**: each editor SHALL pass the slot's equipped
-  main stat to `SubStatList` as `excludeValues`, and SHALL prune from the substats any value equal
-  to a newly chosen main stat within its main-stat change handler. This SHALL hold for all three
-  editors — the N2E cartridge editor SHALL supply `excludeValues` and prune in its
-  `cartridgeMainStat` handler to match the HSR and P5X editors.
+  stored) is never locked out. This gate is retained for the N2E cartridge editor for consistent
+  user flow (pick a main before entering substats), independent of any exclusion rule.
+- **Substats exclude and never duplicate the main (HSR and P5X only)**: the HSR `RelicEditorModal`
+  and P5X `RevelationEditorModal` SHALL pass the slot's equipped main stat to `SubStatList` as
+  `excludeValues`, and SHALL prune from the substats any value equal to a newly chosen main stat
+  within their main-stat change handler — because in those games a piece's main stat is excluded
+  from its own sub-roll pool. The **N2E cartridge editor SHALL NOT apply this exclusion**: N2E
+  cartridge main and sub stats roll independently, so the same stat may appear as both main and sub
+  on one cartridge. The N2E editor SHALL therefore offer the equipped main stat as a selectable
+  substat and SHALL NOT prune a substat that equals the main stat. Substat rows SHALL still dedupe
+  against one another in every editor (no stat appears in two substat rows).
 
 This standard SHALL apply only to Set/Main/Sub equipment editors and SHALL NOT apply to the AE
 weapon editor (a single inline weapon `Select` + `LevelSlider` in the operator card, with no
@@ -608,12 +614,24 @@ set/main/substat model and no fixed main).
 - **THEN** its Substats list is enabled without requiring a separate main-stat selection, and P5X
   Space (derived dual main, no stored `mainStat`) is not locked out
 
-#### Scenario: Substats never offer or keep the equipped main stat
+#### Scenario: HSR and P5X substats never offer or keep the equipped main stat
 
-- **WHEN** any of the three editors has an equipped main stat
+- **WHEN** an HSR relic or P5X revelation editor has an equipped main stat
 - **THEN** the Substats list does not offer that stat as an option
 - **WHEN** the main stat is changed to a value already present in the substats
-- **THEN** that substat is pruned from the list, in every one of the three editors including N2E
+- **THEN** that substat is pruned from the list
+
+#### Scenario: N2E substats may offer and keep the equipped main stat
+
+- **WHEN** the N2E cartridge editor has an equipped main stat (e.g. `Cycle Intensity`)
+- **THEN** the Substats list still offers `Cycle Intensity` as a selectable option
+- **WHEN** the main stat is changed to a value already present in the substats
+- **THEN** that substat is NOT pruned — the same stat remains as both main and sub
+
+#### Scenario: Substat rows still dedupe against each other
+
+- **WHEN** any editor's Substats list holds a stat in one row
+- **THEN** no other substat row offers that same stat, in every editor including N2E
 
 #### Scenario: Fixed main renders read-only and is never gated
 

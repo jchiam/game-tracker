@@ -185,14 +185,14 @@ describe('calculateCartridgeScore', () => {
     expect(calculateCartridgeScore(char)).toBeCloseTo(86, 5);
   });
 
-  it('maxes the sub term when the equipped main occupies the only exact sub match', () => {
-    // Main 'HP%' excludes 'HP%' from the pool; sub pref [HP%] can only be met by
-    // flat HP at 0.5 → achievable 0.5; equipped [HP] sums 0.5 → sub 1.0.
-    // No set pref (0), main don't-care (1.0) → (0.30 + 0.35) × 100 = 65
+  it('keeps the equipped main stat in the achievable sub pool (N2E main/sub independent)', () => {
+    // N2E: main 'HP%' is NOT excluded, so the same stat may also be a sub. Sub pref [HP%];
+    // pool achievable = HP% (1.0) + flat HP cross (0.5) → 1.5. Equipped subs [HP%, HP] sum
+    // 1.0 + 0.5 = 1.5 → sub 1.0. No set pref (0), main don't-care (1.0) → (0.30 + 0.35) × 100 = 65.
     const char = makeCharacter({
       cartridgeId: 'Cosmos_orange',
       cartridgeMainStat: 'HP%',
-      cartridgeSubStats: ['HP'],
+      cartridgeSubStats: ['HP%', 'HP'],
       cartridgePreferences: {
         cartridgeId: null,
         mainStats: [],

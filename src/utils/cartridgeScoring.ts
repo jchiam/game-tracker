@@ -70,12 +70,8 @@ export const calculateCartridgeScore = createEquipmentScore<N2ETrackedCharacter>
       p.subStats.length > 0 && c.cartridgeSubStats.length > 0
         ? c.cartridgeSubStats.map((s) => bestMatch(p.subStats, s))
         : [];
-    const subAchievable = achievableSubSum(
-      bestMatch,
-      CARTRIDGE_SUB_STATS,
-      c.cartridgeMainStat ? [c.cartridgeMainStat] : [],
-      p.subStats,
-    );
+    // N2E main and sub roll independently — the main stat stays in the achievable sub pool.
+    const subAchievable = achievableSubSum(bestMatch, CARTRIDGE_SUB_STATS, [], p.subStats);
 
     return [{ mainMatch, subMatches, subAchievable }];
   },

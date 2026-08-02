@@ -57,8 +57,9 @@ export function CartridgeEditorModal({
   // is selected — a valid cartridgeId requires both a name and a rarity.
   const hasCartridge = Boolean(currentCartridgeId);
   const gatedClass = hasCartridge ? undefined : 'is-gated';
-  // Substats are additionally gated behind the (variable) main stat: a substat can never
-  // equal or precede the main choice, so keep the list disabled until a main is picked.
+  // Substats are additionally gated behind the (variable) main stat for consistent user flow —
+  // pick a main before entering substats. N2E main and sub stats roll independently, so a substat
+  // MAY equal the main; the gate is a flow choice, not an exclusion rule.
   const subsEnabled = hasCartridge && Boolean(currentMainStat);
   const subGatedClass = subsEnabled ? undefined : 'is-gated';
 
@@ -168,11 +169,8 @@ export function CartridgeEditorModal({
               placeholder="-- No Main Stat --"
               options={CARTRIDGE_MAIN_STATS}
               onChange={(v) =>
-                onSaveCartridge({
-                  cartridgeMainStat: v || null,
-                  // A substat may not duplicate the main — prune any that now collide.
-                  cartridgeSubStats: v ? currentSubStats.filter((s) => s !== v) : currentSubStats,
-                })
+                // N2E main and sub roll independently — a substat may equal the main, so no prune.
+                onSaveCartridge({ cartridgeMainStat: v || null })
               }
               disabled={!hasCartridge}
             />
@@ -197,7 +195,6 @@ export function CartridgeEditorModal({
               namePrefix="substat"
               label="Sub Stats (Max 4)"
               addLabel="+ Add Sub Stat"
-              excludeValues={currentMainStat ? [currentMainStat] : []}
               disabled={!subsEnabled}
               onChange={(subs) => onSaveCartridge({ cartridgeSubStats: subs })}
             />
