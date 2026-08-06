@@ -59,6 +59,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/approaching_rain.webp',
   },
   {
+    name: 'Art of Atoms',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/art_of_atoms.webp',
+  },
+  {
     name: 'As the Bell Tolls',
     rarity: 6,
     tag: 'None',
@@ -315,6 +321,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     rarity: 6,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/the_carat_of_a_heart.webp',
+  },
+  {
+    name: 'The Dance of Science',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/the_dance_of_science.webp',
   },
   {
     name: "The Fighter's Best Wishes",
