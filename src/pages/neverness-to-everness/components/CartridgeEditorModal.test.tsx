@@ -17,6 +17,7 @@ function makeChar(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedChara
     imageUrl: '/baicang.webp',
     isFavorited: false,
     level: 60,
+    modulesConfigured: false,
     awakening: [false, false, false, false, false, false],
     arcId: null,
     arcLevel: 1,

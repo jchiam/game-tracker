@@ -104,6 +104,7 @@ export interface N2ETrackedCharacter extends N2ECharacter {
   dbId?: string;
   isFavorited: boolean;
   level: number;
+  modulesConfigured: boolean; // flag-only: modules system tracked as done/not-done
   awakening: boolean[]; // 6 individual toggle slots
   arcId: string | null;
   arcLevel: number;
@@ -124,6 +125,7 @@ export interface N2ETrackedCharacter extends N2ECharacter {
 /** Typed partial update for an N2E tracked character row (camelCase keys). */
 export interface N2ECharacterPatch {
   level?: number;
+  modulesConfigured?: boolean;
   awakening?: boolean[];
   arcId?: string | null;
   arcLevel?: number;

@@ -94,6 +94,7 @@ describe('useCharacters', () => {
     expect(result.current.trackedCharacters).toHaveLength(1);
     expect(result.current.trackedCharacters[0].id).toBe(firstChar.id);
     expect(result.current.trackedCharacters[0].level).toBe(1);
+    expect(result.current.trackedCharacters[0].modulesConfigured).toBe(false);
     expect(result.current.trackedCharacters[0].awakening).toEqual([
       false,
       false,
@@ -236,6 +237,17 @@ describe('useCharacters', () => {
 
     act(() => result.current.toggleFavoriteCharacter(id, false));
     expect(result.current.trackedCharacters[0].isFavorited).toBe(false);
+  });
+
+  it('toggleModulesConfigured updates modulesConfigured', async () => {
+    const { result } = await setupWithChar();
+    const id = result.current.trackedCharacters[0].id;
+
+    act(() => result.current.toggleModulesConfigured(id, true));
+    expect(result.current.trackedCharacters[0].modulesConfigured).toBe(true);
+
+    act(() => result.current.toggleModulesConfigured(id, false));
+    expect(result.current.trackedCharacters[0].modulesConfigured).toBe(false);
   });
 
   it('saveCartridgePreferences updates preferences', async () => {

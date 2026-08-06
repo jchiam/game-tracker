@@ -4,13 +4,13 @@ Canonical glossary of the domain concepts used across this codebase, its openspe
 
 ## The Games
 
-| Game                     | Short ID | Directory name          | Primary entity noun | Game-specific concepts                                                                                                       |
-| ------------------------ | -------- | ----------------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Honkai Star Rail         | `hsr`    | `honkai-star-rail`      | **character**       | Relics (equippable, with substats), build preferences, relic scoring                                                         |
-| Reverse: 1999            | `r1999`  | `reverse1999`           | **arcanist**        | Psychubes, afflatus; parties support `tier` and favorite toggle                                                              |
-| Neverness to Everness    | `n2e`    | `neverness-to-everness` | **character**       | Espers (`esperType` on each character), cartridges + cartridge preferences, arcs; parties support `tier` and favorite toggle |
-| Arknights: Endfield      | `ae`     | `arknights-endfield`    | **operator**        | Weapons; Phase-1 scope is roster + parties; weapon catalog is hand-authored (see Update Pipeline)                            |
-| Persona 5: The Phantom X | `p5x`    | `persona-5-phantom-x`   | **thief**           | Awareness (A0–A6 duplicate ranks), bound Persona per thief (`personaName`), codename; Phase-1 scope is roster + parties      |
+| Game                     | Short ID | Directory name          | Primary entity noun | Game-specific concepts                                                                                                                              |
+| ------------------------ | -------- | ----------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Honkai Star Rail         | `hsr`    | `honkai-star-rail`      | **character**       | Relics (equippable, with substats), build preferences, relic scoring                                                                                |
+| Reverse: 1999            | `r1999`  | `reverse1999`           | **arcanist**        | Psychubes, afflatus; parties support `tier` and favorite toggle                                                                                     |
+| Neverness to Everness    | `n2e`    | `neverness-to-everness` | **character**       | Espers (`esperType` on each character), the Console (cartridge + cartridge preferences + modules), arcs; parties support `tier` and favorite toggle |
+| Arknights: Endfield      | `ae`     | `arknights-endfield`    | **operator**        | Weapons; Phase-1 scope is roster + parties; weapon catalog is hand-authored (see Update Pipeline)                                                   |
+| Persona 5: The Phantom X | `p5x`    | `persona-5-phantom-x`   | **thief**           | Awareness (A0–A6 duplicate ranks), bound Persona per thief (`personaName`), codename; Phase-1 scope is roster + parties                             |
 
 Each game is a self-contained module under `src/data/{game}/`, `src/services/{game}/`, `src/hooks/{game}/`, `src/pages/{game}/`, with shared code in `src/components/`, `src/lib/`, `src/utils/`, `src/types.ts`.
 
@@ -70,6 +70,17 @@ rather than being classified. The full taxonomy lives in the `shared-ui-componen
 ("Semantic stat-option ordering").
 
 **Label.** A stat's displayed label is the **verbatim in-game string for that game** — mirroring the game's own abbreviation and spacing conventions, never our own shorthand or an external guide's (HSR: `CRIT DMG`, `HP%`; N2E: `CRIT DMG %`; P5X: `Crit Mult.`, `Ailment Acc.`, `Attack%` — noun full, trailing modifier abbreviated, `%` no-space only on the plain stat percent variants). Labels are single-sourced in that game's `data/{game}/*.ts` catalog. Where a label may be re-pinned to track in-game text, the **stored value is a stable id decoupled from the label** (P5X `STAT_LABELS` id→label map; `toStatOptions` feeds `{ value, label }` to the shared `Select` / `SubStatList` / `PreferenceChain` primitives), so re-labelling never invalidates a saved row; an id with no label resolves to the raw id, never blank. New games inherit this rule.
+
+### Console (N2E)
+
+The Neverness to Everness housing that comprises a character's equipped **cartridge** (with its
+rarity/level/main/sub stats) and their **modules**. Modules are a distinct N2E progression system
+tracked minimally — a single `modulesConfigured` boolean done/not-done flag on the tracked character
+(the shape of HSR's `tracesAttained`), not a modeled item. The **Target Build** (the read-only
+cartridge-preference readout: Set, Main chain, Subs chain, comments) is the Console's shared
+preference display, relevant to both cartridge and modules. In the character card the Console renders
+as a single labeled group in the edit body (after Arc), ordered cartridge → modules → Target Build.
+Its full behaviour lives in the `n2e-character-detail` spec.
 
 ### Party / Lineup
 

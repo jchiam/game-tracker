@@ -73,6 +73,7 @@ function makeCharacter(overrides: Partial<N2ETrackedCharacter> = {}): N2ETracked
     imageUrl: '',
     isFavorited: false,
     level: 1,
+    modulesConfigured: false,
     awakening: [false, false, false, false, false, false],
     arcId: null,
     arcLevel: 1,

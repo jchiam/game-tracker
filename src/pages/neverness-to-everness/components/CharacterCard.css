@@ -177,4 +177,6 @@
 
 /* Arc/cartridge selects use the canonical `.game-select`, and the level/arc
    sliders use the canonical `.level-slider` — both from controls.css. The
-   Target Build readout uses the shared classes in card.css. */
+   Target Build readout uses the shared classes in card.css. The Console
+   grouping uses the shared neutral `.card-section-group` primitive (card.css) —
+   no game-local group rule here. */

@@ -24,6 +24,7 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
     addCharacter,
     removeCharacter,
     updateCharacterLevel,
+    toggleModulesConfigured,
     toggleAwakeningSlot,
     updateArc,
     updateCartridge,
@@ -73,6 +74,7 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
           character={character}
           onRemove={removeCharacter}
           onUpdateLevel={updateCharacterLevel}
+          onToggleModules={toggleModulesConfigured}
           onToggleAwakening={toggleAwakeningSlot}
           onUpdateArc={updateArc}
           onUpdateCartridge={updateCartridge}

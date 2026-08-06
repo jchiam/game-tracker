@@ -39,6 +39,7 @@ function makeChar(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedChara
     dbId: 'db-1',
     isFavorited: false,
     level: 60,
+    modulesConfigured: false,
     awakening: [true, true, false, false, false, false],
     arcId: null,
     arcLevel: 1,
@@ -56,6 +57,7 @@ function makeChar(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedChara
 const defaultProps = {
   onRemove: vi.fn(),
   onUpdateLevel: vi.fn(),
+  onToggleModules: vi.fn(),
   onToggleAwakening: vi.fn(),
   onUpdateArc: vi.fn(),
   onUpdateCartridge: vi.fn(),
@@ -92,6 +94,88 @@ describe('CharacterCard', () => {
   it('displays awakening count in static summary', () => {
     render(<CharacterCard character={makeChar()} {...defaultProps} />);
     expect(screen.getByText('A 2/6')).toBeInTheDocument();
+  });
+
+  it('shows Modules ✗ in summary when not configured', () => {
+    render(<CharacterCard character={makeChar({ modulesConfigured: false })} {...defaultProps} />);
+    expect(screen.getByText('Modules ✗')).toBeInTheDocument();
+  });
+
+  it('shows Modules ✓ in summary when configured', () => {
+    render(<CharacterCard character={makeChar({ modulesConfigured: true })} {...defaultProps} />);
+    expect(screen.getByText('Modules ✓')).toBeInTheDocument();
+  });
+
+  it('calls onToggleModules after two clicks (confirm flow)', () => {
+    const onToggleModules = vi.fn();
+    render(
+      <CharacterCard character={makeChar()} {...defaultProps} onToggleModules={onToggleModules} />,
+    );
+    fireEvent.click(screen.getByText('Modules Configured'));
+    fireEvent.click(screen.getByText('Click to confirm'));
+    expect(onToggleModules).toHaveBeenCalledWith('char-1', true);
+  });
+
+  // --- Console group ---
+
+  it('renders a labeled Console group after the Arc section', () => {
+    const { container } = render(<CharacterCard character={makeChar()} {...defaultProps} />);
+    const consoleGroup = container.querySelector('.card-section-group');
+    expect(consoleGroup).toBeInTheDocument();
+    expect(consoleGroup?.querySelector('.card-section-group-header')?.textContent).toBe('Console');
+
+    // Console comes after Arc in document order.
+    const sectionLabels = [
+      ...container.querySelectorAll<HTMLElement>('.progress-section .section-header span'),
+    ].map((s) => s.textContent);
+    const arcIdx = sectionLabels.indexOf('Arc');
+    const cartridgeIdx = sectionLabels.indexOf('Cartridge');
+    expect(arcIdx).toBeGreaterThanOrEqual(0);
+    expect(cartridgeIdx).toBeGreaterThan(arcIdx);
+  });
+
+  it('orders Console sub-sections Cartridge → Modules → Target Build', () => {
+    const char = makeChar({
+      cartridgePreferences: {
+        cartridgeId: null,
+        mainStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
+        subStats: [],
+      },
+    });
+    const { container } = render(<CharacterCard character={char} {...defaultProps} />);
+    const groupLabels = [
+      ...container.querySelectorAll<HTMLElement>(
+        '.card-section-group .progress-section .section-header span',
+      ),
+    ]
+      .map((s) => s.textContent)
+      .filter((l) => ['Cartridge', 'Modules', 'Target Build'].includes(l ?? ''));
+    expect(groupLabels).toEqual(['Cartridge', 'Modules', 'Target Build']);
+  });
+
+  it('renders the Modules toggle only inside the Console group', () => {
+    const { container } = render(<CharacterCard character={makeChar()} {...defaultProps} />);
+    const toggle = screen.getByText('Modules Configured');
+    const group = container.querySelector('.card-section-group');
+    expect(group?.contains(toggle)).toBe(true);
+    // Exactly one "Modules" section header exists, and it lives inside the group.
+    const allModules = [
+      ...container.querySelectorAll<HTMLElement>('.progress-section .section-header span'),
+    ].filter((s) => s.textContent === 'Modules');
+    expect(allModules).toHaveLength(1);
+    expect(group?.contains(allModules[0])).toBe(true);
+  });
+
+  it('omits Target Build from the Console group when no preferences set', () => {
+    const { container } = render(<CharacterCard character={makeChar()} {...defaultProps} />);
+    const groupLabels = [
+      ...container.querySelectorAll<HTMLElement>(
+        '.card-section-group .progress-section .section-header span',
+      ),
+    ].map((s) => s.textContent);
+    expect(groupLabels).toContain('Cartridge');
+    expect(groupLabels).toContain('Modules');
+    expect(groupLabels).not.toContain('Target Build');
   });
 
   it('never renders a score chip — the header badge is the only score surface', () => {

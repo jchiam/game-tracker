@@ -30,6 +30,7 @@ describe('characterService', () => {
       id: 'db-uuid-1',
       character_id: 'baicang',
       level: 45,
+      modules_configured: true,
       awakening_slots: [true, true, false, false, false, false],
       arc_id: 1,
       arc_level: 30,
@@ -52,6 +53,7 @@ describe('characterService', () => {
     expect(result[0].id).toBe('baicang');
     expect(result[0].dbId).toBe('db-uuid-1');
     expect(result[0].level).toBe(45);
+    expect(result[0].modulesConfigured).toBe(true);
     expect(result[0].awakening).toEqual([true, true, false, false, false, false]);
     expect(result[0].arcId).toBe(1);
     expect(result[0].arcTier).toBe(2);
@@ -140,6 +142,7 @@ describe('characterService', () => {
       profile_id: 'user-1',
       character_id: 'baicang',
       level: 1,
+      modules_configured: false,
       awakening_slots: [false, false, false, false, false, false],
       arc_id: null,
       arc_level: 1,
@@ -160,6 +163,7 @@ describe('characterService', () => {
 
     await service.updateCharacter('db-uuid-1', {
       level: 40,
+      modulesConfigured: true,
       awakening: [true, true, true, false, false, false],
       arcId: 'arc-1',
       cartridgeSubStats: ['ATK%', 'CRIT DMG'],
@@ -169,6 +173,7 @@ describe('characterService', () => {
     expect(mockFrom).toHaveBeenCalledWith('n2e_tracked_characters');
     expect(builder.update).toHaveBeenCalledWith({
       level: 40,
+      modules_configured: true,
       awakening_slots: [true, true, true, false, false, false],
       arc_id: 'arc-1',
       cartridge_sub_stats: ['ATK%', 'CRIT DMG'],

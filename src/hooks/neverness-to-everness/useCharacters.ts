@@ -20,6 +20,7 @@ function createTrackedCharacter(character: N2ECharacter): N2ETrackedCharacter {
     ...character,
     isFavorited: false,
     level: 1,
+    modulesConfigured: false,
     awakening: [...DEFAULT_AWAKENING],
     arcId: null,
     arcLevel: 1,
@@ -64,6 +65,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
 
   const updateCharacterLevel = makeFieldUpdater('level', { clamp: [1, 90] });
   const toggleFavoriteCharacter = makeFieldUpdater('isFavorited');
+  const toggleModulesConfigured = makeFieldUpdater('modulesConfigured');
 
   const toggleAwakeningSlot = (id: string, slotIndex: number) => {
     setTrackedCharacters((prev) =>
@@ -125,6 +127,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     addCharacter,
     removeCharacter,
     updateCharacterLevel,
+    toggleModulesConfigured,
     toggleAwakeningSlot,
     updateArc,
     updateCartridge,

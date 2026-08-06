@@ -2,6 +2,7 @@ import type { N2ETrackedCharacter, N2ECartridgePatch } from '@/types';
 import { ALL_ARCS } from '@/data/neverness-to-everness/arcs';
 import { ALL_CARTRIDGES } from '@/data/neverness-to-everness/cartridges';
 import { calculateCartridgeScore } from '@/utils/cartridgeScoring';
+import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
 import { LevelSlider } from '@/components/LevelSlider';
@@ -22,6 +23,7 @@ interface CharacterCardProps {
   character: N2ETrackedCharacter;
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
+  onToggleModules: (id: string, value: boolean) => void;
   onToggleAwakening: (id: string, slotIndex: number) => void;
   onUpdateArc: (id: string, arcId: string | null, arcLevel: number, arcTier: number) => void;
   onUpdateCartridge: (id: string, patch: N2ECartridgePatch) => void;
@@ -36,6 +38,7 @@ export function CharacterCard({
   character,
   onRemove,
   onUpdateLevel,
+  onToggleModules,
   onToggleAwakening,
   onUpdateArc,
   onUpdateCartridge,
@@ -63,6 +66,7 @@ export function CharacterCard({
 
   // Progress color styles per dimension
   const levelPs = getProgressStyle(character.level, 1, 90);
+  const modulesPs = getProgressStyle(character.modulesConfigured ? 1 : 0, 0, 1);
   const awakeningPs = getProgressStyle(awakeningCount, 0, 6);
   const arcNamePs = character.arcId
     ? getProgressStyle(90, 1, 90) // teal when equipped
@@ -108,6 +112,10 @@ export function CharacterCard({
             <StatChip
               label={`A ${awakeningCount}/6`}
               style={{ color: awakeningPs.color, borderColor: awakeningPs.borderColor }}
+            />
+            <StatChip
+              label={`Modules ${character.modulesConfigured ? '✓' : '✗'}`}
+              style={{ color: modulesPs.color, borderColor: modulesPs.borderColor }}
             />
           </>
         }
@@ -217,86 +225,100 @@ export function CharacterCard({
               />
             </ProgressSection>
 
-            {/* ── Cartridge slot (clickable, opens modal) ──────────── */}
-            <ProgressSection label="Cartridge">
-              <div
-                className={`cartridge-slot ${isCartridgeEquipped ? 'active' : ''}`}
-                onClick={() => setIsCartridgeEditorOpen(true)}
-                title={
-                  isCartridgeEquipped
-                    ? `${character.cartridgeRarity || ''} ${equippedCartridgeName || character.cartridgeMainStat || 'Equipped'} Lv${character.cartridgeLevel}`
-                    : 'Click to equip cartridge'
-                }
-              >
-                {isCartridgeEquipped ? (
-                  <div className="cartridge-slot-info">
-                    {character.cartridgeRarity && (
-                      <span
-                        className={`cartridge-rarity-badge rarity-${character.cartridgeRarity.toLowerCase()}`}
-                      >
-                        {character.cartridgeRarity}
-                      </span>
-                    )}
-                    <span className="cartridge-slot-stat">
-                      {equippedCartridgeName || character.cartridgeMainStat || 'No name'}
-                    </span>
-                    <span className="cartridge-slot-level">Lv{character.cartridgeLevel}</span>
-                    {character.cartridgeSubStats.length > 0 && (
-                      <span className="cartridge-slot-subs">
-                        {character.cartridgeSubStats.length} sub
-                        {character.cartridgeSubStats.length !== 1 ? 's' : ''}
-                      </span>
-                    )}
-                  </div>
-                ) : (
-                  <span className="cartridge-slot-empty">+ Equip Cartridge</span>
-                )}
-              </div>
-            </ProgressSection>
+            {/* ── Console (cartridge + modules + Target Build) ─────── */}
+            <div className="card-section-group">
+              <div className="card-section-group-header">Console</div>
 
-            {/* ── Target Build (read-only preferences display) ─────── */}
-            {hasCartridgePrefs && (
-              <ProgressSection label="Target Build" className="build-prefs-display">
-                <div className="prefs-display-grid">
-                  {character.cartridgePreferences.cartridgeId && (
-                    <div className="pref-display-row">
-                      <span className="pref-display-label">Set</span>
-                      <div className="pref-display-chain">
-                        <span className="pref-stat-badge">
-                          {ALL_CARTRIDGES.find(
-                            (c) => c.id === character.cartridgePreferences.cartridgeId,
-                          )?.name ?? character.cartridgePreferences.cartridgeId}
-                        </span>
+              {/* ── Cartridge slot (clickable, opens modal) ──────────── */}
+              <ProgressSection label="Cartridge">
+                <div
+                  className={`cartridge-slot ${isCartridgeEquipped ? 'active' : ''}`}
+                  onClick={() => setIsCartridgeEditorOpen(true)}
+                  title={
+                    isCartridgeEquipped
+                      ? `${character.cartridgeRarity || ''} ${equippedCartridgeName || character.cartridgeMainStat || 'Equipped'} Lv${character.cartridgeLevel}`
+                      : 'Click to equip cartridge'
+                  }
+                >
+                  {isCartridgeEquipped ? (
+                    <div className="cartridge-slot-info">
+                      {character.cartridgeRarity && (
                         <span
-                          className={`cartridge-rarity-badge rarity-${(ALL_CARTRIDGES.find((c) => c.id === character.cartridgePreferences.cartridgeId)?.rarity ?? '').toLowerCase()}`}
+                          className={`cartridge-rarity-badge rarity-${character.cartridgeRarity.toLowerCase()}`}
                         >
-                          {
-                            ALL_CARTRIDGES.find(
-                              (c) => c.id === character.cartridgePreferences.cartridgeId,
-                            )?.rarity
-                          }
+                          {character.cartridgeRarity}
                         </span>
-                      </div>
+                      )}
+                      <span className="cartridge-slot-stat">
+                        {equippedCartridgeName || character.cartridgeMainStat || 'No name'}
+                      </span>
+                      <span className="cartridge-slot-level">Lv{character.cartridgeLevel}</span>
+                      {character.cartridgeSubStats.length > 0 && (
+                        <span className="cartridge-slot-subs">
+                          {character.cartridgeSubStats.length} sub
+                          {character.cartridgeSubStats.length !== 1 ? 's' : ''}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  <PreferenceChainReadout
-                    label="Main"
-                    chain={character.cartridgePreferences.mainStats}
-                  />
-                  <PreferenceChainReadout
-                    label="Subs"
-                    chain={character.cartridgePreferences.subStats}
-                  />
-                  {character.cartridgePreferences.comments && (
-                    <div className="pref-display-row build-comments-row">
-                      <div className="pref-comments-text">
-                        {character.cartridgePreferences.comments}
-                      </div>
-                    </div>
+                  ) : (
+                    <span className="cartridge-slot-empty">+ Equip Cartridge</span>
                   )}
                 </div>
               </ProgressSection>
-            )}
+
+              {/* ── Modules ───────────────────────────────────────── */}
+              <ProgressSection label="Modules">
+                <ConfirmCheckbox
+                  checked={character.modulesConfigured}
+                  onChange={(val) => onToggleModules(character.id!, val)}
+                  label="Modules Configured"
+                />
+              </ProgressSection>
+
+              {/* ── Target Build (read-only preferences display) ─────── */}
+              {hasCartridgePrefs && (
+                <ProgressSection label="Target Build" className="build-prefs-display">
+                  <div className="prefs-display-grid">
+                    {character.cartridgePreferences.cartridgeId && (
+                      <div className="pref-display-row">
+                        <span className="pref-display-label">Set</span>
+                        <div className="pref-display-chain">
+                          <span className="pref-stat-badge">
+                            {ALL_CARTRIDGES.find(
+                              (c) => c.id === character.cartridgePreferences.cartridgeId,
+                            )?.name ?? character.cartridgePreferences.cartridgeId}
+                          </span>
+                          <span
+                            className={`cartridge-rarity-badge rarity-${(ALL_CARTRIDGES.find((c) => c.id === character.cartridgePreferences.cartridgeId)?.rarity ?? '').toLowerCase()}`}
+                          >
+                            {
+                              ALL_CARTRIDGES.find(
+                                (c) => c.id === character.cartridgePreferences.cartridgeId,
+                              )?.rarity
+                            }
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                    <PreferenceChainReadout
+                      label="Main"
+                      chain={character.cartridgePreferences.mainStats}
+                    />
+                    <PreferenceChainReadout
+                      label="Subs"
+                      chain={character.cartridgePreferences.subStats}
+                    />
+                    {character.cartridgePreferences.comments && (
+                      <div className="pref-display-row build-comments-row">
+                        <div className="pref-comments-text">
+                          {character.cartridgePreferences.comments}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </ProgressSection>
+              )}
+            </div>
           </>
         }
       />

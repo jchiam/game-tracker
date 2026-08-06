@@ -278,3 +278,32 @@ export const ProgressSections: Story = {
     </div>
   ),
 };
+
+/**
+ * Section group — the canonical labeled container that visually encloses several
+ * `.progress-section`s under one heading (`.card-section-group` +
+ * `.card-section-group-header` in card.css). Visually neutral: it carries no
+ * per-game accent, so every game's group reads the same. First consumer: the N2E
+ * Console group (Cartridge · Modules · Target Build).
+ */
+export const SectionGroup: Story = {
+  render: () => (
+    <div style={{ maxWidth: 300 }}>
+      <div className="card-section-group">
+        <div className="card-section-group-header">Console</div>
+        <div className="progress-section">
+          <div className="section-header">
+            <span>Cartridge</span>
+          </div>
+          <div className="section-value">S · Lv 15</div>
+        </div>
+        <div className="progress-section">
+          <div className="section-header">
+            <span>Modules</span>
+          </div>
+          <div className="section-value">Configured ✓</div>
+        </div>
+      </div>
+    </div>
+  ),
+};

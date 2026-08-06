@@ -407,6 +407,32 @@
   flex-shrink: 0;
 }
 
+/* ─── Section group ──────────────────────────────────────────────────
+   Canonical labeled container that visually encloses several
+   `.progress-section`s under one heading. Visually neutral — carries no
+   game accent colour; every game's section group reads the same. First
+   consumer: the N2E Console group. Games compose it; never re-declare it
+   or add a per-game accent-tint override. */
+
+.card-section-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--border-radius-md);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.card-section-group-header {
+  font-family: var(--typography-font-family-display);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: var(--typography-font-weight-bold);
+}
+
 /* ─── Equipment slot grid ────────────────────────────────────────────
    Card-entry grid of clickable equipment slots (HSR relics, P5X
    revelations). Cells show a set icon or per-slot glyph; clicking a cell

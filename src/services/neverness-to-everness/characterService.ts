@@ -17,6 +17,7 @@ function renameChainStats<T extends { stat: string }>(chain: T[]): T[] {
 /** Maps each camelCase patch key to its DB column. Schema stays service-private. */
 const CHARACTER_COLUMNS: Record<keyof N2ECharacterPatch, string> = {
   level: 'level',
+  modulesConfigured: 'modules_configured',
   awakening: 'awakening_slots',
   arcId: 'arc_id',
   arcLevel: 'arc_level',
@@ -36,6 +37,7 @@ const svc = createRosterPersistence<N2ECharacter, N2ETrackedCharacter, N2ECharac
   columns: CHARACTER_COLUMNS,
   insertDefaults: {
     level: 1,
+    modules_configured: false,
     awakening_slots: [false, false, false, false, false, false],
     arc_id: null,
     arc_level: 1,
@@ -47,13 +49,14 @@ const svc = createRosterPersistence<N2ECharacter, N2ETrackedCharacter, N2ECharac
     cartridge_main_stat: null,
     cartridge_sub_stats: [],
   },
-  select: `id, character_id, level, awakening_slots, arc_id, arc_level, arc_tier,
+  select: `id, character_id, level, modules_configured, awakening_slots, arc_id, arc_level, arc_tier,
       cartridge_id, cartridge_preference_id, cartridge_rarity, cartridge_level, cartridge_main_stat, cartridge_sub_stats, cartridge_comments, is_favorited`,
   fromRow: (row, base) => ({
     ...base,
     dbId: row.id,
     isFavorited: !!row.is_favorited,
     level: row.level,
+    modulesConfigured: !!row.modules_configured,
     awakening: row.awakening_slots ?? [false, false, false, false, false, false],
     arcId: row.arc_id ?? null,
     arcLevel: row.arc_level ?? 1,
