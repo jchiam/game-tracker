@@ -59,12 +59,6 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/approaching_rain.webp',
   },
   {
-    name: 'Art of Atoms',
-    rarity: 6,
-    tag: 'None',
-    imageUrl: '/assets/reverse-1999/psychubes/art_of_atoms.webp',
-  },
-  {
     name: 'As the Bell Tolls',
     rarity: 6,
     tag: 'None',
@@ -317,6 +311,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/that_inquisitive_dear.webp',
   },
   {
+    name: 'The Art of Atoms',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/the_art_of_atoms.webp',
+  },
+  {
     name: 'The Carat of a Heart',
     rarity: 6,
     tag: 'None',
@@ -351,6 +351,18 @@ export const ALL_PSYCHUBES: Psychube[] = [
     rarity: 6,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/the_riddle_s_limit.webp',
+  },
+  {
+    name: 'The Silent Anthem',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/the_silent_anthem.webp',
+  },
+  {
+    name: 'The Soft Rain of Yesterday',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/the_soft_rain_of_yesterday.webp',
   },
   {
     name: 'The Third Commitment',
@@ -395,6 +407,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/transcendent_love.webp',
   },
   {
+    name: 'Until I Am Me',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/until_i_am_me.webp',
+  },
+  {
     name: 'Wayfarer of the Dao',
     rarity: 6,
     tag: 'None',
@@ -406,6 +424,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     rarity: 5,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/a_free_heart.webp',
+  },
+  {
+    name: 'A New Leaf',
+    rarity: 5,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/a_new_leaf.webp',
   },
   {
     name: 'A Satisfied Eater',
@@ -472,6 +496,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     rarity: 5,
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/greed.webp',
+  },
+  {
+    name: 'Growing Pains',
+    rarity: 5,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/growing_pains.webp',
   },
   {
     name: 'Her Bright Future',
