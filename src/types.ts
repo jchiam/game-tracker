@@ -185,9 +185,8 @@ export interface P5xTrackedThief extends P5xThief {
   isFavorited: boolean;
   level: number; // 1–80 (live cap)
   awareness: number; // 0–6 (A0–A6 duplicate ranks)
-  skillsLeveled: boolean; // skills brought up to the Lv8 incense cap
-  roseMaxed: boolean; // pushed past the rose gate 8→10 to max; implies skillsLeveled
-  mindscapeMaxed: boolean; // entire Mindscape node tree fully unlocked
+  skillProgress: number; // 0 not started, 1 skills at the Lv8 incense cap, 2 rose-maxed past the gate to Lv10
+  mindscapeProgress: number; // 0 not started, 1 Outer half maxed, 2 Inner maxed (= whole tree; Inner gates behind Outer)
   weaponRarity: number; // 2–5★ equipped weapon rarity; every thief has a 2★ from day one
   weaponLevel: number; // 1–80 (shared across all weapons on the same thief)
   weaponForge: number; // 0–6 (dupe-based forge level)
@@ -206,9 +205,8 @@ export interface P5xThiefPatch {
   level?: number;
   awareness?: number;
   isFavorited?: boolean;
-  skillsLeveled?: boolean;
-  roseMaxed?: boolean;
-  mindscapeMaxed?: boolean;
+  skillProgress?: number;
+  mindscapeProgress?: number;
   weaponRarity?: number;
   weaponLevel?: number;
   weaponForge?: number;

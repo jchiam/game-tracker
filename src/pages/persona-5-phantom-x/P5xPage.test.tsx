@@ -34,9 +34,8 @@ function makeThief(id: string, name: string): P5xTrackedThief {
     isFavorited: false,
     level: 45,
     awareness: 3,
-    skillsLeveled: false,
-    roseMaxed: false,
-    mindscapeMaxed: false,
+    skillProgress: 0,
+    mindscapeProgress: 0,
     weaponRarity: 2,
     weaponLevel: 1,
     weaponForge: 0,
@@ -75,7 +74,7 @@ const defaultThievesHook = {
   updateAwareness: vi.fn(),
   updateSkillProgress: vi.fn(),
   toggleFavorite: vi.fn(),
-  toggleMindscapeMaxed: vi.fn(),
+  updateMindscapeProgress: vi.fn(),
   updateWeaponRarity: vi.fn(),
   updateWeaponLevel: vi.fn(),
   updateWeaponForge: vi.fn(),
@@ -271,22 +270,11 @@ describe('P5xPage', () => {
     fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
     fireEvent.click(screen.getByRole('button', { name: '⚔ <5★' }));
     const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
-    // rose-gated (skillsLeveled && !roseMaxed) AND weapon < 5
-    expect(
-      predicate({ ...makeThief('a', 'A'), skillsLeveled: true, roseMaxed: false, weaponRarity: 3 }),
-    ).toBe(true);
+    // rose-gated (skillProgress === 1) AND weapon < 5
+    expect(predicate({ ...makeThief('a', 'A'), skillProgress: 1, weaponRarity: 3 })).toBe(true);
     // weak weapon but not rose-gated → excluded
-    expect(
-      predicate({
-        ...makeThief('b', 'B'),
-        skillsLeveled: false,
-        roseMaxed: false,
-        weaponRarity: 3,
-      }),
-    ).toBe(false);
+    expect(predicate({ ...makeThief('b', 'B'), skillProgress: 0, weaponRarity: 3 })).toBe(false);
     // rose-gated but 5★ weapon → excluded
-    expect(
-      predicate({ ...makeThief('c', 'C'), skillsLeveled: true, roseMaxed: false, weaponRarity: 5 }),
-    ).toBe(false);
+    expect(predicate({ ...makeThief('c', 'C'), skillProgress: 1, weaponRarity: 5 })).toBe(false);
   });
 });

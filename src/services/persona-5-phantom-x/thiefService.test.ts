@@ -32,8 +32,8 @@ describe('thiefService', () => {
       level: 65,
       awareness: 3,
       is_favorited: true,
-      skills_leveled: true,
-      rose_maxed: true,
+      skill_progress: 2,
+      mindscape_progress: 1,
       weapon_rarity: 5,
       weapon_level: 60,
       weapon_forge: 4,
@@ -50,8 +50,8 @@ describe('thiefService', () => {
     expect(result[0].level).toBe(65);
     expect(result[0].awareness).toBe(3);
     expect(result[0].isFavorited).toBe(true);
-    expect(result[0].skillsLeveled).toBe(true);
-    expect(result[0].roseMaxed).toBe(true);
+    expect(result[0].skillProgress).toBe(2);
+    expect(result[0].mindscapeProgress).toBe(1);
     expect(result[0].weaponRarity).toBe(5);
     expect(result[0].weaponLevel).toBe(60);
     expect(result[0].weaponForge).toBe(4);
@@ -99,8 +99,8 @@ describe('thiefService', () => {
     mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
     const result = await service.loadThievesFromDB('user-1');
     expect(result[0].awareness).toBe(0);
-    expect(result[0].skillsLeveled).toBe(false);
-    expect(result[0].roseMaxed).toBe(false);
+    expect(result[0].skillProgress).toBe(0);
+    expect(result[0].mindscapeProgress).toBe(0);
     expect(result[0].weaponRarity).toBe(2); // absent/null column defaults to 2★
     expect(result[0].weaponLevel).toBe(1);
     expect(result[0].weaponForge).toBe(0);
@@ -121,9 +121,8 @@ describe('thiefService', () => {
       thief_id: 'ann-takamaki',
       level: 1,
       awareness: 0,
-      skills_leveled: false,
-      rose_maxed: false,
-      mindscape_maxed: false,
+      skill_progress: 0,
+      mindscape_progress: 0,
       weapon_rarity: 2,
       weapon_level: 1,
       weapon_forge: 0,
@@ -139,8 +138,7 @@ describe('thiefService', () => {
       level: 72,
       awareness: 6,
       isFavorited: true,
-      skillsLeveled: true,
-      roseMaxed: true,
+      skillProgress: 2,
       weaponRarity: 5,
       weaponLevel: 60,
       weaponForge: 4,
@@ -151,8 +149,7 @@ describe('thiefService', () => {
       level: 72,
       awareness: 6,
       is_favorited: true,
-      skills_leveled: true,
-      rose_maxed: true,
+      skill_progress: 2,
       weapon_rarity: 5,
       weapon_level: 60,
       weapon_forge: 4,

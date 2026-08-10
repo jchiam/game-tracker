@@ -1,4 +1,4 @@
-import type { P5xThiefPatch, P5xTrackedThief } from '@/types';
+import type { P5xTrackedThief } from '@/types';
 import {
   ALL_HEAVENS_SETS,
   ALL_SPACE_SETS,
@@ -14,7 +14,6 @@ import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { PreferenceChainReadout } from '@/components/PreferenceChainReadout';
 import { ProgressSection } from '@/components/ProgressSection';
 import { StatChip } from '@/components/StatChip';
-import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { getProgressStyle } from '@/utils/progressGradient';
 import { calculateRevelationScore } from '@/utils/revelationScoring';
 import { ScoreBadge } from '@/components/ScoreBadge';
@@ -32,6 +31,19 @@ const WEAPON_FORGE_OPTIONS = [0, 1, 2, 3, 4, 5, 6].map((f) => ({
   value: String(f),
   label: `F${f}`,
 }));
+
+// Mindscape and Skills are both monotone two-milestone progressions (the second
+// milestone gates behind the first), so each is a single ordered value edited by
+// an identical segmented row; deselecting the active milestone returns to 0.
+const MINDSCAPE_OPTIONS = [
+  { value: '1', label: 'Outer' },
+  { value: '2', label: 'Inner' },
+];
+
+const SKILL_OPTIONS = [
+  { value: '1', label: 'Lv8' },
+  { value: '2', label: 'Rose Lv10' },
+];
 
 /** Badge modifiers derive from the verbatim source values (e.g. "Single-target"). */
 const toModifier = (value: string) => value.toLowerCase().replace(/\s+/g, '-');
@@ -52,12 +64,9 @@ interface ThiefCardProps {
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
   onUpdateAwareness: (id: string, awareness: number) => void;
-  onUpdateSkillProgress: (
-    id: string,
-    patch: Pick<P5xThiefPatch, 'skillsLeveled' | 'roseMaxed'>,
-  ) => void;
+  onUpdateSkillProgress: (id: string, value: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
-  onToggleMindscapeMaxed: (id: string, value: boolean) => void;
+  onUpdateMindscapeProgress: (id: string, value: number) => void;
   onUpdateWeaponRarity: (id: string, value: number) => void;
   onUpdateWeaponLevel: (id: string, value: number) => void;
   onUpdateWeaponForge: (id: string, value: number) => void;
@@ -71,7 +80,7 @@ export function ThiefCard({
   onUpdateAwareness,
   onUpdateSkillProgress,
   onToggleFavorite,
-  onToggleMindscapeMaxed,
+  onUpdateMindscapeProgress,
   onUpdateWeaponRarity,
   onUpdateWeaponLevel,
   onUpdateWeaponForge,
@@ -82,9 +91,9 @@ export function ThiefCard({
   const awarenessPs = getProgressStyle(thief.awareness, 0, 6);
   // Skill progress collapses to one summary chip: maxed (teal) vs rose-gated at
   // Lv8 (mid rust→teal). Untouched Thieves show no chip, keeping early cards clean.
-  const roseGated = thief.skillsLeveled && !thief.roseMaxed;
-  const skillsPs = getProgressStyle(thief.roseMaxed ? 1 : roseGated ? 0.5 : 0, 0, 1);
-  const miPs = getProgressStyle(1, 0, 1);
+  const roseGated = thief.skillProgress === 1;
+  const skillsPs = getProgressStyle(thief.skillProgress, 0, 2);
+  const miPs = getProgressStyle(thief.mindscapeProgress, 0, 2);
   const weaponForgePs = getProgressStyle(thief.weaponForge, 0, 6);
 
   // Consolidated revelation set summary — Space-first, every active set bonus (not just the
@@ -161,8 +170,11 @@ export function ThiefCard({
             label={`⚔ ${thief.weaponRarity}★ F${thief.weaponForge}`}
             style={{ color: weaponForgePs.color, borderColor: weaponForgePs.borderColor }}
           />
-          {thief.mindscapeMaxed && (
-            <StatChip label="MS ✓" style={{ color: miPs.color, borderColor: miPs.borderColor }} />
+          {thief.mindscapeProgress > 0 && (
+            <StatChip
+              label={thief.mindscapeProgress === 2 ? 'MS ✓' : 'MS O'}
+              style={{ color: miPs.color, borderColor: miPs.borderColor }}
+            />
           )}
           {hasAnyRevCard && (
             <StatChip
@@ -170,9 +182,9 @@ export function ThiefCard({
               style={{ color: revPs.color, borderColor: revPs.borderColor }}
             />
           )}
-          {(thief.skillsLeveled || thief.roseMaxed) && (
+          {thief.skillProgress > 0 && (
             <StatChip
-              label={thief.roseMaxed ? 'Skills ✓' : '🌹 Gated'}
+              label={thief.skillProgress === 2 ? 'Skills ✓' : '🌹 Gated'}
               style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
             />
           )}
@@ -300,30 +312,38 @@ export function ThiefCard({
             </ProgressSection>
           )}
 
-          <ProgressSection label="Mindscape" value={thief.mindscapeMaxed ? 'Maxed' : '—'}>
-            <ConfirmCheckbox
-              checked={thief.mindscapeMaxed}
-              onChange={(val) => onToggleMindscapeMaxed(thief.id, val)}
-              label="Fully Unlocked"
+          <ProgressSection
+            label="Mindscape"
+            value={
+              thief.mindscapeProgress === 2
+                ? 'Maxed'
+                : thief.mindscapeProgress === 1
+                  ? 'Outer'
+                  : '—'
+            }
+          >
+            <SegmentedButtons
+              className="mindscape-row"
+              options={MINDSCAPE_OPTIONS}
+              value={thief.mindscapeProgress > 0 ? String(thief.mindscapeProgress) : null}
+              coloring="investment"
+              allowDeselect
+              onChange={(v) => onUpdateMindscapeProgress(thief.id, v === null ? 0 : Number(v))}
             />
           </ProgressSection>
 
           <ProgressSection
             label="Skills"
-            value={thief.roseMaxed ? 'Maxed' : roseGated ? 'Rose-gated' : '—'}
+            value={thief.skillProgress === 2 ? 'Maxed' : roseGated ? 'Rose-gated' : '—'}
           >
-            <div className="skill-toggles">
-              <ConfirmCheckbox
-                checked={thief.skillsLeveled}
-                onChange={(val) => onUpdateSkillProgress(thief.id, { skillsLeveled: val })}
-                label="Skills Leveled (Lv8)"
-              />
-              <ConfirmCheckbox
-                checked={thief.roseMaxed}
-                onChange={(val) => onUpdateSkillProgress(thief.id, { roseMaxed: val })}
-                label="Rose Maxed (Lv10)"
-              />
-            </div>
+            <SegmentedButtons
+              className="skills-row"
+              options={SKILL_OPTIONS}
+              value={thief.skillProgress > 0 ? String(thief.skillProgress) : null}
+              coloring="investment"
+              allowDeselect
+              onChange={(v) => onUpdateSkillProgress(thief.id, v === null ? 0 : Number(v))}
+            />
           </ProgressSection>
         </>
       }

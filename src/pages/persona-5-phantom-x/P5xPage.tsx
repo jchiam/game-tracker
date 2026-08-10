@@ -31,7 +31,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     updateAwareness,
     updateSkillProgress,
     toggleFavorite,
-    toggleMindscapeMaxed,
+    updateMindscapeProgress,
     updateWeaponRarity,
     updateWeaponLevel,
     updateWeaponForge,
@@ -60,8 +60,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
       const predicate =
         roseGateFilter || weaponFilter
           ? (t: P5xTrackedThief) =>
-              (!roseGateFilter || (t.skillsLeveled && !t.roseMaxed)) &&
-              (!weaponFilter || t.weaponRarity < 5)
+              (!roseGateFilter || t.skillProgress === 1) && (!weaponFilter || t.weaponRarity < 5)
           : undefined;
       return getFilteredRoster(searchTerm, sortBy, predicate);
     },
@@ -139,7 +138,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
           onUpdateAwareness={updateAwareness}
           onUpdateSkillProgress={updateSkillProgress}
           onToggleFavorite={toggleFavorite}
-          onToggleMindscapeMaxed={toggleMindscapeMaxed}
+          onUpdateMindscapeProgress={updateMindscapeProgress}
           onUpdateWeaponRarity={updateWeaponRarity}
           onUpdateWeaponLevel={updateWeaponLevel}
           onUpdateWeaponForge={updateWeaponForge}

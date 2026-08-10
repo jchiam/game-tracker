@@ -22,15 +22,6 @@
   margin: 0 var(--spacing-xs);
 }
 
-/* Skill-progress toggles: the two coupled ConfirmCheckboxes stack in the
-   Skills section. The rose-gated summary chip reuses the shared StatChip +
-   getProgressStyle colour language, so no bespoke badge rule lives here. */
-.skill-toggles {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xs);
-}
-
 /* Revelation slot grid — base structure/active states come from the shared
    .equip-slot-grid / .equip-slot-cell rules in card.css; P5X has five slots
    and shows per-slot glyphs (no set art exists), so only the column count

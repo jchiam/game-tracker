@@ -24,9 +24,8 @@ function makeThief(overrides: Partial<P5xTrackedThief> = {}): P5xTrackedThief {
     isFavorited: false,
     level: 45,
     awareness: 3,
-    skillsLeveled: false,
-    roseMaxed: false,
-    mindscapeMaxed: false,
+    skillProgress: 0,
+    mindscapeProgress: 0,
     weaponRarity: 2,
     weaponLevel: 1,
     weaponForge: 0,
@@ -50,7 +49,7 @@ describe('ThiefCard', () => {
     onUpdateAwareness: vi.fn(),
     onUpdateSkillProgress: vi.fn(),
     onToggleFavorite: vi.fn(),
-    onToggleMindscapeMaxed: vi.fn(),
+    onUpdateMindscapeProgress: vi.fn(),
     onUpdateWeaponRarity: vi.fn(),
     onUpdateWeaponLevel: vi.fn(),
     onUpdateWeaponForge: vi.fn(),
@@ -160,7 +159,7 @@ describe('ThiefCard', () => {
 
   it('shows no skill chip when untouched', () => {
     const { container } = render(
-      <ThiefCard {...defaultProps} thief={makeThief({ skillsLeveled: false, roseMaxed: false })} />,
+      <ThiefCard {...defaultProps} thief={makeThief({ skillProgress: 0 })} />,
     );
     expect(screen.queryByText('🌹 Gated')).not.toBeInTheDocument();
     expect(screen.queryByText('Skills ✓')).not.toBeInTheDocument();
@@ -169,65 +168,104 @@ describe('ThiefCard', () => {
   });
 
   it('shows the rose-gated chip only in the leveled-but-not-maxed state', () => {
-    render(
-      <ThiefCard {...defaultProps} thief={makeThief({ skillsLeveled: true, roseMaxed: false })} />,
-    );
+    render(<ThiefCard {...defaultProps} thief={makeThief({ skillProgress: 1 })} />);
     expect(screen.getByText('🌹 Gated')).toBeInTheDocument();
     expect(screen.queryByText('Skills ✓')).not.toBeInTheDocument();
   });
 
   it('shows the maxed chip and no rose-gated chip when rose maxed', () => {
-    render(
-      <ThiefCard {...defaultProps} thief={makeThief({ skillsLeveled: true, roseMaxed: true })} />,
-    );
+    render(<ThiefCard {...defaultProps} thief={makeThief({ skillProgress: 2 })} />);
     expect(screen.getByText('Skills ✓')).toBeInTheDocument();
     expect(screen.queryByText('🌹 Gated')).not.toBeInTheDocument();
   });
 
-  it('skills-leveled toggle reports the change via onUpdateSkillProgress', async () => {
+  it('selecting Lv8 reports progress 1 via onUpdateSkillProgress', async () => {
     const user = userEvent.setup();
     render(<ThiefCard {...defaultProps} />);
     await user.click(screen.getByTitle('Edit'));
-    const toggle = screen.getByText('Skills Leveled (Lv8)');
-    await user.click(toggle); // arms confirmation
-    await user.click(screen.getByText('Click to confirm'));
-    expect(defaultProps.onUpdateSkillProgress).toHaveBeenCalledWith('ann-takamaki', {
-      skillsLeveled: true,
-    });
+    await user.click(screen.getByText('Lv8'));
+    expect(defaultProps.onUpdateSkillProgress).toHaveBeenCalledWith('ann-takamaki', 1);
   });
 
-  it('rose-maxed toggle reports the change via onUpdateSkillProgress', async () => {
+  it('selecting Rose Lv10 reports progress 2 via onUpdateSkillProgress', async () => {
     const user = userEvent.setup();
-    render(
-      <ThiefCard {...defaultProps} thief={makeThief({ skillsLeveled: true, roseMaxed: false })} />,
+    render(<ThiefCard {...defaultProps} thief={makeThief({ skillProgress: 1 })} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByText('Rose Lv10'));
+    expect(defaultProps.onUpdateSkillProgress).toHaveBeenCalledWith('ann-takamaki', 2);
+  });
+
+  it('deselecting the active skill milestone reports progress 0', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} thief={makeThief({ skillProgress: 2 })} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByText('Rose Lv10'));
+    expect(defaultProps.onUpdateSkillProgress).toHaveBeenCalledWith('ann-takamaki', 0);
+  });
+
+  it('skills section value reflects the milestone state', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <ThiefCard {...defaultProps} thief={makeThief({ skillProgress: 1 })} />,
     );
     await user.click(screen.getByTitle('Edit'));
-    await user.click(screen.getByText('Rose Maxed (Lv10)')); // arms confirmation
-    await user.click(screen.getByText('Click to confirm'));
-    expect(defaultProps.onUpdateSkillProgress).toHaveBeenCalledWith('ann-takamaki', {
-      roseMaxed: true,
-    });
+    expect(screen.getByText('Rose-gated', { selector: '.section-value' })).toBeInTheDocument();
+    rerender(<ThiefCard {...defaultProps} thief={makeThief({ skillProgress: 2 })} />);
+    expect(screen.getByText('Maxed', { selector: '.section-value' })).toBeInTheDocument();
   });
 
   // --- Mental Image ---
 
-  it('shows MS ✓ chip when mindscapeMaxed is true', () => {
-    render(<ThiefCard {...defaultProps} thief={makeThief({ mindscapeMaxed: true })} />);
+  it('shows MS ✓ chip when the whole tree is maxed', () => {
+    render(<ThiefCard {...defaultProps} thief={makeThief({ mindscapeProgress: 2 })} />);
     expect(screen.getByText('MS ✓')).toBeInTheDocument();
   });
 
-  it('shows no MS chip when mindscapeMaxed is false', () => {
-    render(<ThiefCard {...defaultProps} thief={makeThief({ mindscapeMaxed: false })} />);
+  it('shows MS O chip when only the Outer half is maxed', () => {
+    render(<ThiefCard {...defaultProps} thief={makeThief({ mindscapeProgress: 1 })} />);
+    expect(screen.getByText('MS O')).toBeInTheDocument();
     expect(screen.queryByText('MS ✓')).not.toBeInTheDocument();
   });
 
-  it('mindscape toggle reports the change via onToggleMindscapeMaxed', async () => {
+  it('shows no MS chip when mindscape is not started', () => {
+    render(<ThiefCard {...defaultProps} thief={makeThief({ mindscapeProgress: 0 })} />);
+    expect(screen.queryByText('MS ✓')).not.toBeInTheDocument();
+    expect(screen.queryByText('MS O')).not.toBeInTheDocument();
+  });
+
+  it('selecting Outer reports progress 1 via onUpdateMindscapeProgress', async () => {
     const user = userEvent.setup();
     render(<ThiefCard {...defaultProps} />);
     await user.click(screen.getByTitle('Edit'));
-    await user.click(screen.getByText('Fully Unlocked'));
-    await user.click(screen.getByText('Click to confirm'));
-    expect(defaultProps.onToggleMindscapeMaxed).toHaveBeenCalledWith('ann-takamaki', true);
+    await user.click(screen.getByText('Outer'));
+    expect(defaultProps.onUpdateMindscapeProgress).toHaveBeenCalledWith('ann-takamaki', 1);
+  });
+
+  it('selecting Inner reports progress 2 via onUpdateMindscapeProgress', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByText('Inner'));
+    expect(defaultProps.onUpdateMindscapeProgress).toHaveBeenCalledWith('ann-takamaki', 2);
+  });
+
+  it('deselecting the active milestone reports progress 0', async () => {
+    const user = userEvent.setup();
+    render(<ThiefCard {...defaultProps} thief={makeThief({ mindscapeProgress: 2 })} />);
+    await user.click(screen.getByTitle('Edit'));
+    await user.click(screen.getByText('Inner'));
+    expect(defaultProps.onUpdateMindscapeProgress).toHaveBeenCalledWith('ann-takamaki', 0);
+  });
+
+  it('mindscape section value reflects the milestone state', async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <ThiefCard {...defaultProps} thief={makeThief({ mindscapeProgress: 1 })} />,
+    );
+    await user.click(screen.getByTitle('Edit'));
+    expect(screen.getByText('Outer', { selector: '.section-value' })).toBeInTheDocument();
+    rerender(<ThiefCard {...defaultProps} thief={makeThief({ mindscapeProgress: 2 })} />);
+    expect(screen.getByText('Maxed', { selector: '.section-value' })).toBeInTheDocument();
   });
 
   // --- Weapon ---
@@ -510,9 +548,8 @@ describe('ThiefCard', () => {
     const thief = makeThief({
       weaponRarity: 5,
       weaponForge: 3,
-      mindscapeMaxed: true,
-      skillsLeveled: true,
-      roseMaxed: true,
+      mindscapeProgress: 2,
+      skillProgress: 2,
       revelations: {
         sun: { setId: 'strife', mainStat: 'hp', subStats: [] },
         moon: { setId: 'strife', mainStat: 'attack-pct', subStats: [] },

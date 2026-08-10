@@ -21,9 +21,8 @@ function createTrackedThief(thief: P5xThief): P5xTrackedThief {
     isFavorited: false,
     level: 1,
     awareness: 0,
-    skillsLeveled: false,
-    roseMaxed: false,
-    mindscapeMaxed: false,
+    skillProgress: 0,
+    mindscapeProgress: 0,
     weaponRarity: 2,
     weaponLevel: 1,
     weaponForge: 0,
@@ -51,7 +50,6 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
     queueAction,
     addEntity: addThief,
     removeEntity: removeThief,
-    applyPatch,
     makeFieldUpdater,
     filterRoster,
   } = useRoster<P5xThief, P5xTrackedThief, P5xThiefPatch>(session, isAuthLoading, {
@@ -69,26 +67,11 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
   const updateLevel = makeFieldUpdater('level', { clamp: [1, 80] });
   const updateAwareness = makeFieldUpdater('awareness', { clamp: [0, 6] });
   const toggleFavorite = makeFieldUpdater('isFavorited');
-  const toggleMindscapeMaxed = makeFieldUpdater('mindscapeMaxed');
+  const updateMindscapeProgress = makeFieldUpdater('mindscapeProgress', { clamp: [0, 2] });
   const updateWeaponRarity = makeFieldUpdater('weaponRarity');
   const updateWeaponLevel = makeFieldUpdater('weaponLevel', { clamp: [1, 80] });
   const updateWeaponForge = makeFieldUpdater('weaponForge', { clamp: [0, 6] });
-
-  // Skill progress is two coupled booleans with the invariant
-  // NOT(roseMaxed && !skillsLeveled). This updater reads current state and lets
-  // the field the user just changed drive the coupling: enabling rose implies
-  // skills leveled; clearing skills leveled clears rose.
-  const updateSkillProgress = (
-    id: string,
-    patch: Pick<P5xThiefPatch, 'skillsLeveled' | 'roseMaxed'>,
-  ) => {
-    const cur = trackedThievesRef.current.find((t) => t.id === id);
-    let skillsLeveled = patch.skillsLeveled ?? cur?.skillsLeveled ?? false;
-    let roseMaxed = patch.roseMaxed ?? cur?.roseMaxed ?? false;
-    if (patch.roseMaxed === true) skillsLeveled = true;
-    if (patch.skillsLeveled === false) roseMaxed = false;
-    applyPatch(id, { skillsLeveled, roseMaxed });
-  };
+  const updateSkillProgress = makeFieldUpdater('skillProgress', { clamp: [0, 2] });
 
   const updateRevelationSlot = (
     id: string,
@@ -152,7 +135,7 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
     updateAwareness,
     updateSkillProgress,
     toggleFavorite,
-    toggleMindscapeMaxed,
+    updateMindscapeProgress,
     updateWeaponRarity,
     updateWeaponLevel,
     updateWeaponForge,
