@@ -79,6 +79,34 @@ describe('characterService', () => {
       expect(result[0].tracesAttained).toBe(true);
       expect(result[0].isFavorited).toBe(false);
       expect(result[0].name).toBe('Acheron');
+      expect(result[0].lightConeId).toBeNull();
+      expect(result[0].lightConeLevel).toBe(1);
+      expect(result[0].lightConeSuperimposition).toBe(1);
+    });
+
+    it('loadCharactersFromDB maps light cone columns', async () => {
+      const dbRow = {
+        id: 'db-uuid-1',
+        character_id: 'acheron',
+        level: 60,
+        traces_attained: false,
+        is_favorited: false,
+        build_comments: '',
+        light_cone_id: '23024',
+        light_cone_level: 80,
+        light_cone_superimposition: 5,
+        hsr_equipped_relics: [],
+        hsr_build_preference_main_stats: [],
+        hsr_build_preference_sub_stats: [],
+      };
+
+      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+      const result = await service.loadCharactersFromDB('user-1');
+
+      expect(result[0].lightConeId).toBe('23024');
+      expect(result[0].lightConeLevel).toBe(80);
+      expect(result[0].lightConeSuperimposition).toBe(5);
     });
 
     it('loadCharactersFromDB maps equipped relics correctly', async () => {
@@ -202,6 +230,9 @@ describe('characterService', () => {
         character_id: 'acheron',
         level: 1,
         traces_attained: false,
+        light_cone_id: null,
+        light_cone_level: 1,
+        light_cone_superimposition: 1,
       });
       expect(result).toBe('new-char-db-id');
     });
@@ -214,6 +245,9 @@ describe('characterService', () => {
         level: 80,
         tracesAttained: true,
         isFavorited: true,
+        lightConeId: '23024',
+        lightConeLevel: 70,
+        lightConeSuperimposition: 3,
       });
 
       expect(mockFrom).toHaveBeenCalledWith('hsr_tracked_characters');
@@ -221,6 +255,9 @@ describe('characterService', () => {
         level: 80,
         traces_attained: true,
         is_favorited: true,
+        light_cone_id: '23024',
+        light_cone_level: 70,
+        light_cone_superimposition: 3,
       });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });

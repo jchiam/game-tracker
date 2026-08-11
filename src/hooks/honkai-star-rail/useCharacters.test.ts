@@ -100,6 +100,9 @@ function trackedChar(
     isFavorited: false,
     level: 1,
     tracesAttained: false,
+    lightConeId: null,
+    lightConeLevel: 1,
+    lightConeSuperimposition: 1,
     relics: { ...defaultRelics },
     buildPreferences: defaultBuildPrefs,
     ...overrides,
@@ -437,6 +440,84 @@ describe('useCharacters', () => {
 
       expect(result.current.trackedCharacters[0].isFavorited).toBe(true);
       expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { isFavorited: true });
+    });
+  });
+
+  describe('light cone updaters', () => {
+    it('equips a light cone and queues DB update', async () => {
+      mockLoadCharactersFromDB.mockResolvedValue([
+        trackedChar('acheron', 'Acheron', { dbId: 'db-id' }),
+      ]);
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      await act(async () => {
+        result.current.updateLightCone('acheron', '23024');
+      });
+
+      expect(result.current.trackedCharacters[0].lightConeId).toBe('23024');
+      expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { lightConeId: '23024' });
+    });
+
+    it('unequips by setting lightConeId to null, retaining level and superimposition', async () => {
+      mockLoadCharactersFromDB.mockResolvedValue([
+        trackedChar('acheron', 'Acheron', {
+          dbId: 'db-id',
+          lightConeId: '23024',
+          lightConeLevel: 70,
+          lightConeSuperimposition: 3,
+        }),
+      ]);
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      await act(async () => {
+        result.current.updateLightCone('acheron', null);
+      });
+
+      expect(result.current.trackedCharacters[0].lightConeId).toBeNull();
+      expect(result.current.trackedCharacters[0].lightConeLevel).toBe(70);
+      expect(result.current.trackedCharacters[0].lightConeSuperimposition).toBe(3);
+      expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { lightConeId: null });
+    });
+
+    it('clamps light cone level to 1-80', async () => {
+      mockLoadCharactersFromDB.mockResolvedValue([
+        trackedChar('acheron', 'Acheron', { dbId: 'db-id' }),
+      ]);
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      await act(async () => {
+        result.current.updateLightConeLevel('acheron', 999);
+      });
+      expect(result.current.trackedCharacters[0].lightConeLevel).toBe(80);
+
+      await act(async () => {
+        result.current.updateLightConeLevel('acheron', -5);
+      });
+      expect(result.current.trackedCharacters[0].lightConeLevel).toBe(1);
+    });
+
+    it('clamps superimposition to 1-5 and queues DB update', async () => {
+      mockLoadCharactersFromDB.mockResolvedValue([
+        trackedChar('acheron', 'Acheron', { dbId: 'db-id' }),
+      ]);
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      await act(async () => {
+        result.current.updateLightConeSuperimposition('acheron', 9);
+      });
+
+      expect(result.current.trackedCharacters[0].lightConeSuperimposition).toBe(5);
+      expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', {
+        lightConeSuperimposition: 5,
+      });
     });
   });
 
