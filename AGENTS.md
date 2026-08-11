@@ -9,7 +9,7 @@ Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Curren
 - **Images:** ImageKit CDN with on-the-fly transforms; local paths as fallback
 - **Styling:** CSS per component + Style Dictionary design tokens (`src/styles/design-tokens.json` → `tokens.css`)
 - **Testing:** Vitest + React Testing Library (unit), Playwright (e2e), MSW (API mocking)
-- **CI/CD:** GitHub Actions → Vercel (auto-deploy on main)
+- **CI/CD:** GitHub Actions (checks only) + Vercel Git integration (auto-deploy on push to main)
 - **Data updates:** Automated scripts (`scripts/update-*-data.mjs`) + weekly GitHub Actions workflows
 
 ## Commands

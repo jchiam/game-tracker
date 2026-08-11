@@ -72,12 +72,7 @@ A Husky `pre-commit` hook runs `openspec validate --all`, and a `pre-push` hook 
 
 ## Deployment
 
-This project is readily deployable to Vercel. You can either import it directly via the Vercel dashboard or use the Vercel CLI:
-
-```bash
-npm i -g vercel
-vercel
-```
+This project deploys via Vercel's Git integration — pushes to `main` trigger a production deployment automatically, and pull requests get preview deployments. Import the repository via the Vercel dashboard to set this up; no CLI deploy step is needed.
 
 **Important Deployment Step for Vercel:**
 When setting up the project on Vercel, you must configure the following Environment Variables in the Vercel dashboard settings under the project's **Environment Variables** tab:
