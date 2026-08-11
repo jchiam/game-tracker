@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { CharacterCard } from '@/pages/honkai-star-rail/components/CharacterCard';
+import { ALL_LIGHT_CONES } from '@/data/honkai-star-rail/light_cones';
 import type { HsrTrackedCharacter } from '@/types';
 
 vi.mock('@/utils/relicScoring', () => ({
@@ -37,6 +38,9 @@ function makeChar(overrides: Partial<HsrTrackedCharacter> = {}): HsrTrackedChara
     isFavorited: false,
     level: 60,
     tracesAttained: false,
+    lightConeId: null,
+    lightConeLevel: 1,
+    lightConeSuperimposition: 1,
     relics: emptyRelics,
     buildPreferences: emptyPrefs,
     ...overrides,
@@ -50,6 +54,9 @@ const defaultProps = {
   onToggleTraces: vi.fn(),
   onToggleFavorite: vi.fn(),
   onToggleRelic: vi.fn(),
+  onUpdateLightCone: vi.fn(),
+  onUpdateLightConeLevel: vi.fn(),
+  onUpdateLightConeSuperimposition: vi.fn(),
 };
 
 describe('CharacterCard', () => {
@@ -104,7 +111,8 @@ describe('CharacterCard', () => {
     render(<CharacterCard char={makeChar()} {...defaultProps} onUpdateLevel={onUpdateLevel} />);
     // Slider lives in the edit body (aria-hidden until editing) — open edit mode first
     fireEvent.click(screen.getByTitle('Edit'));
-    fireEvent.change(screen.getByRole('slider'), { target: { value: '80' } });
+    // First slider is the character level; the second is the light cone level
+    fireEvent.change(screen.getAllByRole('slider')[0], { target: { value: '80' } });
     expect(onUpdateLevel).toHaveBeenCalledWith('char-1', 80);
   });
 
@@ -548,5 +556,91 @@ describe('CharacterCard', () => {
     const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
     const line = container.querySelector('.game-card-static-line') as HTMLElement;
     expect(line.querySelector('.no-equip')).toBeInTheDocument();
+  });
+
+  // --- Light cone ---
+
+  it('shows cone name, level, and superimposition in the summary line when equipped', () => {
+    const char = makeChar({
+      lightConeId: '23024', // Along the Passing Shore (Nihility)
+      lightConeLevel: 80,
+      lightConeSuperimposition: 5,
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const line = container.querySelector('.game-card-static-line') as HTMLElement;
+    expect(line.textContent).toContain('Along the Passing Shore');
+    // Separators use non-breaking spaces
+    expect(line.textContent).toContain('Lv 80');
+    expect(line.textContent).toContain('S5');
+  });
+
+  it('picker lists only cones matching the character path plus the empty option', () => {
+    const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    const select = container.querySelector<HTMLSelectElement>('select[name="light-cone-char-1"]')!;
+    const nihilityCones = ALL_LIGHT_CONES.filter((lc) => lc.path === 'Nihility');
+    expect(select.options).toHaveLength(nihilityCones.length + 1); // + "No Light Cone"
+    const labels = Array.from(select.options).map((o) => o.textContent ?? '');
+    expect(labels.some((l) => l.includes('A Grounded Ascent'))).toBe(false); // Harmony cone excluded
+  });
+
+  it('off-path stored cone id still renders in the summary line', () => {
+    const char = makeChar({ lightConeId: '23034' }); // A Grounded Ascent (Harmony) on a Nihility char
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const line = container.querySelector('.game-card-static-line') as HTMLElement;
+    expect(line.textContent).toContain('A Grounded Ascent');
+  });
+
+  it('calls onUpdateLightCone when a cone is selected', () => {
+    const onUpdateLightCone = vi.fn();
+    const { container } = render(
+      <CharacterCard char={makeChar()} {...defaultProps} onUpdateLightCone={onUpdateLightCone} />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    const select = container.querySelector<HTMLSelectElement>('select[name="light-cone-char-1"]')!;
+    fireEvent.change(select, { target: { value: '23024' } });
+    expect(onUpdateLightCone).toHaveBeenCalledWith('char-1', '23024');
+  });
+
+  it('calls onUpdateLightCone with null when the selection is cleared', () => {
+    const onUpdateLightCone = vi.fn();
+    const { container } = render(
+      <CharacterCard
+        char={makeChar({ lightConeId: '23024' })}
+        {...defaultProps}
+        onUpdateLightCone={onUpdateLightCone}
+      />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    const select = container.querySelector<HTMLSelectElement>('select[name="light-cone-char-1"]')!;
+    fireEvent.change(select, { target: { value: '' } });
+    expect(onUpdateLightCone).toHaveBeenCalledWith('char-1', null);
+  });
+
+  it('calls onUpdateLightConeLevel when the cone level slider changes', () => {
+    const onUpdateLightConeLevel = vi.fn();
+    render(
+      <CharacterCard
+        char={makeChar()}
+        {...defaultProps}
+        onUpdateLightConeLevel={onUpdateLightConeLevel}
+      />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.change(screen.getAllByRole('slider')[1], { target: { value: '70' } });
+    expect(onUpdateLightConeLevel).toHaveBeenCalledWith('char-1', 70);
+  });
+
+  it('calls onUpdateLightConeSuperimposition when a rank button is clicked', () => {
+    const onUpdateLightConeSuperimposition = vi.fn();
+    render(
+      <CharacterCard
+        char={makeChar()}
+        {...defaultProps}
+        onUpdateLightConeSuperimposition={onUpdateLightConeSuperimposition}
+      />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(screen.getByRole('button', { name: 'S5' }));
+    expect(onUpdateLightConeSuperimposition).toHaveBeenCalledWith('char-1', 5);
   });
 });

@@ -1,15 +1,18 @@
-// Auto-update script for Honkai Star Rail character and relic data.
+// Auto-update script for Honkai Star Rail character, relic, and light cone data.
 // Fetches the latest data from StarRailRes and regenerates:
 //   - src/data/honkai-star-rail/characters.ts
 //   - src/data/honkai-star-rail/relic_sets.ts
-// Downloads character and relic images and uploads to ImageKit CDN:
+//   - src/data/honkai-star-rail/light_cones.ts
+// Downloads character, relic, and light cone images and uploads to ImageKit CDN:
 //   - character portraits  → ImageKit: /honkai_star_rail/characters
 //   - relic set icons      → ImageKit: /honkai_star_rail/relics
+//   - light cone icons     → ImageKit: /honkai_star_rail/light-cones
 //
 // Usage:
-//   node scripts/update-hsr-data.mjs                    # only upload missing assets
-//   node scripts/update-hsr-data.mjs --reupload-all     # force reupload all assets
-//   node scripts/update-hsr-data.mjs --reupload-relics  # force reupload relic icons only
+//   node scripts/update-hsr-data.mjs                         # only upload missing assets
+//   node scripts/update-hsr-data.mjs --reupload-all          # force reupload all assets
+//   node scripts/update-hsr-data.mjs --reupload-relics       # force reupload relic icons only
+//   node scripts/update-hsr-data.mjs --reupload-light-cones  # force reupload light cone icons only
 
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { resolve } from 'path';
@@ -21,6 +24,7 @@ import {
   fetchJSON,
   downloadImage,
   slugify,
+  jsStr,
   diffByKey,
   formatDiff,
   generatedHeader,
@@ -31,8 +35,9 @@ const STAR_RAIL_RES_BASE = 'https://raw.githubusercontent.com/Mar-7th/StarRailRe
 loadLocalEnv();
 const { ensureAsset } = initImageKit();
 
-const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags(['relics']);
+const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags(['relics', 'light-cones']);
 const reuploadRelics = reuploadFlags.relics;
+const reuploadLightCones = reuploadFlags['light-cones'];
 
 async function loadExistingCharacters() {
   const filePath = resolve(ROOT, 'src/data/honkai-star-rail/characters.ts');
@@ -52,6 +57,27 @@ async function loadExistingCharacters() {
     return { entries, idMap };
   } catch {
     return { entries: [], idMap: new Map() };
+  }
+}
+
+async function loadExistingLightCones() {
+  const filePath = resolve(ROOT, 'src/data/honkai-star-rail/light_cones.ts');
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    const entries = [];
+    // Names are emitted via jsStr(), so they may be single- or double-quoted.
+    const regex = /id:\s*'([^']+)'[^}]*?name:\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")/gs;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      const raw = match[2];
+      const name = raw.startsWith('"')
+        ? JSON.parse(raw)
+        : raw.slice(1, -1).replace(/\\'/g, "'").replace(/\\\\/g, '\\');
+      entries.push({ id: match[1], name });
+    }
+    return entries;
+  } catch {
+    return [];
   }
 }
 
@@ -146,17 +172,62 @@ function generateRelicSetsTs(relicSets) {
   return lines.join('\n');
 }
 
+function generateLightConesTs(lightCones) {
+  const lines = [
+    ...generatedHeader('StarRailRes', 'update-hsr-data.mjs'),
+    '',
+    'export interface LightCone {',
+    '  id: string;',
+    '  name: string;',
+    '  rarity: number;',
+    '  path: string;',
+    '  imageUrl: string;',
+    '}',
+    '',
+    'export const ALL_LIGHT_CONES: LightCone[] = [',
+  ];
+
+  let currentRarity = null;
+  for (const lc of lightCones) {
+    if (lc.rarity !== currentRarity) {
+      currentRarity = lc.rarity;
+      lines.push(`  // ${currentRarity}-Stars`);
+    }
+    lines.push(
+      `  {`,
+      `    id: '${lc.id}',`,
+      `    name: ${jsStr(lc.name)},`,
+      `    rarity: ${lc.rarity},`,
+      `    path: '${lc.path}',`,
+      `    imageUrl: '${lc.imageUrl}',`,
+      `  },`,
+    );
+  }
+
+  lines.push('];', '');
+  return lines.join('\n');
+}
+
 async function main() {
   console.log('Fetching data from StarRailRes...');
 
-  const [charData, relicData, pathData, existingCharsResult, existingRelicEntries] =
-    await Promise.all([
-      fetchJSON(`${STAR_RAIL_RES_BASE}/index_new/en/characters.json`),
-      fetchJSON(`${STAR_RAIL_RES_BASE}/index_new/en/relic_sets.json`),
-      fetchJSON(`${STAR_RAIL_RES_BASE}/index_new/en/paths.json`),
-      loadExistingCharacters(),
-      loadExistingRelicSets(),
-    ]);
+  const [
+    charData,
+    relicData,
+    lightConeData,
+    pathData,
+    existingCharsResult,
+    existingRelicEntries,
+    existingLightConeEntries,
+  ] = await Promise.all([
+    fetchJSON(`${STAR_RAIL_RES_BASE}/index_new/en/characters.json`),
+    fetchJSON(`${STAR_RAIL_RES_BASE}/index_new/en/relic_sets.json`),
+    fetchJSON(`${STAR_RAIL_RES_BASE}/index_new/en/light_cones.json`),
+    fetchJSON(`${STAR_RAIL_RES_BASE}/index_new/en/paths.json`),
+    loadExistingCharacters(),
+    loadExistingRelicSets(),
+    loadExistingLightCones(),
+  ]);
 
   // Build path ID -> display name map
   const pathMap = {};
@@ -170,8 +241,10 @@ async function main() {
   // Ensure output directories exist
   const charImgDir = resolve(ROOT, 'public/assets/honkai-star-rail/characters');
   const relicImgDir = resolve(ROOT, 'public/assets/honkai-star-rail/relics');
+  const lightConeImgDir = resolve(ROOT, 'public/assets/honkai-star-rail/light-cones');
   await mkdir(charImgDir, { recursive: true });
   await mkdir(relicImgDir, { recursive: true });
+  await mkdir(lightConeImgDir, { recursive: true });
 
   // Process characters — two passes to handle duplicate names (e.g. alternate versions)
   const characters = [];
@@ -265,12 +338,52 @@ async function main() {
 
   relicSets.sort((a, b) => a.name.localeCompare(b.name));
 
+  // Process light cones
+  const lightCones = [];
+  let lightConeImgCount = 0;
+
+  for (const [id, info] of Object.entries(lightConeData)) {
+    if (!info || typeof info !== 'object') continue;
+    const i = info;
+
+    // Skip placeholders; all rarities 3–5 are legitimate equips
+    if (!i.name || i.name.startsWith('#') || i.name.includes('{') || !i.rarity) continue;
+
+    const imageUrl = `/assets/honkai-star-rail/light-cones/${id}.webp`;
+    const imageLocalPath = resolve(lightConeImgDir, `${id}.webp`);
+
+    const lightConeResult = await ensureAsset({
+      localPath: imageLocalPath,
+      label: `Light cone icon ${i.name}`,
+      reupload: reuploadLightCones,
+      mimeType: 'image/webp',
+      fetchBuffer: () => downloadBinary(`${STAR_RAIL_RES_BASE}/${i.icon}`, imageLocalPath),
+    });
+    if (lightConeResult === 'uploaded') lightConeImgCount++;
+
+    lightCones.push({
+      id,
+      name: i.name,
+      rarity: i.rarity,
+      path: pathMap[i.path] || i.path || 'Unknown',
+      imageUrl,
+    });
+  }
+
+  // Sort: rarity descending, then alphabetically within each group
+  lightCones.sort((a, b) => {
+    if (a.rarity !== b.rarity) return b.rarity - a.rarity;
+    return a.name.localeCompare(b.name);
+  });
+
   // Write generated TypeScript files
   const charsFilePath = resolve(ROOT, 'src/data/honkai-star-rail/characters.ts');
   const relicsFilePath = resolve(ROOT, 'src/data/honkai-star-rail/relic_sets.ts');
+  const lightConesFilePath = resolve(ROOT, 'src/data/honkai-star-rail/light_cones.ts');
 
   await writeFile(charsFilePath, generateCharactersTs(characters), 'utf-8');
   await writeFile(relicsFilePath, generateRelicSetsTs(relicSets), 'utf-8');
+  await writeFile(lightConesFilePath, generateLightConesTs(lightCones), 'utf-8');
 
   // Diff and report
   const { added: addedChars, removed: removedChars } = diffByKey(
@@ -283,8 +396,14 @@ async function main() {
     relicSets,
     (r) => r.id,
   );
+  const { added: addedLightCones, removed: removedLightCones } = diffByKey(
+    existingLightConeEntries,
+    lightCones,
+    (lc) => lc.id,
+  );
   const charDiff = formatDiff(addedChars, removedChars);
   const relicDiff = formatDiff(addedRelics, removedRelics);
+  const lightConeDiff = formatDiff(addedLightCones, removedLightCones);
 
   console.log('\nDone!');
   console.log(
@@ -299,6 +418,12 @@ async function main() {
   );
   for (const r of addedRelics) console.log(`    + ${r.name}`);
   for (const r of removedRelics) console.log(`    - ${r.name} (removed from API)`);
+
+  console.log(
+    `  Light cones: ${lightCones.length} total (${lightConeDiff}) — ${lightConeImgCount} icons uploaded`,
+  );
+  for (const lc of addedLightCones) console.log(`    + ${lc.name} [${lc.rarity}★ ${lc.path}]`);
+  for (const lc of removedLightCones) console.log(`    - ${lc.name} (removed from API)`);
 }
 
 main().catch((e) => {

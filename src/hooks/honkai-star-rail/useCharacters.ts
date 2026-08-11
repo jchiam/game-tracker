@@ -24,6 +24,9 @@ function createTrackedCharacter(char: Character): HsrTrackedCharacter {
     isFavorited: false,
     level: 1,
     tracesAttained: false,
+    lightConeId: null,
+    lightConeLevel: 1,
+    lightConeSuperimposition: 1,
     // Spread — assigning the module-level default directly would share one object
     // identity across every freshly-added character (same aliasing class as the
     // P5X substat-preference bug); the service load path already spreads.
@@ -63,6 +66,11 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   const updateCharacterLevel = makeFieldUpdater('level', { clamp: [1, 80] });
   const toggleCharacterTraces = makeFieldUpdater('tracesAttained');
   const toggleFavoriteCharacter = makeFieldUpdater('isFavorited');
+  const updateLightCone = makeFieldUpdater('lightConeId');
+  const updateLightConeLevel = makeFieldUpdater('lightConeLevel', { clamp: [1, 80] });
+  const updateLightConeSuperimposition = makeFieldUpdater('lightConeSuperimposition', {
+    clamp: [1, 5],
+  });
 
   const saveRelicData = async (
     editingRelic: { charId: string; slot: keyof HsrTrackedCharacter['relics'] },
@@ -127,6 +135,9 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     updateCharacterLevel,
     toggleCharacterTraces,
     toggleFavoriteCharacter,
+    updateLightCone,
+    updateLightConeLevel,
+    updateLightConeSuperimposition,
     saveRelicData,
     removeRelicData,
     saveBuildPreferences,

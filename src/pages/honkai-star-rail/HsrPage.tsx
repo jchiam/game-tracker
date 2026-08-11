@@ -31,6 +31,9 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     updateCharacterLevel,
     toggleCharacterTraces,
     toggleFavoriteCharacter,
+    updateLightCone,
+    updateLightConeLevel,
+    updateLightConeSuperimposition,
     saveRelicData,
     removeRelicData,
     saveBuildPreferences,
@@ -101,6 +104,9 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           onToggleTraces={toggleCharacterTraces}
           onToggleFavorite={toggleFavoriteCharacter}
           onToggleRelic={(id, slot) => setEditingRelic({ charId: id, anchorSlot: slot })}
+          onUpdateLightCone={updateLightCone}
+          onUpdateLightConeLevel={updateLightConeLevel}
+          onUpdateLightConeSuperimposition={updateLightConeSuperimposition}
         />
       ))}
       partiesTab={

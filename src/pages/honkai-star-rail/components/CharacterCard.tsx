@@ -1,18 +1,26 @@
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet } from '@/data/honkai-star-rail/relics';
 import { RELIC_SHORT_NAMES } from '@/data/honkai-star-rail/relic_short_names';
+import { ALL_LIGHT_CONES } from '@/data/honkai-star-rail/light_cones';
 import { ConfirmCheckbox } from '@/components/ConfirmCheckbox';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
 import { LevelSlider } from '@/components/LevelSlider';
 import { PreferenceChainReadout } from '@/components/PreferenceChainReadout';
 import { ProgressSection } from '@/components/ProgressSection';
+import { SegmentedButtons } from '@/components/SegmentedButtons';
+import { Select } from '@/components/Select';
 import { StatChip } from '@/components/StatChip';
 import { getRelicIconUrl } from '@/lib/imagekit';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import { ScoreBadge } from '@/components/ScoreBadge';
 import { getProgressStyle } from '@/utils/progressGradient';
 import './CharacterCard.css';
+
+const SUPERIMPOSITION_OPTIONS = [1, 2, 3, 4, 5].map((rank) => ({
+  value: String(rank),
+  label: `S${rank}`,
+}));
 
 interface CharacterCardProps {
   char: HsrTrackedCharacter;
@@ -22,6 +30,9 @@ interface CharacterCardProps {
   onToggleTraces: (id: string, value: boolean) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
   onToggleRelic: (id: string, part: keyof HsrTrackedCharacter['relics']) => void;
+  onUpdateLightCone: (id: string, lightConeId: string | null) => void;
+  onUpdateLightConeLevel: (id: string, level: number) => void;
+  onUpdateLightConeSuperimposition: (id: string, rank: number) => void;
 }
 
 export function CharacterCard({
@@ -32,6 +43,9 @@ export function CharacterCard({
   onToggleTraces,
   onToggleFavorite,
   onToggleRelic,
+  onUpdateLightCone,
+  onUpdateLightConeLevel,
+  onUpdateLightConeSuperimposition,
 }: CharacterCardProps) {
   // The scorer owns the insufficient-data decision: -1 when no preferences or no relics.
   const score = calculateRelicScore(char);
@@ -56,6 +70,18 @@ export function CharacterCard({
   const sortedSets = [...relicSetCounts.entries()].sort((a, b) => b[1] - a[1]);
   const equippedColor = getProgressStyle(90, 1, 90).color;
   const emptyColor = getProgressStyle(0, 0, 1).color;
+
+  // Light cone summary segments — name teal when equipped, level/superimposition
+  // colored by their own progress (psychube line convention).
+  const selectedLightCone = char.lightConeId
+    ? (ALL_LIGHT_CONES.find((lc) => lc.id === char.lightConeId) ?? null)
+    : null;
+  const equippableLightCones = ALL_LIGHT_CONES.filter((lc) => lc.path === char.path);
+  const coneNamePs = selectedLightCone ? getProgressStyle(80, 1, 80) : getProgressStyle(0, 0, 1);
+  const coneLevelPs = getProgressStyle(char.lightConeLevel, 1, 80);
+  const coneSuperPs = selectedLightCone
+    ? getProgressStyle(char.lightConeSuperimposition, 1, 5)
+    : getProgressStyle(0, 0, 1);
 
   return (
     <GameCardShell
@@ -96,21 +122,36 @@ export function CharacterCard({
         </>
       }
       summaryLine={
-        sortedSets.length > 0 ? (
-          sortedSets.map(([setId, count], i) => {
-            const setName =
-              RELIC_SHORT_NAMES[setId] ??
-              availableRelicSets.find((s) => s.id === setId)?.name ??
-              setId;
-            return (
-              <span key={setId}>
-                {i > 0 && <span style={{ color: equippedColor }}>&nbsp;&middot;&nbsp;</span>}
-                <span style={{ color: equippedColor }}>
-                  {setName} {count}
+        selectedLightCone || sortedSets.length > 0 ? (
+          <>
+            {selectedLightCone && (
+              <>
+                <span style={{ color: coneNamePs.color }}>{selectedLightCone.name}</span>
+                <span style={{ color: coneLevelPs.color }}>
+                  &nbsp;&middot;&nbsp;Lv&nbsp;{char.lightConeLevel}
                 </span>
-              </span>
-            );
-          })
+                <span style={{ color: coneSuperPs.color }}>
+                  &nbsp;&middot;&nbsp;S{char.lightConeSuperimposition}
+                </span>
+              </>
+            )}
+            {sortedSets.map(([setId, count], i) => {
+              const setName =
+                RELIC_SHORT_NAMES[setId] ??
+                availableRelicSets.find((s) => s.id === setId)?.name ??
+                setId;
+              return (
+                <span key={setId}>
+                  {(i > 0 || selectedLightCone) && (
+                    <span style={{ color: equippedColor }}>&nbsp;&middot;&nbsp;</span>
+                  )}
+                  <span style={{ color: equippedColor }}>
+                    {setName} {count}
+                  </span>
+                </span>
+              );
+            })}
+          </>
         ) : (
           <span className="no-equip" style={{ color: emptyColor }}>
             &mdash;
@@ -134,6 +175,35 @@ export function CharacterCard({
               checked={char.tracesAttained}
               onChange={(val) => onToggleTraces(char.id, val)}
               label="All Traces Attained"
+            />
+          </ProgressSection>
+
+          <ProgressSection label="Light Cone" value={`${char.lightConeLevel} / 80`}>
+            <Select
+              name={`light-cone-${char.id}`}
+              size="sm"
+              value={char.lightConeId ?? ''}
+              placeholder="No Light Cone"
+              options={equippableLightCones.map((lc) => ({
+                value: lc.id,
+                label: `${lc.name} (${lc.rarity}★)`,
+              }))}
+              onChange={(v) => onUpdateLightCone(char.id, v || null)}
+            />
+            <LevelSlider
+              name={`light-cone-level-${char.id}`}
+              value={char.lightConeLevel}
+              min={1}
+              max={80}
+              onChange={(n) => onUpdateLightConeLevel(char.id, n)}
+            />
+            <span className="section-sublabel">Superimpose</span>
+            <SegmentedButtons
+              options={SUPERIMPOSITION_OPTIONS}
+              value={String(char.lightConeSuperimposition)}
+              coloring="investment"
+              size="compact"
+              onChange={(v) => onUpdateLightConeSuperimposition(char.id, Number(v))}
             />
           </ProgressSection>
 
