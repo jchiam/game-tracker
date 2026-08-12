@@ -384,6 +384,42 @@ describe('HsrPage', () => {
     expect(screen.queryByRole('heading', { name: /relics — acheron/i })).not.toBeInTheDocument();
   });
 
+  // --- LightConeEditorModal integration ---
+
+  it('opens the Light Cone dialog from the card and wires edits to updateLightConePreferences', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    const updateLightConePreferences = vi.fn();
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+      updateLightConePreferences,
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(screen.getByRole('button', { name: /edit preferences/i }));
+    expect(screen.getByText('Light Cones — Acheron')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: '+ Add Light Cone' }));
+    expect(updateLightConePreferences).toHaveBeenCalledWith('acheron', [expect.any(String)]);
+  });
+
+  it('closes the Light Cone dialog via its Done button', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(screen.getByRole('button', { name: /edit preferences/i }));
+    expect(screen.getByText('Light Cones — Acheron')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByText('Light Cones — Acheron')).not.toBeInTheDocument();
+  });
+
   // --- Tab toggle round-trip ---
 
   it('switches back to the character roster after visiting the Parties tab', () => {

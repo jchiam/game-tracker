@@ -277,6 +277,22 @@ describe('CharacterCard', () => {
     expect(readout!.textContent).toContain('Space Sealing Station');
   });
 
+  it('falls back to raw set ids in the Sets row when preferred sets are not in availableRelicSets', () => {
+    const char = makeChar({
+      buildPreferences: {
+        mainStats: { body: [], feet: [], sphere: [], rope: [] },
+        subStats: [],
+        relicSetId: '101',
+        planarSetId: '301',
+      },
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const readout = container.querySelector('.build-prefs-display');
+    expect(readout).not.toBeNull();
+    expect(readout!.textContent).toContain('101');
+    expect(readout!.textContent).toContain('301');
+  });
+
   it('hides the Target Build readout when no preference of any kind is set', () => {
     const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
     expect(container.querySelector('.build-prefs-display')).toBeNull();
