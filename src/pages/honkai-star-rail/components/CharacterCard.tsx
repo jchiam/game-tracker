@@ -12,7 +12,7 @@ import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { Select } from '@/components/Select';
 import { StatChip } from '@/components/StatChip';
 import { getRelicIconUrl } from '@/lib/imagekit';
-import { calculateRelicScore } from '@/utils/relicScoring';
+import { calculateBuildScore } from '@/utils/buildScore';
 import { ScoreBadge } from '@/components/ScoreBadge';
 import { getProgressStyle } from '@/utils/progressGradient';
 import './CharacterCard.css';
@@ -49,8 +49,9 @@ export function CharacterCard({
   onUpdateLightConeSuperimposition,
   onEditLightConePrefs,
 }: CharacterCardProps) {
-  // The scorer owns the insufficient-data decision: -1 when no preferences or no relics.
-  const score = calculateRelicScore(char);
+  // The scorer owns the insufficient-data decision: -1 when neither the relic
+  // side nor the Light Cone preference side has enough data.
+  const score = calculateBuildScore(char);
 
   // Collapsed-summary investment chips (shared gradient color language)
   const relicCount = (['head', 'hands', 'body', 'feet', 'sphere', 'rope'] as const).filter(
