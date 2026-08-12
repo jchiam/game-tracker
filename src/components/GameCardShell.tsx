@@ -18,8 +18,14 @@ interface GameCardShellProps {
   headerExtra?: ReactNode;
   /** StatChip row of the collapsed summary. */
   summaryStats: ReactNode;
-  /** Equipment one-liner of the collapsed summary. */
-  summaryLine: ReactNode;
+  /**
+   * Equipment digest of the collapsed summary. A single node renders in one
+   * `.game-card-static-line`; an array renders one `.game-card-static-line`
+   * per entry, each independently nowrap/ellipsis truncated. By contract an
+   * array always means "multiple lines" — no game passes an array as a single
+   * line's content.
+   */
+  summaryLine: ReactNode | ReactNode[];
   /** Edit-mode sections, expanded when the edit toggle is active. */
   editBody: ReactNode;
   /**
@@ -170,7 +176,11 @@ export function GameCardShell({
         <div className="game-card-static-summary">
           <div className="game-card-static-summary-inner" ref={summaryInnerRef}>
             <div className="game-card-static-stats">{summaryStats}</div>
-            <div className="game-card-static-line">{summaryLine}</div>
+            {(Array.isArray(summaryLine) ? summaryLine : [summaryLine]).map((line, i) => (
+              <div className="game-card-static-line" key={i}>
+                {line}
+              </div>
+            ))}
           </div>
         </div>
 
