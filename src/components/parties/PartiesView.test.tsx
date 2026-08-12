@@ -220,6 +220,28 @@ describe('PartiesView', () => {
       expect(onSaveParty.mock.calls[0][0]).not.toHaveProperty('tier');
     });
 
+    it('Escape closes the editor when no slot picker is open', () => {
+      renderWithProviders(
+        <PartiesView config={plainConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      expect(screen.getByRole('heading', { name: 'Create New Party' })).toBeInTheDocument();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(screen.queryByRole('heading', { name: 'Create New Party' })).not.toBeInTheDocument();
+    });
+
+    it('Escape with the slot picker open dismisses the picker, not the editor', () => {
+      renderWithProviders(
+        <PartiesView config={plainConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      fireEvent.click(screen.getByText('Slot 1'));
+      expect(document.querySelector('.character-picker')).toBeInTheDocument();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(document.querySelector('.character-picker')).not.toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Create New Party' })).toBeInTheDocument();
+    });
+
     it('includes tier in the save payload when the config supports it', async () => {
       const user = userEvent.setup();
       const onSaveParty = vi.fn().mockResolvedValue('party-1');
