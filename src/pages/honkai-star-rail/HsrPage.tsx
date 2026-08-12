@@ -2,7 +2,7 @@ import { useState, useCallback } from 'react';
 import { useCharacters, emptyRelic } from '@/hooks/honkai-star-rail/useCharacters';
 import { useParties } from '@/hooks/honkai-star-rail/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
-import { calculateRelicScore } from '@/utils/relicScoring';
+import { calculateBuildScore } from '@/utils/buildScore';
 import { CharacterCard } from './components/CharacterCard';
 import { RelicEditorModal } from './components/RelicEditorModal';
 import { LightConeEditorModal } from './components/LightConeEditorModal';
@@ -46,14 +46,14 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
 
   const filterRoster = useCallback(
     (searchTerm: string, sortBy: 'SCORE' | 'ALPHA') =>
-      getFilteredRoster(searchTerm, sortBy, calculateRelicScore),
+      getFilteredRoster(searchTerm, sortBy, calculateBuildScore),
     [getFilteredRoster],
   );
 
   const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
     useRosterView({
       sortModes: [
-        { key: 'SCORE', label: '★', described: 'by Relic Score' },
+        { key: 'SCORE', label: '★', described: 'by Build Score' },
         { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
       ],
       searchPlaceholder: 'Search by name, element, or path...',

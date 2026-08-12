@@ -280,7 +280,7 @@ describe('HsrPage', () => {
     const session = createMockSession();
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.queryByPlaceholderText(/search by name/i)).not.toBeInTheDocument();
-    expect(screen.queryByTitle(/sorted by relic score/i)).not.toBeInTheDocument();
+    expect(screen.queryByTitle(/sorted by build score/i)).not.toBeInTheDocument();
   });
 
   it('shows search and sort controls when characters are tracked', () => {
@@ -293,7 +293,7 @@ describe('HsrPage', () => {
     });
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByPlaceholderText(/search by name/i)).toBeInTheDocument();
-    expect(screen.getByTitle(/sorted by relic score/i)).toBeInTheDocument();
+    expect(screen.getByTitle(/sorted by build score/i)).toBeInTheDocument();
   });
 
   // --- Sort button toggle ---
@@ -307,7 +307,7 @@ describe('HsrPage', () => {
       getFilteredRoster: vi.fn().mockReturnValue(chars),
     });
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
-    const sortBtn = screen.getByTitle(/sorted by relic score/i);
+    const sortBtn = screen.getByTitle(/sorted by build score/i);
     expect(sortBtn).toHaveClass('active');
     expect(sortBtn).toHaveTextContent('★');
   });
@@ -321,7 +321,7 @@ describe('HsrPage', () => {
       getFilteredRoster: vi.fn().mockReturnValue(chars),
     });
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
-    fireEvent.click(screen.getByTitle(/sorted by relic score/i));
+    fireEvent.click(screen.getByTitle(/sorted by build score/i));
     const sortBtn = screen.getByTitle(/sorted alphabetically/i);
     expect(sortBtn).not.toHaveClass('active');
     expect(sortBtn).toHaveTextContent('AZ');
@@ -337,7 +337,7 @@ describe('HsrPage', () => {
       getFilteredRoster,
     });
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
-    fireEvent.click(screen.getByTitle(/sorted by relic score/i));
+    fireEvent.click(screen.getByTitle(/sorted by build score/i));
     expect(getFilteredRoster).toHaveBeenCalledWith('', 'ALPHA', expect.any(Function));
   });
 

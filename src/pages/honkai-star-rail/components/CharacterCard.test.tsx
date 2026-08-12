@@ -232,6 +232,29 @@ describe('CharacterCard', () => {
     expect(container.querySelector('.score-badge.grade-c')).toBeInTheDocument();
   });
 
+  // --- Blended build score (Light Cone side) ---
+
+  it('lowers the badge grade when the equipped cone is off-build', () => {
+    vi.mocked(calculateRelicScore).mockReturnValue(80);
+    const char = makeChar({
+      lightConePreferences: [ALL_LIGHT_CONES[0].id],
+      lightConeId: ALL_LIGHT_CONES[1].id,
+    });
+    // 0.25 × 0 + 0.75 × 0.80 = 60 → B instead of the relic-only A
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.score-badge.grade-b')).toBeInTheDocument();
+  });
+
+  it('shows the badge from the cone side alone when the relic score is -1', () => {
+    vi.mocked(calculateRelicScore).mockReturnValue(-1);
+    const char = makeChar({
+      lightConePreferences: [ALL_LIGHT_CONES[0].id],
+      lightConeId: ALL_LIGHT_CONES[0].id,
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.score-badge.grade-s')).toBeInTheDocument();
+  });
+
   // --- Relic slot rendering ---
 
   it('renders all 6 relic slots in the shared equip-slot grid', () => {
