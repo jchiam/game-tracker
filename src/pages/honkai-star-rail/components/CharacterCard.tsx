@@ -11,7 +11,7 @@ import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { Select } from '@/components/Select';
 import { StatChip } from '@/components/StatChip';
-import { getRelicIconUrl } from '@/lib/imagekit';
+import { getLightConeUrl, getRelicIconUrl } from '@/lib/imagekit';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import { ScoreBadge } from '@/components/ScoreBadge';
 import { getProgressStyle } from '@/utils/progressGradient';
@@ -139,6 +139,14 @@ export function CharacterCard({
           <>
             {selectedLightCone && (
               <>
+                <img
+                  src={getLightConeUrl(selectedLightCone.imageUrl)}
+                  alt=""
+                  className="cone-icon"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
                 <span style={{ color: coneNamePs.color }}>{selectedLightCone.name}</span>
                 <span style={{ color: coneLevelPs.color }}>
                   &nbsp;&middot;&nbsp;Lv&nbsp;{char.lightConeLevel}

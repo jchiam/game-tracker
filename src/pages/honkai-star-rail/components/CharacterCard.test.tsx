@@ -10,6 +10,7 @@ vi.mock('@/utils/relicScoring', () => ({
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => `https://ik.imagekit.io/test${path}`,
   getRelicIconUrl: (path: string) => `https://ik.imagekit.io/test${path}`,
+  getLightConeUrl: (path: string) => `https://ik.imagekit.io/test${path}`,
 }));
 import { calculateRelicScore } from '@/utils/relicScoring';
 
@@ -590,6 +591,21 @@ describe('CharacterCard', () => {
     // Separators use non-breaking spaces
     expect(line.textContent).toContain('Lv 80');
     expect(line.textContent).toContain('S5');
+  });
+
+  it('shows the cone icon resolved through ImageKit in the summary line when equipped', () => {
+    const char = makeChar({ lightConeId: '23024' }); // Along the Passing Shore (Nihility)
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const icon = container.querySelector<HTMLImageElement>('.cone-icon')!;
+    expect(icon).toBeInTheDocument();
+    expect(icon.src).toBe(
+      'https://ik.imagekit.io/test/assets/honkai-star-rail/light-cones/23024.webp',
+    );
+  });
+
+  it('renders no cone icon when no light cone is equipped', () => {
+    const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    expect(container.querySelector('.cone-icon')).not.toBeInTheDocument();
   });
 
   it('picker lists only cones matching the character path plus the empty option', () => {

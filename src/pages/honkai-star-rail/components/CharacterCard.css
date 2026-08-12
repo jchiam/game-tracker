@@ -2,6 +2,16 @@
    and the shared card hover — it contributes no body-layout override. Card
    structure (header, controls, collapse budgets) comes from GameCardShell. */
 
+/* Light Cone icon on the summary line — small square icon (CDN 128px source)
+   inline before the equipped cone's name. */
+.cone-icon {
+  width: 1.25em;
+  height: 1.25em;
+  object-fit: contain;
+  vertical-align: text-bottom;
+  margin-right: var(--spacing-2);
+}
+
 /* Light Cone match badge on the summary line — rank of the equipped cone in the
    preference list. Text/border colours are set inline from the shared progress
    gradient (AE .weapon-match-badge convention). */
