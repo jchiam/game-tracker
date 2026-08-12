@@ -68,3 +68,11 @@ export function getRelicIconUrl(localPath: string): string {
   if (!isImageKitEnabled) return localPath;
   return `${IMAGEKIT_URL_ENDPOINT}${toImageKitPath(localPath)}`;
 }
+
+// Returns a fully-formed ImageKit URL for an HSR light cone icon.
+// Light cone icons are already square 128px artwork — no crop transform needed.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getLightConeUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  return `${IMAGEKIT_URL_ENDPOINT}${toImageKitPath(localPath)}`;
+}
