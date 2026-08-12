@@ -1,19 +1,11 @@
-/* HSR Light Cone preferences dialog — game-specific layout only.
-   Control styling (ranked list rows, selects) is owned by the shared
-   primitives in controls.css / PreferenceChain.css; modal chrome by Modal.css. */
-.light-cone-editor-body {
-  padding: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
+/* HSR Light Cone preferences dialog — modifier over the canonical .modal-body
+   slot (Modal.css). Only the tighter row gap diverges from the base rule. */
+.modal-body.light-cone-editor-body {
   gap: var(--spacing-md);
-  overflow-y: auto;
-  max-height: 50vh;
 }
 
 @media (max-width: 600px) {
-  .light-cone-editor-body {
-    padding: var(--spacing-md);
+  .modal-body.light-cone-editor-body {
     gap: var(--spacing-sm);
-    max-height: 60vh;
   }
 }

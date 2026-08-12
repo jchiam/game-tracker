@@ -47,9 +47,9 @@ describe('LightConeEditorModal', () => {
     expect(screen.getByRole('button', { name: '+ Add Light Cone' })).toBeInTheDocument();
   });
 
-  it('wraps content in a padded scrollable modal body', () => {
+  it('wraps content in the canonical modal body slot', () => {
     const { container } = renderModal();
-    const body = container.querySelector('.modal-content .light-cone-editor-body');
+    const body = container.querySelector('.modal-content > .modal-body.light-cone-editor-body');
     expect(body).toBeInTheDocument();
     expect(body?.querySelector('.pref-chain-ranked, .add-pref-btn')).toBeInTheDocument();
   });

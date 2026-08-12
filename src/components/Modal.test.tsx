@@ -88,6 +88,27 @@ describe('Modal', () => {
     expect(container.querySelector('.modal-footer')).not.toBeInTheDocument();
   });
 
+  it('wraps children in the body slot when bodyClassName is provided', () => {
+    const { container } = render(
+      <Modal title="Test" onClose={vi.fn()} bodyClassName="modal-body">
+        <p>Content</p>
+      </Modal>,
+    );
+    const body = container.querySelector('.modal-content > .modal-body');
+    expect(body).toBeInTheDocument();
+    expect(body).toHaveTextContent('Content');
+  });
+
+  it('renders children bare with no injected wrapper when bodyClassName is omitted', () => {
+    const { container } = render(
+      <Modal title="Test" onClose={vi.fn()}>
+        <p>Content</p>
+      </Modal>,
+    );
+    expect(container.querySelector('.modal-body')).not.toBeInTheDocument();
+    expect(screen.getByText('Content').parentElement).toHaveClass('modal-content');
+  });
+
   it('applies optional className to modal-content', () => {
     const { container } = render(
       <Modal title="Test" onClose={vi.fn()} className="custom-modal">

@@ -34,6 +34,27 @@ export const WithFooter: Story = {
   },
 };
 
+export const WithBodySlot: Story = {
+  args: {
+    onClose: fn(),
+    title: 'Body Slot',
+    bodyClassName: 'modal-body',
+    children: (
+      <>
+        <p>
+          Passing <code>bodyClassName="modal-body"</code> wraps children in the canonical padded,
+          scrollable body. Extend it with a per-modal modifier class for overrides. Omit the prop
+          only for deliberately full-bleed layouts.
+        </p>
+        {Array.from({ length: 12 }, (_, i) => (
+          <p key={i}>Scrollable content row {i + 1}</p>
+        ))}
+      </>
+    ),
+    footer: <button className="btn primary-action">Done</button>,
+  },
+};
+
 export const WithForm: Story = {
   args: {
     onClose: fn(),

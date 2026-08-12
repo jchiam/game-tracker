@@ -220,6 +220,63 @@ describe('PartiesView', () => {
       expect(onSaveParty.mock.calls[0][0]).not.toHaveProperty('tier');
     });
 
+    it('Escape closes the editor when no slot picker is open', () => {
+      renderWithProviders(
+        <PartiesView config={plainConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      expect(screen.getByRole('heading', { name: 'Create New Party' })).toBeInTheDocument();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(screen.queryByRole('heading', { name: 'Create New Party' })).not.toBeInTheDocument();
+    });
+
+    it('Escape with the slot picker open dismisses the picker, not the editor', () => {
+      renderWithProviders(
+        <PartiesView config={plainConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      fireEvent.click(screen.getByText('Slot 1'));
+      expect(document.querySelector('.character-picker')).toBeInTheDocument();
+      fireEvent.keyDown(document, { key: 'Escape' });
+      expect(document.querySelector('.character-picker')).not.toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Create New Party' })).toBeInTheDocument();
+    });
+
+    it('saves typed notes in the payload', async () => {
+      const user = userEvent.setup();
+      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      renderWithProviders(
+        <PartiesView
+          config={plainConfig}
+          {...defaultProps}
+          onSaveParty={onSaveParty}
+          session={createMockSession()}
+        />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      await user.type(screen.getByPlaceholderText(/test stage/i), 'Notes Party');
+      await user.type(screen.getByPlaceholderText(/strategy/i), 'burst rotation');
+      fireEvent.click(screen.getByRole('button', { name: 'Save Party' }));
+      await waitFor(() =>
+        expect(onSaveParty).toHaveBeenCalledWith(
+          expect.objectContaining({ name: 'Notes Party', notes: 'burst rotation' }),
+        ),
+      );
+    });
+
+    it('the picker Cancel button dismisses the picker and keeps the editor open', () => {
+      renderWithProviders(
+        <PartiesView config={plainConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      fireEvent.click(screen.getByText('Slot 1'));
+      const picker = document.querySelector('.character-picker') as HTMLElement;
+      expect(picker).toBeInTheDocument();
+      fireEvent.click(within(picker).getByRole('button', { name: 'Cancel' }));
+      expect(document.querySelector('.character-picker')).not.toBeInTheDocument();
+      expect(screen.getByRole('heading', { name: 'Create New Party' })).toBeInTheDocument();
+    });
+
     it('includes tier in the save payload when the config supports it', async () => {
       const user = userEvent.setup();
       const onSaveParty = vi.fn().mockResolvedValue('party-1');
