@@ -36,6 +36,13 @@ describe('EquipmentEditorShell', () => {
     expect(screen.getByRole('button', { name: 'Build Preferences' })).toHaveClass('active');
   });
 
+  it('prepends the canonical modal-body class to the game body class', () => {
+    renderShell();
+    const body = document.querySelector('.modal-body.test-editor-body');
+    expect(body).not.toBeNull();
+    expect(body!.parentElement).toHaveClass('modal-content');
+  });
+
   it('Done fires onClose', async () => {
     const user = userEvent.setup();
     const { onClose } = renderShell();

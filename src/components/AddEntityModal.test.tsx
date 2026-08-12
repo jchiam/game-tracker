@@ -44,6 +44,12 @@ describe('AddEntityModal', () => {
     expect(names).toEqual(['Alpha', 'Beta', 'Gamma']);
   });
 
+  it('stays full-bleed — no injected modal-body wrapper around the search + list', () => {
+    const { container } = render(<AddEntityModal {...makeProps()} />);
+    expect(container.querySelector('.modal-body')).not.toBeInTheDocument();
+    expect(container.querySelector('.modal-content > .modal-search')).toBeInTheDocument();
+  });
+
   it('excludes tracked entities by id', () => {
     render(<AddEntityModal {...makeProps()} tracked={[{ id: 'alpha' }]} />);
     expect(screen.queryByText('Alpha')).not.toBeInTheDocument();

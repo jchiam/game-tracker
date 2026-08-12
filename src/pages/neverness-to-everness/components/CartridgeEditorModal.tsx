@@ -13,7 +13,6 @@ import { PreferenceChain } from '@/components/PreferenceChain';
 import { Select } from '@/components/Select';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { SubStatList } from '@/components/SubStatList';
-import './CartridgeEditorModal.css';
 
 // Deduplicated sorted list of cartridge names
 const CARTRIDGE_NAMES = [...new Set(ALL_CARTRIDGES.map((c) => c.name))].sort();

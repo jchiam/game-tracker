@@ -2,14 +2,13 @@
   max-width: 650px;
 }
 
-.party-editor-body {
-  padding: var(--spacing-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-lg);
+/* Modifier over the canonical .modal-body slot (Modal.css): the party editor
+   fills the modal column instead of capping at the slot's max-height. The
+   double-class selector outranks the slot's own media-query overrides. */
+.modal-body.party-editor-body {
   flex: 1;
   min-height: 0;
-  overflow-y: auto;
+  max-height: none;
 }
 
 .team-builder-section {

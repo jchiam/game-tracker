@@ -136,6 +136,7 @@ export function PartyEditorModal<E extends PartyEntity>({
       title={party ? `Edit ${nouns.party}` : `Create New ${nouns.party}`}
       onClose={onClose}
       className="party-editor"
+      bodyClassName="modal-body party-editor-body"
       onEscPress={() => {
         if (activeSlot !== null) {
           setActiveSlot(null);
@@ -155,93 +156,89 @@ export function PartyEditorModal<E extends PartyEntity>({
         </>
       }
     >
-      <div className="party-editor-body">
+      <div className="form-group">
+        <label>{nouns.party} Name</label>
+        <input
+          type="text"
+          name={`${partyLower}-name`}
+          placeholder={nouns.namePlaceholder}
+          autoFocus
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+      </div>
+
+      {config.supportsTier && (
         <div className="form-group">
-          <label>{nouns.party} Name</label>
-          <input
-            type="text"
-            name={`${partyLower}-name`}
-            placeholder={nouns.namePlaceholder}
-            autoFocus
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+          <label>Tier</label>
+          <SegmentedButtons
+            className="tier-selector"
+            options={TIER_OPTIONS}
+            value={tier}
+            allowDeselect
+            onChange={setTier}
           />
         </div>
+      )}
 
-        {config.supportsTier && (
-          <div className="form-group">
-            <label>Tier</label>
-            <SegmentedButtons
-              className="tier-selector"
-              options={TIER_OPTIONS}
-              value={tier}
-              allowDeselect
-              onChange={setTier}
-            />
+      <div className="form-group">
+        <label>Notes (Optional)</label>
+        <textarea
+          placeholder="Strategy, alternative members, etc..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+        />
+      </div>
+
+      <div className="team-builder-section">
+        <label>Team Selection</label>
+        {config.slotGroups ? (
+          <div className="team-slots-grouped">
+            {groupSlots(slots, config.slotGroups).map((group) => (
+              <div
+                key={group.key}
+                className={`slot-group-panel${group.style.accent ? ` ${group.style.accent}` : ''}`}
+              >
+                {group.style.label && <span className="slot-group-label">{group.style.label}</span>}
+                <div className="slot-group-slots">
+                  {group.slots.map((slotConfig) => renderSlot(slotConfig))}
+                </div>
+              </div>
+            ))}
           </div>
+        ) : (
+          <div className="team-slots">{slots.map((slotConfig) => renderSlot(slotConfig))}</div>
         )}
 
-        <div className="form-group">
-          <label>Notes (Optional)</label>
-          <textarea
-            placeholder="Strategy, alternative members, etc..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-          />
-        </div>
-
-        <div className="team-builder-section">
-          <label>Team Selection</label>
-          {config.slotGroups ? (
-            <div className="team-slots-grouped">
-              {groupSlots(slots, config.slotGroups).map((group) => (
+        {activeSlot !== null && (
+          <div className="character-picker">
+            <div className="picker-header">
+              <input
+                type="text"
+                name={`${partyLower}-${nouns.entity}-search`}
+                placeholder={activeSlotConfig?.searchPlaceholder ?? nouns.searchPlaceholder}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                autoFocus
+              />
+              <button className="cancel-picker" onClick={() => setActiveSlot(null)}>
+                Cancel
+              </button>
+            </div>
+            <div className="picker-list">
+              {filteredEntities.map((entity) => (
                 <div
-                  key={group.key}
-                  className={`slot-group-panel${group.style.accent ? ` ${group.style.accent}` : ''}`}
+                  key={entity.id}
+                  className="picker-item"
+                  onClick={() => handleSelectEntity(entity.id)}
                 >
-                  {group.style.label && (
-                    <span className="slot-group-label">{group.style.label}</span>
-                  )}
-                  <div className="slot-group-slots">
-                    {group.slots.map((slotConfig) => renderSlot(slotConfig))}
-                  </div>
+                  <img src={config.resolveListImage(entity)} alt={entity.name} />
+                  <span>{entity.name}</span>
                 </div>
               ))}
             </div>
-          ) : (
-            <div className="team-slots">{slots.map((slotConfig) => renderSlot(slotConfig))}</div>
-          )}
-
-          {activeSlot !== null && (
-            <div className="character-picker">
-              <div className="picker-header">
-                <input
-                  type="text"
-                  name={`${partyLower}-${nouns.entity}-search`}
-                  placeholder={activeSlotConfig?.searchPlaceholder ?? nouns.searchPlaceholder}
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  autoFocus
-                />
-                <button className="cancel-picker" onClick={() => setActiveSlot(null)}>
-                  Cancel
-                </button>
-              </div>
-              <div className="picker-list">
-                {filteredEntities.map((entity) => (
-                  <div
-                    key={entity.id}
-                    className="picker-item"
-                    onClick={() => handleSelectEntity(entity.id)}
-                  >
-                    <img src={config.resolveListImage(entity)} alt={entity.name} />
-                    <span>{entity.name}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </Modal>
   );

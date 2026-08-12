@@ -32,25 +32,24 @@ export function LightConeEditorModal({
       title={`Light Cones — ${char.name}`}
       onClose={onClose}
       className="light-cone-editor"
+      bodyClassName="modal-body light-cone-editor-body"
       footer={
         <button className="btn primary-action" onClick={onClose}>
           Done
         </button>
       }
     >
-      <div className="light-cone-editor-body">
-        <p className="tab-description">
-          Rank the Light Cones you want for this character, first choice on top.
-        </p>
-        <PreferenceChain
-          variant="ranked-list"
-          values={char.lightConePreferences}
-          options={lightConeOptions}
-          namePrefix="pref-light-cone"
-          addLabel="+ Add Light Cone"
-          onChange={onUpdatePreferences}
-        />
-      </div>
+      <p className="tab-description">
+        Rank the Light Cones you want for this character, first choice on top.
+      </p>
+      <PreferenceChain
+        variant="ranked-list"
+        values={char.lightConePreferences}
+        options={lightConeOptions}
+        namePrefix="pref-light-cone"
+        addLabel="+ Add Light Cone"
+        onChange={onUpdatePreferences}
+      />
     </Modal>
   );
 }

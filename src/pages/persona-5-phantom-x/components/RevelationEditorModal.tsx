@@ -17,7 +17,6 @@ import { FormGroup } from '@/components/FormGroup';
 import { Select } from '@/components/Select';
 import { SubStatList } from '@/components/SubStatList';
 import { PreferenceChain } from '@/components/PreferenceChain';
-import './RevelationEditorModal.css';
 
 interface RevelationEditorModalProps {
   thief: P5xTrackedThief;

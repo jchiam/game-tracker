@@ -6,6 +6,7 @@ interface EquipmentEditorShellProps {
   /** Equip tab label — the game's noun ("Equip Relics", "Equip Cards", "Equip Cartridge"). */
   equipTabLabel: string;
   className?: string;
+  /** Per-game modifier class; the shell prepends the canonical `modal-body` class. */
   bodyClassName: string;
   equipContent: ReactNode;
   preferencesContent: ReactNode;
@@ -74,7 +75,10 @@ export function EquipmentEditorShell({
         </button>
       </div>
 
-      <div ref={bodyRef} className={bodyClassName}>
+      {/* The tab bar must stay outside the scroll region, so the shell keeps its
+          own body div (reusing the canonical .modal-body rule) instead of the
+          Modal bodyClassName slot, which wraps all children. */}
+      <div ref={bodyRef} className={`modal-body ${bodyClassName}`}>
         {activeTab === 'equip' ? equipContent : preferencesContent}
       </div>
     </Modal>

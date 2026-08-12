@@ -8,7 +8,6 @@ import { FormGroup } from '@/components/FormGroup';
 import { PreferenceChain } from '@/components/PreferenceChain';
 import { Select } from '@/components/Select';
 import { SubStatList } from '@/components/SubStatList';
-import './RelicEditorModal.css';
 
 type RelicSlot = keyof HsrTrackedCharacter['relics'];
 
