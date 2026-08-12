@@ -60,6 +60,13 @@ describe('imagekit', () => {
         '/assets/reverse-1999/mugshot.png',
       );
     });
+
+    it('getLightConeUrl returns the local path', async () => {
+      const { getLightConeUrl } = await import('@/lib/imagekit');
+      expect(getLightConeUrl('/assets/honkai-star-rail/light-cones/23024.webp')).toBe(
+        '/assets/honkai-star-rail/light-cones/23024.webp',
+      );
+    });
   });
 
   describe('when ImageKit is configured', () => {
@@ -88,6 +95,13 @@ describe('imagekit', () => {
       const { getAvatarUrl } = await import('@/lib/imagekit');
       expect(getAvatarUrl('/assets/reverse-1999/mugshot.png')).toBe(
         'https://ik.imagekit.io/test/tr:w-128,h-128,fo-face,c-at_max/reverse_1999/mugshot.png',
+      );
+    });
+
+    it('getLightConeUrl returns an untransformed URL with the converted path', async () => {
+      const { getLightConeUrl } = await import('@/lib/imagekit');
+      expect(getLightConeUrl('/assets/honkai-star-rail/light-cones/23024.webp')).toBe(
+        'https://ik.imagekit.io/test/honkai_star_rail/light_cones/23024.webp',
       );
     });
 

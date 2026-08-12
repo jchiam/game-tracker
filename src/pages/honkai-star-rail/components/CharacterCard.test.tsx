@@ -626,6 +626,24 @@ describe('CharacterCard', () => {
     );
   });
 
+  it('hides the summary icon when it fails to load', () => {
+    const char = makeChar({ lightConeId: '23024' });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const icon = container.querySelector<HTMLImageElement>('.cone-icon')!;
+    fireEvent.error(icon);
+    expect(icon.style.display).toBe('none');
+    expect(container.textContent).toContain('Along the Passing Shore');
+  });
+
+  it('hides a tile image on load failure but keeps the rank badge', () => {
+    const char = makeChar({ lightConePreferences: ['23024'] });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const img = container.querySelector<HTMLImageElement>('.cone-pref-tile img')!;
+    fireEvent.error(img);
+    expect(img.style.display).toBe('none');
+    expect(container.querySelector('.cone-pref-rank')!.textContent).toBe('#1');
+  });
+
   it('renders no cone icon when no light cone is equipped', () => {
     const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
     expect(container.querySelector('.cone-icon')).not.toBeInTheDocument();
