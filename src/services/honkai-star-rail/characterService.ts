@@ -23,6 +23,7 @@ const CHARACTER_COLUMNS: Record<keyof HsrCharacterPatch, string> = {
   lightConeId: 'light_cone_id',
   lightConeLevel: 'light_cone_level',
   lightConeSuperimposition: 'light_cone_superimposition',
+  lightConePreferences: 'light_cone_preferences',
 };
 
 const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacterPatch>({
@@ -38,7 +39,7 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
     light_cone_superimposition: 1,
   },
   select:
-    'id, character_id, level, traces_attained, is_favorited, build_comments, relic_set_id, planar_set_id, light_cone_id, light_cone_level, light_cone_superimposition',
+    'id, character_id, level, traces_attained, is_favorited, build_comments, relic_set_id, planar_set_id, light_cone_id, light_cone_level, light_cone_superimposition, light_cone_preferences',
   fromRow: (row, base) => ({
     ...base,
     dbId: row.id,
@@ -48,6 +49,7 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
     lightConeId: row.light_cone_id ?? null,
     lightConeLevel: row.light_cone_level ?? 1,
     lightConeSuperimposition: row.light_cone_superimposition ?? 1,
+    lightConePreferences: row.light_cone_preferences ?? [],
     relics: { ...defaultRelics },
     buildPreferences: {
       mainStats: { body: [], feet: [], sphere: [], rope: [] },

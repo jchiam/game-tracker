@@ -5,6 +5,7 @@ import { useRosterView } from '@/hooks/useRosterView';
 import { calculateRelicScore } from '@/utils/relicScoring';
 import { CharacterCard } from './components/CharacterCard';
 import { RelicEditorModal } from './components/RelicEditorModal';
+import { LightConeEditorModal } from './components/LightConeEditorModal';
 import { AddCharacterModal } from './components/AddCharacterModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
@@ -34,6 +35,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     updateLightCone,
     updateLightConeLevel,
     updateLightConeSuperimposition,
+    updateLightConePreferences,
     saveRelicData,
     removeRelicData,
     saveBuildPreferences,
@@ -64,6 +66,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     charId: string;
     anchorSlot: keyof HsrTrackedCharacter['relics'];
   } | null>(null);
+  const [editingConePrefsCharId, setEditingConePrefsCharId] = useState<string | null>(null);
 
   const handleAddCharacter = async (char: Parameters<typeof addCharacter>[0]) => {
     await addCharacter(char);
@@ -72,6 +75,10 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
 
   const editingChar = editingRelic
     ? trackedCharacters.find((c) => c.id === editingRelic.charId)
+    : undefined;
+
+  const editingConePrefsChar = editingConePrefsCharId
+    ? trackedCharacters.find((c) => c.id === editingConePrefsCharId)
     : undefined;
 
   return (
@@ -107,6 +114,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           onUpdateLightCone={updateLightCone}
           onUpdateLightConeLevel={updateLightConeLevel}
           onUpdateLightConeSuperimposition={updateLightConeSuperimposition}
+          onEditLightConePrefs={setEditingConePrefsCharId}
         />
       ))}
       partiesTab={
@@ -133,6 +141,16 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           onRemoveRelic={(slot) => removeRelicData({ charId: editingChar.id, slot })}
           onUpdateBuildPreferences={(newPrefs) => saveBuildPreferences(editingChar.id, newPrefs)}
           onClose={() => setEditingRelic(null)}
+        />
+      )}
+
+      {editingConePrefsChar && (
+        <LightConeEditorModal
+          char={editingConePrefsChar}
+          onUpdatePreferences={(prefs) =>
+            updateLightConePreferences(editingConePrefsChar.id, prefs)
+          }
+          onClose={() => setEditingConePrefsCharId(null)}
         />
       )}
 

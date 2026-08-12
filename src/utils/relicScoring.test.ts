@@ -44,6 +44,7 @@ describe('calculateRelicScore', () => {
     lightConeId: null,
     lightConeLevel: 1,
     lightConeSuperimposition: 1,
+    lightConePreferences: [],
     relics: { head: null, hands: null, body: null, feet: null, sphere: null, rope: null },
     buildPreferences: {
       mainStats: {

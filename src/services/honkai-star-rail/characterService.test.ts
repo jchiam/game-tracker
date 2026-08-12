@@ -194,6 +194,48 @@ describe('characterService', () => {
       expect(result[0].buildPreferences.planarSetId).toBe('301');
     });
 
+    it('loadCharactersFromDB maps light cone preferences', async () => {
+      const dbRow = {
+        id: 'db-uuid-1',
+        character_id: 'acheron',
+        level: 60,
+        traces_attained: false,
+        is_favorited: false,
+        build_comments: '',
+        light_cone_preferences: ['23024', '21001'],
+        hsr_equipped_relics: [],
+        hsr_build_preference_main_stats: [],
+        hsr_build_preference_sub_stats: [],
+      };
+
+      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+      const result = await service.loadCharactersFromDB('user-1');
+
+      expect(result[0].lightConePreferences).toEqual(['23024', '21001']);
+    });
+
+    it('loadCharactersFromDB defaults light cone preferences to [] when column is null', async () => {
+      const dbRow = {
+        id: 'db-uuid-1',
+        character_id: 'acheron',
+        level: 60,
+        traces_attained: false,
+        is_favorited: false,
+        build_comments: '',
+        light_cone_preferences: null,
+        hsr_equipped_relics: [],
+        hsr_build_preference_main_stats: [],
+        hsr_build_preference_sub_stats: [],
+      };
+
+      mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+
+      const result = await service.loadCharactersFromDB('user-1');
+
+      expect(result[0].lightConePreferences).toEqual([]);
+    });
+
     it('loadCharactersFromDB defaults set ids to null when absent', async () => {
       const dbRow = {
         id: 'db-uuid-1',
@@ -248,6 +290,7 @@ describe('characterService', () => {
         lightConeId: '23024',
         lightConeLevel: 70,
         lightConeSuperimposition: 3,
+        lightConePreferences: ['23024', '21001'],
       });
 
       expect(mockFrom).toHaveBeenCalledWith('hsr_tracked_characters');
@@ -258,6 +301,7 @@ describe('characterService', () => {
         light_cone_id: '23024',
         light_cone_level: 70,
         light_cone_superimposition: 3,
+        light_cone_preferences: ['23024', '21001'],
       });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });

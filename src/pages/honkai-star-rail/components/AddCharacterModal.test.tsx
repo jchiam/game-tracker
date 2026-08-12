@@ -55,6 +55,7 @@ describe('AddCharacterModal', () => {
         lightConeLevel: 1,
         lightConeSuperimposition: 1,
         relics: { head: null, hands: null, body: null, feet: null, sphere: null, rope: null },
+        lightConePreferences: [],
         buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] },
       },
     ] as HsrTrackedCharacter[];

@@ -2,6 +2,19 @@
    and the shared card hover — it contributes no body-layout override. Card
    structure (header, controls, collapse budgets) comes from GameCardShell. */
 
+/* Light Cone match badge on the summary line — rank of the equipped cone in the
+   preference list. Text/border colours are set inline from the shared progress
+   gradient (AE .weapon-match-badge convention). */
+.cone-match-badge {
+  margin-left: var(--spacing-sm);
+  padding: 0 var(--spacing-2);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-bold);
+  border: 1px solid;
+  border-radius: var(--border-radius-sm);
+  line-height: 1.4;
+}
+
 /* Relic slot grid — base structure/active states come from the shared
    .equip-slot-grid / .equip-slot-cell / .equip-slot-icon rules in card.css;
    only the HSR glyph-size modifiers live here. */

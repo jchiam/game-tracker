@@ -111,6 +111,8 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 | `SavingToast`            | `SavingToast.css`     | Save indicator                                                                                                                                                                        |
 | `ToastContainer`         | `ToastContainer.css`  | Notification system                                                                                                                                                                   |
 
+**Modal body convention (IMPORTANT)** — the base `Modal` renders `children` bare into `.modal-content` (a flex column with `overflow: hidden`); it provides NO padding or scrolling for the body. Every modal built on it MUST wrap its content in a per-modal body div that owns `padding`, `overflow-y: auto`, and a `max-height` (e.g. `.relic-editor-body`, `.light-cone-editor-body` — copy that rule shape). `EquipmentEditorShell` already supplies this via its `bodyClassName` prop; only direct `Modal` compositions need to add it themselves. A dialog whose content sits flush against the modal edges is missing this wrapper.
+
 Shared modal CSS: `src/components/parties/PartyEditorModal.css` (team builder). Per-game `Add*Modal` files are thin config wrappers over the shared `AddEntityModal` (title, entity noun, Fuse `searchKeys`, `getBadges` descriptors) — never re-implement the picker. Likewise, per-game `PartiesTab.tsx` files are thin config adapters over the shared `PartiesView` (`PartyViewConfig`: nouns, image resolvers, slot accent class, tier/favorite support, variant class) — never re-implement the party grid, card, or editor.
 
 #### Build-preference primitives

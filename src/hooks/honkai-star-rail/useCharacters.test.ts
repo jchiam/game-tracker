@@ -103,6 +103,7 @@ function trackedChar(
     lightConeId: null,
     lightConeLevel: 1,
     lightConeSuperimposition: 1,
+    lightConePreferences: [],
     relics: { ...defaultRelics },
     buildPreferences: defaultBuildPrefs,
     ...overrides,
@@ -458,6 +459,24 @@ describe('useCharacters', () => {
 
       expect(result.current.trackedCharacters[0].lightConeId).toBe('23024');
       expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { lightConeId: '23024' });
+    });
+
+    it('updates the ranked light cone preference list and queues DB update', async () => {
+      mockLoadCharactersFromDB.mockResolvedValue([
+        trackedChar('acheron', 'Acheron', { dbId: 'db-id' }),
+      ]);
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      await act(async () => {
+        result.current.updateLightConePreferences('acheron', ['23024', '21001']);
+      });
+
+      expect(result.current.trackedCharacters[0].lightConePreferences).toEqual(['23024', '21001']);
+      expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', {
+        lightConePreferences: ['23024', '21001'],
+      });
     });
 
     it('unequips by setting lightConeId to null, retaining level and superimposition', async () => {
