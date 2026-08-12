@@ -143,37 +143,44 @@ export function CharacterCard({
           />
         </>
       }
-      summaryLine={
-        selectedLightCone || sortedSets.length > 0 ? (
+      summaryLine={[
+        // Line 1: Light Cone readout. Always rendered so every card shows the
+        // same two summary lines and collapsed heights stay uniform.
+        selectedLightCone ? (
           <>
-            {selectedLightCone && (
-              <>
-                <img
-                  src={getLightConeUrl(selectedLightCone.imageUrl)}
-                  alt=""
-                  className="cone-icon"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
-                <span style={{ color: coneNamePs.color }}>{selectedLightCone.name}</span>
-                <span style={{ color: coneLevelPs.color }}>
-                  &nbsp;&middot;&nbsp;Lv&nbsp;{char.lightConeLevel}
-                </span>
-                <span style={{ color: coneSuperPs.color }}>
-                  &nbsp;&middot;&nbsp;S{char.lightConeSuperimposition}
-                </span>
-                {showConeMatchBadge && (
-                  <span
-                    className="cone-match-badge"
-                    style={{ color: coneMatchPs.color, borderColor: coneMatchPs.borderColor }}
-                    title="Equipped Light Cone vs preferred"
-                  >
-                    {coneMatchLabel}
-                  </span>
-                )}
-              </>
+            <img
+              src={getLightConeUrl(selectedLightCone.imageUrl)}
+              alt=""
+              className="cone-icon"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+            <span style={{ color: coneNamePs.color }}>{selectedLightCone.name}</span>
+            <span style={{ color: coneLevelPs.color }}>
+              &nbsp;&middot;&nbsp;Lv&nbsp;{char.lightConeLevel}
+            </span>
+            <span style={{ color: coneSuperPs.color }}>
+              &nbsp;&middot;&nbsp;S{char.lightConeSuperimposition}
+            </span>
+            {showConeMatchBadge && (
+              <span
+                className="cone-match-badge"
+                style={{ color: coneMatchPs.color, borderColor: coneMatchPs.borderColor }}
+                title="Equipped Light Cone vs preferred"
+              >
+                {coneMatchLabel}
+              </span>
             )}
+          </>
+        ) : (
+          <span className="no-equip" style={{ color: emptyColor }}>
+            &mdash;
+          </span>
+        ),
+        // Line 2: relic set digest.
+        sortedSets.length > 0 ? (
+          <>
             {sortedSets.map(([setId, count], i) => {
               const setName =
                 RELIC_SHORT_NAMES[setId] ??
@@ -181,9 +188,7 @@ export function CharacterCard({
                 setId;
               return (
                 <span key={setId}>
-                  {(i > 0 || selectedLightCone) && (
-                    <span style={{ color: equippedColor }}>&nbsp;&middot;&nbsp;</span>
-                  )}
+                  {i > 0 && <span style={{ color: equippedColor }}>&nbsp;&middot;&nbsp;</span>}
                   <span style={{ color: equippedColor }}>
                     {setName} {count}
                   </span>
@@ -195,8 +200,8 @@ export function CharacterCard({
           <span className="no-equip" style={{ color: emptyColor }}>
             &mdash;
           </span>
-        )
-      }
+        ),
+      ]}
       editBody={
         <>
           <ProgressSection label="Level" value={`${char.level} / 80`}>

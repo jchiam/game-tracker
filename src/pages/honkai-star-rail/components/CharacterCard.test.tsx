@@ -571,7 +571,7 @@ describe('CharacterCard', () => {
         ]}
       />,
     );
-    const line = container.querySelector('.game-card-static-line') as HTMLElement;
+    const line = container.querySelectorAll<HTMLElement>('.game-card-static-line')[1];
     expect(within(line).getByText(/Passerby 4/)).toBeInTheDocument();
     expect(within(line).getByText(/Streetwise 2/)).toBeInTheDocument();
   });
@@ -590,14 +590,64 @@ describe('CharacterCard', () => {
         availableRelicSets={[{ id: '999', name: 'Unknown Future Set', icon: '/icon.png' }]}
       />,
     );
-    const line = container.querySelector('.game-card-static-line') as HTMLElement;
+    const line = container.querySelectorAll<HTMLElement>('.game-card-static-line')[1];
     expect(within(line).getByText(/Unknown Future Set 1/)).toBeInTheDocument();
   });
 
-  it('shows dash when no relics are equipped', () => {
+  it('shows a dash on both lines when no cone and no relics are equipped', () => {
     const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
-    const line = container.querySelector('.game-card-static-line') as HTMLElement;
-    expect(line.querySelector('.no-equip')).toBeInTheDocument();
+    const lines = container.querySelectorAll<HTMLElement>('.game-card-static-line');
+    expect(lines).toHaveLength(2);
+    expect(lines[0].querySelector('.no-equip')).toBeInTheDocument();
+    expect(lines[1].querySelector('.no-equip')).toBeInTheDocument();
+  });
+
+  it('splits cone and relic digests onto dedicated lines', () => {
+    const char = makeChar({
+      lightConeId: '23024', // Along the Passing Shore (Nihility)
+      relics: { ...emptyRelics, head: { setId: '101', mainStat: 'HP', subStats: [] } },
+    });
+    const { container } = render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[
+          { id: '101', name: 'Passerby of Wandering Cloud', icon: '/icon1.png' },
+        ]}
+      />,
+    );
+    const lines = container.querySelectorAll<HTMLElement>('.game-card-static-line');
+    expect(lines).toHaveLength(2);
+    expect(lines[0].textContent).toContain('Along the Passing Shore');
+    expect(lines[0].textContent).not.toContain('Passerby');
+    expect(lines[1].textContent).toContain('Passerby 1');
+    expect(lines[1].textContent).not.toContain('Along the Passing Shore');
+  });
+
+  it('shows a dash on the cone line when relics are equipped without a cone', () => {
+    const char = makeChar({
+      relics: { ...emptyRelics, head: { setId: '101', mainStat: 'HP', subStats: [] } },
+    });
+    const { container } = render(
+      <CharacterCard
+        char={char}
+        {...defaultProps}
+        availableRelicSets={[
+          { id: '101', name: 'Passerby of Wandering Cloud', icon: '/icon1.png' },
+        ]}
+      />,
+    );
+    const lines = container.querySelectorAll<HTMLElement>('.game-card-static-line');
+    expect(lines[0].querySelector('.no-equip')).toBeInTheDocument();
+    expect(lines[1].textContent).toContain('Passerby 1');
+  });
+
+  it('shows a dash on the relic line when a cone is equipped without relics', () => {
+    const char = makeChar({ lightConeId: '23024' });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const lines = container.querySelectorAll<HTMLElement>('.game-card-static-line');
+    expect(lines[0].textContent).toContain('Along the Passing Shore');
+    expect(lines[1].querySelector('.no-equip')).toBeInTheDocument();
   });
 
   // --- Light cone ---
@@ -775,6 +825,8 @@ describe('CharacterCard', () => {
     const badge = container.querySelector('.cone-match-badge')!;
     expect(badge).toBeInTheDocument();
     expect(badge.textContent).toBe('#1');
+    // Badge lives on the cone (first) static line
+    expect(container.querySelectorAll('.game-card-static-line')[0].contains(badge)).toBe(true);
   });
 
   it('shows the 1-based rank when the equipped cone sits lower in the list', () => {

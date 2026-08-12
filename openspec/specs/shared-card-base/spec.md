@@ -165,8 +165,8 @@ The anodized-edge presentation SHALL be defined exactly once, in `src/styles/car
 
 ### Requirement: Section-group primitive defined once
 
-A **section group** — a labeled container that visually encloses a set of `.progress-section`s
-under a single heading — SHALL be defined exactly once, in `src/styles/card.css`, as
+A **section group** — a labeled container that visually encloses a set of `.progress-section`s under a single heading — SHALL
+be defined exactly once, in `src/styles/card.css`, as
 `.card-section-group` (the container) and `.card-section-group-header` (its heading). It is the
 canonical way for a game card to present several stat/investment sections as one named unit (first
 consumer: the N2E Console group). Game stylesheets SHALL NOT re-declare these primitives, and SHALL

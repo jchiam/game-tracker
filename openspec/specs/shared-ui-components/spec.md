@@ -22,10 +22,14 @@ while loading and a ui-avatars fallback on error, favorite and remove buttons ti
 with both height budgets measured by the shell (`shared-card-collapse`). Game content SHALL enter
 only through named slots: `badges` (rendered inside `.game-card-badges`), optional `headerExtra`
 (rendered inside `.game-card-header-actions`, left of the edit toggle), `summaryStats`,
-`summaryLine`, and `editBody`. Remaining props: `name` (card title and image alt), `imageUrl`
-(catalog path), `entityNoun` (capitalised), `isFavorited`, `onToggleFavorite((value: boolean) =>
-void)` invoked with the inverted value, and `onRemove(e)`. Game cards SHALL compose `GameCardShell`
-rather than re-implementing the header, controls, or collapse mechanics.
+`summaryLine`, and `editBody`. The `summaryLine` slot SHALL accept `ReactNode | ReactNode[]`: a
+single node renders inside one `.game-card-static-line` (unchanged behaviour), while an array
+renders one `.game-card-static-line` per entry in order, each line independently subject to the
+canonical nowrap/ellipsis truncation. Remaining props: `name` (card title and image alt),
+`imageUrl` (catalog path), `entityNoun` (capitalised), `isFavorited`,
+`onToggleFavorite((value: boolean) => void)` invoked with the inverted value, and `onRemove(e)`.
+Game cards SHALL compose `GameCardShell` rather than re-implementing the header, controls, or
+collapse mechanics.
 
 #### Scenario: Slots render in their structural containers
 
@@ -33,6 +37,19 @@ rather than re-implementing the header, controls, or collapse mechanics.
 - **THEN** `badges` appears inside `.game-card-badges`, `headerExtra` inside
   `.game-card-header-actions`, `summaryStats` inside `.game-card-static-stats`, `summaryLine`
   inside `.game-card-static-line`, and `editBody` inside `.game-card-edit-body-inner`
+
+#### Scenario: Array summaryLine renders one static line per entry
+
+- **WHEN** `GameCardShell` is rendered with `summaryLine={[lineA, lineB]}`
+- **THEN** the summary contains two sibling `.game-card-static-line` divs, the first containing
+  `lineA` and the second `lineB`, each independently truncating with ellipsis on overflow
+
+#### Scenario: Multi-line summary is absorbed by the measured height budget
+
+- **WHEN** an array `summaryLine` adds a second static line to the collapsed summary
+- **THEN** the shell's measured `--game-card-summary-max-height` (taken from
+  `.game-card-static-summary-inner` scrollHeight per `shared-card-collapse`) includes the extra
+  line with no change to the collapse mechanism
 
 #### Scenario: Buttons titled with the entity noun
 

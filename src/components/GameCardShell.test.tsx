@@ -55,6 +55,26 @@ describe('GameCardShell', () => {
     expect(inner!.querySelector('.game-card-static-line')).not.toBeNull();
   });
 
+  it('renders an array summaryLine as one static line per entry, in order', () => {
+    const { container } = render(
+      <GameCardShell
+        {...defaultProps}
+        summaryLine={[<span key="a">line-a</span>, <span key="b">line-b</span>]}
+      />,
+    );
+    const lines = container.querySelectorAll('.game-card-static-line');
+    expect(lines).toHaveLength(2);
+    expect(lines[0]).toHaveTextContent('line-a');
+    expect(lines[1]).toHaveTextContent('line-b');
+    expect(lines[0].parentElement).toHaveClass('game-card-static-summary-inner');
+    expect(lines[1].parentElement).toHaveClass('game-card-static-summary-inner');
+  });
+
+  it('renders a single-node summaryLine as exactly one static line', () => {
+    const { container } = render(<GameCardShell {...defaultProps} />);
+    expect(container.querySelectorAll('.game-card-static-line')).toHaveLength(1);
+  });
+
   it('renders headerExtra next to the edit toggle', () => {
     const { container } = render(
       <GameCardShell {...defaultProps} headerExtra={<span>extra-slot</span>} />,

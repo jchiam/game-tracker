@@ -89,6 +89,18 @@ export const WithTemperEdge: Story = {
   },
 };
 
+/** An array `summaryLine` renders one `.game-card-static-line` per entry, each
+ * independently ellipsized — used when a card digests two equipment kinds
+ * (e.g. HSR Light Cone + relic sets). */
+export const MultiLineSummary: Story = {
+  args: {
+    summaryLine: [
+      <span key="cone">Along the Passing Shore · Lv 80 · S1</span>,
+      <span key="relics">Passerby 4 · Streetwise 2</span>,
+    ],
+  },
+};
+
 export const EmptySummaryLine: Story = {
   args: {
     summaryLine: <span>&mdash;</span>,

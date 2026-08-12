@@ -192,8 +192,8 @@ The N2E character card's collapsed summary (`.game-card-static-summary`) SHALL c
 
 ### Requirement: N2E card edit body contains cartridge slot and Target Build
 
-The cartridge slot section (clickable, opens `CartridgeEditorModal`) and the Target Build display
-SHALL be rendered inside `.game-card-edit-body-inner`, visible only when the card is in editing
+The cartridge slot section (clickable, opens `CartridgeEditorModal`) and the Target Build display SHALL
+be rendered inside `.game-card-edit-body-inner`, visible only when the card is in editing
 state, and SHALL both live inside the **Console** group (Cartridge is the group's first sub-section;
 Target Build is its last). Both SHALL be wrapped in the shared `ProgressSection` ("Cartridge" and
 "Target Build" respectively), matching the HSR card; the custom `.cartridge-slot-section` and
