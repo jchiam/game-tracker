@@ -31,3 +31,9 @@
 - [x] 4.1 `npx openspec validate --all`
 - [x] 4.2 `npm test`, `npm run lint`, `npm run format:check`, `npm run build`
 - [x] 4.3 Visual check of strip in dev server (equipped highlight, overflow tile)
+
+## 5. Display-only rework (user feedback: mis-taps equipped cones)
+
+- [x] 5.1 Remove click-to-equip; tile tap toggles a caption row (rank + name + rarity) under the strip
+- [x] 5.2 Update delta spec: tiles display-only, tap caption requirement, fallback caption
+- [x] 5.3 Update design.md decision + risk; update tests

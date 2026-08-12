@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet } from '@/data/honkai-star-rail/relics';
 import { RELIC_SHORT_NAMES } from '@/data/honkai-star-rail/relic_short_names';
@@ -94,6 +94,9 @@ export function CharacterCard({
   // Match badge: where the equipped cone ranks in the preference list.
   // First choice reads full/teal; lower ranks step toward rust; not-listed = off-build rust.
   const conePrefs = char.lightConePreferences;
+  // Tapped strip tile whose name caption is shown — tiles are display-only
+  // (equipping stays in the picker); tap reveals the name where hover can't.
+  const [captionConeId, setCaptionConeId] = useState<string | null>(null);
   const coneRank = char.lightConeId ? conePrefs.indexOf(char.lightConeId) : -1;
   const showConeMatchBadge = conePrefs.length > 0 && char.lightConeId !== null;
   const coneMatchPs =
@@ -268,7 +271,7 @@ export function CharacterCard({
                           }
                           title={cone ? `${cone.name} (${cone.rarity}★)` : coneId}
                           onClick={() => {
-                            if (!isEquipped) onUpdateLightCone(char.id, coneId);
+                            setCaptionConeId((prev) => (prev === coneId ? null : coneId));
                           }}
                         >
                           {cone && (
@@ -295,6 +298,15 @@ export function CharacterCard({
                       +{conePrefs.length - CONE_STRIP_MAX}
                     </div>
                   )}
+                </div>
+              )}
+              {captionConeId && conePrefs.includes(captionConeId) && (
+                <div className="cone-pref-caption">
+                  #{conePrefs.indexOf(captionConeId) + 1}{' '}
+                  {(() => {
+                    const cone = ALL_LIGHT_CONES.find((lc) => lc.id === captionConeId);
+                    return cone ? `${cone.name} (${cone.rarity}★)` : captionConeId;
+                  })()}
                 </div>
               )}
               <button

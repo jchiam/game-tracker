@@ -51,6 +51,15 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* Name caption for the tapped strip tile — the touch counterpart of the
+   tiles' hover tooltip. Rendered as a row under the strip (no floating
+   overlay: the collapsing card body would clip it). */
+.cone-pref-caption {
+  font-size: var(--typography-font-size-xs);
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: var(--spacing-sm);
+}
+
 /* Light Cone match badge on the summary line — rank of the equipped cone in the
    preference list. Text/border colours are set inline from the shared progress
    gradient (AE .weapon-match-badge convention). */

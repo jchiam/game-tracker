@@ -681,25 +681,28 @@ describe('CharacterCard', () => {
     expect(container.querySelector('.cone-pref-strip .active')).not.toBeInTheDocument();
   });
 
-  it('equips a cone when its tile is clicked', () => {
+  it('shows a name caption when a tile is tapped and never equips', () => {
     const onUpdateLightCone = vi.fn();
     const char = makeChar({ lightConePreferences: ['23024', '21001'] });
     const { container } = render(
       <CharacterCard char={char} {...defaultProps} onUpdateLightCone={onUpdateLightCone} />,
     );
     const tiles = container.querySelectorAll('.cone-pref-tile');
-    fireEvent.click(tiles[1]);
-    expect(onUpdateLightCone).toHaveBeenCalledWith('char-1', '21001');
+    fireEvent.click(tiles[0]);
+    const caption = container.querySelector('.cone-pref-caption')!;
+    expect(caption.textContent).toContain('#1');
+    expect(caption.textContent).toContain('Along the Passing Shore');
+    expect(onUpdateLightCone).not.toHaveBeenCalled();
   });
 
-  it('does not re-equip when the equipped tile is clicked', () => {
-    const onUpdateLightCone = vi.fn();
-    const char = makeChar({ lightConeId: '23024', lightConePreferences: ['23024'] });
-    const { container } = render(
-      <CharacterCard char={char} {...defaultProps} onUpdateLightCone={onUpdateLightCone} />,
-    );
-    fireEvent.click(container.querySelector('.cone-pref-tile')!);
-    expect(onUpdateLightCone).not.toHaveBeenCalled();
+  it('hides the caption when the same tile is tapped again', () => {
+    const char = makeChar({ lightConePreferences: ['23024'] });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const tile = container.querySelector('.cone-pref-tile')!;
+    fireEvent.click(tile);
+    expect(container.querySelector('.cone-pref-caption')).toBeInTheDocument();
+    fireEvent.click(tile);
+    expect(container.querySelector('.cone-pref-caption')).not.toBeInTheDocument();
   });
 
   it('caps at five tiles and shows a +N overflow tile that opens the editor', () => {

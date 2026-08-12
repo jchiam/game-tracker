@@ -59,19 +59,19 @@ The tile whose cone is currently equipped SHALL be visually highlighted using th
 - **WHEN** the equipped cone is not in the preference list
 - **THEN** no tile is highlighted
 
-### Requirement: Preference strip click-to-equip
+### Requirement: Preference strip tiles are display-only
 
-Clicking a cone tile SHALL equip that cone through the same update path as the picker (optimistic local update, debounced DB write). Clicking the tile of the already-equipped cone SHALL be a no-op.
+Cone tiles SHALL NOT mutate any tracked state. Tapping a tile SHALL toggle a caption row under the strip showing that cone's rank, name, and rarity — the touch counterpart of the desktop hover tooltip. Tapping the same tile again SHALL hide the caption; tapping a different tile SHALL switch the caption to it. Equipping remains exclusively in the equip picker.
 
-#### Scenario: Tile click equips the cone
+#### Scenario: Tap shows the caption without equipping
 
-- **WHEN** user clicks the #2 tile while a different cone is equipped
-- **THEN** `lightConeId` updates to the #2 cone in local state and a debounced DB write is queued
+- **WHEN** user taps the #2 tile
+- **THEN** a caption showing `#2 {name} ({rarity}★)` renders under the strip and no equip update is issued
 
-#### Scenario: Clicking the equipped tile
+#### Scenario: Tap again hides the caption
 
-- **WHEN** user clicks the tile of the currently equipped cone
-- **THEN** no update is issued
+- **WHEN** user taps the tile whose caption is already shown
+- **THEN** the caption is removed
 
 ### Requirement: Preference strip overflow cap
 
@@ -89,7 +89,7 @@ The strip SHALL show at most 5 cone tiles. When the preference list is longer, t
 
 ### Requirement: Preference strip fallbacks
 
-A tile whose icon fails to load SHALL keep its rank badge visible so the tile is never empty. A ranked id with no catalog entry SHALL render as a rank-badge-only tile whose tooltip is the raw id, and clicking it still equips that id.
+A tile whose icon fails to load SHALL keep its rank badge visible so the tile is never empty. A ranked id with no catalog entry SHALL render as a rank-badge-only tile whose tooltip and tap caption show the raw id.
 
 #### Scenario: Icon load failure
 

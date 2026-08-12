@@ -25,7 +25,7 @@ Constraints: L4-only (no shared-component change avoids the Storybook obligation
 - **Tiles reuse `.equip-slot-cell` / `.equip-slot-img`** inside a new flex container (`.cone-pref-strip`) rather than `.equip-slot-grid` (that is a 6-column grid sized for relic slots). Alternative — bespoke tile classes — rejected: re-declares borders/active-glow that `card.css` already owns.
 - **Equipped highlight via inline style from `coneMatchPs`**, matching how the match badge and summary segments already colour themselves (inline `color`/`borderColor` from `getProgressStyle`). Alternative — a CSS class per rank — rejected: rank count is unbounded and the gradient is computed, not enumerable.
 - **Rank badge is a small overlay element inside the tile** (absolutely positioned, bottom edge), always rendered — it doubles as the icon-failure fallback content, satisfying the never-empty-tile requirement without state tracking. `onError` hides only the `<img>`, mirroring the relic-slot pattern.
-- **Click-to-equip guards on already-equipped** (`lightConeId === tileId` → no-op) to avoid queuing redundant writes through `usePendingSaves`.
+- **Tiles are display-only; tap toggles a caption row** (`useState<string | null>` holding the tapped cone id) rendered under the strip with rank + name + rarity. Originally click-to-equip; reversed after user feedback — mis-taps on 40px tiles silently changed the equipped cone. A caption row was chosen over a floating tooltip because the collapsing card body would clip an absolutely-positioned overlay. Desktop hover keeps the native `title` tooltip.
 - **Overflow tile is a button-like tile labelled `+N`** that calls `onEditLightConePrefs` — same handler the Edit Preferences button uses; no new prop.
 - **Cap constant `CONE_STRIP_MAX = 5`** local to `CharacterCard.tsx`. Alternative — design token — rejected: it is a content policy, not a visual token.
 - **Separator `>` reuses `.pref-operator-badge`** (Target Build readout class in `card.css`) for visual consistency with the existing preference-chain readouts.
@@ -33,8 +33,8 @@ Constraints: L4-only (no shared-component change avoids the Storybook obligation
 ## Risks / Trade-offs
 
 - [Strip widens the edit body on narrow viewports] → 5-tile cap + flex-wrap; tiles are ~40px, worst case wraps to a second row, no horizontal scroll.
-- [Clickable tiles next to the Edit button could be mis-tapped on mobile] → tiles carry `title` tooltips and visible focus states from the shared slot-cell rules; destructive action impossible (equip is reversible via picker).
-- [Catalog id drift (cone removed upstream) leaves a rank-only tile] → spec'd fallback: rank badge + raw-id tooltip; still equippable, consistent with the picker's off-path tolerance requirement.
+- [Mis-taps on small tiles] → resolved by making tiles display-only (tap = caption, never a state change); equipping stays in the picker.
+- [Catalog id drift (cone removed upstream) leaves a rank-only tile] → spec'd fallback: rank badge + raw-id tooltip/caption, consistent with the picker's off-path tolerance requirement.
 
 ## Migration Plan
 
