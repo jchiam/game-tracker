@@ -40,6 +40,7 @@ function makeChar(overrides: Partial<HsrTrackedCharacter> = {}): HsrTrackedChara
     lightConeLevel: 1,
     lightConeSuperimposition: 1,
     relics: { ...emptyRelics },
+    lightConePreferences: [],
     buildPreferences: { mainStats: { body: [], feet: [], sphere: [], rope: [] }, subStats: [] },
     ...overrides,
   };
@@ -452,5 +453,12 @@ describe('RelicEditorModal', () => {
     renderModal({ char });
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
     expect(screen.getByDisplayValue('Pre-existing comment')).toBeInTheDocument();
+  });
+
+  it('contains no Light Cone controls — cone preferences live in their own dialog', () => {
+    const { container } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    expect(screen.queryByText(/light cone/i)).not.toBeInTheDocument();
+    expect(container.querySelector('.pref-chain-ranked')).not.toBeInTheDocument();
   });
 });

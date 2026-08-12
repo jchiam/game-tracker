@@ -34,6 +34,7 @@ function makeChar(id: string, name: string): HsrTrackedCharacter {
     lightConeId: null,
     lightConeLevel: 1,
     lightConeSuperimposition: 1,
+    lightConePreferences: [],
     relics: { head: null, hands: null, body: null, feet: null, sphere: null, rope: null },
     buildPreferences: emptyPrefs,
   };
@@ -66,6 +67,7 @@ const defaultCharactersHook = {
   updateLightCone: vi.fn(),
   updateLightConeLevel: vi.fn(),
   updateLightConeSuperimposition: vi.fn(),
+  updateLightConePreferences: vi.fn(),
   saveRelicData: vi.fn(),
   removeRelicData: vi.fn(),
   saveBuildPreferences: vi.fn(),

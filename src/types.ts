@@ -48,6 +48,7 @@ export interface HsrTrackedCharacter extends Character {
   lightConeId: string | null; // catalog id of equipped Light Cone (from light_cones.ts)
   lightConeLevel: number; // 1–80
   lightConeSuperimposition: number; // 1–5 (S1–S5)
+  lightConePreferences: string[]; // ordered ALL_LIGHT_CONES ids, highest priority first, no duplicates
   relics: {
     head: EquippedRelic | null;
     hands: EquippedRelic | null;
@@ -80,6 +81,7 @@ export interface HsrCharacterPatch {
   lightConeId?: string | null;
   lightConeLevel?: number;
   lightConeSuperimposition?: number;
+  lightConePreferences?: string[];
 }
 
 export interface R1999TrackedArcanist extends Arcanist {

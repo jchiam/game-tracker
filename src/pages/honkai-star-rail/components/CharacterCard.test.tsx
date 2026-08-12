@@ -41,6 +41,7 @@ function makeChar(overrides: Partial<HsrTrackedCharacter> = {}): HsrTrackedChara
     lightConeId: null,
     lightConeLevel: 1,
     lightConeSuperimposition: 1,
+    lightConePreferences: [],
     relics: emptyRelics,
     buildPreferences: emptyPrefs,
     ...overrides,
@@ -57,6 +58,7 @@ const defaultProps = {
   onUpdateLightCone: vi.fn(),
   onUpdateLightConeLevel: vi.fn(),
   onUpdateLightConeSuperimposition: vi.fn(),
+  onEditLightConePrefs: vi.fn(),
 };
 
 describe('CharacterCard', () => {
@@ -588,6 +590,114 @@ describe('CharacterCard', () => {
     const { container } = render(<CharacterCard char={char} {...defaultProps} />);
     const line = container.querySelector('.game-card-static-line') as HTMLElement;
     expect(line.textContent).toContain('A Grounded Ascent');
+  });
+
+  // --- Light cone match badge ---
+
+  it('shows #1 badge when the equipped cone is the first preference', () => {
+    const char = makeChar({
+      lightConeId: '23024',
+      lightConePreferences: ['23024', '21001'],
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const badge = container.querySelector('.cone-match-badge')!;
+    expect(badge).toBeInTheDocument();
+    expect(badge.textContent).toBe('#1');
+  });
+
+  it('shows the 1-based rank when the equipped cone sits lower in the list', () => {
+    const char = makeChar({
+      lightConeId: '23024',
+      lightConePreferences: ['21001', '23024'],
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.cone-match-badge')!.textContent).toBe('#2');
+  });
+
+  it('shows Off-build when preferences exist but the equipped cone is not listed', () => {
+    const char = makeChar({
+      lightConeId: '23024',
+      lightConePreferences: ['21001'],
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.cone-match-badge')!.textContent).toBe('Off-build');
+  });
+
+  it('renders no badge when the preference list is empty', () => {
+    const char = makeChar({ lightConeId: '23024' });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.cone-match-badge')).not.toBeInTheDocument();
+  });
+
+  it('renders no badge when no cone is equipped even with preferences set', () => {
+    const char = makeChar({
+      lightConeId: null,
+      lightConePreferences: ['23024'],
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.cone-match-badge')).not.toBeInTheDocument();
+  });
+
+  // --- Equipment section clustering (N2E Console precedent) ---
+
+  it('clusters the edit body into Light Cone and Relics groups with progression outside', () => {
+    const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    const groups = [...container.querySelectorAll<HTMLElement>('.card-section-group')];
+    expect(groups).toHaveLength(2);
+    const headers = groups.map((g) => g.querySelector('.card-section-group-header')?.textContent);
+    expect(headers).toEqual(['Light Cone', 'Relics']);
+
+    // Light Cone group: Equipped + Preferences sections.
+    const lcLabels = [
+      ...groups[0].querySelectorAll<HTMLElement>('.progress-section .section-header span'),
+    ].map((s) => s.textContent);
+    expect(lcLabels).toContain('Equipped');
+    expect(lcLabels).toContain('Preferences');
+
+    // Relics group: slot grid inside.
+    expect(groups[1].querySelector('.equip-slot-grid')).toBeInTheDocument();
+
+    // Level and Traces sections live outside both groups.
+    const grouped = new Set(
+      groups.flatMap((g) => [...g.querySelectorAll<HTMLElement>('.progress-section')]),
+    );
+    const ungroupedLabels = [...container.querySelectorAll<HTMLElement>('.progress-section')]
+      .filter((s) => !grouped.has(s))
+      .map((s) => s.querySelector('.section-header span')?.textContent);
+    expect(ungroupedLabels).toContain('Level');
+    expect(ungroupedLabels).toContain('Traces');
+  });
+
+  it('renders the Target Build readout inside the Relics group', () => {
+    const char = makeChar({
+      buildPreferences: {
+        ...emptyPrefs,
+        subStats: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+      },
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const relicsGroup = [...container.querySelectorAll<HTMLElement>('.card-section-group')][1];
+    expect(relicsGroup.querySelector('.build-prefs-display')).toBeInTheDocument();
+  });
+
+  it('fires onEditLightConePrefs when the preferences launcher is clicked', () => {
+    const onEditLightConePrefs = vi.fn();
+    render(
+      <CharacterCard
+        char={makeChar()}
+        {...defaultProps}
+        onEditLightConePrefs={onEditLightConePrefs}
+      />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Preferences' }));
+    expect(onEditLightConePrefs).toHaveBeenCalledWith('char-1');
+  });
+
+  it('shows the ranked count on the Preferences section when preferences exist', () => {
+    const char = makeChar({ lightConePreferences: ['23024', '21001'] });
+    render(<CharacterCard char={char} {...defaultProps} />);
+    expect(screen.getByText('2 ranked')).toBeInTheDocument();
   });
 
   it('calls onUpdateLightCone when a cone is selected', () => {
