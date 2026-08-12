@@ -1,3 +1,4 @@
+import { Fragment, useState } from 'react';
 import type { HsrTrackedCharacter } from '@/types';
 import type { RelicSet } from '@/data/honkai-star-rail/relics';
 import { RELIC_SHORT_NAMES } from '@/data/honkai-star-rail/relic_short_names';
@@ -11,7 +12,7 @@ import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { Select } from '@/components/Select';
 import { StatChip } from '@/components/StatChip';
-import { getRelicIconUrl } from '@/lib/imagekit';
+import { getLightConeUrl, getRelicIconUrl } from '@/lib/imagekit';
 import { calculateBuildScore } from '@/utils/buildScore';
 import { ScoreBadge } from '@/components/ScoreBadge';
 import { getProgressStyle } from '@/utils/progressGradient';
@@ -21,6 +22,10 @@ const SUPERIMPOSITION_OPTIONS = [1, 2, 3, 4, 5].map((rank) => ({
   value: String(rank),
   label: `S${rank}`,
 }));
+
+// Content policy, not a visual token: the preference strip shows at most this
+// many cone tiles before collapsing the rest into a +N overflow tile.
+const CONE_STRIP_MAX = 5;
 
 interface CharacterCardProps {
   char: HsrTrackedCharacter;
@@ -89,6 +94,9 @@ export function CharacterCard({
   // Match badge: where the equipped cone ranks in the preference list.
   // First choice reads full/teal; lower ranks step toward rust; not-listed = off-build rust.
   const conePrefs = char.lightConePreferences;
+  // Tapped strip tile whose name caption is shown — tiles are display-only
+  // (equipping stays in the picker); tap reveals the name where hover can't.
+  const [captionConeId, setCaptionConeId] = useState<string | null>(null);
   const coneRank = char.lightConeId ? conePrefs.indexOf(char.lightConeId) : -1;
   const showConeMatchBadge = conePrefs.length > 0 && char.lightConeId !== null;
   const coneMatchPs =
@@ -140,6 +148,14 @@ export function CharacterCard({
           <>
             {selectedLightCone && (
               <>
+                <img
+                  src={getLightConeUrl(selectedLightCone.imageUrl)}
+                  alt=""
+                  className="cone-icon"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = 'none';
+                  }}
+                />
                 <span style={{ color: coneNamePs.color }}>{selectedLightCone.name}</span>
                 <span style={{ color: coneLevelPs.color }}>
                   &nbsp;&middot;&nbsp;Lv&nbsp;{char.lightConeLevel}
@@ -238,6 +254,61 @@ export function CharacterCard({
               label="Preferences"
               value={conePrefs.length > 0 ? `${conePrefs.length} ranked` : undefined}
             >
+              {conePrefs.length > 0 && (
+                <div className="cone-pref-strip">
+                  {conePrefs.slice(0, CONE_STRIP_MAX).map((coneId, idx) => {
+                    const cone = ALL_LIGHT_CONES.find((lc) => lc.id === coneId);
+                    const isEquipped = char.lightConeId === coneId;
+                    return (
+                      <Fragment key={coneId}>
+                        {idx > 0 && <span className="pref-operator-badge">&gt;</span>}
+                        <div
+                          className={`equip-slot-cell cone-pref-tile ${isEquipped ? 'active' : ''}`}
+                          style={
+                            isEquipped
+                              ? { borderColor: coneMatchPs.borderColor, color: coneMatchPs.color }
+                              : undefined
+                          }
+                          title={cone ? `${cone.name} (${cone.rarity}★)` : coneId}
+                          onClick={() => {
+                            setCaptionConeId((prev) => (prev === coneId ? null : coneId));
+                          }}
+                        >
+                          {cone && (
+                            <img
+                              src={getLightConeUrl(cone.imageUrl)}
+                              alt=""
+                              className="equip-slot-img"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = 'none';
+                              }}
+                            />
+                          )}
+                          <span className="cone-pref-rank">#{idx + 1}</span>
+                        </div>
+                      </Fragment>
+                    );
+                  })}
+                  {conePrefs.length > CONE_STRIP_MAX && (
+                    <div
+                      className="equip-slot-cell cone-pref-tile cone-pref-overflow"
+                      title="Edit preferences"
+                      onClick={() => onEditLightConePrefs(char.id)}
+                    >
+                      +{conePrefs.length - CONE_STRIP_MAX}
+                    </div>
+                  )}
+                </div>
+              )}
+              {captionConeId && conePrefs.includes(captionConeId) && (
+                <div className="cone-pref-caption">
+                  #{conePrefs.indexOf(captionConeId) + 1}{' '}
+                  {(() => {
+                    const cone = ALL_LIGHT_CONES.find((lc) => lc.id === captionConeId);
+                    return cone ? `${cone.name} (${cone.rarity}★)` : captionConeId;
+                  })()}
+                </div>
+              )}
               <button
                 className="btn secondary-action"
                 onClick={() => onEditLightConePrefs(char.id)}
