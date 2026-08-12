@@ -608,6 +608,102 @@ describe('CharacterCard', () => {
     expect(container.querySelector('.cone-icon')).not.toBeInTheDocument();
   });
 
+  // --- Light cone preference strip ---
+
+  it('renders ranked tiles in order with rank badges and separators', () => {
+    const char = makeChar({ lightConePreferences: ['23024', '21001', '23034'] });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const strip = container.querySelector('.cone-pref-strip')!;
+    const tiles = strip.querySelectorAll('.cone-pref-tile');
+    expect(tiles).toHaveLength(3);
+    expect(tiles[0].querySelector('.cone-pref-rank')!.textContent).toBe('#1');
+    expect(tiles[1].querySelector('.cone-pref-rank')!.textContent).toBe('#2');
+    expect(tiles[2].querySelector('.cone-pref-rank')!.textContent).toBe('#3');
+    expect(strip.querySelectorAll('.pref-operator-badge')).toHaveLength(2);
+    expect(tiles[0].getAttribute('title')).toContain('Along the Passing Shore');
+  });
+
+  it('renders no strip when the preference list is empty', () => {
+    const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
+    expect(container.querySelector('.cone-pref-strip')).not.toBeInTheDocument();
+  });
+
+  it('resolves tile icons through ImageKit', () => {
+    const char = makeChar({ lightConePreferences: ['23024'] });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const img = container.querySelector<HTMLImageElement>('.cone-pref-tile img')!;
+    expect(img.src).toBe(
+      'https://ik.imagekit.io/test/assets/honkai-star-rail/light-cones/23024.webp',
+    );
+  });
+
+  it('highlights the equipped tile with the match-rank colour', () => {
+    const char = makeChar({
+      lightConeId: '21001',
+      lightConePreferences: ['23024', '21001'],
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const tiles = container.querySelectorAll<HTMLElement>('.cone-pref-tile');
+    expect(tiles[1].classList.contains('active')).toBe(true);
+    expect(tiles[1].style.borderColor).not.toBe('');
+    expect(tiles[0].classList.contains('active')).toBe(false);
+  });
+
+  it('highlights no tile when the equipped cone is off-build', () => {
+    const char = makeChar({
+      lightConeId: '23010',
+      lightConePreferences: ['23024', '21001'],
+    });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    expect(container.querySelector('.cone-pref-strip .active')).not.toBeInTheDocument();
+  });
+
+  it('equips a cone when its tile is clicked', () => {
+    const onUpdateLightCone = vi.fn();
+    const char = makeChar({ lightConePreferences: ['23024', '21001'] });
+    const { container } = render(
+      <CharacterCard char={char} {...defaultProps} onUpdateLightCone={onUpdateLightCone} />,
+    );
+    const tiles = container.querySelectorAll('.cone-pref-tile');
+    fireEvent.click(tiles[1]);
+    expect(onUpdateLightCone).toHaveBeenCalledWith('char-1', '21001');
+  });
+
+  it('does not re-equip when the equipped tile is clicked', () => {
+    const onUpdateLightCone = vi.fn();
+    const char = makeChar({ lightConeId: '23024', lightConePreferences: ['23024'] });
+    const { container } = render(
+      <CharacterCard char={char} {...defaultProps} onUpdateLightCone={onUpdateLightCone} />,
+    );
+    fireEvent.click(container.querySelector('.cone-pref-tile')!);
+    expect(onUpdateLightCone).not.toHaveBeenCalled();
+  });
+
+  it('caps at five tiles and shows a +N overflow tile that opens the editor', () => {
+    const onEditLightConePrefs = vi.fn();
+    const char = makeChar({
+      lightConePreferences: ['23024', '21001', '23034', 'x1', 'x2', 'x3', 'x4'],
+    });
+    const { container } = render(
+      <CharacterCard char={char} {...defaultProps} onEditLightConePrefs={onEditLightConePrefs} />,
+    );
+    const strip = container.querySelector('.cone-pref-strip')!;
+    expect(strip.querySelectorAll('.cone-pref-tile:not(.cone-pref-overflow)')).toHaveLength(5);
+    const overflow = strip.querySelector('.cone-pref-overflow')!;
+    expect(overflow.textContent).toContain('+2');
+    fireEvent.click(overflow);
+    expect(onEditLightConePrefs).toHaveBeenCalledWith('char-1');
+  });
+
+  it('renders a rank-only tile with raw-id tooltip for an unknown catalog id', () => {
+    const char = makeChar({ lightConePreferences: ['not-a-cone'] });
+    const { container } = render(<CharacterCard char={char} {...defaultProps} />);
+    const tile = container.querySelector('.cone-pref-tile')!;
+    expect(tile.getAttribute('title')).toBe('not-a-cone');
+    expect(tile.querySelector('img')).not.toBeInTheDocument();
+    expect(tile.querySelector('.cone-pref-rank')!.textContent).toBe('#1');
+  });
+
   it('picker lists only cones matching the character path plus the empty option', () => {
     const { container } = render(<CharacterCard char={makeChar()} {...defaultProps} />);
     const select = container.querySelector<HTMLSelectElement>('select[name="light-cone-char-1"]')!;
