@@ -48,12 +48,22 @@ export function PartyEditorModal<E extends PartyEntity>({
           .search(term)
           .map((r) => r.item)
       : entities;
-    return matched.filter(
-      (e) =>
-        !members.some((m) => m.entityId === e.id) &&
-        (!activeSlotConfig?.entityFilter || activeSlotConfig.entityFilter(e)),
-    );
-  }, [entities, searchTerm, config.searchKeys, members, activeSlotConfig]);
+    // Exclusion groups selected so far (mutually exclusive entities, e.g. Trailblazer forms)
+    const selectedGroups = new Set<string>();
+    if (config.exclusionGroup) {
+      for (const m of members) {
+        const entity = entities.find((e) => e.id === m.entityId);
+        const group = entity ? config.exclusionGroup(entity) : null;
+        if (group) selectedGroups.add(group);
+      }
+    }
+    return matched.filter((e) => {
+      if (members.some((m) => m.entityId === e.id)) return false;
+      if (activeSlotConfig?.entityFilter && !activeSlotConfig.entityFilter(e)) return false;
+      const group = config.exclusionGroup?.(e);
+      return !group || !selectedGroups.has(group);
+    });
+  }, [entities, searchTerm, config, members, activeSlotConfig]);
 
   const handleSelectEntity = (entityId: string) => {
     if (activeSlot === null) return;

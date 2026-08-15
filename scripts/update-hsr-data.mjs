@@ -117,6 +117,8 @@ function generateCharactersTs(characters) {
     '  element: string;',
     '  path: string;',
     '  imageUrl: string;',
+    '  /** Alternate-gender portrait (Trailblazer forms only). */',
+    '  altImageUrl?: string;',
     '}',
     '',
     'export const ALL_CHARACTERS: Character[] = [',
@@ -130,6 +132,7 @@ function generateCharactersTs(characters) {
       `    element: '${c.element}',`,
       `    path: '${c.path}',`,
       `    imageUrl: '${c.imageUrl}',`,
+      ...(c.altImageUrl ? [`    altImageUrl: '${c.altImageUrl}',`] : []),
       `  },`,
     ].join('\n');
 
@@ -252,13 +255,33 @@ async function main() {
 
   // Pass 1: collect raw entries and count name occurrences to detect duplicates
   const rawCharacters = [];
-  for (const [, info] of Object.entries(charData)) {
+  // Trailblazer: StarRailRes names the protagonist '{NICKNAME}' and carries one
+  // entry per gender per path form (8001/8002, ...). Collapse each gender pair
+  // into a single per-form entry — Stelle (playergirl) portrait as the default,
+  // Caelus (playerboy) as the alternate — instead of dropping the placeholder.
+  const trailblazerForms = new Map();
+  for (const [sourceId, info] of Object.entries(charData)) {
     if (!info || typeof info !== 'object') continue;
     const i = info;
 
     // Skip placeholders and non-playable entries (rarity 4 and 5 are playable)
-    if (!i.name || i.name.startsWith('#') || i.name.includes('{') || !i.rarity) continue;
+    if (!i.name || i.name.startsWith('#') || !i.rarity) continue;
     if (i.rarity !== 4 && i.rarity !== 5) continue;
+
+    if (i.name === '{NICKNAME}') {
+      const pathName = pathMap[i.path] || i.path || 'Unknown';
+      const form = trailblazerForms.get(pathName) ?? {
+        element: i.element || 'Unknown',
+        rarity: i.rarity,
+      };
+      // Gender from the tag ('playerboy…'/'playergirl…'); even source ID = girl fallback
+      const isGirl = i.tag ? String(i.tag).startsWith('playergirl') : Number(sourceId) % 2 === 0;
+      if (isGirl) form.girlIcon = i.icon;
+      else form.boyIcon = i.icon;
+      trailblazerForms.set(pathName, form);
+      continue;
+    }
+    if (i.name.includes('{')) continue;
 
     rawCharacters.push({
       name: i.name,
@@ -266,6 +289,18 @@ async function main() {
       path: pathMap[i.path] || i.path || 'Unknown',
       rarity: i.rarity,
       icon: i.icon,
+    });
+  }
+
+  for (const [pathName, form] of trailblazerForms) {
+    rawCharacters.push({
+      name: `Trailblazer (${pathName})`,
+      element: form.element,
+      path: pathName,
+      rarity: form.rarity,
+      icon: form.girlIcon ?? form.boyIcon,
+      altIcon: form.girlIcon ? form.boyIcon : undefined,
+      fixedId: `trailblazer_${slugify(pathName)}`,
     });
   }
 
@@ -280,6 +315,7 @@ async function main() {
       : slugify(c.name, '-');
     // Prefer name|path lookup for duplicates; fall back to name-only for unique characters
     const id =
+      c.fixedId ??
       existingIds.get(`${c.name}|${c.path}`) ??
       (!isDuplicate ? existingIds.get(c.name) : undefined) ??
       fallbackSlug;
@@ -296,12 +332,28 @@ async function main() {
     });
     if (charResult === 'uploaded') charImgCount++;
 
+    // Alternate-gender portrait (Trailblazer forms only)
+    let altImageUrl;
+    if (c.altIcon) {
+      altImageUrl = `/assets/honkai-star-rail/characters/${id}_alt.webp`;
+      const altLocalPath = resolve(charImgDir, `${id}_alt.webp`);
+      const altResult = await ensureAsset({
+        localPath: altLocalPath,
+        label: `Alt image for ${c.name}`,
+        reupload: reuploadAll,
+        mimeType: 'image/webp',
+        fetchBuffer: () => downloadBinary(`${STAR_RAIL_RES_BASE}/${c.altIcon}`, altLocalPath),
+      });
+      if (altResult === 'uploaded') charImgCount++;
+    }
+
     characters.push({
       id,
       name: c.name,
       element: c.element,
       path: c.path,
       imageUrl,
+      ...(altImageUrl ? { altImageUrl } : {}),
       rarity: c.rarity,
     });
   }

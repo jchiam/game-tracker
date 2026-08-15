@@ -109,6 +109,29 @@ describe('characterService', () => {
       expect(result[0].lightConeSuperimposition).toBe(5);
     });
 
+    it('loadCharactersFromDB maps use_alt_portrait, defaulting to false when absent', async () => {
+      const makeRow = (overrides: Record<string, unknown>) => ({
+        id: 'db-uuid-1',
+        character_id: 'acheron',
+        level: 60,
+        traces_attained: false,
+        is_favorited: false,
+        build_comments: '',
+        hsr_equipped_relics: [],
+        hsr_build_preference_main_stats: [],
+        hsr_build_preference_sub_stats: [],
+        ...overrides,
+      });
+
+      mockFrom.mockReturnValue(
+        createBuilder({ data: [makeRow({ use_alt_portrait: true })], error: null }),
+      );
+      expect((await service.loadCharactersFromDB('user-1'))[0].useAltPortrait).toBe(true);
+
+      mockFrom.mockReturnValue(createBuilder({ data: [makeRow({})], error: null }));
+      expect((await service.loadCharactersFromDB('user-1'))[0].useAltPortrait).toBe(false);
+    });
+
     it('loadCharactersFromDB maps equipped relics correctly', async () => {
       const dbRow = {
         id: 'db-uuid-1',
@@ -272,6 +295,7 @@ describe('characterService', () => {
         character_id: 'acheron',
         level: 1,
         traces_attained: false,
+        use_alt_portrait: false,
         light_cone_id: null,
         light_cone_level: 1,
         light_cone_superimposition: 1,
@@ -291,6 +315,7 @@ describe('characterService', () => {
         lightConeLevel: 70,
         lightConeSuperimposition: 3,
         lightConePreferences: ['23024', '21001'],
+        useAltPortrait: true,
       });
 
       expect(mockFrom).toHaveBeenCalledWith('hsr_tracked_characters');
@@ -302,6 +327,7 @@ describe('characterService', () => {
         light_cone_level: 70,
         light_cone_superimposition: 3,
         light_cone_preferences: ['23024', '21001'],
+        use_alt_portrait: true,
       });
       expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
     });

@@ -31,6 +31,7 @@ function makeChar(id: string, name: string): HsrTrackedCharacter {
     isFavorited: false,
     level: 60,
     tracesAttained: false,
+    useAltPortrait: false,
     lightConeId: null,
     lightConeLevel: 1,
     lightConeSuperimposition: 1,
@@ -64,6 +65,7 @@ const defaultCharactersHook = {
   updateCharacterLevel: vi.fn(),
   toggleCharacterTraces: vi.fn(),
   toggleFavoriteCharacter: vi.fn(),
+  updateUseAltPortrait: vi.fn(),
   updateLightCone: vi.fn(),
   updateLightConeLevel: vi.fn(),
   updateLightConeSuperimposition: vi.fn(),
@@ -204,6 +206,44 @@ describe('HsrPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /parties/i }));
     expect(screen.getByText('Alpha Team')).toBeInTheDocument();
     expect(screen.getByText('Beta Team')).toBeInTheDocument();
+  });
+
+  it('party avatars use the alternate portrait when the tracked form is toggled', () => {
+    const session = createMockSession();
+    const tbCatalog = {
+      id: 'trailblazer_harmony',
+      name: 'Trailblazer (Harmony)',
+      element: 'Imaginary',
+      path: 'Harmony',
+      imageUrl: '/assets/trailblazer_harmony.webp',
+      altImageUrl: '/assets/trailblazer_harmony_alt.webp',
+    };
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      availableCharacters: [tbCatalog],
+      trackedCharacters: [
+        {
+          ...makeChar('trailblazer_harmony', 'Trailblazer (Harmony)'),
+          altImageUrl: tbCatalog.altImageUrl,
+          useAltPortrait: true,
+        },
+      ],
+    });
+    vi.mocked(useParties).mockReturnValue({
+      ...defaultPartiesHook,
+      parties: [
+        {
+          ...makeParty('p1', 'TB Team'),
+          members: [{ entityId: 'trailblazer_harmony', slotIndex: 0 }],
+        },
+      ],
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /parties/i }));
+    // getMugshotUrl may prefix the CDN endpoint — assert on the resolved file path
+    expect(screen.getByAltText('Trailblazer (Harmony)').getAttribute('src')).toContain(
+      'trailblazer_harmony_alt.webp',
+    );
   });
 
   it('shows SavingToast when pendingSaveCount > 0', () => {

@@ -17,6 +17,8 @@ const HSR_PARTY_VIEW: PartyViewConfig<Character> = {
   resolveSlotImage: (char) => getMugshotUrl(char.imageUrl),
   resolveListImage: (char) => getAvatarUrl(char.imageUrl),
   slotAccentClass: (char) => `element-${char.element.toLowerCase()}`,
+  // Only one Trailblazer path form may be fielded per party (game rule)
+  exclusionGroup: (char) => (char.id.startsWith('trailblazer_') ? 'trailblazer' : null),
   supportsTier: true,
   supportsFavorite: true,
 };

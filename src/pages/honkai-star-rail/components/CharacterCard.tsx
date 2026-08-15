@@ -39,7 +39,13 @@ interface CharacterCardProps {
   onUpdateLightConeLevel: (id: string, level: number) => void;
   onUpdateLightConeSuperimposition: (id: string, rank: number) => void;
   onEditLightConePrefs: (id: string) => void;
+  onUpdateUseAltPortrait: (id: string, value: boolean) => void;
 }
+
+const PORTRAIT_OPTIONS = [
+  { value: 'stelle', label: 'Stelle' },
+  { value: 'caelus', label: 'Caelus' },
+] as const;
 
 export function CharacterCard({
   char,
@@ -53,6 +59,7 @@ export function CharacterCard({
   onUpdateLightConeLevel,
   onUpdateLightConeSuperimposition,
   onEditLightConePrefs,
+  onUpdateUseAltPortrait,
 }: CharacterCardProps) {
   // The scorer owns the insufficient-data decision: -1 when neither the relic
   // side nor the Light Cone preference side has enough data.
@@ -108,7 +115,7 @@ export function CharacterCard({
   return (
     <GameCardShell
       name={char.name}
-      imageUrl={char.imageUrl}
+      imageUrl={char.useAltPortrait && char.altImageUrl ? char.altImageUrl : char.imageUrl}
       entityNoun="Character"
       isFavorited={char.isFavorited}
       onToggleFavorite={(value) => onToggleFavorite(char.id, value)}
@@ -204,6 +211,17 @@ export function CharacterCard({
       ]}
       editBody={
         <>
+          {char.altImageUrl && (
+            <ProgressSection label="Portrait">
+              <SegmentedButtons
+                name={`portrait-${char.id}`}
+                options={PORTRAIT_OPTIONS}
+                value={char.useAltPortrait ? 'caelus' : 'stelle'}
+                onChange={(v) => onUpdateUseAltPortrait(char.id, v === 'caelus')}
+              />
+            </ProgressSection>
+          )}
+
           <ProgressSection label="Level" value={`${char.level} / 80`}>
             <LevelSlider
               name={`level-${char.id}`}

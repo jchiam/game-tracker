@@ -19,6 +19,7 @@ function makeChar(overrides: Partial<HsrTrackedCharacter> = {}): HsrTrackedChara
     isFavorited: false,
     level: 60,
     tracesAttained: false,
+    useAltPortrait: false,
     lightConeId: null,
     lightConeLevel: 1,
     lightConeSuperimposition: 1,

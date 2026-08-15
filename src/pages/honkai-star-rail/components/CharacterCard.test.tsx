@@ -39,6 +39,7 @@ function makeChar(overrides: Partial<HsrTrackedCharacter> = {}): HsrTrackedChara
     isFavorited: false,
     level: 60,
     tracesAttained: false,
+    useAltPortrait: false,
     lightConeId: null,
     lightConeLevel: 1,
     lightConeSuperimposition: 1,
@@ -60,6 +61,7 @@ const defaultProps = {
   onUpdateLightConeLevel: vi.fn(),
   onUpdateLightConeSuperimposition: vi.fn(),
   onEditLightConePrefs: vi.fn(),
+  onUpdateUseAltPortrait: vi.fn(),
 };
 
 describe('CharacterCard', () => {
@@ -902,6 +904,53 @@ describe('CharacterCard', () => {
     const { container } = render(<CharacterCard char={char} {...defaultProps} />);
     const relicsGroup = [...container.querySelectorAll<HTMLElement>('.card-section-group')][1];
     expect(relicsGroup.querySelector('.build-prefs-display')).toBeInTheDocument();
+  });
+
+  describe('portrait toggle', () => {
+    const tbChar = (overrides: Partial<HsrTrackedCharacter> = {}) =>
+      makeChar({
+        id: 'trailblazer_harmony',
+        name: 'Trailblazer (Harmony)',
+        imageUrl: '/assets/honkai-star-rail/characters/trailblazer_harmony.webp',
+        altImageUrl: '/assets/honkai-star-rail/characters/trailblazer_harmony_alt.webp',
+        ...overrides,
+      });
+
+    it('hides the portrait control for characters without an alternate portrait', () => {
+      render(<CharacterCard char={makeChar()} {...defaultProps} />);
+      fireEvent.click(screen.getByTitle('Edit'));
+      expect(screen.queryByText('Portrait')).not.toBeInTheDocument();
+    });
+
+    it('shows the Stelle/Caelus control on Trailblazer cards and fires the updater', () => {
+      const onUpdateUseAltPortrait = vi.fn();
+      render(
+        <CharacterCard
+          char={tbChar()}
+          {...defaultProps}
+          onUpdateUseAltPortrait={onUpdateUseAltPortrait}
+        />,
+      );
+      fireEvent.click(screen.getByTitle('Edit'));
+      expect(screen.getByText('Portrait')).toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Caelus' }));
+      expect(onUpdateUseAltPortrait).toHaveBeenCalledWith('trailblazer_harmony', true);
+    });
+
+    it('renders the alternate portrait when useAltPortrait is set', () => {
+      const { container } = render(
+        <CharacterCard char={tbChar({ useAltPortrait: true })} {...defaultProps} />,
+      );
+      const img = container.querySelector('.game-card-image') as HTMLImageElement;
+      expect(img.src).toContain('trailblazer_harmony_alt');
+    });
+
+    it('renders the default portrait when useAltPortrait is false', () => {
+      const { container } = render(<CharacterCard char={tbChar()} {...defaultProps} />);
+      const img = container.querySelector('.game-card-image') as HTMLImageElement;
+      expect(img.src).toContain('trailblazer_harmony');
+      expect(img.src).not.toContain('_alt');
+    });
   });
 
   it('fires onEditLightConePrefs when the preferences launcher is clicked', () => {

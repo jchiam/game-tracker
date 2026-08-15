@@ -45,6 +45,8 @@ export interface HsrTrackedCharacter extends Character {
   isFavorited: boolean;
   level: number;
   tracesAttained: boolean;
+  /** Cosmetic: render the alternate-gender portrait (Trailblazer forms only). */
+  useAltPortrait: boolean;
   lightConeId: string | null; // catalog id of equipped Light Cone (from light_cones.ts)
   lightConeLevel: number; // 1–80
   lightConeSuperimposition: number; // 1–5 (S1–S5)
@@ -82,6 +84,7 @@ export interface HsrCharacterPatch {
   lightConeLevel?: number;
   lightConeSuperimposition?: number;
   lightConePreferences?: string[];
+  useAltPortrait?: boolean;
 }
 
 export interface R1999TrackedArcanist extends Arcanist {

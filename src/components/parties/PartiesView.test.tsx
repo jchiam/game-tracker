@@ -381,6 +381,77 @@ describe('PartiesView', () => {
       expect(within(picker).queryByText('Bob')).not.toBeInTheDocument();
     });
 
+    it('hides entities sharing an exclusion group with a selected member', () => {
+      const tbEntities: TestEntity[] = [
+        ...entities,
+        { id: 'tb-a', name: 'Blazer A', imageUrl: '/tb-a.webp', element: 'Fire' },
+        { id: 'tb-b', name: 'Blazer B', imageUrl: '/tb-b.webp', element: 'Ice' },
+      ];
+      const exclusionConfig: PartyViewConfig<TestEntity> = {
+        ...plainConfig,
+        exclusionGroup: (e) => (e.id.startsWith('tb-') ? 'trailblazer' : null),
+      };
+      renderWithProviders(
+        <PartiesView
+          config={exclusionConfig}
+          {...defaultProps}
+          entities={tbEntities}
+          session={createMockSession()}
+        />,
+      );
+      openEditorWithPicker();
+      let picker = screen
+        .getByPlaceholderText('Search character...')
+        .closest('.character-picker') as HTMLElement;
+      fireEvent.click(within(picker).getByText('Blazer A'));
+
+      // Sibling form hidden, ungrouped entities still selectable
+      fireEvent.click(screen.getByText('Slot 2'));
+      picker = screen
+        .getByPlaceholderText('Search character...')
+        .closest('.character-picker') as HTMLElement;
+      expect(within(picker).queryByText('Blazer B')).not.toBeInTheDocument();
+      expect(within(picker).getByText('Alice')).toBeInTheDocument();
+      expect(within(picker).getByText('Bob')).toBeInTheDocument();
+
+      // Removing the group member frees the group again
+      fireEvent.click(within(picker).getByText('Cancel'));
+      fireEvent.click(document.querySelector('.remove-member-btn') as HTMLElement);
+      fireEvent.click(screen.getByText('Slot 2'));
+      picker = screen
+        .getByPlaceholderText('Search character...')
+        .closest('.character-picker') as HTMLElement;
+      expect(within(picker).getByText('Blazer B')).toBeInTheDocument();
+    });
+
+    it('applies only the exact-duplicate filter when exclusionGroup is omitted', () => {
+      const tbEntities: TestEntity[] = [
+        ...entities,
+        { id: 'tb-a', name: 'Blazer A', imageUrl: '/tb-a.webp', element: 'Fire' },
+        { id: 'tb-b', name: 'Blazer B', imageUrl: '/tb-b.webp', element: 'Ice' },
+      ];
+      renderWithProviders(
+        <PartiesView
+          config={plainConfig}
+          {...defaultProps}
+          entities={tbEntities}
+          session={createMockSession()}
+        />,
+      );
+      openEditorWithPicker();
+      let picker = screen
+        .getByPlaceholderText('Search character...')
+        .closest('.character-picker') as HTMLElement;
+      fireEvent.click(within(picker).getByText('Blazer A'));
+
+      fireEvent.click(screen.getByText('Slot 2'));
+      picker = screen
+        .getByPlaceholderText('Search character...')
+        .closest('.character-picker') as HTMLElement;
+      expect(within(picker).queryByText('Blazer A')).not.toBeInTheDocument();
+      expect(within(picker).getByText('Blazer B')).toBeInTheDocument();
+    });
+
     it('removes a member from its slot', () => {
       renderWithProviders(
         <PartiesView config={plainConfig} {...defaultProps} session={createMockSession()} />,

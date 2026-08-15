@@ -7,6 +7,8 @@ export interface Character {
   element: string;
   path: string;
   imageUrl: string;
+  /** Alternate-gender portrait (Trailblazer forms only). */
+  altImageUrl?: string;
 }
 
 export const ALL_CHARACTERS: Character[] = [
@@ -409,6 +411,46 @@ export const ALL_CHARACTERS: Character[] = [
     element: 'Fire',
     path: 'The Hunt',
     imageUrl: '/assets/honkai-star-rail/characters/topaz.webp',
+  },
+  {
+    id: 'trailblazer_destruction',
+    name: 'Trailblazer (Destruction)',
+    element: 'Physical',
+    path: 'Destruction',
+    imageUrl: '/assets/honkai-star-rail/characters/trailblazer_destruction.webp',
+    altImageUrl: '/assets/honkai-star-rail/characters/trailblazer_destruction_alt.webp',
+  },
+  {
+    id: 'trailblazer_elation',
+    name: 'Trailblazer (Elation)',
+    element: 'Thunder',
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/characters/trailblazer_elation.webp',
+    altImageUrl: '/assets/honkai-star-rail/characters/trailblazer_elation_alt.webp',
+  },
+  {
+    id: 'trailblazer_harmony',
+    name: 'Trailblazer (Harmony)',
+    element: 'Imaginary',
+    path: 'Harmony',
+    imageUrl: '/assets/honkai-star-rail/characters/trailblazer_harmony.webp',
+    altImageUrl: '/assets/honkai-star-rail/characters/trailblazer_harmony_alt.webp',
+  },
+  {
+    id: 'trailblazer_preservation',
+    name: 'Trailblazer (Preservation)',
+    element: 'Fire',
+    path: 'Preservation',
+    imageUrl: '/assets/honkai-star-rail/characters/trailblazer_preservation.webp',
+    altImageUrl: '/assets/honkai-star-rail/characters/trailblazer_preservation_alt.webp',
+  },
+  {
+    id: 'trailblazer_remembrance',
+    name: 'Trailblazer (Remembrance)',
+    element: 'Ice',
+    path: 'Remembrance',
+    imageUrl: '/assets/honkai-star-rail/characters/trailblazer_remembrance.webp',
+    altImageUrl: '/assets/honkai-star-rail/characters/trailblazer_remembrance_alt.webp',
   },
   {
     id: 'tribbie',

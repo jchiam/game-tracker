@@ -65,4 +65,34 @@ describe('PartiesTab (HSR config wiring)', () => {
     expect(img).toHaveAttribute('src', 'mugshot:/acheron.webp');
     expect(img.closest('.slot-avatar')).toHaveClass('element-thunder');
   });
+
+  it('excludes other Trailblazer forms from the picker once one is selected', () => {
+    const tbCharacters: Character[] = [
+      ...availableCharacters,
+      {
+        id: 'trailblazer_harmony',
+        name: 'Trailblazer (Harmony)',
+        element: 'Imaginary',
+        path: 'Harmony',
+        imageUrl: '/tb-harmony.webp',
+      },
+      {
+        id: 'trailblazer_remembrance',
+        name: 'Trailblazer (Remembrance)',
+        element: 'Ice',
+        path: 'Remembrance',
+        imageUrl: '/tb-remembrance.webp',
+      },
+    ];
+    renderWithProviders(
+      <PartiesTab {...defaultProps} parties={[]} availableCharacters={tbCharacters} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+    fireEvent.click(screen.getByText('Slot 1'));
+    fireEvent.click(screen.getByText('Trailblazer (Harmony)'));
+
+    fireEvent.click(screen.getByText('Slot 2'));
+    expect(screen.queryByText('Trailblazer (Remembrance)')).not.toBeInTheDocument();
+    expect(screen.getByText('Acheron')).toBeInTheDocument();
+  });
 });

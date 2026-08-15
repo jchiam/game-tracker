@@ -24,6 +24,7 @@ function createTrackedCharacter(char: Character): HsrTrackedCharacter {
     isFavorited: false,
     level: 1,
     tracesAttained: false,
+    useAltPortrait: false,
     lightConeId: null,
     lightConeLevel: 1,
     lightConeSuperimposition: 1,
@@ -67,6 +68,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   const updateCharacterLevel = makeFieldUpdater('level', { clamp: [1, 80] });
   const toggleCharacterTraces = makeFieldUpdater('tracesAttained');
   const toggleFavoriteCharacter = makeFieldUpdater('isFavorited');
+  const updateUseAltPortrait = makeFieldUpdater('useAltPortrait');
   const updateLightCone = makeFieldUpdater('lightConeId');
   const updateLightConeLevel = makeFieldUpdater('lightConeLevel', { clamp: [1, 80] });
   const updateLightConeSuperimposition = makeFieldUpdater('lightConeSuperimposition', {
@@ -137,6 +139,7 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
     updateCharacterLevel,
     toggleCharacterTraces,
     toggleFavoriteCharacter,
+    updateUseAltPortrait,
     updateLightCone,
     updateLightConeLevel,
     updateLightConeSuperimposition,
