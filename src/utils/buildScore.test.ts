@@ -17,6 +17,7 @@ const getBaseCharacter = (): HsrTrackedCharacter => ({
   path: 'Destruction',
   imageUrl: '',
   isFavorited: false,
+  useAltPortrait: false,
   level: 80,
   tracesAttained: true,
   lightConeId: null,

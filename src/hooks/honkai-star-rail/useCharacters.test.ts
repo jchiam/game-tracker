@@ -100,6 +100,7 @@ function trackedChar(
     isFavorited: false,
     level: 1,
     tracesAttained: false,
+    useAltPortrait: false,
     lightConeId: null,
     lightConeLevel: 1,
     lightConeSuperimposition: 1,
@@ -441,6 +442,27 @@ describe('useCharacters', () => {
 
       expect(result.current.trackedCharacters[0].isFavorited).toBe(true);
       expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { isFavorited: true });
+    });
+  });
+
+  describe('updateUseAltPortrait', () => {
+    it('sets the alternate-portrait flag and queues DB update', async () => {
+      mockLoadCharactersFromDB.mockResolvedValue([
+        trackedChar('trailblazer_harmony', 'Trailblazer (Harmony)', {
+          dbId: 'db-id',
+          useAltPortrait: false,
+        }),
+      ]);
+
+      const { result } = renderHook(() => useCharacters(mockSession, false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      await act(async () => {
+        result.current.updateUseAltPortrait('trailblazer_harmony', true);
+      });
+
+      expect(result.current.trackedCharacters[0].useAltPortrait).toBe(true);
+      expect(mockUpdateCharacter).toHaveBeenCalledWith('db-id', { useAltPortrait: true });
     });
   });
 

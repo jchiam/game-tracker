@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useCharacters, emptyRelic } from '@/hooks/honkai-star-rail/useCharacters';
 import { useParties } from '@/hooks/honkai-star-rail/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
@@ -32,6 +32,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     updateCharacterLevel,
     toggleCharacterTraces,
     toggleFavoriteCharacter,
+    updateUseAltPortrait,
     updateLightCone,
     updateLightConeLevel,
     updateLightConeSuperimposition,
@@ -43,6 +44,18 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
   } = useCharacters(session, isAuthLoading);
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
+
+  // Party avatars follow the tracked display-portrait choice (Trailblazer forms);
+  // untracked forms keep the default (Stelle) portrait.
+  const partyCharacters = useMemo(
+    () =>
+      availableCharacters.map((c) => {
+        if (!c.altImageUrl) return c;
+        const tracked = trackedCharacters.find((t) => t.id === c.id);
+        return tracked?.useAltPortrait ? { ...c, imageUrl: c.altImageUrl } : c;
+      }),
+    [availableCharacters, trackedCharacters],
+  );
 
   const filterRoster = useCallback(
     (searchTerm: string, sortBy: 'SCORE' | 'ALPHA') =>
@@ -115,12 +128,13 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           onUpdateLightConeLevel={updateLightConeLevel}
           onUpdateLightConeSuperimposition={updateLightConeSuperimposition}
           onEditLightConePrefs={setEditingConePrefsCharId}
+          onUpdateUseAltPortrait={updateUseAltPortrait}
         />
       ))}
       partiesTab={
         <PartiesTab
           parties={parties}
-          availableCharacters={availableCharacters}
+          availableCharacters={partyCharacters}
           onSaveParty={saveParty}
           onDeleteParty={deleteParty}
           onToggleFavorite={toggleFavoriteParty}

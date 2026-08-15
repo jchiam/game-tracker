@@ -64,6 +64,13 @@ export interface PartyViewConfig<E extends PartyEntity> {
    * game's roster `fuseKeys` for search parity between roster and picker.
    */
   searchKeys?: string[];
+  /**
+   * Entities sharing a non-null group key are mutually exclusive within one
+   * party — the member picker hides an entity while another entity of the same
+   * group is selected (e.g. the HSR Trailblazer path forms). Omit for no
+   * exclusion beyond the exact-duplicate filter.
+   */
+  exclusionGroup?: (entity: E) => string | null;
   /** Resolves the image shown in team slots (builder and card). */
   resolveSlotImage: (entity: E) => string;
   /** Resolves the image shown in the member picker list. */

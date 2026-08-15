@@ -24,6 +24,7 @@ const CHARACTER_COLUMNS: Record<keyof HsrCharacterPatch, string> = {
   lightConeLevel: 'light_cone_level',
   lightConeSuperimposition: 'light_cone_superimposition',
   lightConePreferences: 'light_cone_preferences',
+  useAltPortrait: 'use_alt_portrait',
 };
 
 const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacterPatch>({
@@ -34,18 +35,20 @@ const svc = createRosterPersistence<Character, HsrTrackedCharacter, HsrCharacter
   insertDefaults: {
     level: 1,
     traces_attained: false,
+    use_alt_portrait: false,
     light_cone_id: null,
     light_cone_level: 1,
     light_cone_superimposition: 1,
   },
   select:
-    'id, character_id, level, traces_attained, is_favorited, build_comments, relic_set_id, planar_set_id, light_cone_id, light_cone_level, light_cone_superimposition, light_cone_preferences',
+    'id, character_id, level, traces_attained, use_alt_portrait, is_favorited, build_comments, relic_set_id, planar_set_id, light_cone_id, light_cone_level, light_cone_superimposition, light_cone_preferences',
   fromRow: (row, base) => ({
     ...base,
     dbId: row.id,
     isFavorited: !!row.is_favorited,
     level: row.level,
     tracesAttained: row.traces_attained,
+    useAltPortrait: !!row.use_alt_portrait,
     lightConeId: row.light_cone_id ?? null,
     lightConeLevel: row.light_cone_level ?? 1,
     lightConeSuperimposition: row.light_cone_superimposition ?? 1,
