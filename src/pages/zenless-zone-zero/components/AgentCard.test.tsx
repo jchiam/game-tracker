@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { AgentCard } from './AgentCard';
 import type { ZzzTrackedAgent } from '@/types';
@@ -62,6 +62,16 @@ describe('AgentCard', () => {
     );
   });
 
+  it('renders an unknown rarity code and specialty with the neutral fallback classes', () => {
+    const { container } = render(
+      <AgentCard {...defaultProps} agent={{ ...baseAgent, rarity: 5, specialty: 'NewSpec' }} />,
+    );
+    expect(container.querySelector('.zzz-rarity-unknown')?.textContent).toBe('5');
+    expect(screen.getByText('NewSpec').className).toBe(
+      'game-badge zzz-specialty-badge zzz-specialty-unknown',
+    );
+  });
+
   it('renders level, mindscape, and core skill summary chips', () => {
     render(<AgentCard {...defaultProps} />);
     expect(screen.getByText('Lv 45')).toBeInTheDocument();
@@ -74,10 +84,24 @@ describe('AgentCard', () => {
     expect(screen.getByText('Core —')).toBeInTheDocument();
   });
 
+  it('shows an out-of-range core skill as —', () => {
+    render(<AgentCard {...defaultProps} agent={{ ...baseAgent, coreSkill: 7 }} />);
+    expect(screen.getByText('Core —')).toBeInTheDocument();
+  });
+
   it('updates level via the slider', () => {
     const { container } = render(<AgentCard {...defaultProps} />);
     const slider = container.querySelector('input[type="range"]') as HTMLInputElement;
     expect(slider.max).toBe('60');
+    fireEvent.change(slider, { target: { value: '60' } });
+    expect(defaultProps.onUpdateLevel).toHaveBeenCalledWith('1011', 60);
+  });
+
+  it('calls onRemove from the remove control', async () => {
+    const user = userEvent.setup();
+    render(<AgentCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Remove Agent'));
+    expect(defaultProps.onRemove).toHaveBeenCalledWith('1011', expect.any(Object));
   });
 
   // The edit body is aria-hidden until the edit toggle is clicked.

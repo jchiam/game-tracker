@@ -58,6 +58,14 @@ describe('PartiesTab (ZZZ config wiring)', () => {
     expect(defaultProps.onToggleFavorite).toHaveBeenCalledWith('party-1', true);
   });
 
+  it('resolves picker list images through getZzzAgentAvatarUrl', () => {
+    renderWithProviders(<PartiesTab {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+    fireEvent.click(document.querySelectorAll('.builder-slot')[0]);
+    const pickerImg = document.querySelector('.picker-item img') as HTMLImageElement;
+    expect(pickerImg).toHaveAttribute('src', `avatar:${firstAgent.imageUrl}`);
+  });
+
   it('applies the zzz element slot accent and resolves images through getMugshotUrl', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
     const img = screen.getByAltText(firstAgent.name);
