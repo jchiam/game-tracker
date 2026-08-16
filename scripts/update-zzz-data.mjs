@@ -159,7 +159,15 @@ async function main() {
       mimeType: 'image/webp',
       fetchBuffer: async () => {
         const raw = await downloadImage(`${ENKA_CDN_BASE}${avatar.Image}`);
-        return sharp(raw).resize(256, 256, { fit: 'cover' }).webp().toBuffer();
+        // IconRole art is full-body on a large transparent canvas with margins
+        // that vary per agent — trim the padding first, then crop the square
+        // from the top so heads always survive (a center crop beheads agents
+        // whose art fills the canvas).
+        return sharp(raw)
+          .trim()
+          .resize(256, 256, { fit: 'cover', position: 'top' })
+          .webp()
+          .toBuffer();
       },
     });
     if (result === 'uploaded') imgCount++;
