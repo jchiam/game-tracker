@@ -32,4 +32,4 @@
 ## 6. Verification
 
 - [x] 6.1 `npx openspec validate --all`, `npm run lint`, `npm run format:check`, `npm test`, `npm run build`.
-- [ ] 6.2 Apply migration to live Supabase (Jonathan) and manual verification.
+- [x] 6.2 Apply migration to live Supabase (Jonathan) and manual verification.
