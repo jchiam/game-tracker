@@ -280,6 +280,7 @@ describe('HsrPage', () => {
       'Blade',
       expect.any(String),
       expect.any(Function),
+      expect.any(Array),
     );
   });
 
@@ -378,7 +379,12 @@ describe('HsrPage', () => {
     });
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByTitle(/sorted by build score/i));
-    expect(getFilteredRoster).toHaveBeenCalledWith('', 'ALPHA', expect.any(Function));
+    expect(getFilteredRoster).toHaveBeenCalledWith(
+      '',
+      'ALPHA',
+      expect.any(Function),
+      expect.any(Array),
+    );
   });
 
   // --- AddCharacterModal: adding closes the modal ---
@@ -475,5 +481,108 @@ describe('HsrPage', () => {
     expect(screen.getByText(/no parties configured/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /roster/i }));
     expect(screen.getByText('Acheron')).toBeInTheDocument();
+  });
+
+  // --- Projection stability: order holds mid-edit, re-sorts on ✓ commit ---
+  it('SCORE sort does not reorder mid-edit, reorders on commit', () => {
+    const session = createMockSession();
+    const live = {
+      current: [
+        { ...makeChar('acheron', 'Acheron'), level: 10 },
+        { ...makeChar('blade', 'Blade'), level: 20 },
+      ],
+    };
+    // Stands in for the SCORE comparator — only basis-vs-live ordering is under
+    // test, so level doubles as the score. Identity must stay stable across
+    // rerenders (a new identity is the refresh-all signal).
+    const filter = vi.fn(
+      (term: string, _sortBy: string, _scoreFor: unknown, entities?: HsrTrackedCharacter[]) => {
+        let list = entities ?? live.current;
+        if (term.trim()) list = list.filter((c) => c.name.includes(term));
+        return [...list].sort((a, b) => b.level - a.level);
+      },
+    );
+    const mock = () =>
+      vi.mocked(useCharacters).mockReturnValue({
+        ...defaultCharactersHook,
+        trackedCharacters: live.current,
+        getFilteredRoster: filter,
+      });
+    mock();
+    const { rerender, container } = renderWithProviders(
+      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    const names = () =>
+      [...container.querySelectorAll('.game-card-name')].map((n) => n.textContent);
+    expect(names()).toEqual(['Blade', 'Acheron']);
+
+    fireEvent.click(screen.getAllByTitle('Edit')[1]); // Acheron's card
+    live.current = [
+      { ...makeChar('acheron', 'Acheron'), level: 50 },
+      { ...makeChar('blade', 'Blade'), level: 20 },
+    ];
+    mock();
+    rerender(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(names()).toEqual(['Blade', 'Acheron']); // order held mid-edit
+
+    fireEvent.click(screen.getByTitle('Done editing'));
+    expect(names()).toEqual(['Acheron', 'Blade']); // released: re-sorted
+  });
+
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const session = createMockSession();
+    const toggleFavoriteCharacter = vi.fn();
+    const chars = [makeChar('acheron', 'Acheron')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+      toggleFavoriteCharacter,
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Favorite Character'));
+    expect(toggleFavoriteCharacter).toHaveBeenCalledWith('acheron', true);
+  });
+
+  it('wires relic save, remove, and build-preference edits from the relic modal', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    const saveRelicData = vi.fn();
+    const removeRelicData = vi.fn();
+    const saveBuildPreferences = vi.fn();
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+      availableRelicSets: [
+        { id: '101', name: 'Musketeer', icon: '/101.webp' },
+        { id: '301', name: 'Space Station', icon: '/301.webp' },
+      ],
+      saveRelicData,
+      removeRelicData,
+      saveBuildPreferences,
+    });
+    const { container } = renderWithProviders(
+      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/^Head/));
+
+    const headSet = container.querySelector('select[name="relic-head-set"]')!;
+    fireEvent.change(headSet, { target: { value: '101' } });
+    expect(saveRelicData).toHaveBeenCalledWith(
+      { charId: 'acheron', slot: 'head' },
+      expect.objectContaining({ setId: '101' }),
+    );
+    fireEvent.change(headSet, { target: { value: '' } });
+    expect(removeRelicData).toHaveBeenCalledWith({ charId: 'acheron', slot: 'head' });
+
+    fireEvent.click(screen.getByRole('button', { name: /preferences/i }));
+    fireEvent.change(container.querySelector('select[name="pref-relic-set"]')!, {
+      target: { value: '101' },
+    });
+    expect(saveBuildPreferences).toHaveBeenCalledWith(
+      'acheron',
+      expect.objectContaining({ relicSetId: '101' }),
+    );
   });
 });

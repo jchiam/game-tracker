@@ -47,6 +47,24 @@ interface GameCardShellProps {
    * measurement below picks it up with no separate path.
    */
   reserveSummaryRows?: boolean;
+  /**
+   * Fired when the edit toggle collapses edit mode (✓) — the card's release
+   * point for projection stability. Pages wire it to
+   * `projection.refreshBasis(id)`; the entity id stays at the call site so the
+   * shell remains entity-agnostic.
+   */
+  onEditCommit?: () => void;
+  /**
+   * Ghost-tag copy when the card is held — its live data no longer matches
+   * the active filter its basis snapshot still satisfies. Non-null dims the
+   * card and renders the tag; null/omitted renders a normal card. Pages feed
+   * `projection.heldReason(id)`.
+   */
+  heldReason?: string | null;
+  /** Plays the exit animation — the card was released while no longer matching. */
+  isExiting?: boolean;
+  /** Fired when the exit animation completes; pages feed `projection.completeExit(id)`. */
+  onExitEnd?: () => void;
 }
 
 /**
@@ -70,6 +88,10 @@ export function GameCardShell({
   editBody,
   reserveSummaryRows = false,
   temperScore,
+  onEditCommit,
+  heldReason = null,
+  isExiting = false,
+  onExitEnd,
 }: GameCardShellProps) {
   const [imgLoading, setImgLoading] = useState(true);
   const [imgError, setImgError] = useState(false);
@@ -90,6 +112,8 @@ export function GameCardShell({
   const editInnerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const card = cardRef.current;
+    /* v8 ignore next -- defensive: the ref is attached to the always-rendered
+       card div before layout effects run */
     if (!card) return;
     if (summaryInnerRef.current) {
       card.style.setProperty(
@@ -117,10 +141,23 @@ export function GameCardShell({
     <div
       className={`game-card ${isEditing ? 'is-editing' : ''} ${
         reserveSummaryRows ? 'reserve-summary-rows' : ''
-      } ${hasTemperEdge ? 'has-temper-edge' : ''}`}
+      } ${hasTemperEdge ? 'has-temper-edge' : ''} ${heldReason ? 'is-held' : ''} ${
+        isExiting ? 'is-exiting' : ''
+      }`}
       style={temperStyle}
       ref={cardRef}
+      onAnimationEnd={
+        /* v8 ignore next 5 -- jsdom: React's animation-event mapping never
+           delivers animationend under jsdom, so this handler is only reachable
+           in a real browser; eviction is covered via the exit fallback timer */
+        isExiting
+          ? (e) => {
+              if (e.animationName === 'card-exit') onExitEnd?.();
+            }
+          : undefined
+      }
     >
+      {heldReason && <div className="game-card-held-tag">{heldReason}</div>}
       <div className="game-card-header">
         <div className="game-card-image-wrapper">
           {imgLoading && !imgError && (
@@ -166,7 +203,10 @@ export function GameCardShell({
               {headerExtra}
               <button
                 className={`edit-toggle-btn ${isEditing ? 'active' : ''}`}
-                onClick={() => setIsEditing((v) => !v)}
+                onClick={() => {
+                  setIsEditing((v) => !v);
+                  if (isEditing) onEditCommit?.();
+                }}
                 title={isEditing ? 'Done editing' : 'Edit'}
               >
                 {isEditing ? '✓' : '✎'}

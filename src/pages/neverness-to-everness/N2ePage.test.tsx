@@ -238,7 +238,7 @@ describe('N2ePage', () => {
     fireEvent.change(screen.getByPlaceholderText(/search by name/i), {
       target: { value: 'Jade' },
     });
-    expect(getFilteredRoster).toHaveBeenCalledWith('Jade', expect.any(String));
+    expect(getFilteredRoster).toHaveBeenCalledWith('Jade', expect.any(String), expect.any(Array));
   });
 
   it('Roster tab button has active class by default', () => {
@@ -343,5 +343,65 @@ describe('N2ePage', () => {
     expect(screen.getByText(/no lineups configured/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /roster/i }));
     expect(screen.getByText('Baicang')).toBeInTheDocument();
+  });
+
+  // --- Projection stability: order holds mid-edit, re-sorts on ✓ commit ---
+  it('LEVEL sort does not reorder mid-edit, reorders on commit', () => {
+    const session = createMockSession();
+    const live = {
+      current: [
+        { ...makeChar('jade', 'Jade'), level: 10 },
+        { ...makeChar('baicang', 'Baicang'), level: 20 },
+      ],
+    };
+    // Identity must stay stable across rerenders (new identity = refresh-all)
+    const filter = vi.fn((term: string, sortBy: string, entities?: N2ETrackedCharacter[]) => {
+      let list = entities ?? live.current;
+      if (term.trim()) list = list.filter((c) => c.name.includes(term));
+      return [...list].sort(
+        sortBy === 'LEVEL' ? (a, b) => b.level - a.level : (a, b) => a.name.localeCompare(b.name),
+      );
+    });
+    const mock = () =>
+      vi.mocked(useCharacters).mockReturnValue({
+        ...defaultCharactersHook,
+        trackedCharacters: live.current,
+        getFilteredRoster: filter,
+      });
+    mock();
+    const { rerender, container } = renderWithProviders(
+      <N2ePage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/sorted alphabetically/i)); // LEVEL sort
+    const names = () =>
+      [...container.querySelectorAll('.game-card-name')].map((n) => n.textContent);
+    expect(names()).toEqual(['Baicang', 'Jade']);
+
+    fireEvent.click(screen.getAllByTitle('Edit')[1]); // Jade's card
+    live.current = [
+      { ...makeChar('jade', 'Jade'), level: 60 },
+      { ...makeChar('baicang', 'Baicang'), level: 20 },
+    ];
+    mock();
+    rerender(<N2ePage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(names()).toEqual(['Baicang', 'Jade']); // order held mid-edit
+
+    fireEvent.click(screen.getByTitle('Done editing'));
+    expect(names()).toEqual(['Jade', 'Baicang']); // released: re-sorted
+  });
+
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const session = createMockSession();
+    const toggleFavoriteCharacter = vi.fn();
+    const chars = [makeChar('jade', 'Jade')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+      toggleFavoriteCharacter,
+    });
+    renderWithProviders(<N2ePage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Favorite Character'));
+    expect(toggleFavoriteCharacter).toHaveBeenCalledWith('jade', true);
   });
 });

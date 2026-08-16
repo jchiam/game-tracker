@@ -38,17 +38,27 @@ export function ArknightsEndfieldPage({
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
-  const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
-    useRosterView({
-      sortModes: [
-        { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
-        { key: 'LEVEL', label: 'Lv', described: 'by Level' },
-      ],
-      searchPlaceholder: 'Search by name, class, element, or weapon...',
-      addTitle: 'Add Operator',
-      addDisabled: isLoadError,
-      filterRoster: getFilteredRoster,
-    });
+  const {
+    view,
+    setView,
+    filteredRoster,
+    isAddModalOpen,
+    closeAddModal,
+    search,
+    sort,
+    add,
+    projection,
+  } = useRosterView({
+    sortModes: [
+      { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+      { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+    ],
+    searchPlaceholder: 'Search by name, class, element, or weapon...',
+    addTitle: 'Add Operator',
+    addDisabled: isLoadError,
+    filterRoster: getFilteredRoster,
+    trackedEntities: trackedOperators,
+  });
 
   return (
     <RosterPageLayout
@@ -80,7 +90,12 @@ export function ArknightsEndfieldPage({
           onUpdateSkillsMaxed={updateSkillsMaxed}
           onUpdateWeapon={updateWeapon}
           onUpdateWeaponPreferences={updateWeaponPreferences}
-          onToggleFavorite={toggleFavorite}
+          onToggleFavorite={(id, value) => {
+            // Favorite is a completed intent — release in the same handler
+            toggleFavorite(id, value);
+            projection.refreshBasis(id);
+          }}
+          onEditCommit={() => projection.refreshBasis(operator.id)}
         />
       ))}
       partiesTab={

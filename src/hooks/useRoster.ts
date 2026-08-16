@@ -193,12 +193,23 @@ export function useRoster<
    * Fuse search (when a term is present) followed by favorited-first ordering
    * with an alphabetical tiebreak. A per-game `secondaryCompare` slots between
    * the favorited check and the alpha fallback to express SCORE / LEVEL sorts.
+   *
+   * Runs over `entities` when given (basis-snapshot projection — see
+   * `useRosterView`), otherwise the live roster via `trackedRef`. Reading the
+   * ref instead of state keeps this callback referentially stable across
+   * edits — load-bearing: a per-edit identity change would cascade into the
+   * page-level filter function and refresh every projection basis, silently
+   * defeating deferred eviction.
    */
   const filterRoster = useCallback(
-    (searchTerm: string, secondaryCompare?: (a: TTracked, b: TTracked) => number) => {
-      let result = trackedEntities;
+    (
+      searchTerm: string,
+      secondaryCompare?: (a: TTracked, b: TTracked) => number,
+      entities?: TTracked[],
+    ) => {
+      let result = entities ?? trackedRef.current;
       if (searchTerm.trim()) {
-        const fuse = new Fuse(trackedEntities, { keys: config.fuseKeys, threshold: 0.3 });
+        const fuse = new Fuse(result, { keys: config.fuseKeys, threshold: 0.3 });
         result = fuse.search(searchTerm).map((r) => r.item);
       }
       return [...result].sort((a, b) => {
@@ -212,7 +223,7 @@ export function useRoster<
       });
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [trackedEntities],
+    [],
   );
 
   const retryLoad = () => {

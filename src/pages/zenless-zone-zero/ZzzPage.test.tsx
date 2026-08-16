@@ -218,7 +218,12 @@ describe('ZzzPage', () => {
       getFilteredRoster,
     });
     renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
-    expect(getFilteredRoster).toHaveBeenCalledWith('', 'ALPHA', expect.any(Function));
+    expect(getFilteredRoster).toHaveBeenCalledWith(
+      '',
+      'ALPHA',
+      expect.any(Function),
+      expect.any(Array),
+    );
   });
 
   it('opens the disc editor anchored to the clicked slot and wires the hook actions', () => {
@@ -321,5 +326,67 @@ describe('ZzzPage', () => {
     await waitFor(() => {
       expect(screen.queryByRole('heading', { name: /add agent/i })).not.toBeInTheDocument();
     });
+  });
+
+  // --- Projection stability: order holds mid-edit, re-sorts on ✓ commit ---
+  it('LEVEL sort does not reorder mid-edit, reorders on commit', () => {
+    const session = createMockSession();
+    const live = {
+      current: [
+        { ...makeAgent('ellen', 'Ellen'), level: 10 },
+        { ...makeAgent('lycaon', 'Lycaon'), level: 20 },
+      ],
+    };
+    // Identity must stay stable across rerenders (new identity = refresh-all)
+    const filter = vi.fn(
+      (term: string, sortBy: string, _scoreFor: unknown, entities?: ZzzTrackedAgent[]) => {
+        let list = entities ?? live.current;
+        if (term.trim()) list = list.filter((a) => a.name.includes(term));
+        return [...list].sort(
+          sortBy === 'LEVEL' ? (a, b) => b.level - a.level : (a, b) => a.name.localeCompare(b.name),
+        );
+      },
+    );
+    const mock = () =>
+      vi.mocked(useAgents).mockReturnValue({
+        ...defaultAgentsHook,
+        trackedAgents: live.current,
+        getFilteredRoster: filter,
+      });
+    mock();
+    const { rerender, container } = renderWithProviders(
+      <ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/sorted alphabetically/i)); // LEVEL sort
+    const names = () =>
+      [...container.querySelectorAll('.game-card-name')].map((n) => n.textContent);
+    expect(names()).toEqual(['Lycaon', 'Ellen']);
+
+    fireEvent.click(screen.getAllByTitle('Edit')[1]); // Ellen's card
+    live.current = [
+      { ...makeAgent('ellen', 'Ellen'), level: 55 },
+      { ...makeAgent('lycaon', 'Lycaon'), level: 20 },
+    ];
+    mock();
+    rerender(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(names()).toEqual(['Lycaon', 'Ellen']); // order held mid-edit
+
+    fireEvent.click(screen.getByTitle('Done editing'));
+    expect(names()).toEqual(['Ellen', 'Lycaon']); // released: re-sorted
+  });
+
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const session = createMockSession();
+    const toggleFavorite = vi.fn();
+    const agents = [makeAgent('ellen', 'Ellen')];
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      trackedAgents: agents,
+      getFilteredRoster: vi.fn().mockReturnValue(agents),
+      toggleFavorite,
+    });
+    renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Favorite Agent'));
+    expect(toggleFavorite).toHaveBeenCalledWith('ellen', true);
   });
 });

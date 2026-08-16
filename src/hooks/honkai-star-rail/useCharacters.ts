@@ -118,10 +118,16 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   };
 
   const getFilteredRoster = useCallback(
-    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', scoreFor: (c: HsrTrackedCharacter) => number) =>
+    (
+      searchTerm: string,
+      sortBy: 'SCORE' | 'ALPHA',
+      scoreFor: (c: HsrTrackedCharacter) => number,
+      entities?: HsrTrackedCharacter[],
+    ) =>
       filterRoster(
         searchTerm,
         sortBy === 'SCORE' ? (a, b) => scoreFor(b) - scoreFor(a) : undefined,
+        entities,
       ),
     [filterRoster],
   );

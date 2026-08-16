@@ -96,6 +96,20 @@
   }
 }
 
+/* Roster-card eviction exit — a released held card fades and shrinks out
+   (Projection Stability). The reduced-motion kill switch below collapses it
+   to a single frame; the hook's animationend/fallback still removes the card. */
+@keyframes card-exit {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+}
+
 /* Confirm checkbox warning pulse */
 @keyframes pulse-warn {
   from {

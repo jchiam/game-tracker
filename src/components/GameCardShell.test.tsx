@@ -138,6 +138,15 @@ describe('GameCardShell', () => {
     expect(body).not.toHaveClass('is-editing');
   });
 
+  it('fires onEditCommit only when edit mode collapses', () => {
+    const onEditCommit = vi.fn();
+    render(<GameCardShell {...defaultProps} onEditCommit={onEditCommit} />);
+    fireEvent.click(screen.getByTitle('Edit'));
+    expect(onEditCommit).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByTitle('Done editing'));
+    expect(onEditCommit).toHaveBeenCalledTimes(1);
+  });
+
   // --- Fixed-height summary reserve (opt-in) ---
 
   it('does not reserve summary rows by default', () => {

@@ -25,6 +25,8 @@ interface OperatorCardProps {
   onUpdateWeapon: (id: string, patch: AeWeaponPatch) => void;
   onUpdateWeaponPreferences: (id: string, preferences: string[]) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
+  /** Projection-stability release point — fired on the ✓ edit collapse. */
+  onEditCommit?: () => void;
 }
 
 export function OperatorCard({
@@ -36,6 +38,7 @@ export function OperatorCard({
   onUpdateWeapon,
   onUpdateWeaponPreferences,
   onToggleFavorite,
+  onEditCommit,
 }: OperatorCardProps) {
   // Weapons equippable on this operator are filtered by class (exact type match)
   const equippableWeapons = sortWeaponsForDisplay(
@@ -77,6 +80,7 @@ export function OperatorCard({
       isFavorited={operator.isFavorited}
       onToggleFavorite={(value) => onToggleFavorite(operator.id, value)}
       onRemove={(e) => onRemove(operator.id, e)}
+      onEditCommit={onEditCommit}
       badges={
         <>
           <GameBadge

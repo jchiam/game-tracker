@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, act } from '@testing-library/react';
 import { Reverse1999Page } from '@/pages/reverse1999/Reverse1999Page';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import type { R1999TrackedArcanist } from '@/types';
@@ -226,7 +226,12 @@ describe('Reverse1999Page', () => {
     fireEvent.change(screen.getByPlaceholderText(/search by name, afflatus/i), {
       target: { value: 'Vertin' },
     });
-    expect(getFilteredRoster).toHaveBeenCalledWith('Vertin', expect.any(String), undefined);
+    expect(getFilteredRoster).toHaveBeenCalledWith(
+      'Vertin',
+      expect.any(String),
+      undefined,
+      expect.any(Array),
+    );
   });
 
   // --- Search / sort controls visibility ---
@@ -303,7 +308,7 @@ describe('Reverse1999Page', () => {
       <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
     fireEvent.click(screen.getByTitle(/sorted alphabetically/i));
-    expect(getFilteredRoster).toHaveBeenCalledWith('', 'LEVEL', undefined);
+    expect(getFilteredRoster).toHaveBeenCalledWith('', 'LEVEL', undefined, expect.any(Array));
   });
 
   // --- AddArcanistModal: adding closes the modal ---
@@ -390,7 +395,7 @@ describe('Reverse1999Page', () => {
       <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
     // Off: predicate arg is undefined
-    expect(getFilteredRoster).toHaveBeenLastCalledWith('', 'ALPHA', undefined);
+    expect(getFilteredRoster).toHaveBeenLastCalledWith('', 'ALPHA', undefined, expect.any(Array));
 
     fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
 
@@ -486,7 +491,7 @@ describe('Reverse1999Page', () => {
     renderWithProviders(
       <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    expect(getFilteredRoster).toHaveBeenLastCalledWith('', 'ALPHA', undefined);
+    expect(getFilteredRoster).toHaveBeenLastCalledWith('', 'ALPHA', undefined, expect.any(Array));
 
     fireEvent.click(screen.getByRole('button', { name: /amplifying/i }));
 
@@ -608,5 +613,185 @@ describe('Reverse1999Page', () => {
     fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
     fireEvent.click(screen.getByRole('button', { name: /amplifying/i }));
     expect(screen.getByText(/no arcanists match the active filters/i)).toBeInTheDocument();
+  });
+
+  // --- Projection stability (deferred eviction / reorder) ---
+
+  /** A filter implementation honouring predicate, entities override, and LEVEL sort. */
+  function projectionFilter(live: { current: R1999TrackedArcanist[] }) {
+    return vi.fn(
+      (
+        term: string,
+        sortBy: string,
+        predicate?: (a: R1999TrackedArcanist) => boolean,
+        entities?: R1999TrackedArcanist[],
+      ) => {
+        let list = entities ?? live.current;
+        if (predicate) list = list.filter(predicate);
+        if (term.trim()) list = list.filter((a) => a.name.includes(term));
+        return [...list].sort(
+          sortBy === 'LEVEL' ? (a, b) => b.level - a.level : (a, b) => a.name.localeCompare(b.name),
+        );
+      },
+    );
+  }
+
+  /**
+   * `getFilteredRoster` identity must stay stable across edits (a new identity
+   * is the chip-toggle signal and refreshes all bases) — one filter per test.
+   */
+  function mockRoster(
+    live: { current: R1999TrackedArcanist[] },
+    filter: ReturnType<typeof projectionFilter>,
+  ) {
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: live.current,
+      getFilteredRoster: filter,
+    });
+  }
+
+  it('holds a card that stops matching the resonance gate until edit commit', () => {
+    const session = createMockSession();
+    const live = { current: [{ ...makeArcanist('r1', 'Regulus'), resonanceLevel: 5 }] };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
+    expect(screen.getByText('Regulus')).toBeInTheDocument();
+
+    // Expand edit mode, then "max resonance": mutate live state and rerender
+    fireEvent.click(screen.getByTitle('Edit'));
+    live.current = [{ ...makeArcanist('r1', 'Regulus'), resonanceLevel: 15 }];
+    mockRoster(live, filter);
+    rerender(<Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    // Card is held, not evicted — dimmed with a ghost tag
+    expect(screen.getByText('Regulus')).toBeInTheDocument();
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches 💠 Resonating/)).toBeInTheDocument();
+
+    // ✓ commit releases: the card plays its exit animation
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(screen.getByTitle('Done editing'));
+      expect(container.querySelector('.game-card.is-exiting')).not.toBeNull();
+
+      // jsdom can't deliver React's (vendor-prefix-mapped) animationend, so
+      // the hook's fallback timer commits the eviction here
+      act(() => {
+        vi.advanceTimersByTime(700);
+      });
+      expect(screen.queryByText('Regulus')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('chip toggle evicts a held card immediately', () => {
+    const session = createMockSession();
+    const live = { current: [{ ...makeArcanist('r1', 'Regulus'), resonanceLevel: 5 }] };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender } = renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
+    live.current = [{ ...makeArcanist('r1', 'Regulus'), resonanceLevel: 15 }];
+    mockRoster(live, filter);
+    rerender(<Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(screen.getByText('Regulus')).toBeInTheDocument(); // held
+
+    // Toggling the chip off and on refreshes all bases — instant eviction
+    fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
+    expect(screen.getByText('Regulus')).toBeInTheDocument(); // gate off: normal member
+    fireEvent.click(screen.getByRole('button', { name: /resonating/i }));
+    expect(screen.queryByText('Regulus')).not.toBeInTheDocument();
+  });
+
+  it('LEVEL sort does not reorder mid-edit, reorders on commit', () => {
+    const session = createMockSession();
+    const live = {
+      current: [
+        { ...makeArcanist('r1', 'Regulus'), level: 10 },
+        { ...makeArcanist('r2', 'Vertin'), level: 20 },
+      ],
+    };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/sorted alphabetically/i)); // LEVEL sort
+    const names = () =>
+      [...container.querySelectorAll('.game-card-name')].map((n) => n.textContent);
+    expect(names()).toEqual(['Vertin', 'Regulus']);
+
+    // Edit Regulus's level above Vertin's
+    fireEvent.click(screen.getAllByTitle('Edit')[1]); // Regulus card (second)
+    live.current = [
+      { ...makeArcanist('r1', 'Regulus'), level: 50 },
+      { ...makeArcanist('r2', 'Vertin'), level: 20 },
+    ];
+    mockRoster(live, filter);
+    rerender(<Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(names()).toEqual(['Vertin', 'Regulus']); // order held
+
+    fireEvent.click(screen.getByTitle('Done editing'));
+    expect(names()).toEqual(['Regulus', 'Vertin']); // released: re-sorted
+  });
+
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const session = createMockSession();
+    const toggleFavoriteArcanist = vi.fn();
+    const live = { current: [makeArcanist('r1', 'Regulus')] };
+    vi.mocked(useArcanists).mockReturnValue({
+      ...defaultArcanistsHook,
+      trackedArcanists: live.current,
+      getFilteredRoster: projectionFilter(live),
+      toggleFavoriteArcanist,
+    });
+    renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle('Favorite Arcanist'));
+    expect(toggleFavoriteArcanist).toHaveBeenCalledWith('r1', true);
+  });
+
+  it('holds a card that stops matching the gluttony gate with the 🍽️ ghost tag', () => {
+    const session = createMockSession();
+    const live = {
+      current: [
+        {
+          ...makeArcanist('r1', 'Regulus'),
+          psychubeName: 'Luxurious Leisure',
+          psychubeAmplification: 3,
+        },
+      ],
+    };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /amplifying/i }));
+    expect(screen.getByText('Regulus')).toBeInTheDocument();
+
+    // "Max amplification" mid-edit: live data stops matching
+    fireEvent.click(screen.getByTitle('Edit'));
+    live.current = [
+      {
+        ...makeArcanist('r1', 'Regulus'),
+        psychubeName: 'Luxurious Leisure',
+        psychubeAmplification: 5,
+      },
+    ];
+    mockRoster(live, filter);
+    rerender(<Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches 🍽️ Amplifying/)).toBeInTheDocument();
   });
 });

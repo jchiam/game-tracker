@@ -71,6 +71,14 @@ interface ThiefCardProps {
   onUpdateWeaponLevel: (id: string, value: number) => void;
   onUpdateWeaponForge: (id: string, value: number) => void;
   onOpenRevelations: (id: string, slot: RevelationSlot) => void;
+  /** Projection-stability release point — fired on the ✓ edit collapse. */
+  onEditCommit?: () => void;
+  /** Ghost-tag copy while the card is held; null renders a normal card. */
+  heldReason?: string | null;
+  /** Plays the exit animation after an evicting release. */
+  isExiting?: boolean;
+  /** Commits the eviction when the exit animation completes. */
+  onExitEnd?: () => void;
 }
 
 export function ThiefCard({
@@ -85,6 +93,10 @@ export function ThiefCard({
   onUpdateWeaponLevel,
   onUpdateWeaponForge,
   onOpenRevelations,
+  onEditCommit,
+  heldReason,
+  isExiting,
+  onExitEnd,
 }: ThiefCardProps) {
   // Investment chips + slider share the cross-game rust→teal gradient
   const levelPs = getProgressStyle(thief.level, 1, 80);
@@ -144,6 +156,10 @@ export function ThiefCard({
       isFavorited={thief.isFavorited}
       onToggleFavorite={(value) => onToggleFavorite(thief.id, value)}
       onRemove={(e) => onRemove(thief.id, e)}
+      onEditCommit={onEditCommit}
+      heldReason={heldReason}
+      isExiting={isExiting}
+      onExitEnd={onExitEnd}
       badges={
         <>
           <GameBadge label={thief.role} variant="p5x-role" modifier={toModifier(thief.role)} />

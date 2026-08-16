@@ -64,10 +64,12 @@ export function useArcanists(session: Session | null, isAuthLoading: boolean) {
       searchTerm: string,
       sortBy: 'ALPHA' | 'LEVEL',
       predicate?: (a: R1999TrackedArcanist) => boolean,
+      entities?: R1999TrackedArcanist[],
     ) => {
       const sorted = filterRoster(
         searchTerm,
         sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined,
+        entities,
       );
       return predicate ? sorted.filter(predicate) : sorted;
     },
