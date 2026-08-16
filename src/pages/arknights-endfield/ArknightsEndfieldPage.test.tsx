@@ -392,4 +392,21 @@ describe('ArknightsEndfieldPage', () => {
     fireEvent.click(screen.getByTitle('Done editing'));
     expect(names()).toEqual(['Ember', 'Perlica']); // released: re-sorted
   });
+
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const session = createMockSession();
+    const toggleFavorite = vi.fn();
+    const operators = [makeOperator('ember', 'Ember')];
+    vi.mocked(useOperators).mockReturnValue({
+      ...defaultOperatorsHook,
+      trackedOperators: operators,
+      getFilteredRoster: vi.fn().mockReturnValue(operators),
+      toggleFavorite,
+    });
+    renderWithProviders(
+      <ArknightsEndfieldPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle('Favorite Operator'));
+    expect(toggleFavorite).toHaveBeenCalledWith('ember', true);
+  });
 });

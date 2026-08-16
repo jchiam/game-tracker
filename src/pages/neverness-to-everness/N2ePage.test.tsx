@@ -389,4 +389,19 @@ describe('N2ePage', () => {
     fireEvent.click(screen.getByTitle('Done editing'));
     expect(names()).toEqual(['Jade', 'Baicang']); // released: re-sorted
   });
+
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const session = createMockSession();
+    const toggleFavoriteCharacter = vi.fn();
+    const chars = [makeChar('jade', 'Jade')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+      toggleFavoriteCharacter,
+    });
+    renderWithProviders(<N2ePage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Favorite Character'));
+    expect(toggleFavoriteCharacter).toHaveBeenCalledWith('jade', true);
+  });
 });

@@ -376,4 +376,118 @@ describe('P5xPage', () => {
     fireEvent.click(screen.getByTitle('Done editing'));
     expect(names()).toEqual(['Ann Takamaki', 'Ren Amamiya']); // released: re-sorted
   });
+
+  it('holds a card that stops matching the weapon gate with the ⚔ ghost tag', () => {
+    const session = createMockSession();
+    const live = { current: [{ ...makeThief('ann', 'Ann Takamaki'), weaponRarity: 4 }] };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '⚔ <5★' }));
+    expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
+
+    // "Upgrade to a 5★ weapon" mid-edit: live data stops matching
+    fireEvent.click(screen.getByTitle('Edit'));
+    live.current = [{ ...makeThief('ann', 'Ann Takamaki'), weaponRarity: 5 }];
+    mockRoster(live, filter);
+    rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches ⚔ <5★/)).toBeInTheDocument();
+  });
+
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const session = createMockSession();
+    const toggleFavorite = vi.fn();
+    const live = { current: [makeThief('ann', 'Ann Takamaki')] };
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: live.current,
+      getFilteredRoster: projectionFilter(live),
+      toggleFavorite,
+    });
+    renderWithProviders(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Favorite Phantom Thief'));
+    expect(toggleFavorite).toHaveBeenCalledWith('ann', true);
+  });
+
+  it('opens the revelation editor from a slot and closing it releases the card', () => {
+    const session = createMockSession();
+    const live = { current: [makeThief('ann', 'Ann Takamaki')] };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    renderWithProviders(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Sun'));
+    expect(screen.getByText('Revelations — Ann Takamaki')).toBeInTheDocument();
+    fireEvent.click(document.querySelector('.close-btn')!);
+    expect(screen.queryByText('Revelations — Ann Takamaki')).not.toBeInTheDocument();
+    // Modal close is a release point — the card stays a normal member
+    expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
+  });
+
+  it('wires revelation slot and preference edits from the revelation modal', () => {
+    const session = createMockSession();
+    const updateRevelationSlot = vi.fn();
+    const updateRevelationPreferences = vi.fn();
+    const live = { current: [makeThief('ann', 'Ann Takamaki')] };
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: live.current,
+      getFilteredRoster: projectionFilter(live),
+      updateRevelationSlot,
+      updateRevelationPreferences,
+    });
+    const { container } = renderWithProviders(
+      <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle('Sun'));
+
+    const setSelect = container.querySelector('select[name="rev-sun-set"]') as HTMLSelectElement;
+    const firstSet = setSelect.options[1].value;
+    fireEvent.change(setSelect, { target: { value: firstSet } });
+    expect(updateRevelationSlot).toHaveBeenCalledWith(
+      'ann',
+      'sun',
+      expect.objectContaining({ setId: firstSet }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /preferences/i }));
+    const spaceSelect = container.querySelector(
+      'select[name="rev-pref-space"]',
+    ) as HTMLSelectElement;
+    const firstSpace = spaceSelect.options[1].value;
+    fireEvent.change(spaceSelect, { target: { value: firstSpace } });
+    expect(updateRevelationPreferences).toHaveBeenCalledWith(
+      'ann',
+      expect.objectContaining({ spaceSetId: firstSpace }),
+    );
+  });
+
+  it('closes the add modal after a thief is added', () => {
+    const session = createMockSession();
+    const addThief = vi.fn();
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      availableThieves: [
+        {
+          id: 'ann-takamaki',
+          name: 'Ann Takamaki',
+          codename: 'Panther',
+          personaName: 'Carmen',
+          rarity: 5,
+          role: 'Multi-target',
+          element: 'Fire',
+          imageUrl: '/ann.webp',
+        },
+      ],
+      addThief,
+    });
+    renderWithProviders(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Add Phantom Thief'));
+    fireEvent.click(screen.getByText('Ann Takamaki'));
+    expect(addThief).toHaveBeenCalled();
+    expect(screen.queryByRole('heading', { name: /add phantom thief/i })).not.toBeInTheDocument();
+  });
 });

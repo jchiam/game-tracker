@@ -409,6 +409,51 @@ describe('CharacterCard', () => {
     expect(screen.getByRole('heading', { level: 2 })).toBeInTheDocument();
   });
 
+  it('wires cartridge equip and preference edits from the cartridge modal', () => {
+    const onUpdateCartridge = vi.fn();
+    const onSaveCartridgePreferences = vi.fn();
+    const char = makeChar();
+    const { container } = render(
+      <CharacterCard
+        character={char}
+        {...defaultProps}
+        onUpdateCartridge={onUpdateCartridge}
+        onSaveCartridgePreferences={onSaveCartridgePreferences}
+      />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(screen.getByText('+ Equip Cartridge'));
+
+    // Two-step picker: name stages locally, choosing a rarity persists
+    const nameSelect = container.querySelector(
+      'select[name="cartridge-name"]',
+    ) as HTMLSelectElement;
+    fireEvent.change(nameSelect, { target: { value: nameSelect.options[1].value } });
+    fireEvent.click(container.querySelector('.rarity-btn-row button')!);
+    expect(onUpdateCartridge).toHaveBeenCalledWith(
+      char.id,
+      expect.objectContaining({ cartridgeRarity: expect.any(String) }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: /preferences/i }));
+    const prefSelect = container.querySelector(
+      'select[name="pref-cartridge-name"]',
+    ) as HTMLSelectElement;
+    fireEvent.change(prefSelect, { target: { value: prefSelect.options[1].value } });
+    expect(onSaveCartridgePreferences).toHaveBeenCalledWith(char.id, expect.any(Object));
+  });
+
+  it('closing CartridgeEditorModal fires onEditCommit (release point)', () => {
+    const onEditCommit = vi.fn();
+    render(<CharacterCard character={makeChar()} {...defaultProps} onEditCommit={onEditCommit} />);
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(screen.getByText('+ Equip Cartridge'));
+    onEditCommit.mockClear(); // ignore any commit from toggling edit mode
+    fireEvent.click(document.querySelector('.close-btn')!);
+    expect(screen.queryByRole('heading', { level: 2 })).not.toBeInTheDocument();
+    expect(onEditCommit).toHaveBeenCalledTimes(1);
+  });
+
   // --- Cartridge score badge ---
 
   it('does not show cartridge score badge when no preferences set', () => {

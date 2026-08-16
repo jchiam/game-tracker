@@ -528,4 +528,61 @@ describe('HsrPage', () => {
     fireEvent.click(screen.getByTitle('Done editing'));
     expect(names()).toEqual(['Acheron', 'Blade']); // released: re-sorted
   });
+
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const session = createMockSession();
+    const toggleFavoriteCharacter = vi.fn();
+    const chars = [makeChar('acheron', 'Acheron')];
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+      toggleFavoriteCharacter,
+    });
+    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Favorite Character'));
+    expect(toggleFavoriteCharacter).toHaveBeenCalledWith('acheron', true);
+  });
+
+  it('wires relic save, remove, and build-preference edits from the relic modal', () => {
+    const session = createMockSession();
+    const chars = [makeChar('acheron', 'Acheron')];
+    const saveRelicData = vi.fn();
+    const removeRelicData = vi.fn();
+    const saveBuildPreferences = vi.fn();
+    vi.mocked(useCharacters).mockReturnValue({
+      ...defaultCharactersHook,
+      trackedCharacters: chars,
+      getFilteredRoster: vi.fn().mockReturnValue(chars),
+      availableRelicSets: [
+        { id: '101', name: 'Musketeer', icon: '/101.webp' },
+        { id: '301', name: 'Space Station', icon: '/301.webp' },
+      ],
+      saveRelicData,
+      removeRelicData,
+      saveBuildPreferences,
+    });
+    const { container } = renderWithProviders(
+      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/^Head/));
+
+    const headSet = container.querySelector('select[name="relic-head-set"]')!;
+    fireEvent.change(headSet, { target: { value: '101' } });
+    expect(saveRelicData).toHaveBeenCalledWith(
+      { charId: 'acheron', slot: 'head' },
+      expect.objectContaining({ setId: '101' }),
+    );
+    fireEvent.change(headSet, { target: { value: '' } });
+    expect(removeRelicData).toHaveBeenCalledWith({ charId: 'acheron', slot: 'head' });
+
+    fireEvent.click(screen.getByRole('button', { name: /preferences/i }));
+    fireEvent.change(container.querySelector('select[name="pref-relic-set"]')!, {
+      target: { value: '101' },
+    });
+    expect(saveBuildPreferences).toHaveBeenCalledWith(
+      'acheron',
+      expect.objectContaining({ relicSetId: '101' }),
+    );
+  });
 });

@@ -759,4 +759,39 @@ describe('Reverse1999Page', () => {
     fireEvent.click(screen.getByTitle('Favorite Arcanist'));
     expect(toggleFavoriteArcanist).toHaveBeenCalledWith('r1', true);
   });
+
+  it('holds a card that stops matching the gluttony gate with the 🍽️ ghost tag', () => {
+    const session = createMockSession();
+    const live = {
+      current: [
+        {
+          ...makeArcanist('r1', 'Regulus'),
+          psychubeName: 'Luxurious Leisure',
+          psychubeAmplification: 3,
+        },
+      ],
+    };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /amplifying/i }));
+    expect(screen.getByText('Regulus')).toBeInTheDocument();
+
+    // "Max amplification" mid-edit: live data stops matching
+    fireEvent.click(screen.getByTitle('Edit'));
+    live.current = [
+      {
+        ...makeArcanist('r1', 'Regulus'),
+        psychubeName: 'Luxurious Leisure',
+        psychubeAmplification: 5,
+      },
+    ];
+    mockRoster(live, filter);
+    rerender(<Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches 🍽️ Amplifying/)).toBeInTheDocument();
+  });
 });

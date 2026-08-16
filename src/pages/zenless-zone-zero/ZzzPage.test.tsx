@@ -374,4 +374,19 @@ describe('ZzzPage', () => {
     fireEvent.click(screen.getByTitle('Done editing'));
     expect(names()).toEqual(['Ellen', 'Lycaon']); // released: re-sorted
   });
+
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const session = createMockSession();
+    const toggleFavorite = vi.fn();
+    const agents = [makeAgent('ellen', 'Ellen')];
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      trackedAgents: agents,
+      getFilteredRoster: vi.fn().mockReturnValue(agents),
+      toggleFavorite,
+    });
+    renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Favorite Agent'));
+    expect(toggleFavorite).toHaveBeenCalledWith('ellen', true);
+  });
 });

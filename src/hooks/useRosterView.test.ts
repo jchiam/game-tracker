@@ -345,5 +345,81 @@ describe('useRosterView', () => {
       act(() => result.current.projection.refreshBasis('a'));
       expect(result.current.filteredRoster.map((e) => e.id)).toEqual(['a']);
     });
+
+    it('refreshBasis on an unknown id is a no-op', () => {
+      const { result } = setupProjection({ initial: [ent('a', 'Alpha', 5)] });
+      act(() => result.current.projection.refreshBasis('ghost'));
+      expect(result.current.filteredRoster.map((e) => e.id)).toEqual(['a']);
+    });
+
+    it('a refresh queued for an entity removed in the same tick drops cleanly', () => {
+      const { result, setLive } = setupProjection({
+        initial: [ent('a', 'Alpha', 5), ent('b', 'Beta', 3)],
+      });
+      act(() => {
+        result.current.projection.refreshBasis('b');
+        setLive([ent('a', 'Alpha', 5)]);
+      });
+      expect(result.current.filteredRoster.map((e) => e.id)).toEqual(['a']);
+    });
+
+    it('refreshing a non-member that still fails the predicate commits without an exit', () => {
+      const maxed = (e: Ent) => e.level >= 10;
+      const { result, setLive } = setupProjection({
+        initial: [ent('a', 'Alpha', 5)],
+        predicate: maxed,
+      });
+      act(() => setLive([ent('a', 'Alpha', 6)]));
+      act(() => result.current.projection.refreshBasis('a'));
+      expect(result.current.filteredRoster).toHaveLength(0);
+      expect(result.current.projection.isExiting('a')).toBe(false);
+    });
+
+    it('completeExit on a non-exiting id is a no-op', () => {
+      const { result } = setupProjection({ initial: [ent('a', 'Alpha', 5)] });
+      act(() => result.current.projection.completeExit('a'));
+      expect(result.current.filteredRoster.map((e) => e.id)).toEqual(['a']);
+    });
+
+    it('the fallback timer completes an exit when no animationend arrives', () => {
+      vi.useFakeTimers();
+      try {
+        const inProgressGate = (e: Ent) => e.level < 10;
+        const { result, setLive } = setupProjection({
+          initial: [ent('a', 'Alpha', 5)],
+          predicate: inProgressGate,
+        });
+        act(() => setLive([ent('a', 'Alpha', 15)]));
+        act(() => result.current.projection.refreshBasis('a'));
+        expect(result.current.projection.isExiting('a')).toBe(true);
+
+        act(() => vi.advanceTimersByTime(700));
+        expect(result.current.filteredRoster).toHaveLength(0);
+        expect(result.current.projection.isExiting('a')).toBe(false);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
+
+    it('unmount clears pending exit fallback timers', () => {
+      vi.useFakeTimers();
+      try {
+        const inProgressGate = (e: Ent) => e.level < 10;
+        const { result, setLive, unmount } = setupProjection({
+          initial: [ent('a', 'Alpha', 5)],
+          predicate: inProgressGate,
+        });
+        act(() => setLive([ent('a', 'Alpha', 15)]));
+        act(() => result.current.projection.refreshBasis('a'));
+        expect(result.current.projection.isExiting('a')).toBe(true);
+
+        unmount();
+        // Timer cleared on unmount — firing the clock must not touch state
+        expect(() => vi.advanceTimersByTime(700)).not.toThrow();
+        expect(vi.getTimerCount()).toBe(0);
+      } finally {
+        vi.useRealTimers();
+      }
+    });
   });
 });
