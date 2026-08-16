@@ -31,4 +31,4 @@
 
 - [x] 5.1 If `PartiesView` mishandles the 3-uniform-slot config (four-slot assumption), fix the shared component within existing spec behavior
 - [x] 5.2 `npm run lint && npm run format:check && npm test && npm run build`; `npx openspec validate --all`
-- [ ] 5.3 Manual pass: add agents, edit fields, reload persistence, build a 3-agent party, favorite/tier a party
+- [x] 5.3 Manual pass: add agents, edit fields, reload persistence, build a 3-agent party, favorite/tier a party
