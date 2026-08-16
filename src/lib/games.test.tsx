@@ -3,6 +3,11 @@ import { Suspense } from 'react';
 import { screen, cleanup } from '@testing-library/react';
 import { GAMES } from '@/lib/games';
 import { renderWithProviders } from '@/test/utils';
+import { createSupabaseMockFactory } from '@/test/mocks/supabase';
+
+// Lazy pages import the real @/lib/supabase, whose createClient() throws in CI
+// where no VITE_SUPABASE_* env exists — mock the module before any page loads.
+vi.mock('@/lib/supabase', () => createSupabaseMockFactory());
 
 describe('GAMES registry', () => {
   it('contains the six tracked games', () => {
