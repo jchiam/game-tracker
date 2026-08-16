@@ -252,6 +252,11 @@ button {
   object-position: left top;
 }
 
+.selection-card-header.bg-zzz-sel .game-character-image {
+  object-fit: cover;
+  object-position: center top;
+}
+
 .selection-card:hover .game-character-image {
   transform: scale(1.08);
   opacity: 1;
