@@ -4,6 +4,7 @@ import { type Arcanist } from '@/data/reverse1999/arcanists';
 import { type N2ECharacter } from '@/data/neverness-to-everness/characters';
 import { type AeOperator } from '@/data/arknights-endfield/operators';
 import { type P5xThief } from '@/data/persona-5-phantom-x/thieves';
+import { type ZzzAgent } from '@/data/zenless-zone-zero/agents';
 import { type EquippedRevelation } from '@/data/persona-5-phantom-x/revelations';
 
 /** One entry in a build/cartridge stat-preference priority chain. */
@@ -21,7 +22,7 @@ export interface StatPreference {
  */
 export interface PartyMember {
   entityId: string;
-  slotIndex: number; // 0–3
+  slotIndex: number; // 0-based; per-game range (0–3 for 4-slot games, 0–2 for ZZZ)
 }
 
 /**
@@ -178,6 +179,22 @@ export interface AeOperatorPatch {
 
 /** Patch shape for the AE operator weapon-equip callback (`onUpdateWeapon`). */
 export type AeWeaponPatch = Pick<AeOperatorPatch, 'weaponName' | 'weaponLevel'>;
+
+export interface ZzzTrackedAgent extends ZzzAgent {
+  dbId?: string;
+  isFavorited: boolean;
+  level: number; // 1–60 (live cap)
+  mindscape: number; // 0–6 (Mindscape Cinema, shown as M0–M6)
+  coreSkill: number; // 0–6: 0 locked, 1–6 shown as the F→A letter rungs
+}
+
+/** Typed partial update for a ZZZ tracked agent row (camelCase keys). */
+export interface ZzzAgentPatch {
+  level?: number;
+  mindscape?: number;
+  coreSkill?: number;
+  isFavorited?: boolean;
+}
 
 export interface P5xRevelationPreferences {
   heavensSetId: string | null;

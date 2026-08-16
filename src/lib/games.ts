@@ -106,4 +106,18 @@ export const GAMES: Game[] = [
       import('@/pages/persona-5-phantom-x/P5xPage').then((m) => ({ default: m.P5xPage })),
     ),
   },
+  {
+    id: 'zzz',
+    name: 'Zenless Zone Zero',
+    path: '/zenless-zone-zero',
+    developer: 'HoYoverse',
+    description: 'Track agents, mindscapes, and party compositions.',
+    icon: '/assets/icons/zzz-icon.webp',
+    color: '#f5c04a',
+    coverImage: '/assets/zenless-zone-zero/selection-cover.webp',
+    bgClass: 'bg-zzz-sel',
+    Page: lazy(() =>
+      import('@/pages/zenless-zone-zero/ZzzPage').then((m) => ({ default: m.ZzzPage })),
+    ),
+  },
 ];

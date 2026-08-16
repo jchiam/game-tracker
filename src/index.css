@@ -217,6 +217,15 @@ button {
   );
 }
 
+.selection-card-header.bg-zzz-sel {
+  background: linear-gradient(
+    135deg,
+    var(--color-zzz-sel-start) 0%,
+    var(--color-zzz-sel-mid) 50%,
+    var(--color-bg-selection-fade) 100%
+  );
+}
+
 .game-character-image {
   position: absolute;
   top: 0;

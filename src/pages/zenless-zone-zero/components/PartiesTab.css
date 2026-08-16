@@ -1,0 +1,38 @@
+/* Element accent borders for ZZZ lineup slot avatars. Compound-scoped to
+   .slot-avatar (like the HSR element / N2E esper accents) so they beat the
+   base .slot-avatar border by specificity. Prefixed zzz-element-* because HSR
+   already claims .slot-avatar.element-fire/ice/wind with its own hues and
+   route-split stylesheets must never clobber each other. */
+.slot-avatar.zzz-element-elec {
+  border-color: color-mix(in srgb, var(--color-zzz-element-elec) 30%, transparent);
+}
+.slot-avatar.zzz-element-physics {
+  border-color: color-mix(in srgb, var(--color-zzz-element-physics) 30%, transparent);
+}
+.slot-avatar.zzz-element-fire {
+  border-color: color-mix(in srgb, var(--color-zzz-element-fire) 30%, transparent);
+}
+.slot-avatar.zzz-element-ice {
+  border-color: color-mix(in srgb, var(--color-zzz-element-ice) 30%, transparent);
+}
+.slot-avatar.zzz-element-frost {
+  border-color: color-mix(in srgb, var(--color-zzz-element-frost) 30%, transparent);
+}
+.slot-avatar.zzz-element-ether {
+  border-color: color-mix(in srgb, var(--color-zzz-element-ether) 30%, transparent);
+}
+.slot-avatar.zzz-element-auric-ink {
+  border-color: color-mix(in srgb, var(--color-zzz-element-auric-ink) 30%, transparent);
+}
+.slot-avatar.zzz-element-zhenzhen {
+  border-color: color-mix(in srgb, var(--color-zzz-element-zhenzhen) 30%, transparent);
+}
+.slot-avatar.zzz-element-wind {
+  border-color: color-mix(in srgb, var(--color-zzz-element-wind) 30%, transparent);
+}
+.slot-avatar.zzz-element-lumen {
+  border-color: color-mix(in srgb, var(--color-zzz-element-lumen) 30%, transparent);
+}
+.slot-avatar.zzz-element-unknown {
+  border-color: color-mix(in srgb, var(--color-zzz-element-unknown) 30%, transparent);
+}

@@ -218,6 +218,30 @@ function ColorsSection() {
       />
 
       <ColorGroup
+        label="Game: Zenless Zone Zero"
+        variables={[
+          '--color-zzz-element-elec',
+          '--color-zzz-element-physics',
+          '--color-zzz-element-fire',
+          '--color-zzz-element-ice',
+          '--color-zzz-element-frost',
+          '--color-zzz-element-ether',
+          '--color-zzz-element-auric-ink',
+          '--color-zzz-element-zhenzhen',
+          '--color-zzz-element-wind',
+          '--color-zzz-element-lumen',
+          '--color-zzz-specialty-attack',
+          '--color-zzz-specialty-stun',
+          '--color-zzz-specialty-anomaly',
+          '--color-zzz-specialty-support',
+          '--color-zzz-specialty-defense',
+          '--color-zzz-specialty-rupture',
+          '--color-zzz-rarity-s',
+          '--color-zzz-rarity-a',
+        ]}
+      />
+
+      <ColorGroup
         label="Tier"
         variables={['--color-tier-splus', '--color-tier-s', '--color-tier-a', '--color-tier-b']}
       />
@@ -235,6 +259,8 @@ function ColorsSection() {
           '--color-ae-sel-mid',
           '--color-p5x-sel-start',
           '--color-p5x-sel-mid',
+          '--color-zzz-sel-start',
+          '--color-zzz-sel-mid',
           '--color-bg-selection-fade',
         ]}
       />

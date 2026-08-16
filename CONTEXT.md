@@ -11,6 +11,7 @@ Canonical glossary of the domain concepts used across this codebase, its openspe
 | Neverness to Everness    | `n2e`    | `neverness-to-everness` | **character**       | Espers (`esperType` on each character), the Console (cartridge + cartridge preferences + modules), arcs; parties support `tier` and favorite toggle |
 | Arknights: Endfield      | `ae`     | `arknights-endfield`    | **operator**        | Weapons; Phase-1 scope is roster + parties; weapon catalog is hand-authored (see Update Pipeline)                                                   |
 | Persona 5: The Phantom X | `p5x`    | `persona-5-phantom-x`   | **thief**           | Awareness (A0–A6 duplicate ranks), bound Persona per thief (`personaName`), codename; Phase-1 scope is roster + parties                             |
+| Zenless Zone Zero        | `zzz`    | `zenless-zone-zero`     | **agent**           | Mindscape (M0–M6), Core Skill (F→A rungs), specialty + exact-element taxonomy (open strings); 3-slot parties; Phase-1 scope is roster + parties     |
 
 Each game is a self-contained module under `src/data/{game}/`, `src/services/{game}/`, `src/hooks/{game}/`, `src/pages/{game}/`, with shared code in `src/components/`, `src/lib/`, `src/utils/`, `src/types.ts`.
 
