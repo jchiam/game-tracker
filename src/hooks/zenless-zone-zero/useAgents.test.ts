@@ -60,6 +60,10 @@ function trackedFixture(index: number, overrides: Record<string, unknown>) {
     coreSkill: 0,
     discs: { ...emptyDiscs },
     buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    wEngineId: null,
+    wEngineLevel: 0,
+    wEnginePhase: 1,
+    wEnginePreferences: [],
     ...overrides,
   };
 }
@@ -240,6 +244,48 @@ describe('useAgents', () => {
     const { result } = await setupWithAgent();
     expect(result.current.trackedAgents[0].discs).toEqual(emptyDiscs);
     expect(result.current.trackedAgents[0].buildPreferences).toEqual(emptyPrefs);
+  });
+
+  it('adds an agent with W-Engine defaults', async () => {
+    const { result } = await setupWithAgent();
+    expect(result.current.trackedAgents[0].wEngineId).toBeNull();
+    expect(result.current.trackedAgents[0].wEngineLevel).toBe(0);
+    expect(result.current.trackedAgents[0].wEnginePhase).toBe(1);
+    expect(result.current.trackedAgents[0].wEnginePreferences).toEqual([]);
+  });
+
+  it('updateWEngine sets the engine id and queues the patch', async () => {
+    const { result } = await setupWithAgent();
+    act(() => result.current.updateWEngine(firstAgent.id, '14110'));
+    expect(result.current.trackedAgents[0].wEngineId).toBe('14110');
+    expect(mockUpdateAgent).toHaveBeenCalledWith('new-db-id', { wEngineId: '14110' });
+  });
+
+  it('updateWEngineLevel clamps to 0–60', async () => {
+    const { result } = await setupWithAgent();
+    act(() => result.current.updateWEngineLevel(firstAgent.id, 100));
+    expect(result.current.trackedAgents[0].wEngineLevel).toBe(60);
+
+    act(() => result.current.updateWEngineLevel(firstAgent.id, -5));
+    expect(result.current.trackedAgents[0].wEngineLevel).toBe(0);
+  });
+
+  it('updateWEnginePhase clamps to 1–5', async () => {
+    const { result } = await setupWithAgent();
+    act(() => result.current.updateWEnginePhase(firstAgent.id, 9));
+    expect(result.current.trackedAgents[0].wEnginePhase).toBe(5);
+
+    act(() => result.current.updateWEnginePhase(firstAgent.id, 0));
+    expect(result.current.trackedAgents[0].wEnginePhase).toBe(1);
+  });
+
+  it('updateWEnginePreferences writes the whole ranked array atomically', async () => {
+    const { result } = await setupWithAgent();
+    act(() => result.current.updateWEnginePreferences(firstAgent.id, ['14110', '13005']));
+    expect(result.current.trackedAgents[0].wEnginePreferences).toEqual(['14110', '13005']);
+    expect(mockUpdateAgent).toHaveBeenCalledWith('new-db-id', {
+      wEnginePreferences: ['14110', '13005'],
+    });
   });
 
   it('shows error toast when add fails', async () => {

@@ -71,6 +71,10 @@ describe('AddAgentModal', () => {
         coreSkill: 0,
         discs: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
         buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+        wEngineId: null,
+        wEngineLevel: 0,
+        wEnginePhase: 1,
+        wEnginePreferences: [],
       },
     ];
     render(<AddAgentModal {...defaultProps} trackedAgents={tracked} />);

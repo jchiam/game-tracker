@@ -130,3 +130,73 @@
   background: color-mix(in srgb, var(--color-zzz-element-unknown) 25%, transparent);
   border-color: color-mix(in srgb, var(--color-zzz-element-unknown) 60%, transparent);
 }
+
+/* W-Engine icon on the summary line — inline before the engine name. */
+.wengine-icon {
+  width: 1.25em;
+  height: 1.25em;
+  object-fit: contain;
+  vertical-align: text-bottom;
+  margin-right: var(--spacing-2);
+}
+
+/* W-Engine preference strip — ranked engine tiles in the edit body's
+   Preferences section. Tile borders/hover/active come from the shared
+   .equip-slot-cell rules (card.css); separators reuse .pref-operator-badge.
+   Only the strip layout, fixed tile size, and rank badge live here. */
+.wengine-pref-strip {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.wengine-pref-tile {
+  position: relative;
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.wengine-pref-rank {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-bold);
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(0, 0, 0, 0.55);
+  border-radius: 0 0 var(--border-radius-sm) var(--border-radius-sm);
+  pointer-events: none;
+}
+
+.wengine-pref-overflow {
+  font-size: var(--typography-font-size-sm);
+  font-weight: var(--typography-font-weight-bold);
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Name caption for the tapped strip tile — the touch counterpart of the
+   tiles' hover tooltip. Rendered as a row under the strip (no floating
+   overlay: the collapsing card body would clip it). */
+.wengine-pref-caption {
+  font-size: var(--typography-font-size-xs);
+  color: rgba(255, 255, 255, 0.75);
+  margin-bottom: var(--spacing-sm);
+}
+
+/* W-Engine match badge on the summary line — rank of the equipped engine in
+   the preference list. Text/border colours are set inline from the shared
+   progress gradient (HSR .cone-match-badge convention). */
+.wengine-match-badge {
+  margin-left: var(--spacing-sm);
+  padding: 0 var(--spacing-2);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-bold);
+  border: 1px solid;
+  border-radius: var(--border-radius-sm);
+  line-height: 1.4;
+}

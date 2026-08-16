@@ -59,6 +59,32 @@ describe('agentService', () => {
       discSuit2Id: null,
       comments: '',
     });
+    // W-Engine columns absent — defaults.
+    expect(result[0].wEngineId).toBeNull();
+    expect(result[0].wEngineLevel).toBe(0);
+    expect(result[0].wEnginePhase).toBe(1);
+    expect(result[0].wEnginePreferences).toEqual([]);
+  });
+
+  it('loadAgentsFromDB maps W-Engine columns', async () => {
+    const dbRow = {
+      id: 'db-uuid-1',
+      agent_id: '1011',
+      level: 60,
+      mindscape: 0,
+      core_skill: 0,
+      is_favorited: false,
+      wengine_id: '14110',
+      wengine_level: 60,
+      wengine_phase: 5,
+      wengine_preferences: ['14110', '13005'],
+    };
+    mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
+    const result = await service.loadAgentsFromDB('user-1');
+    expect(result[0].wEngineId).toBe('14110');
+    expect(result[0].wEngineLevel).toBe(60);
+    expect(result[0].wEnginePhase).toBe(5);
+    expect(result[0].wEnginePreferences).toEqual(['14110', '13005']);
   });
 
   it('loadAgentsFromDB pivots equipped discs and preference categories', async () => {
@@ -158,6 +184,9 @@ describe('agentService', () => {
       level: 1,
       mindscape: 0,
       core_skill: 0,
+      wengine_id: null,
+      wengine_level: 0,
+      wengine_phase: 1,
     });
     expect(result).toBe('new-db-id');
   });
@@ -171,6 +200,10 @@ describe('agentService', () => {
       mindscape: 2,
       coreSkill: 4,
       isFavorited: true,
+      wEngineId: '14110',
+      wEngineLevel: 45,
+      wEnginePhase: 3,
+      wEnginePreferences: ['14110'],
     });
 
     expect(mockFrom).toHaveBeenCalledWith('zzz_tracked_agents');
@@ -179,6 +212,10 @@ describe('agentService', () => {
       mindscape: 2,
       core_skill: 4,
       is_favorited: true,
+      wengine_id: '14110',
+      wengine_level: 45,
+      wengine_phase: 3,
+      wengine_preferences: ['14110'],
     });
     expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
   });

@@ -25,6 +25,10 @@ function createTrackedAgent(agent: ZzzAgent): ZzzTrackedAgent {
     // share one identity across every added agent (P5X aliasing bug class).
     discs: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
     buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    wEngineId: null,
+    wEngineLevel: 0,
+    wEnginePhase: 1,
+    wEnginePreferences: [],
   };
 }
 
@@ -59,6 +63,10 @@ export function useAgents(session: Session | null, isAuthLoading: boolean) {
   const updateMindscape = makeFieldUpdater('mindscape', { clamp: [0, 6] });
   const updateCoreSkill = makeFieldUpdater('coreSkill', { clamp: [0, 6] });
   const toggleFavorite = makeFieldUpdater('isFavorited');
+  const updateWEngine = makeFieldUpdater('wEngineId');
+  const updateWEngineLevel = makeFieldUpdater('wEngineLevel', { clamp: [0, 60] });
+  const updateWEnginePhase = makeFieldUpdater('wEnginePhase', { clamp: [1, 5] });
+  const updateWEnginePreferences = makeFieldUpdater('wEnginePreferences');
 
   const saveDiscData = async (
     editingDisc: { agentId: string; slot: ZzzDiscSlot },
@@ -128,6 +136,10 @@ export function useAgents(session: Session | null, isAuthLoading: boolean) {
     updateMindscape,
     updateCoreSkill,
     toggleFavorite,
+    updateWEngine,
+    updateWEngineLevel,
+    updateWEnginePhase,
+    updateWEnginePreferences,
     saveDiscData,
     removeDiscData,
     saveDiscPreferences,

@@ -5,9 +5,10 @@ import { useRosterView } from '@/hooks/useRosterView';
 import { AgentCard } from './components/AgentCard';
 import { AddAgentModal } from './components/AddAgentModal';
 import { DiscEditorModal } from './components/DiscEditorModal';
+import { WEngineEditorModal } from './components/WEngineEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
-import { calculateDiscScore } from '@/utils/discScoring';
+import { calculateZzzBuildScore } from '@/utils/zzzBuildScore';
 import type { ZzzDiscSlot } from '@/data/zenless-zone-zero/discs';
 import type { ZzzTrackedAgent } from '@/types';
 import type { Session } from '@supabase/supabase-js';
@@ -36,6 +37,10 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     saveDiscData,
     removeDiscData,
     saveDiscPreferences,
+    updateWEngine,
+    updateWEngineLevel,
+    updateWEnginePhase,
+    updateWEnginePreferences,
     getFilteredRoster,
   } = useAgents(session, isAuthLoading);
 
@@ -43,7 +48,7 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
 
   const filterRoster = useCallback(
     (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE', entities?: ZzzTrackedAgent[]) =>
-      getFilteredRoster(searchTerm, sortBy, calculateDiscScore, entities),
+      getFilteredRoster(searchTerm, sortBy, calculateZzzBuildScore, entities),
     [getFilteredRoster],
   );
 
@@ -61,7 +66,7 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     sortModes: [
       { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
       { key: 'LEVEL', label: 'Lv', described: 'by Level' },
-      { key: 'SCORE', label: '★', described: 'by Disc Score' },
+      { key: 'SCORE', label: '★', described: 'by Build Score' },
     ],
     searchPlaceholder: 'Search by name, specialty, or element...',
     addTitle: 'Add Agent',
@@ -77,6 +82,11 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
 
   const editingAgent = editingDisc
     ? trackedAgents.find((a) => a.id === editingDisc.agentId)
+    : undefined;
+
+  const [editingWEnginePrefsFor, setEditingWEnginePrefsFor] = useState<string | null>(null);
+  const wenginePrefsAgent = editingWEnginePrefsFor
+    ? trackedAgents.find((a) => a.id === editingWEnginePrefsFor)
     : undefined;
 
   return (
@@ -114,6 +124,10 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
           }}
           onToggleDisc={(id, slot) => setEditingDisc({ agentId: id, anchorSlot: slot })}
           onEditCommit={() => projection.refreshBasis(agent.id)}
+          onUpdateWEngine={updateWEngine}
+          onUpdateWEngineLevel={updateWEngineLevel}
+          onUpdateWEnginePhase={updateWEnginePhase}
+          onEditWEnginePrefs={setEditingWEnginePrefsFor}
         />
       ))}
       partiesTab={
@@ -142,6 +156,14 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
             projection.refreshBasis(editingAgent.id);
             setEditingDisc(null);
           }}
+        />
+      )}
+
+      {wenginePrefsAgent && (
+        <WEngineEditorModal
+          agent={wenginePrefsAgent}
+          onUpdatePreferences={(prefs) => updateWEnginePreferences(wenginePrefsAgent.id, prefs)}
+          onClose={() => setEditingWEnginePrefsFor(null)}
         />
       )}
 

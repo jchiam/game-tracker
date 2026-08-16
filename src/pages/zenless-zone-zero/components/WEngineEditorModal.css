@@ -1,0 +1,11 @@
+/* ZZZ W-Engine preferences dialog — modifier over the canonical .modal-body
+   slot (Modal.css). Only the tighter row gap diverges from the base rule. */
+.modal-body.wengine-editor-body {
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 600px) {
+  .modal-body.wengine-editor-body {
+    gap: var(--spacing-sm);
+  }
+}
