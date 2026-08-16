@@ -28,14 +28,14 @@
 
 ## 5. UI
 
-- [ ] 5.1 `DiscEditorModal.tsx` over `EquipmentEditorShell`: Equip tab (6 slot cards — suit `Select`, main `Select` 4–6 / read-only 1–3, `SubStatList`, `is-gated` gating, main pruned from substats on save, `useScrollAnchor`); Preferences tab (4pc/2pc suit `Select`s, `PreferenceChain` ×3 + subs, `BuildComments`, whole-object updates) + component CSS overrides only
-- [ ] 5.2 `DiscEditorModal` tests: gating, fixed-main enforcement, prune-on-save, anchor scroll, preference whole-object emit
-- [ ] 5.3 `AgentCard.tsx`: `ScoreBadge` headerExtra + `temperScore`, suit digest `summaryLine` (short names + counts, em-dash placeholder), edit-body "Drive Discs" `.card-section-group` with `.equip-slot-grid` (icon or fallback glyph, click opens editor at slot), gated Target Build readout (`PreferenceChainReadout` + suit badges + comments)
-- [ ] 5.4 `AgentCard` tests: badge hidden on `-1`, digest line, slot cell click payload, readout gating
-- [ ] 5.5 `ZzzPage.tsx`: `editingDisc` state, conditional `DiscEditorModal` mount wired to hook functions, `SCORE` sort mode registered with `useRosterView`, `scoreFor` passed to `getFilteredRoster` + page test updates
+- [x] 5.1 `DiscEditorModal.tsx` over `EquipmentEditorShell`: Equip tab (6 slot cards — suit `Select`, main `Select` 4–6 / read-only 1–3, `SubStatList`, `is-gated` gating, main pruned from substats on save, `useScrollAnchor`); Preferences tab (4pc/2pc suit `Select`s, `PreferenceChain` ×3 + subs, `BuildComments`, whole-object updates) + component CSS overrides only
+- [x] 5.2 `DiscEditorModal` tests: gating, fixed-main enforcement, prune-on-save, anchor scroll, preference whole-object emit
+- [x] 5.3 `AgentCard.tsx`: `ScoreBadge` headerExtra + `temperScore`, suit digest `summaryLine` (short names + counts, em-dash placeholder), edit-body "Drive Discs" `.card-section-group` with `.equip-slot-grid` (icon or fallback glyph, click opens editor at slot), gated Target Build readout (`PreferenceChainReadout` + suit badges + comments)
+- [x] 5.4 `AgentCard` tests: badge hidden on `-1`, digest line, slot cell click payload, readout gating
+- [x] 5.5 `ZzzPage.tsx`: `editingDisc` state, conditional `DiscEditorModal` mount wired to hook functions, `SCORE` sort mode registered with `useRosterView`, `scoreFor` passed to `getFilteredRoster` + page test updates
 
 ## 6. Verify
 
-- [ ] 6.1 `npx openspec validate --all`
-- [ ] 6.2 `npm run lint && npm run format:check && npm test && npm run build`
-- [ ] 6.3 Storybook check: no new L1–L3 surface expected (all shared primitives reused) — confirm nothing needs a story update
+- [x] 6.1 `npx openspec validate --all`
+- [x] 6.2 `npm run lint && npm run format:check && npm test && npm run build`
+- [x] 6.3 Storybook check: no new L1–L3 surface expected (all shared primitives reused) — confirm nothing needs a story update

@@ -15,7 +15,11 @@ function chain(...stats: string[]) {
   return stats.map((stat, orderIndex) => ({ stat, operator: null, orderIndex }));
 }
 
-function disc(suitId: string | null, mainStat: string | null, subStats: string[] = []): ZzzEquippedDisc {
+function disc(
+  suitId: string | null,
+  mainStat: string | null,
+  subStats: string[] = [],
+): ZzzEquippedDisc {
   return { suitId, mainStat, subStats };
 }
 
@@ -136,7 +140,12 @@ describe('calculateDiscScore slot mains', () => {
   it('fixed slots 1-3 always contribute a full main match', () => {
     const agent = agentWith(
       { 1: disc('31000', 'HP') },
-      { discSuit4Id: null, discSuit2Id: null, mainStats: { 4: [], 5: [], 6: [] }, subStats: chain('CRIT Rate') },
+      {
+        discSuit4Id: null,
+        discSuit2Id: null,
+        mainStats: { 4: [], 5: [], 6: [] },
+        subStats: chain('CRIT Rate'),
+      },
     );
     // One slot equipped of six, sub chain set but disc has no subs: the slot's
     // mainMatch is the fixed 1.0, averaged over all six slots — main term

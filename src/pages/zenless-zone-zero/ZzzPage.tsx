@@ -1,10 +1,14 @@
+import { useCallback, useState } from 'react';
 import { useAgents } from '@/hooks/zenless-zone-zero/useAgents';
 import { useParties } from '@/hooks/zenless-zone-zero/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
 import { AgentCard } from './components/AgentCard';
 import { AddAgentModal } from './components/AddAgentModal';
+import { DiscEditorModal } from './components/DiscEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
+import { calculateDiscScore } from '@/utils/discScoring';
+import type { ZzzDiscSlot } from '@/data/zenless-zone-zero/discs';
 import type { Session } from '@supabase/supabase-js';
 import './ZzzPage.css';
 
@@ -28,22 +32,41 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     updateMindscape,
     updateCoreSkill,
     toggleFavorite,
+    saveDiscData,
+    removeDiscData,
+    saveDiscPreferences,
     getFilteredRoster,
   } = useAgents(session, isAuthLoading);
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
+
+  const filterRoster = useCallback(
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE') =>
+      getFilteredRoster(searchTerm, sortBy, calculateDiscScore),
+    [getFilteredRoster],
+  );
 
   const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
     useRosterView({
       sortModes: [
         { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
         { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+        { key: 'SCORE', label: '★', described: 'by Disc Score' },
       ],
       searchPlaceholder: 'Search by name, specialty, or element...',
       addTitle: 'Add Agent',
       addDisabled: isLoadError,
-      filterRoster: getFilteredRoster,
+      filterRoster,
     });
+
+  const [editingDisc, setEditingDisc] = useState<{
+    agentId: string;
+    anchorSlot: ZzzDiscSlot;
+  } | null>(null);
+
+  const editingAgent = editingDisc
+    ? trackedAgents.find((a) => a.id === editingDisc.agentId)
+    : undefined;
 
   return (
     <RosterPageLayout
@@ -74,6 +97,7 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
           onUpdateMindscape={updateMindscape}
           onUpdateCoreSkill={updateCoreSkill}
           onToggleFavorite={toggleFavorite}
+          onToggleDisc={(id, slot) => setEditingDisc({ agentId: id, anchorSlot: slot })}
         />
       ))}
       partiesTab={
@@ -88,6 +112,19 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
       }
       pendingSaveCount={pendingSaveCount}
     >
+      {editingDisc && editingAgent && (
+        <DiscEditorModal
+          agent={editingAgent}
+          anchorSlot={editingDisc.anchorSlot}
+          onSaveDisc={(slot, discData) =>
+            saveDiscData({ agentId: editingAgent.id, slot }, discData)
+          }
+          onRemoveDisc={(slot) => removeDiscData({ agentId: editingAgent.id, slot })}
+          onUpdateBuildPreferences={(newPrefs) => saveDiscPreferences(editingAgent.id, newPrefs)}
+          onClose={() => setEditingDisc(null)}
+        />
+      )}
+
       {isAddModalOpen && session && (
         <AddAgentModal
           availableAgents={availableAgents}

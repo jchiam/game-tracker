@@ -36,9 +36,9 @@ ZZZ Drive Disc domain facts driving the model:
 
 `ZzzDiscSlot = 1 | 2 | 3 | 4 | 5 | 6`. DB column `slot INTEGER CHECK (slot BETWEEN 1 AND 6)`. Fixed mains for slots 1–3 and the variable-main pools for slots 4–6 live **once** in `src/data/zenless-zone-zero/discs.ts` (`ZZZ_DISC_MAIN_STATS`, `ZZZ_DISC_SUB_STATS`), imported by both the editor and the scorer.
 
-*Why:* ZZZ slots are canonically numbered (no community slot names), and HSR's duplicated main-stat maps (`MAIN_STATS` in `relics.ts` unused; `VALID_MAIN_STATS` re-declared in `RelicEditorModal.tsx`; `ALL_SUB_STATS` re-declared in `relicScoring.ts`) is a known wart we're explicitly not replaying.
+_Why:_ ZZZ slots are canonically numbered (no community slot names), and HSR's duplicated main-stat maps (`MAIN_STATS` in `relics.ts` unused; `VALID_MAIN_STATS` re-declared in `RelicEditorModal.tsx`; `ALL_SUB_STATS` re-declared in `relicScoring.ts`) is a known wart we're explicitly not replaying.
 
-*Alternative considered:* named slots (`'disc1'`…) — adds a naming layer with no consumer.
+_Alternative considered:_ named slots (`'disc1'`…) — adds a naming layer with no consumer.
 
 ### D2 — Suit picks as parent columns, chains in one category table
 
@@ -46,15 +46,15 @@ ZZZ Drive Disc domain facts driving the model:
 - One preference table `zzz_disc_preferences`: `tracked_agent_id FK`, `category TEXT CHECK IN ('slot4_main','slot5_main','slot6_main','sub_stats')`, `stat`, `operator_to_next CHECK IN ('>','>=','OR') OR NULL`, `order_index`.
 - `saveDiscPreferences` = one `savePreferenceRows` call: `deleteFrom: [zzz_disc_preferences]`, `parentUpdate: { disc_suit_4_id, disc_suit_2_id, disc_comments }`, one insert set.
 
-*Why:* single-select suit picks are scalar → parent columns (HSR precedent: `relic_set_id`/`planar_set_id`). Chains use the newest house pattern (P5X `p5x_revelation_preferences` single table + category enum) — one table, one delete, one insert, instead of HSR's two tables. Minimizes the non-atomic delete/reinsert surface documented in Known Limitations.
+_Why:_ single-select suit picks are scalar → parent columns (HSR precedent: `relic_set_id`/`planar_set_id`). Chains use the newest house pattern (P5X `p5x_revelation_preferences` single table + category enum) — one table, one delete, one insert, instead of HSR's two tables. Minimizes the non-atomic delete/reinsert surface documented in Known Limitations.
 
-*Alternative considered:* HSR's two-table shape (`_main_stats` with slot column + `_sub_stats`) — more moving parts, no benefit.
+_Alternative considered:_ HSR's two-table shape (`_main_stats` with slot column + `_sub_stats`) — more moving parts, no benefit.
 
 ### D3 — Equipped discs replay the HSR two-table shape
 
 `zzz_equipped_discs` (`tracked_agent_id FK CASCADE`, `slot`, `suit_id TEXT`, `main_stat TEXT`, `UNIQUE(tracked_agent_id, slot)`) + `zzz_disc_substats` (`disc_id FK CASCADE`, `stat_type TEXT NOT NULL`). `upsertDisc` = upsert on `(tracked_agent_id, slot)` then delete+reinsert substats — same as `upsertRelic`.
 
-*Why:* proven shape; the substat list is genuinely variable-length. RLS: four named policies per table, child via `EXISTS` on parent, grandchild via two-level `EXISTS … JOIN` — matching the `20260816000000` house style.
+_Why:_ proven shape; the substat list is genuinely variable-length. RLS: four named policies per table, child via `EXISTS` on parent, grandchild via two-level `EXISTS … JOIN` — matching the `20260816000000` house style.
 
 ### D4 — Removal writes `null`, not an empty-disc object
 
@@ -69,9 +69,9 @@ ZZZ Drive Disc domain facts driving the model:
 - `setTerm`: greedy piece assignment — count equipped discs matching `discSuit4Id`, capped at 4, feeding a `/4` term; count matching `discSuit2Id`, capped at 2, feeding a `/2` term; when both picks are the same suit, pieces beyond the first 4 spill into the 2pc count. Weights 0.67 / 0.33 (HSR's cavern/planar split, same rationale: 4pc dominates the build identity).
 - Grade + badge via shared `getScoreGrade` / `ScoreBadge`; `-1` sentinel hides the badge.
 
-*Why greedy spill:* equipping 6 pieces of one suit is legal in game and should not score worse than 4+2 of two suits when the user targets that suit in both picks.
+_Why greedy spill:_ equipping 6 pieces of one suit is legal in game and should not score worse than 4+2 of two suits when the user targets that suit in both picks.
 
-*Phase 3 seam:* `AgentCard` renders the disc score directly this phase; Phase 3 wraps it in a blend (HSR `buildScore.ts` shape) without touching `discScoring.ts`.
+_Phase 3 seam:_ `AgentCard` renders the disc score directly this phase; Phase 3 wraps it in a blend (HSR `buildScore.ts` shape) without touching `discScoring.ts`.
 
 ### D6 — Catalog generation and icons
 

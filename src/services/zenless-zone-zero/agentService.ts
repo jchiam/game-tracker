@@ -13,7 +13,14 @@ import {
   type ZzzEquippedDisc,
 } from '@/data/zenless-zone-zero/discs';
 
-const defaultDiscs: ZzzTrackedAgent['discs'] = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null };
+const defaultDiscs: ZzzTrackedAgent['discs'] = {
+  1: null,
+  2: null,
+  3: null,
+  4: null,
+  5: null,
+  6: null,
+};
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
 

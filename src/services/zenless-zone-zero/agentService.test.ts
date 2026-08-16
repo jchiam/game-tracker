@@ -83,8 +83,20 @@ describe('agentService', () => {
         { id: 'disc-2', slot: 1, suit_id: '31600', main_stat: 'HP', zzz_disc_substats: [] },
       ],
       zzz_disc_preferences: [
-        { id: 'p2', category: 'slot4_main', stat: 'CRIT DMG', operator_to_next: null, order_index: 1 },
-        { id: 'p1', category: 'slot4_main', stat: 'CRIT Rate', operator_to_next: 'OR', order_index: 0 },
+        {
+          id: 'p2',
+          category: 'slot4_main',
+          stat: 'CRIT DMG',
+          operator_to_next: null,
+          order_index: 1,
+        },
+        {
+          id: 'p1',
+          category: 'slot4_main',
+          stat: 'CRIT Rate',
+          operator_to_next: 'OR',
+          order_index: 0,
+        },
         { id: 'p3', category: 'sub_stats', stat: 'ATK%', operator_to_next: null, order_index: 0 },
       ],
     };
