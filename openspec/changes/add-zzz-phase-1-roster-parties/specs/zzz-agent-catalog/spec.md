@@ -6,7 +6,7 @@ Generated catalog of Zenless Zone Zero Agents, consumed at runtime via `ALL_ZZZ_
 
 ### Requirement: Agent catalog data file
 
-The system SHALL maintain a static catalog of ZZZ Agents in `src/data/zenless-zone-zero/agents.ts`, exporting a `ZzzAgent` interface and a `const ALL_ZZZ_AGENTS: ZzzAgent[]`. Each entry SHALL have: `id` (string, Enka avatar id, e.g. `1011`), `name` (string, English display name resolved from the Enka localization table), `rarity` (number, Enka rarity code — `4` = S, `3` = A), `specialty` (string, Enka `ProfessionType` verbatim, e.g. `Attack`, `Stun`, `Anomaly`, `Support`, `Defense`, `Rupture`), `element` (string, first Enka `ElementTypes` value verbatim), and `imageUrl` (string, local path `/assets/zenless-zone-zero/agents/{id}.webp`).
+The system SHALL maintain a static catalog of ZZZ Agents in `src/data/zenless-zone-zero/agents.ts`, exporting a `ZzzAgent` interface and a `const ALL_ZZZ_AGENTS: ZzzAgent[]`. Each entry SHALL have: `id` (string, Enka avatar id, e.g. `1011`), `name` (string, English display name resolved from the Enka localization table), `rarity` (number, Enka rarity code — `4` = S, `3` = A), `specialty` (string, Enka `ProfessionType` verbatim, e.g. `Attack`, `Stun`, `Anomaly`, `Support`, `Defense`, `Rupture`), `element` (string, first Enka `ElementTypes` value verbatim), and `imageUrl` (string, local path `/assets/zenless-zone-zero/agents/{id}.png` — the untouched Enka original; display crops are on-the-fly CDN transforms, never baked into the asset).
 
 #### Scenario: Catalog accessible at runtime
 

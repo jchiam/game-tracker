@@ -15,6 +15,8 @@ vi.mock('@/hooks/zenless-zone-zero/useParties', () => ({
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => path,
   getAvatarUrl: (path: string) => path,
+  getZzzAgentMugshotUrl: (path: string) => path,
+  getZzzAgentAvatarUrl: (path: string) => path,
 }));
 
 import { useAgents } from '@/hooks/zenless-zone-zero/useAgents';

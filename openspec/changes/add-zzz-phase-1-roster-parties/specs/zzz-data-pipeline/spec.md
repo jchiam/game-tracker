@@ -6,7 +6,7 @@ Automated update pipeline for Zenless Zone Zero catalog data: fetches the Enka.N
 
 ### Requirement: Automated ZZZ update script
 
-The system SHALL provide `scripts/update-zzz-data.mjs`, composed from the shared pipeline plumbing (`scripts/lib/pipeline.mjs`), that fetches ZZZ catalog data from the Enka.Network store (GitHub raw: `EnkaNetwork/API-docs` → `store/zzz/avatars.json`, `store/zzz/locs.json`), resolves agent display names from the English localization table, regenerates `src/data/zenless-zone-zero/agents.ts`, and uploads agent portraits to ImageKit under a `zenless_zone_zero` folder. The script SHALL be idempotent: already-uploaded assets are skipped unless a `--reupload-*` flag is passed, and per-asset loops drive counters off the shared `ensureAsset` result.
+The system SHALL provide `scripts/update-zzz-data.mjs`, composed from the shared pipeline plumbing (`scripts/lib/pipeline.mjs`), that fetches ZZZ catalog data from the Enka.Network store (GitHub raw: `EnkaNetwork/API-docs` → `store/zzz/avatars.json`, `store/zzz/locs.json`), resolves agent display names from the English localization table, regenerates `src/data/zenless-zone-zero/agents.ts`, and uploads agent portraits to ImageKit under a `zenless_zone_zero` folder. Portraits SHALL be uploaded as the **untouched Enka originals** (full-res PNG, transparent canvas included) — display crops (trim + top-anchored square, face crop) are on-the-fly ImageKit transforms owned by `src/lib/imagekit.ts`, never baked into the stored asset. The script SHALL be idempotent: already-uploaded assets are skipped unless a `--reupload-*` flag is passed, and per-asset loops drive counters off the shared `ensureAsset` result.
 
 #### Scenario: Fresh run regenerates catalog
 

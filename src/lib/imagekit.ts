@@ -53,6 +53,27 @@ export function getPersonaAvatarUrl(localPath: string): string {
   return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
 }
 
+// Returns a fully-formed ImageKit URL for a ZZZ agent card portrait.
+// Stored assets are the untouched Enka IconRole originals: full-body art on a
+// large transparent canvas whose margins vary per agent. The chained transform
+// first trims the transparent padding, then takes a top-anchored square so
+// heads always survive — a plain center crop beheads agents whose art fills
+// the canvas. Falls back to the raw local path when ImageKit is not configured.
+export function getZzzAgentMugshotUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  const tr = 'tr:t-true:ar-1-1,fo-top,w-256';
+  return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
+}
+
+// Returns a fully-formed ImageKit URL for a small ZZZ agent avatar (picker
+// lists, party slots). Trims the transparent canvas, then face-centered crop
+// at 128px. Falls back to the raw local path when ImageKit is not configured.
+export function getZzzAgentAvatarUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  const tr = 'tr:t-true:w-128,h-128,fo-face,c-at_max';
+  return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
+}
+
 // Returns a fully-formed ImageKit URL for a psychube icon.
 // Psychube icons are already square artwork — no crop transform needed.
 // Falls back to the raw local path when ImageKit is not configured.

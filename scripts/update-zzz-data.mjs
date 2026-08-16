@@ -21,7 +21,6 @@
 
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { resolve } from 'path';
-import sharp from 'sharp';
 import {
   ROOT,
   loadLocalEnv,
@@ -151,24 +150,16 @@ async function main() {
       continue;
     }
 
-    const imageUrl = `/assets/zenless-zone-zero/agents/${id}.webp`;
+    // Originals are stored untouched (full-res PNG, transparent canvas and all).
+    // Display crops (trim + top-anchored square / face crop) happen on the fly
+    // via ImageKit transforms in src/lib/imagekit.ts — never baked into the asset.
+    const imageUrl = `/assets/zenless-zone-zero/agents/${id}.png`;
     const result = await ensureAsset({
       localPath: imageUrl,
       label: `Portrait for ${name}`,
       reupload: reuploadAgents,
-      mimeType: 'image/webp',
-      fetchBuffer: async () => {
-        const raw = await downloadImage(`${ENKA_CDN_BASE}${avatar.Image}`);
-        // IconRole art is full-body on a large transparent canvas with margins
-        // that vary per agent — trim the padding first, then crop the square
-        // from the top so heads always survive (a center crop beheads agents
-        // whose art fills the canvas).
-        return sharp(raw)
-          .trim()
-          .resize(256, 256, { fit: 'cover', position: 'top' })
-          .webp()
-          .toBuffer();
-      },
+      mimeType: 'image/png',
+      fetchBuffer: () => downloadImage(`${ENKA_CDN_BASE}${avatar.Image}`),
     });
     if (result === 'uploaded') imgCount++;
     if (result === 'failed') failedImages.push(id);

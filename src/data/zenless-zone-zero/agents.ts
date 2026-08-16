@@ -21,7 +21,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1401.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1401.png',
   },
   {
     id: '1501',
@@ -29,7 +29,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Ether',
-    imageUrl: '/assets/zenless-zone-zero/agents/1501.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1501.png',
   },
   {
     id: '1311',
@@ -37,7 +37,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Support',
     element: 'Ether',
-    imageUrl: '/assets/zenless-zone-zero/agents/1311.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1311.png',
   },
   {
     id: '1471',
@@ -45,7 +45,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Rupture',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1471.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1471.png',
   },
   {
     id: '1171',
@@ -53,7 +53,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1171.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1171.png',
   },
   {
     id: '1071',
@@ -61,7 +61,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Defense',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1071.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1071.png',
   },
   {
     id: '1521',
@@ -69,7 +69,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1521.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1521.png',
   },
   {
     id: '1481',
@@ -77,7 +77,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Stun',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1481.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1481.png',
   },
   {
     id: '1191',
@@ -85,7 +85,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Ice',
-    imageUrl: '/assets/zenless-zone-zero/agents/1191.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1191.png',
   },
   {
     id: '1321',
@@ -93,7 +93,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1321.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1321.png',
   },
   {
     id: '1181',
@@ -101,7 +101,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1181.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1181.png',
   },
   {
     id: '1201',
@@ -109,7 +109,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1201.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1201.png',
   },
   {
     id: '1291',
@@ -117,7 +117,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Ice',
-    imageUrl: '/assets/zenless-zone-zero/agents/1291.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1291.png',
   },
   {
     id: '1261',
@@ -125,7 +125,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1261.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1261.png',
   },
   {
     id: '1391',
@@ -133,7 +133,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Stun',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1391.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1391.png',
   },
   {
     id: '1101',
@@ -141,7 +141,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Stun',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1101.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1101.png',
   },
   {
     id: '1161',
@@ -149,7 +149,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Stun',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1161.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1161.png',
   },
   {
     id: '1451',
@@ -157,7 +157,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Support',
     element: 'Ether',
-    imageUrl: '/assets/zenless-zone-zero/agents/1451.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1451.png',
   },
   {
     id: '1141',
@@ -165,7 +165,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Stun',
     element: 'Ice',
-    imageUrl: '/assets/zenless-zone-zero/agents/1141.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1141.png',
   },
   {
     id: '1091',
@@ -173,7 +173,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'FireFrost',
-    imageUrl: '/assets/zenless-zone-zero/agents/1091.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1091.png',
   },
   {
     id: '1511',
@@ -181,7 +181,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Stun',
     element: 'Ether',
-    imageUrl: '/assets/zenless-zone-zero/agents/1511.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1511.png',
   },
   {
     id: '1021',
@@ -189,7 +189,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1021.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1021.png',
   },
   {
     id: '1571',
@@ -197,7 +197,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Stun',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1571.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1571.png',
   },
   {
     id: '1301',
@@ -205,7 +205,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1301.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1301.png',
   },
   {
     id: '1541',
@@ -213,7 +213,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Ice',
-    imageUrl: '/assets/zenless-zone-zero/agents/1541.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1541.png',
   },
   {
     id: '1551',
@@ -221,7 +221,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Ether',
-    imageUrl: '/assets/zenless-zone-zero/agents/1551.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1551.png',
   },
   {
     id: '1251',
@@ -229,7 +229,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Stun',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1251.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1251.png',
   },
   {
     id: '1581',
@@ -237,7 +237,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Lumen',
-    imageUrl: '/assets/zenless-zone-zero/agents/1581.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1581.png',
   },
   {
     id: '1211',
@@ -245,7 +245,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Support',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1211.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1211.png',
   },
   {
     id: '1461',
@@ -253,7 +253,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1461.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1461.png',
   },
   {
     id: '1591',
@@ -261,7 +261,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Ice',
-    imageUrl: '/assets/zenless-zone-zero/agents/1591.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1591.png',
   },
   {
     id: '1381',
@@ -269,7 +269,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1381.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1381.png',
   },
   {
     id: '1041',
@@ -277,7 +277,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1041.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1041.png',
   },
   {
     id: '1531',
@@ -285,7 +285,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Rupture',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1531.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1531.png',
   },
   {
     id: '1491',
@@ -293,7 +293,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Support',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1491.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1491.png',
   },
   {
     id: '1361',
@@ -301,7 +301,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Stun',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1361.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1361.png',
   },
   {
     id: '1561',
@@ -309,7 +309,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Wind',
-    imageUrl: '/assets/zenless-zone-zero/agents/1561.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1561.png',
   },
   {
     id: '1331',
@@ -317,7 +317,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Ether',
-    imageUrl: '/assets/zenless-zone-zero/agents/1331.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1331.png',
   },
   {
     id: '1221',
@@ -325,7 +325,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Anomaly',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1221.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1221.png',
   },
   {
     id: '1431',
@@ -333,7 +333,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'ZhenZhenAssault',
-    imageUrl: '/assets/zenless-zone-zero/agents/1431.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1431.png',
   },
   {
     id: '1051',
@@ -341,7 +341,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Rupture',
     element: 'Ice',
-    imageUrl: '/assets/zenless-zone-zero/agents/1051.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1051.png',
   },
   {
     id: '1371',
@@ -349,7 +349,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Rupture',
     element: 'AuricEther',
-    imageUrl: '/assets/zenless-zone-zero/agents/1371.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1371.png',
   },
   {
     id: '1411',
@@ -357,7 +357,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Support',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1411.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1411.png',
   },
   {
     id: '1341',
@@ -365,7 +365,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Defense',
     element: 'Ice',
-    imageUrl: '/assets/zenless-zone-zero/agents/1341.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1341.png',
   },
   {
     id: '1241',
@@ -373,7 +373,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 4,
     specialty: 'Attack',
     element: 'Ether',
-    imageUrl: '/assets/zenless-zone-zero/agents/1241.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1241.png',
   },
   // A-Rank
   {
@@ -382,7 +382,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Stun',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1011.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1011.png',
   },
   {
     id: '1111',
@@ -390,7 +390,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Attack',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1111.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1111.png',
   },
   {
     id: '1121',
@@ -398,7 +398,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Defense',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1121.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1121.png',
   },
   {
     id: '1081',
@@ -406,7 +406,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Attack',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1081.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1081.png',
   },
   {
     id: '1061',
@@ -414,7 +414,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Attack',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1061.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1061.png',
   },
   {
     id: '1151',
@@ -422,7 +422,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Support',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1151.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1151.png',
   },
   {
     id: '1441',
@@ -430,7 +430,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Rupture',
     element: 'Fire',
-    imageUrl: '/assets/zenless-zone-zero/agents/1441.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1441.png',
   },
   {
     id: '1031',
@@ -438,7 +438,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Support',
     element: 'Ether',
-    imageUrl: '/assets/zenless-zone-zero/agents/1031.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1031.png',
   },
   {
     id: '1421',
@@ -446,7 +446,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Defense',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1421.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1421.png',
   },
   {
     id: '1281',
@@ -454,7 +454,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Anomaly',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1281.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1281.png',
   },
   {
     id: '1351',
@@ -462,7 +462,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Stun',
     element: 'Physics',
-    imageUrl: '/assets/zenless-zone-zero/agents/1351.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1351.png',
   },
   {
     id: '1271',
@@ -470,7 +470,7 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Defense',
     element: 'Elec',
-    imageUrl: '/assets/zenless-zone-zero/agents/1271.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1271.png',
   },
   {
     id: '1131',
@@ -478,6 +478,6 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     rarity: 3,
     specialty: 'Support',
     element: 'Ice',
-    imageUrl: '/assets/zenless-zone-zero/agents/1131.webp',
+    imageUrl: '/assets/zenless-zone-zero/agents/1131.png',
   },
 ];

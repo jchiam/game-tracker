@@ -9,8 +9,8 @@ import { ALL_ZZZ_AGENTS } from '@/data/zenless-zone-zero/agents';
 // modal flows, auth gating) is covered by src/components/parties/PartiesView.test.tsx.
 
 vi.mock('@/lib/imagekit', () => ({
-  getMugshotUrl: vi.fn((url: string) => `mugshot:${url}`),
-  getAvatarUrl: vi.fn((url: string) => `avatar:${url}`),
+  getZzzAgentMugshotUrl: vi.fn((url: string) => `mugshot:${url}`),
+  getZzzAgentAvatarUrl: vi.fn((url: string) => `avatar:${url}`),
 }));
 
 const firstAgent = ALL_ZZZ_AGENTS[0];

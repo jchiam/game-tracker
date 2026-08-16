@@ -1,7 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import type { Party, PartyMember } from '@/types';
 import type { ZzzAgent } from '@/data/zenless-zone-zero/agents';
-import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
+import { getZzzAgentMugshotUrl, getZzzAgentAvatarUrl } from '@/lib/imagekit';
 import { PartiesView, type PartyViewConfig } from '@/components/parties/PartiesView';
 import { getElementBadge } from './agentBadges';
 import './PartiesTab.css';
@@ -18,8 +18,8 @@ const ZZZ_PARTY_VIEW: PartyViewConfig<ZzzAgent> = {
     searchPlaceholder: 'Search agent...',
   },
   searchKeys: ['name', 'specialty', 'element'],
-  resolveSlotImage: (agent) => getMugshotUrl(agent.imageUrl),
-  resolveListImage: (agent) => getAvatarUrl(agent.imageUrl),
+  resolveSlotImage: (agent) => getZzzAgentMugshotUrl(agent.imageUrl),
+  resolveListImage: (agent) => getZzzAgentAvatarUrl(agent.imageUrl),
   // zzz- prefixed: HSR already claims .slot-avatar.element-* with its own hues.
   slotAccentClass: (agent) => `zzz-element-${getElementBadge(agent.element).modifier}`,
   supportsTier: true,

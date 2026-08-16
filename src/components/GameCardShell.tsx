@@ -5,8 +5,13 @@ import { getProgressStyle } from '@/utils/progressGradient';
 interface GameCardShellProps {
   /** Display name — card title and image alt text. */
   name: string;
-  /** Catalog image path; resolved to the CDN via getMugshotUrl. */
+  /** Catalog image path; resolved to the CDN via `resolveImage` (default getMugshotUrl). */
   imageUrl: string;
+  /**
+   * Overrides the header-image URL resolver for games whose stored assets need
+   * a different CDN transform (ZZZ trims its full-body originals on the fly).
+   */
+  resolveImage?: (imageUrl: string) => string;
   /** Capitalised entity noun for button titles, e.g. "Character", "Arcanist", "Operator". */
   entityNoun: string;
   isFavorited: boolean;
@@ -53,6 +58,7 @@ interface GameCardShellProps {
 export function GameCardShell({
   name,
   imageUrl,
+  resolveImage = getMugshotUrl,
   entityNoun,
   isFavorited,
   onToggleFavorite,
@@ -125,7 +131,7 @@ export function GameCardShell({
             </div>
           )}
           <img
-            src={getMugshotUrl(imageUrl)}
+            src={resolveImage(imageUrl)}
             alt={name}
             className={`game-card-image ${imgLoading ? 'loading' : 'loaded'}`}
             onLoad={() => setImgLoading(false)}

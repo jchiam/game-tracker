@@ -11,7 +11,7 @@ Users want to track their **Zenless Zone Zero** (HoYoverse) rosters alongside th
 - Agent card composed from `GameCardShell`: specialty + element badges, rarity indicator, level slider, Mindscape + Core Skill `SegmentedButtons`.
 - Full **Parties/Lineups** stack for **3-agent squads** (`slot_index` 0–2) via the shared `PartiesView` config adapter — first game with 3 uniform slots (uses `PartyViewConfig.slots`).
 - App wiring: `types.ts`, `GAMES` registry entry in `src/lib/games.ts`, `index.css` `bg-zzz-sel`, design tokens `color.zzz`, Supabase migration (3 tables + RLS).
-- Agent portraits downloaded from the Enka CDN by the update script and uploaded to ImageKit — no repo images, no CSP change.
+- Agent portraits downloaded from the Enka CDN by the update script and uploaded to ImageKit as **untouched originals** — display crops (trim transparent canvas + top-anchored square for cards, face crop for avatars) are on-the-fly ImageKit transforms via new ZZZ-specific resolvers in `imagekit.ts`, passed through new optional `resolveImage` seams on `GameCardShell` and `AddEntityModal`. No repo images, no CSP change.
 - **Deferred to later phases** (explicitly out of scope): Drive Disc catalog/editor/scoring (Phase 2), W-Engine catalog/equip/preferences (Phase 3), Bangboo (KIV), faction field, agent full names (not in Enka store).
 
 ## Capabilities
@@ -25,6 +25,8 @@ Users want to track their **Zenless Zone Zero** (HoYoverse) rosters alongside th
 ### Modified Capabilities
 
 - `shared-parties`: Add ZZZ party slot constraints (3 uniform slots, indices 0–2) — first game to use `PartyViewConfig.slots` for a uniform-but-not-four slot count; ZZZ joins the games enumerated under the party favorite toggle and tier requirements.
+- `shared-ui-components`: `GameCardShell` gains an optional `resolveImage` prop overriding the header-image URL resolver (default `getMugshotUrl` unchanged) — needed because ZZZ stores untouched full-body originals and crops on the fly.
+- `shared-entity-picker`: `AddEntityModal` gains an optional `resolveImage` prop overriding the list-avatar URL resolver (default `getAvatarUrl` unchanged), for the same reason.
 
 ## Impact
 

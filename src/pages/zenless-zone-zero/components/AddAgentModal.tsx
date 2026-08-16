@@ -1,6 +1,7 @@
 import type { ZzzAgent } from '@/data/zenless-zone-zero/agents';
 import type { ZzzTrackedAgent } from '@/types';
 import { AddEntityModal } from '@/components/AddEntityModal';
+import { getZzzAgentAvatarUrl } from '@/lib/imagekit';
 import { getElementBadge, getRarityBadge, getSpecialtyBadge } from './agentBadges';
 
 interface AddAgentModalProps {
@@ -23,6 +24,7 @@ export function AddAgentModal({
       available={availableAgents}
       tracked={trackedAgents}
       searchKeys={['name', 'specialty', 'element']}
+      resolveImage={getZzzAgentAvatarUrl}
       getBadges={(agent) => {
         const rarity = getRarityBadge(agent.rarity);
         const specialty = getSpecialtyBadge(agent.specialty);

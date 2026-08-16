@@ -1,6 +1,7 @@
 import type { ZzzTrackedAgent } from '@/types';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
+import { getZzzAgentMugshotUrl } from '@/lib/imagekit';
 import { LevelSlider } from '@/components/LevelSlider';
 import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
@@ -52,6 +53,7 @@ export function AgentCard({
     <GameCardShell
       name={agent.name}
       imageUrl={agent.imageUrl}
+      resolveImage={getZzzAgentMugshotUrl}
       entityNoun="Agent"
       isFavorited={agent.isFavorited}
       onToggleFavorite={(value) => onToggleFavorite(agent.id, value)}
