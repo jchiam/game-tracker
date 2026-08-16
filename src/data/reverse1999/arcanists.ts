@@ -111,6 +111,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: false,
   },
   {
+    id: 'copp_lia',
+    name: 'Coppélia',
+    afflatus: 'Mineral',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/copp_lia.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'corvus',
     name: 'Corvus',
     afflatus: 'Intellect',
@@ -407,6 +415,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: true,
   },
   {
+    id: 'rhiannon',
+    name: 'Rhiannon',
+    afflatus: 'Beast',
+    damageType: 'Mental',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/rhiannon.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'rubuska',
     name: 'Rubuska',
     afflatus: 'Mineral',
@@ -701,6 +717,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/satsuki.webp',
+    hasEuphoria: false,
+  },
+  {
+    id: 'silverwing_eagle',
+    name: 'Silverwing Eagle',
+    afflatus: 'Plant',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/silverwing_eagle.webp',
     hasEuphoria: false,
   },
   {
