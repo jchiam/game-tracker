@@ -347,6 +347,68 @@ describe('AgentCard', () => {
     expect(defaultProps.onEditWEnginePrefs).toHaveBeenCalledWith('1011');
   });
 
+  it('hides the summary W-Engine icon when it fails to load', () => {
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    const img = container.querySelector('.wengine-icon') as HTMLImageElement;
+    fireEvent.error(img);
+    expect(img.style.display).toBe('none');
+  });
+
+  it('hides a strip tile icon that fails to load', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    await enterEditMode(user);
+    const img = container.querySelector('.wengine-pref-tile .equip-slot-img') as HTMLImageElement;
+    fireEvent.error(img);
+    expect(img.style.display).toBe('none');
+  });
+
+  it('renders the em-dash line when the equipped engine id is not in the catalog', () => {
+    const agent = { ...agentWithWEngine(), wEngineId: 'ghost', wEnginePreferences: [] };
+    const { container } = render(<AgentCard {...defaultProps} agent={agent} />);
+    expect(container.querySelectorAll('.no-equip').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('clearing the equip select reports null', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    await enterEditMode(user);
+    const select = container.querySelector(
+      `select[name="wengine-${baseAgent.id}"]`,
+    ) as HTMLSelectElement;
+    await user.selectOptions(select, '');
+    expect(defaultProps.onUpdateWEngine).toHaveBeenCalledWith('1011', null);
+  });
+
+  it('falls back to the raw id for a preference not in the catalog, in tile title and caption', async () => {
+    const user = userEvent.setup();
+    const agent = { ...agentWithWEngine(), wEnginePreferences: ['ghost-id'] };
+    const { container } = render(<AgentCard {...defaultProps} agent={agent} />);
+    await enterEditMode(user);
+    const tile = container.querySelector('.wengine-pref-tile') as HTMLElement;
+    expect(tile.title).toBe('ghost-id');
+    await user.click(tile);
+    expect(container.querySelector('.wengine-pref-caption')?.textContent).toContain('ghost-id');
+  });
+
+  it('shows the Target Build readout when only the 2pc suit is picked', async () => {
+    const user = userEvent.setup();
+    const agent = {
+      ...baseAgent,
+      buildPreferences: {
+        mainStats: { 4: [], 5: [], 6: [] },
+        subStats: [],
+        discSuit2Id: '31600',
+      },
+    };
+    const { container } = render(<AgentCard {...defaultProps} agent={agent} />);
+    await user.click(screen.getByTitle('Edit'));
+    const suitBadges = [...container.querySelectorAll('.pref-stat-badge')].map(
+      (el) => el.textContent,
+    );
+    expect(suitBadges).toContain('Swing Jazz');
+  });
+
   it('Edit Preferences button opens the W-Engine editor', async () => {
     const user = userEvent.setup();
     render(<AgentCard {...defaultProps} />);
