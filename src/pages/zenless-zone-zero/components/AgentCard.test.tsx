@@ -4,6 +4,15 @@ import userEvent from '@testing-library/user-event';
 import { AgentCard } from './AgentCard';
 import type { ZzzTrackedAgent } from '@/types';
 
+const emptyDiscs: ZzzTrackedAgent['discs'] = {
+  1: null,
+  2: null,
+  3: null,
+  4: null,
+  5: null,
+  6: null,
+};
+
 const baseAgent: ZzzTrackedAgent = {
   id: '1011',
   name: 'Anby',
@@ -16,6 +25,8 @@ const baseAgent: ZzzTrackedAgent = {
   level: 45,
   mindscape: 2,
   coreSkill: 4,
+  discs: { ...emptyDiscs },
+  buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
 };
 
 describe('AgentCard', () => {
@@ -26,6 +37,7 @@ describe('AgentCard', () => {
     onUpdateMindscape: vi.fn(),
     onUpdateCoreSkill: vi.fn(),
     onToggleFavorite: vi.fn(),
+    onToggleDisc: vi.fn(),
   };
 
   beforeEach(() => {
@@ -139,5 +151,93 @@ describe('AgentCard', () => {
     const favoriteBtn = container.querySelector('.favorite-btn') as HTMLButtonElement;
     await user.click(favoriteBtn);
     expect(defaultProps.onToggleFavorite).toHaveBeenCalledWith('1011', true);
+  });
+
+  // --- Drive Discs ---
+
+  const agentWithGear = (): ZzzTrackedAgent => ({
+    ...baseAgent,
+    discs: {
+      ...emptyDiscs,
+      1: { suitId: '31000', mainStat: 'HP', subStats: [] },
+      4: { suitId: '31000', mainStat: 'CRIT Rate', subStats: ['ATK%'] },
+      5: { suitId: '31600', mainStat: 'ATK%', subStats: [] },
+    },
+    buildPreferences: {
+      mainStats: { 4: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }], 5: [], 6: [] },
+      subStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
+      discSuit4Id: '31000',
+      discSuit2Id: '31600',
+      comments: 'stun crit',
+    },
+  });
+
+  it('hides the score badge on the -1 sentinel (no preferences)', () => {
+    const { container } = render(<AgentCard {...defaultProps} />);
+    expect(container.querySelector('.score-badge')).toBeNull();
+  });
+
+  it('shows the score badge when preferences and discs are set', () => {
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithGear()} />);
+    expect(container.querySelector('.score-badge')).not.toBeNull();
+  });
+
+  it('renders the suit digest line with short names and counts', () => {
+    render(<AgentCard {...defaultProps} agent={agentWithGear()} />);
+    // 31000 = Woodpecker Electro ×2, 31600 = Swing Jazz ×1, sorted by count.
+    expect(screen.getByText('Woodpecker 2')).toBeInTheDocument();
+    expect(screen.getByText('Swing 1')).toBeInTheDocument();
+  });
+
+  it('renders an em-dash digest when no discs are equipped', () => {
+    const { container } = render(<AgentCard {...defaultProps} />);
+    expect(container.querySelector('.no-equip')?.textContent).toBe('—');
+  });
+
+  it('renders six disc slot cells and reports clicks with the numeric slot', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithGear()} />);
+    await user.click(screen.getByTitle('Edit'));
+    const cells = container.querySelectorAll('.equip-slot-cell');
+    expect(cells).toHaveLength(6);
+    await user.click(cells[4]);
+    expect(defaultProps.onToggleDisc).toHaveBeenCalledWith('1011', 5);
+  });
+
+  it('marks equipped slot cells active with the suit icon image', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithGear()} />);
+    await user.click(screen.getByTitle('Edit'));
+    expect(container.querySelectorAll('.equip-slot-cell.active')).toHaveLength(3);
+    expect(container.querySelectorAll('.equip-slot-img')).toHaveLength(3);
+  });
+
+  it('hides a suit icon image that fails to load', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithGear()} />);
+    await user.click(screen.getByTitle('Edit'));
+    const img = container.querySelector('.equip-slot-img') as HTMLImageElement;
+    fireEvent.error(img);
+    expect(img.style.display).toBe('none');
+  });
+
+  it('hides the Target Build readout when no preference is set', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} />);
+    await user.click(screen.getByTitle('Edit'));
+    expect(container.querySelector('.build-prefs-display')).toBeNull();
+  });
+
+  it('shows the Target Build readout with suit badges, chains, and comments', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithGear()} />);
+    await user.click(screen.getByTitle('Edit'));
+    expect(container.querySelector('.build-prefs-display')).not.toBeNull();
+    const suitBadges = [...container.querySelectorAll('.pref-stat-badge')].map(
+      (el) => el.textContent,
+    );
+    expect(suitBadges).toContain('Woodpecker Electro');
+    expect(suitBadges).toContain('Swing Jazz');
+    expect(screen.getByText('stun crit')).toBeInTheDocument();
   });
 });

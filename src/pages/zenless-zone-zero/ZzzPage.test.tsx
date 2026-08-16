@@ -17,6 +17,7 @@ vi.mock('@/lib/imagekit', () => ({
   getAvatarUrl: (path: string) => path,
   getZzzAgentMugshotUrl: (path: string) => path,
   getZzzAgentAvatarUrl: (path: string) => path,
+  getZzzDiscSuitIconUrl: (path: string) => path,
 }));
 
 import { useAgents } from '@/hooks/zenless-zone-zero/useAgents';
@@ -35,6 +36,8 @@ function makeAgent(id: string, name: string): ZzzTrackedAgent {
     level: 45,
     mindscape: 2,
     coreSkill: 3,
+    discs: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
+    buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
   };
 }
 
@@ -62,6 +65,9 @@ const defaultAgentsHook = {
   updateMindscape: vi.fn(),
   updateCoreSkill: vi.fn(),
   toggleFavorite: vi.fn(),
+  saveDiscData: vi.fn(),
+  removeDiscData: vi.fn(),
+  saveDiscPreferences: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };
 
@@ -186,7 +192,7 @@ describe('ZzzPage', () => {
     expect(screen.getByRole('heading', { name: /zenless zone zero/i })).toBeInTheDocument();
   });
 
-  it('sort button toggles between AZ and Lv', () => {
+  it('sort button cycles AZ → Lv → ★ (Disc Score)', () => {
     const session = createMockSession();
     const agents = [makeAgent('1191', 'Ellen')];
     vi.mocked(useAgents).mockReturnValue({
@@ -199,6 +205,97 @@ describe('ZzzPage', () => {
     expect(sortBtn).toHaveTextContent('AZ');
     fireEvent.click(sortBtn);
     expect(screen.getByTitle(/sorted by level/i)).toHaveTextContent('Lv');
+    fireEvent.click(screen.getByTitle(/sorted by level/i));
+    expect(screen.getByTitle(/sorted by disc score/i)).toHaveTextContent('★');
+  });
+
+  it('passes the disc scorer to getFilteredRoster', () => {
+    const session = createMockSession();
+    const getFilteredRoster = vi.fn().mockReturnValue([]);
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      trackedAgents: [makeAgent('1191', 'Ellen')],
+      getFilteredRoster,
+    });
+    renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(getFilteredRoster).toHaveBeenCalledWith('', 'ALPHA', expect.any(Function));
+  });
+
+  it('opens the disc editor anchored to the clicked slot and wires the hook actions', () => {
+    const session = createMockSession();
+    const saveDiscData = vi.fn();
+    const agents = [makeAgent('1191', 'Ellen')];
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      trackedAgents: agents,
+      saveDiscData,
+      getFilteredRoster: vi.fn().mockReturnValue(agents),
+    });
+    const { container } = renderWithProviders(
+      <ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    // Open edit mode on the card, then click disc slot cell 4 (index 3).
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(container.querySelectorAll('.equip-slot-cell')[3]);
+    expect(screen.getByText('Drive Discs — Ellen')).toBeInTheDocument();
+
+    // Selecting a suit in the editor routes through the hook's saveDiscData.
+    fireEvent.change(container.querySelector('select[name="disc-4-suit"]')!, {
+      target: { value: '31000' },
+    });
+    expect(saveDiscData).toHaveBeenCalledWith(
+      { agentId: '1191', slot: 4 },
+      expect.objectContaining({ suitId: '31000' }),
+    );
+  });
+
+  it('routes editor remove, preference, and close actions through the hook', () => {
+    const session = createMockSession();
+    const removeDiscData = vi.fn();
+    const saveDiscPreferences = vi.fn();
+    const agent = {
+      ...makeAgent('1191', 'Ellen'),
+      discs: {
+        1: null,
+        2: null,
+        3: null,
+        4: { suitId: '31000', mainStat: 'CRIT Rate', subStats: [] },
+        5: null,
+        6: null,
+      },
+    };
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      trackedAgents: [agent],
+      removeDiscData,
+      saveDiscPreferences,
+      getFilteredRoster: vi.fn().mockReturnValue([agent]),
+    });
+    const { container } = renderWithProviders(
+      <ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(container.querySelectorAll('.equip-slot-cell')[3]);
+
+    // Clearing the suit routes through removeDiscData.
+    fireEvent.change(container.querySelector('select[name="disc-4-suit"]')!, {
+      target: { value: '' },
+    });
+    expect(removeDiscData).toHaveBeenCalledWith({ agentId: '1191', slot: 4 });
+
+    // A preference edit routes through saveDiscPreferences.
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    fireEvent.change(container.querySelector('select[name="pref-suit-4"]')!, {
+      target: { value: '31000' },
+    });
+    expect(saveDiscPreferences).toHaveBeenCalledWith(
+      '1191',
+      expect.objectContaining({ discSuit4Id: '31000' }),
+    );
+
+    // Done unmounts the editor.
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByText('Drive Discs — Ellen')).toBeNull();
   });
 
   it('closes AddAgentModal after an agent is added', async () => {

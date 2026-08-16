@@ -1,23 +1,25 @@
-// Auto-update script for Zenless Zone Zero agent data.
+// Auto-update script for Zenless Zone Zero catalog data.
 // Fetches the latest data from the Enka.Network store (GitHub raw) and regenerates:
 //   - src/data/zenless-zone-zero/agents.ts
-// Downloads agent portraits from the Enka CDN and uploads to ImageKit:
+//   - src/data/zenless-zone-zero/disc_suits.ts
+// Downloads images from the Enka CDN and uploads to ImageKit:
 //   - agent portraits → ImageKit: /zenless_zone_zero/agents
+//   - disc suit icons → ImageKit: /zenless_zone_zero/disc-suits
 //
 // Source notes: Hakush.in and its nankoa.cc revival are dead (NXDOMAIN, verified
 // 2026-08-16); the Enka store is the maintained community source. Fallback if the
 // store restructures: Dimbreath's ZenlessData mirror at git.mero.moe (raw game
 // configs + TextMap — needs loc joins).
 //
-// Phases 2–3 extend this script with Drive Disc suits (store/zzz/equipments.json)
-// and W-Engines (store/zzz/weapons.json, store/zzz/property.json for stat names)
-// as additional fetch + map + emit sections reusing the same loc resolution and
-// ensureAsset plumbing.
+// Phase 3 extends this script with W-Engines (store/zzz/weapons.json,
+// store/zzz/property.json for stat names) as a further fetch + map + emit section
+// reusing the same loc resolution and ensureAsset plumbing.
 //
 // Usage:
 //   node scripts/update-zzz-data.mjs                   # only upload missing assets
 //   node scripts/update-zzz-data.mjs --reupload-all    # force reupload all assets
 //   node scripts/update-zzz-data.mjs --reupload-agents # force reupload agent portraits
+//   node scripts/update-zzz-data.mjs --reupload-discs  # force reupload disc suit icons
 
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { resolve } from 'path';
@@ -40,8 +42,9 @@ const ENKA_CDN_BASE = 'https://enka.network';
 loadLocalEnv();
 const { ensureAsset } = initImageKit();
 
-const { flags: reuploadFlags } = parseReuploadFlags(['agents']);
+const { flags: reuploadFlags } = parseReuploadFlags(['agents', 'discs']);
 const reuploadAgents = reuploadFlags.agents;
+const reuploadDiscs = reuploadFlags.discs;
 
 async function loadExistingAgents() {
   const filePath = resolve(ROOT, 'src/data/zenless-zone-zero/agents.ts');
@@ -113,13 +116,61 @@ function generateAgentsTs(agents) {
   return lines.join('\n');
 }
 
-async function main() {
-  console.log('Fetching ZZZ agent data from the Enka.Network store...');
+async function loadExistingSuits() {
+  const filePath = resolve(ROOT, 'src/data/zenless-zone-zero/disc_suits.ts');
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    const entries = [];
+    const regex = /id:\s*'([^']+)'[^}]*?name:\s*(['"])((?:\\.|(?!\2)[^\\])*)\2/gs;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      entries.push({ id: match[1], name: match[3].replace(/\\(.)/g, '$1') });
+    }
+    return entries;
+  } catch {
+    return [];
+  }
+}
 
-  const [avatars, locs, existingAgents] = await Promise.all([
+function generateDiscSuitsTs(suits) {
+  const lines = [
+    ...generatedHeader(
+      'Enka.Network store (github.com/EnkaNetwork/API-docs)',
+      'update-zzz-data.mjs',
+    ),
+    '',
+    'export interface ZzzDiscSuit {',
+    '  id: string;',
+    '  name: string;',
+    '  icon: string;',
+    '}',
+    '',
+    'export const ALL_ZZZ_DISC_SUITS: ZzzDiscSuit[] = [',
+  ];
+
+  for (const s of suits) {
+    lines.push(
+      `  {`,
+      `    id: '${s.id}',`,
+      `    name: ${jsStr(s.name)},`,
+      `    icon: '${s.icon}',`,
+      `  },`,
+    );
+  }
+
+  lines.push('];', '');
+  return lines.join('\n');
+}
+
+async function main() {
+  console.log('Fetching ZZZ data from the Enka.Network store...');
+
+  const [avatars, equipments, locs, existingAgents, existingSuits] = await Promise.all([
     fetchJSON(`${ENKA_STORE_BASE}/avatars.json`),
+    fetchJSON(`${ENKA_STORE_BASE}/equipments.json`),
     fetchJSON(`${ENKA_STORE_BASE}/locs.json`),
     loadExistingAgents(),
+    loadExistingSuits(),
   ]);
 
   const en = locs?.en;
@@ -180,11 +231,55 @@ async function main() {
     return a.name.localeCompare(b.name);
   });
 
-  const outPath = resolve(ROOT, 'src/data/zenless-zone-zero/agents.ts');
+  // --- Drive Disc suits (Phase 2) ---
+  const suitEntries = Object.entries(equipments?.Suits ?? {});
+  if (suitEntries.length === 0) {
+    throw new Error('Enka store shape changed: equipments.json missing "Suits" table');
+  }
+  console.log(`  ${suitEntries.length} disc suits listed`);
+
+  const suits = [];
+  let suitImgCount = 0;
+  const failedSuitIcons = [];
+  const skippedSuits = [];
+
+  for (const [suitId, suit] of suitEntries) {
+    const name = (en[suit.Name] ?? '').trim();
+    if (!name || !suit.Icon) {
+      skippedSuits.push(`${suitId}:${suit.Name}`);
+      continue;
+    }
+
+    const icon = `/assets/zenless-zone-zero/disc-suits/${suitId}.png`;
+    const result = await ensureAsset({
+      localPath: icon,
+      label: `Suit icon for ${name}`,
+      reupload: reuploadDiscs,
+      mimeType: 'image/png',
+      fetchBuffer: () => downloadImage(`${ENKA_CDN_BASE}${suit.Icon}`),
+    });
+    if (result === 'uploaded') suitImgCount++;
+    if (result === 'failed') failedSuitIcons.push(suitId);
+
+    suits.push({ id: suitId, name, icon });
+  }
+
+  suits.sort((a, b) => a.name.localeCompare(b.name));
+
   await mkdir(resolve(ROOT, 'src/data/zenless-zone-zero'), { recursive: true });
-  await writeFile(outPath, generateAgentsTs(agents), 'utf-8');
+  await writeFile(
+    resolve(ROOT, 'src/data/zenless-zone-zero/agents.ts'),
+    generateAgentsTs(agents),
+    'utf-8',
+  );
+  await writeFile(
+    resolve(ROOT, 'src/data/zenless-zone-zero/disc_suits.ts'),
+    generateDiscSuitsTs(suits),
+    'utf-8',
+  );
 
   const { added, removed } = diffByKey(existingAgents, agents, (a) => a.id);
+  const suitDiff = diffByKey(existingSuits, suits, (s) => s.id);
   console.log('\nDone!');
   console.log(
     `  Agents: ${agents.length} total (${formatDiff(added, removed)}) — ${imgCount} images uploaded`,
@@ -192,11 +287,22 @@ async function main() {
   for (const a of added)
     console.log(`    + ${a.name} [${a.rarity === 4 ? 'S' : 'A'} ${a.specialty} · ${a.element}]`);
   for (const a of removed) console.log(`    - ${a.name} (removed from source)`);
+  console.log(
+    `  Disc suits: ${suits.length} total (${formatDiff(suitDiff.added, suitDiff.removed)}) — ${suitImgCount} icons uploaded`,
+  );
+  for (const s of suitDiff.added) console.log(`    + ${s.name}`);
+  for (const s of suitDiff.removed) console.log(`    - ${s.name} (removed from source)`);
   if (skippedEntries.length > 0) {
     console.log(`  Skipped entries: ${skippedEntries.join(', ')}`);
   }
+  if (skippedSuits.length > 0) {
+    console.log(`  Skipped suits: ${skippedSuits.join(', ')}`);
+  }
   if (failedImages.length > 0) {
     console.warn(`  Missing agent images: ${failedImages.join(', ')}`);
+  }
+  if (failedSuitIcons.length > 0) {
+    console.warn(`  Missing suit icons: ${failedSuitIcons.join(', ')}`);
   }
 }
 

@@ -1,12 +1,22 @@
 import type { ZzzTrackedAgent } from '@/types';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
-import { getZzzAgentMugshotUrl } from '@/lib/imagekit';
+import { PreferenceChainReadout } from '@/components/PreferenceChainReadout';
+import { ScoreBadge } from '@/components/ScoreBadge';
+import { getZzzAgentMugshotUrl, getZzzDiscSuitIconUrl } from '@/lib/imagekit';
 import { LevelSlider } from '@/components/LevelSlider';
 import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { StatChip } from '@/components/StatChip';
 import { getProgressStyle } from '@/utils/progressGradient';
+import { calculateDiscScore } from '@/utils/discScoring';
+import { ALL_ZZZ_DISC_SUITS } from '@/data/zenless-zone-zero/disc_suits';
+import { ZZZ_DISC_SUIT_SHORT_NAMES } from '@/data/zenless-zone-zero/disc_suit_short_names';
+import {
+  ZZZ_DISC_SLOTS,
+  ZZZ_VARIABLE_MAIN_SLOTS,
+  type ZzzDiscSlot,
+} from '@/data/zenless-zone-zero/discs';
 import {
   getCoreSkillLetter,
   getElementBadge,
@@ -30,6 +40,7 @@ interface AgentCardProps {
   onUpdateMindscape: (id: string, mindscape: number) => void;
   onUpdateCoreSkill: (id: string, coreSkill: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
+  onToggleDisc: (id: string, slot: ZzzDiscSlot) => void;
 }
 
 export function AgentCard({
@@ -39,15 +50,39 @@ export function AgentCard({
   onUpdateMindscape,
   onUpdateCoreSkill,
   onToggleFavorite,
+  onToggleDisc,
 }: AgentCardProps) {
   const rarity = getRarityBadge(agent.rarity);
   const specialty = getSpecialtyBadge(agent.specialty);
   const element = getElementBadge(agent.element);
 
+  const score = calculateDiscScore(agent);
+
   // Investment chips + slider share the cross-game rust→teal gradient
   const levelPs = getProgressStyle(agent.level, 1, 60);
   const mindscapePs = getProgressStyle(agent.mindscape, 0, 6);
   const coreSkillPs = getProgressStyle(agent.coreSkill, 0, 6);
+
+  // Suit counts for the gear one-liner
+  const suitCounts = ZZZ_DISC_SLOTS.reduce((acc, slot) => {
+    const suitId = agent.discs[slot]?.suitId;
+    if (suitId) acc.set(suitId, (acc.get(suitId) ?? 0) + 1);
+    return acc;
+  }, new Map<string, number>());
+  const sortedSuits = [...suitCounts.entries()].sort((a, b) => b[1] - a[1]);
+  const equippedColor = getProgressStyle(90, 1, 90).color;
+  const emptyColor = getProgressStyle(0, 0, 1).color;
+
+  const bp = agent.buildPreferences;
+  const hasAnyPreference =
+    Boolean(bp.discSuit4Id) ||
+    Boolean(bp.discSuit2Id) ||
+    bp.subStats.length > 0 ||
+    Boolean(bp.comments) ||
+    ZZZ_VARIABLE_MAIN_SLOTS.some((s) => bp.mainStats[s].length > 0);
+
+  const suitName = (suitId: string) =>
+    ALL_ZZZ_DISC_SUITS.find((s) => s.id === suitId)?.name ?? suitId;
 
   return (
     <GameCardShell
@@ -85,7 +120,27 @@ export function AgentCard({
           />
         </>
       }
-      summaryLine={[]}
+      headerExtra={<ScoreBadge score={score} />}
+      temperScore={score}
+      summaryLine={[
+        // Suit digest — always rendered so collapsed heights stay uniform.
+        sortedSuits.length > 0 ? (
+          <>
+            {sortedSuits.map(([suitId, count], i) => (
+              <span key={suitId}>
+                {i > 0 && <span style={{ color: equippedColor }}>&nbsp;&middot;&nbsp;</span>}
+                <span style={{ color: equippedColor }}>
+                  {ZZZ_DISC_SUIT_SHORT_NAMES[suitId] ?? suitName(suitId)} {count}
+                </span>
+              </span>
+            ))}
+          </>
+        ) : (
+          <span className="no-equip" style={{ color: emptyColor }}>
+            &mdash;
+          </span>
+        ),
+      ]}
       editBody={
         <>
           <ProgressSection label="Level" value={`${agent.level} / 60`}>
@@ -118,6 +173,80 @@ export function AgentCard({
               onChange={(v) => onUpdateCoreSkill(agent.id, v === null ? 0 : Number(v))}
             />
           </ProgressSection>
+
+          {/* ── Drive Discs (slot grid + Target Build) ────────────── */}
+          <div className="card-section-group">
+            <div className="card-section-group-header">Drive Discs</div>
+
+            <ProgressSection label="Disc Suits">
+              <div className="equip-slot-grid">
+                {ZZZ_DISC_SLOTS.map((slot) => {
+                  const equipped = agent.discs[slot];
+                  const isActive = equipped && equipped.suitId;
+                  const suit = isActive
+                    ? ALL_ZZZ_DISC_SUITS.find((s) => s.id === equipped.suitId)
+                    : undefined;
+                  return (
+                    <div
+                      key={slot}
+                      className={`equip-slot-cell ${isActive ? 'active' : ''}`}
+                      onClick={() => onToggleDisc(agent.id, slot)}
+                      title={`Slot ${slot}${isActive ? ` - ${equipped.mainStat}` : ''}`}
+                    >
+                      {suit ? (
+                        <img
+                          src={getZzzDiscSuitIconUrl(suit.icon)}
+                          alt="Disc"
+                          className="equip-slot-img"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <span className="equip-slot-icon">◍</span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </ProgressSection>
+
+            {hasAnyPreference && (
+              <ProgressSection label="Target Build" className="build-prefs-display">
+                <div className="prefs-display-grid">
+                  {(bp.discSuit4Id || bp.discSuit2Id) && (
+                    <div className="pref-display-row">
+                      <span className="pref-display-label">Suits</span>
+                      <div className="pref-display-chain">
+                        {bp.discSuit4Id && (
+                          <span className="pref-stat-badge">{suitName(bp.discSuit4Id)}</span>
+                        )}
+                        {bp.discSuit2Id && (
+                          <span className="pref-stat-badge">{suitName(bp.discSuit2Id)}</span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {ZZZ_VARIABLE_MAIN_SLOTS.map((slot) => (
+                    <PreferenceChainReadout
+                      key={slot}
+                      label={`Slot ${slot}`}
+                      chain={bp.mainStats[slot]}
+                    />
+                  ))}
+
+                  <PreferenceChainReadout label="Subs" chain={bp.subStats} />
+
+                  {bp.comments && (
+                    <div className="pref-display-row build-comments-row">
+                      <div className="pref-comments-text">{bp.comments}</div>
+                    </div>
+                  )}
+                </div>
+              </ProgressSection>
+            )}
+          </div>
         </>
       }
     />

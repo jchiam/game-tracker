@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Automated update pipeline for Zenless Zone Zero catalog data: fetches the Enka.Network store JSONs, resolves localized names, regenerates the agent catalog file, seeds portraits to ImageKit, and runs weekly via GitHub Actions with an auto-PR on changes. Structured so later phases extend it with Drive Disc and W-Engine catalogs.
+Automated update pipeline for Zenless Zone Zero catalog data: fetches the Enka.Network store JSONs, resolves localized names, regenerates the agent and Drive Disc suit catalog files, seeds portraits and suit icons to ImageKit, and runs weekly via GitHub Actions with an auto-PR on changes. Structured so later phases extend it with a W-Engine catalog.
 
 ## Requirements
 
@@ -56,3 +56,22 @@ The script SHALL structure its fetch and codegen so that Phase 2 (Drive Disc sui
 
 - **WHEN** a later phase adds W-Engine or Drive Disc catalog generation
 - **THEN** the addition is a new fetch + map + emit section reusing the same loc resolution and `ensureAsset` plumbing, and the agent codegen path is unchanged
+
+### Requirement: Drive Disc suit catalog generation
+
+The update script SHALL additionally fetch `store/zzz/equipments.json`, resolve suit display names from the English localization table via the suit's `Name` loc key, upload each suit icon (fetched from the Enka UI CDN at the suit's `Icon` path) to ImageKit under `zenless_zone_zero/disc-suits/{suitId}.png` via the shared `ensureAsset` plumbing, and regenerate `src/data/zenless-zone-zero/disc_suits.ts` with the generated-file banner and a catalog diff printed per run. A `--reupload-discs` flag (and the existing `--reupload-all`) SHALL force icon re-upload. The agent codegen path SHALL be unchanged by this addition, and the multi-catalog structure SHALL follow the HSR script's parallel load/generate + single fetch block + single write block shape.
+
+#### Scenario: Fresh run emits suit catalog
+
+- **WHEN** the script runs against the live Enka store
+- **THEN** `disc_suits.ts` is regenerated with all suits having resolvable English names, alphabetically sorted, and a suit diff is printed alongside the agent diff
+
+#### Scenario: Existing suit icons skipped
+
+- **WHEN** a suit icon already exists in ImageKit
+- **THEN** the upload is skipped and counted as skipped, unless `--reupload-discs` or `--reupload-all` was passed
+
+#### Scenario: Icon fetch failure is non-fatal
+
+- **WHEN** a suit icon download or upload fails
+- **THEN** the suit still appears in the catalog, the failure is counted and the icon listed as missing, and the run completes
