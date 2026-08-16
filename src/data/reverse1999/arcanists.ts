@@ -1,7 +1,8 @@
 // Auto-generated from kornblume, Reverse: 1999 Wiki, and CN ArcanistMap — do not edit manually.
 // Run `node scripts/update-r1999-data.mjs` or trigger the GitHub Actions workflow to update.
 // imageUrl resolves to the best available mugshot: CN headicon first, kornblume icon as fallback.
-// hasEuphoria: set to true when the game releases Euphoria for this arcanist.
+// hasEuphoria: true when either source knows the arcanist's Euphoria — kornblume
+// material data or the wiki {{EuphoriaStats}} template.
 
 export interface Arcanist {
   id: string;
@@ -111,6 +112,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: false,
   },
   {
+    id: 'cheng_heguang',
+    name: 'Cheng Heguang',
+    afflatus: 'Star',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/cheng_heguang.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'copp_lia',
     name: 'Coppélia',
     afflatus: 'Mineral',
@@ -196,7 +205,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/hissabeth.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'igor',
@@ -220,7 +229,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/j.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'jessica',
@@ -372,7 +381,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Spirit',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/nautika.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'noire',
@@ -397,6 +406,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/pickles.webp',
     hasEuphoria: true,
+  },
+  {
+    id: 'ramona',
+    name: 'Ramona',
+    afflatus: 'Plant',
+    damageType: 'Mental',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/ramona.webp',
+    hasEuphoria: false,
   },
   {
     id: 'recoleta',

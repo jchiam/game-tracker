@@ -59,6 +59,15 @@ const NAME_OVERRIDES = {
   Yenisei: 3082, // nameEng: 'Енисей' — Cyrillic
 };
 
+// Arcanists released on Global that kornblume still flags IsReleased: false.
+// Their upstream records are stubs (all-zero Stats) even though the character
+// is live, so the release filter below has to let them through explicitly.
+// Prune a name from this set once upstream corrects its flag.
+const FORCE_RELEASED = new Set([
+  'Cheng Heguang', // Global release 2026-05-07
+  'Ramona', // Global release 2026-06-18
+]);
+
 // Build a lookup function from ArcanistMap entries: kornblumeName → headiconId string.
 // Uses four strategies in priority order before falling back to NAME_OVERRIDES.
 function buildHeadiconLookup(arcanistMap) {
@@ -181,7 +190,8 @@ function generateArcanistsTs(arcanists) {
       'update-r1999-data.mjs',
     ),
     '// imageUrl resolves to the best available mugshot: CN headicon first, kornblume icon as fallback.',
-    '// hasEuphoria: set to true when the game releases Euphoria for this arcanist.',
+    "// hasEuphoria: true when either source knows the arcanist's Euphoria — kornblume",
+    '// material data or the wiki {{EuphoriaStats}} template.',
     '',
     'export interface Arcanist {',
     '  id: string;',
@@ -389,9 +399,14 @@ async function main() {
   const findHeadiconId = buildHeadiconLookup(arcanistMap);
   console.log(`  ArcanistMap loaded (${arcanistMap.length} entries)`);
 
-  // Filter to released playable characters only (rarity 5 and 6)
+  // Filter to released playable characters only (rarity 5 and 6).
+  // FORCE_RELEASED covers Global-released arcanists kornblume still flags unreleased.
   const releasedRaw = kornblumeData.filter(
-    (c) => c.IsReleased === true && c.Name && c.Id && (c.Rarity === 5 || c.Rarity === 6),
+    (c) =>
+      (c.IsReleased === true || FORCE_RELEASED.has(c.Name)) &&
+      c.Name &&
+      c.Id &&
+      (c.Rarity === 5 || c.Rarity === 6),
   );
 
   console.log(`  Found ${releasedRaw.length} released arcanists in kornblume`);
@@ -431,6 +446,13 @@ async function main() {
     const damageType = wikiDamage.get(c.Name) ?? existingDamage.get(c.Name) ?? 'Unknown';
 
     if (damageType === 'Unknown') unknownDamage.push(c.Name);
+
+    // Euphoria: kornblume ships the upgrade's material list as soon as the
+    // euphoria exists, while the wiki's {{EuphoriaStats}} template lags behind
+    // by several arcanists — so either source alone flipping true is enough.
+    const hasEuphoria =
+      (c.Euphoria?.length ?? 0) > 0 ||
+      (wikiEuphoria.get(c.Name) ?? existingEuphoria.get(c.Name) ?? false);
 
     const headiconId = findHeadiconId(c.Name);
     if (!headiconId) unmatchedHeadicons.push(c.Name);
@@ -473,7 +495,7 @@ async function main() {
       damageType,
       rarity: c.Rarity,
       imageUrl,
-      hasEuphoria: wikiEuphoria.get(c.Name) ?? existingEuphoria.get(c.Name) ?? false,
+      hasEuphoria,
     });
   }
 
