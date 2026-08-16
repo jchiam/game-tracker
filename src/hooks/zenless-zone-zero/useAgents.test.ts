@@ -167,6 +167,16 @@ describe('useAgents', () => {
     expect(sorted[0].isFavorited).toBe(true);
   });
 
+  it('getFilteredRoster level sort orders non-favorited agents by level descending', async () => {
+    mockLoadAgentsFromDB.mockResolvedValue([
+      trackedFixture(0, { dbId: 'db-1', level: 20 }),
+      trackedFixture(1, { dbId: 'db-2', level: 55 }),
+    ]);
+    const { result } = await setup();
+    const sorted = result.current.getFilteredRoster('', 'LEVEL');
+    expect(sorted.map((a) => a.level)).toEqual([55, 20]);
+  });
+
   it('getFilteredRoster score sort orders by score descending, sentinel last', async () => {
     mockLoadAgentsFromDB.mockResolvedValue([
       trackedFixture(0, { dbId: 'db-1' }),

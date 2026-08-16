@@ -246,6 +246,44 @@ describe('DiscEditorModal', () => {
     });
   });
 
+  it('emits an updated per-slot main chain when a priority is added', () => {
+    const { props } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    // First add button belongs to the Slot 4 main chain (3 main chains + subs follow).
+    fireEvent.click(screen.getAllByRole('button', { name: '+ Add Priority' })[0]);
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({
+        mainStats: expect.objectContaining({
+          4: [expect.objectContaining({ stat: expect.any(String) })],
+        }),
+      }),
+    );
+  });
+
+  it('emits an updated substat chain when a priority is added', () => {
+    const { props } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    // Last add button is the global substat chain.
+    const addButtons = screen.getAllByRole('button', { name: '+ Add Priority' });
+    fireEvent.click(addButtons[addButtons.length - 1]);
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({
+        subStats: [expect.objectContaining({ stat: expect.any(String) })],
+      }),
+    );
+  });
+
+  it('emits updated comments when the textarea changes', () => {
+    const { container, props } = renderModal();
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    fireEvent.change(container.querySelector('textarea')!, {
+      target: { value: 'anomaly build' },
+    });
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith(
+      expect.objectContaining({ comments: 'anomaly build' }),
+    );
+  });
+
   it('emits the whole preferences object when clearing the 2pc suit', () => {
     const agent = makeAgent({
       buildPreferences: {

@@ -17,6 +17,7 @@ vi.mock('@/lib/imagekit', () => ({
   getAvatarUrl: (path: string) => path,
   getZzzAgentMugshotUrl: (path: string) => path,
   getZzzAgentAvatarUrl: (path: string) => path,
+  getZzzDiscSuitIconUrl: (path: string) => path,
 }));
 
 import { useAgents } from '@/hooks/zenless-zone-zero/useAgents';
@@ -246,6 +247,55 @@ describe('ZzzPage', () => {
       { agentId: '1191', slot: 4 },
       expect.objectContaining({ suitId: '31000' }),
     );
+  });
+
+  it('routes editor remove, preference, and close actions through the hook', () => {
+    const session = createMockSession();
+    const removeDiscData = vi.fn();
+    const saveDiscPreferences = vi.fn();
+    const agent = {
+      ...makeAgent('1191', 'Ellen'),
+      discs: {
+        1: null,
+        2: null,
+        3: null,
+        4: { suitId: '31000', mainStat: 'CRIT Rate', subStats: [] },
+        5: null,
+        6: null,
+      },
+    };
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      trackedAgents: [agent],
+      removeDiscData,
+      saveDiscPreferences,
+      getFilteredRoster: vi.fn().mockReturnValue([agent]),
+    });
+    const { container } = renderWithProviders(
+      <ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(container.querySelectorAll('.equip-slot-cell')[3]);
+
+    // Clearing the suit routes through removeDiscData.
+    fireEvent.change(container.querySelector('select[name="disc-4-suit"]')!, {
+      target: { value: '' },
+    });
+    expect(removeDiscData).toHaveBeenCalledWith({ agentId: '1191', slot: 4 });
+
+    // A preference edit routes through saveDiscPreferences.
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    fireEvent.change(container.querySelector('select[name="pref-suit-4"]')!, {
+      target: { value: '31000' },
+    });
+    expect(saveDiscPreferences).toHaveBeenCalledWith(
+      '1191',
+      expect.objectContaining({ discSuit4Id: '31000' }),
+    );
+
+    // Done unmounts the editor.
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByText('Drive Discs — Ellen')).toBeNull();
   });
 
   it('closes AddAgentModal after an agent is added', async () => {

@@ -213,6 +213,31 @@ describe('agentService', () => {
     ]);
   });
 
+  it('upsertDisc rethrows when the disc upsert fails', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const discBuilder = createBuilder({ data: null, error: new Error('upsert down') });
+    mockFrom.mockReturnValue(discBuilder);
+
+    await expect(
+      service.upsertDisc('db-uuid-1', 4, { suitId: '31000', mainStat: null, subStats: [] }),
+    ).rejects.toThrow('upsert down');
+    spy.mockRestore();
+  });
+
+  it('upsertDisc rethrows when the substat insert fails', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const discBuilder = createBuilder({ data: { id: 'disc-row-1' }, error: null });
+    const substatBuilder = createBuilder({ data: null, error: new Error('insert down') });
+    mockFrom.mockImplementation((table: string) =>
+      table === 'zzz_equipped_discs' ? discBuilder : substatBuilder,
+    );
+
+    await expect(
+      service.upsertDisc('db-uuid-1', 4, { suitId: '31000', mainStat: null, subStats: ['PEN'] }),
+    ).rejects.toThrow('insert down');
+    spy.mockRestore();
+  });
+
   it('upsertDisc skips the substat insert when the list is empty', async () => {
     const discBuilder = createBuilder({ data: { id: 'disc-row-1' }, error: null });
     const substatBuilder = createBuilder({ data: null, error: null });

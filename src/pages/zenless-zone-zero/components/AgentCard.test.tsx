@@ -212,6 +212,15 @@ describe('AgentCard', () => {
     expect(container.querySelectorAll('.equip-slot-img')).toHaveLength(3);
   });
 
+  it('hides a suit icon image that fails to load', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithGear()} />);
+    await user.click(screen.getByTitle('Edit'));
+    const img = container.querySelector('.equip-slot-img') as HTMLImageElement;
+    fireEvent.error(img);
+    expect(img.style.display).toBe('none');
+  });
+
   it('hides the Target Build readout when no preference is set', async () => {
     const user = userEvent.setup();
     const { container } = render(<AgentCard {...defaultProps} />);
