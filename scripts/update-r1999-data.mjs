@@ -190,7 +190,8 @@ function generateArcanistsTs(arcanists) {
       'update-r1999-data.mjs',
     ),
     '// imageUrl resolves to the best available mugshot: CN headicon first, kornblume icon as fallback.',
-    '// hasEuphoria: set to true when the game releases Euphoria for this arcanist.',
+    "// hasEuphoria: true when either source knows the arcanist's Euphoria — kornblume",
+    '// material data or the wiki {{EuphoriaStats}} template.',
     '',
     'export interface Arcanist {',
     '  id: string;',
@@ -446,6 +447,13 @@ async function main() {
 
     if (damageType === 'Unknown') unknownDamage.push(c.Name);
 
+    // Euphoria: kornblume ships the upgrade's material list as soon as the
+    // euphoria exists, while the wiki's {{EuphoriaStats}} template lags behind
+    // by several arcanists — so either source alone flipping true is enough.
+    const hasEuphoria =
+      (c.Euphoria?.length ?? 0) > 0 ||
+      (wikiEuphoria.get(c.Name) ?? existingEuphoria.get(c.Name) ?? false);
+
     const headiconId = findHeadiconId(c.Name);
     if (!headiconId) unmatchedHeadicons.push(c.Name);
 
@@ -487,7 +495,7 @@ async function main() {
       damageType,
       rarity: c.Rarity,
       imageUrl,
-      hasEuphoria: wikiEuphoria.get(c.Name) ?? existingEuphoria.get(c.Name) ?? false,
+      hasEuphoria,
     });
   }
 
