@@ -110,13 +110,14 @@ export function useThieves(session: Session | null, isAuthLoading: boolean) {
       searchTerm: string,
       sortBy: 'ALPHA' | 'LEVEL' | 'SCORE',
       predicate?: (t: P5xTrackedThief) => boolean,
+      entities?: P5xTrackedThief[],
     ) => {
       let compare: ((a: P5xTrackedThief, b: P5xTrackedThief) => number) | undefined;
       if (sortBy === 'LEVEL') compare = (a, b) => b.level - a.level;
       // Descending score; insufficient-data (-1) sorts last among non-favorites.
       else if (sortBy === 'SCORE')
         compare = (a, b) => calculateRevelationScore(b) - calculateRevelationScore(a);
-      const sorted = filterRoster(searchTerm, compare);
+      const sorted = filterRoster(searchTerm, compare, entities);
       return predicate ? sorted.filter(predicate) : sorted;
     },
     [filterRoster],

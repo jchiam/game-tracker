@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, act } from '@testing-library/react';
 import { P5xPage } from './P5xPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import type { P5xTrackedThief, Party } from '@/types';
@@ -276,5 +276,104 @@ describe('P5xPage', () => {
     expect(predicate({ ...makeThief('b', 'B'), skillProgress: 0, weaponRarity: 3 })).toBe(false);
     // rose-gated but 5★ weapon → excluded
     expect(predicate({ ...makeThief('c', 'C'), skillProgress: 1, weaponRarity: 5 })).toBe(false);
+  });
+
+  // --- Projection stability (deferred eviction / reorder) ---
+
+  /** Filter honouring predicate, entities override, and LEVEL sort. */
+  function projectionFilter(live: { current: P5xTrackedThief[] }) {
+    return vi.fn(
+      (
+        term: string,
+        sortBy: string,
+        predicate?: (t: P5xTrackedThief) => boolean,
+        entities?: P5xTrackedThief[],
+      ) => {
+        let list = entities ?? live.current;
+        if (predicate) list = list.filter(predicate);
+        if (term.trim()) list = list.filter((t) => t.name.includes(term));
+        return [...list].sort(
+          sortBy === 'LEVEL' ? (a, b) => b.level - a.level : (a, b) => a.name.localeCompare(b.name),
+        );
+      },
+    );
+  }
+
+  /** Keep getFilteredRoster identity stable across rerenders — a new identity is the chip-toggle signal. */
+  function mockRoster(
+    live: { current: P5xTrackedThief[] },
+    filter: ReturnType<typeof projectionFilter>,
+  ) {
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: live.current,
+      getFilteredRoster: filter,
+    });
+  }
+
+  it('holds a card that stops matching the rose gate until edit commit', () => {
+    const session = createMockSession();
+    const live = { current: [{ ...makeThief('ann', 'Ann Takamaki'), skillProgress: 1 }] };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
+    expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
+
+    // "Complete the gated skill": live data stops matching mid-edit
+    fireEvent.click(screen.getByTitle('Edit'));
+    live.current = [{ ...makeThief('ann', 'Ann Takamaki'), skillProgress: 2 }];
+    mockRoster(live, filter);
+    rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches 🌹 Gated/)).toBeInTheDocument();
+
+    // ✓ commit releases via the exit animation (fallback timer in jsdom)
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(screen.getByTitle('Done editing'));
+      expect(container.querySelector('.game-card.is-exiting')).not.toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(700);
+      });
+      expect(screen.queryByText('Ann Takamaki')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('LEVEL sort does not reorder mid-edit, reorders on commit', () => {
+    const session = createMockSession();
+    const live = {
+      current: [
+        { ...makeThief('ann', 'Ann Takamaki'), level: 10 },
+        { ...makeThief('ren', 'Ren Amamiya'), level: 20 },
+      ],
+    };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/sorted alphabetically/i)); // LEVEL sort
+    const names = () =>
+      [...container.querySelectorAll('.game-card-name')].map((n) => n.textContent);
+    expect(names()).toEqual(['Ren Amamiya', 'Ann Takamaki']);
+
+    fireEvent.click(screen.getAllByTitle('Edit')[1]); // Ann's card
+    live.current = [
+      { ...makeThief('ann', 'Ann Takamaki'), level: 60 },
+      { ...makeThief('ren', 'Ren Amamiya'), level: 20 },
+    ];
+    mockRoster(live, filter);
+    rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(names()).toEqual(['Ren Amamiya', 'Ann Takamaki']); // order held
+
+    fireEvent.click(screen.getByTitle('Done editing'));
+    expect(names()).toEqual(['Ann Takamaki', 'Ren Amamiya']); // released: re-sorted
   });
 });

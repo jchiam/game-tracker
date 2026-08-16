@@ -472,5 +472,43 @@ describe('useRoster', () => {
       expect(sorted[0].name).toBe('Alpha'); // 20
       expect(sorted[1].name).toBe('Beta'); // 10
     });
+
+    it('is referentially stable across entity edits', async () => {
+      config.updateEntity = vi.fn().mockResolvedValue(undefined);
+      mockLoadFromDB.mockResolvedValue([
+        { id: 'char-1', name: 'Char One', isFavorited: false, dbId: 'db-id-1', extraValue: 0 },
+      ]);
+
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      const before = result.current.filterRoster;
+      act(() => {
+        result.current.applyPatch('char-1', { extraValue: 42 });
+      });
+
+      expect(result.current.filterRoster).toBe(before);
+      // Live data is still visible through the stable callback (ref-backed)
+      expect(result.current.filterRoster('')[0].extraValue).toBe(42);
+    });
+
+    it('projects over the entities override instead of live state when given', async () => {
+      mockLoadFromDB.mockResolvedValue([
+        { id: 'char-1', name: 'Beta', isFavorited: false },
+        { id: 'char-2', name: 'Alpha', isFavorited: false },
+      ]);
+
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      const basis: TestTracked[] = [{ id: 'char-9', name: 'Snapshot', isFavorited: false }];
+      const projected = result.current.filterRoster('', undefined, basis);
+      expect(projected).toHaveLength(1);
+      expect(projected[0].id).toBe('char-9');
+
+      // Search runs against the override too
+      expect(result.current.filterRoster('Snapshot', undefined, basis)).toHaveLength(1);
+      expect(result.current.filterRoster('Alpha', undefined, basis)).toHaveLength(0);
+    });
   });
 });

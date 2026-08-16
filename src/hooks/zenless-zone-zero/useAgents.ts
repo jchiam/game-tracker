@@ -101,6 +101,7 @@ export function useAgents(session: Session | null, isAuthLoading: boolean) {
       searchTerm: string,
       sortBy: 'ALPHA' | 'LEVEL' | 'SCORE',
       scoreFor?: (a: ZzzTrackedAgent) => number,
+      entities?: ZzzTrackedAgent[],
     ) =>
       filterRoster(
         searchTerm,
@@ -109,6 +110,7 @@ export function useAgents(session: Session | null, isAuthLoading: boolean) {
           : sortBy === 'SCORE' && scoreFor
             ? (a, b) => scoreFor(b) - scoreFor(a)
             : undefined,
+        entities,
       ),
     [filterRoster],
   );

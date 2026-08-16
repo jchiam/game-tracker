@@ -54,7 +54,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     : null;
 
   const filteredGetRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE') => {
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE', entities?: P5xTrackedThief[]) => {
       // Compose the active chip predicates as a logical AND; undefined when none
       // active preserves the no-predicate fast path.
       const predicate =
@@ -62,23 +62,45 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
           ? (t: P5xTrackedThief) =>
               (!roseGateFilter || t.skillProgress === 1) && (!weaponFilter || t.weaponRarity < 5)
           : undefined;
-      return getFilteredRoster(searchTerm, sortBy, predicate);
+      return getFilteredRoster(searchTerm, sortBy, predicate, entities);
     },
     [getFilteredRoster, roseGateFilter, weaponFilter],
   );
 
-  const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
-    useRosterView({
-      sortModes: [
-        { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
-        { key: 'LEVEL', label: 'Lv', described: 'by Level' },
-        { key: 'SCORE', label: '★', described: 'by Revelation Score' },
-      ],
-      searchPlaceholder: 'Search by name, codename, persona, role, or element...',
-      addTitle: 'Add Phantom Thief',
-      addDisabled: isLoadError,
-      filterRoster: filteredGetRoster,
-    });
+  // Ghost-tag copy for a held card — names the first gate its live data fails.
+  const describeHeld = useCallback(
+    (t: P5xTrackedThief) => {
+      if (roseGateFilter && t.skillProgress !== 1) return 'no longer matches 🌹 Gated';
+      if (weaponFilter && t.weaponRarity >= 5) return 'no longer matches ⚔ <5★';
+      return null;
+    },
+    [roseGateFilter, weaponFilter],
+  );
+
+  const {
+    view,
+    setView,
+    filteredRoster,
+    isAddModalOpen,
+    closeAddModal,
+    search,
+    sort,
+    add,
+    projection,
+  } = useRosterView({
+    sortModes: [
+      { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+      { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+      { key: 'SCORE', label: '★', described: 'by Revelation Score' },
+    ],
+    searchPlaceholder: 'Search by name, codename, persona, role, or element...',
+    addTitle: 'Add Phantom Thief',
+    addDisabled: isLoadError,
+    filterRoster: filteredGetRoster,
+    trackedEntities: trackedThieves,
+    // Held detection only pays its extra projection pass while a gate is on
+    describeHeld: roseGateFilter || weaponFilter ? describeHeld : undefined,
+  });
 
   return (
     <RosterPageLayout
@@ -137,12 +159,20 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
           onUpdateLevel={updateLevel}
           onUpdateAwareness={updateAwareness}
           onUpdateSkillProgress={updateSkillProgress}
-          onToggleFavorite={toggleFavorite}
+          onToggleFavorite={(id, value) => {
+            // Favorite is a completed intent — release in the same handler
+            toggleFavorite(id, value);
+            projection.refreshBasis(id);
+          }}
           onUpdateMindscapeProgress={updateMindscapeProgress}
           onUpdateWeaponRarity={updateWeaponRarity}
           onUpdateWeaponLevel={updateWeaponLevel}
           onUpdateWeaponForge={updateWeaponForge}
           onOpenRevelations={(id, slot) => setEditingRev({ thiefId: id, anchorSlot: slot })}
+          onEditCommit={() => projection.refreshBasis(thief.id)}
+          heldReason={projection.heldReason(thief.id)}
+          isExiting={projection.isExiting(thief.id)}
+          onExitEnd={() => projection.completeExit(thief.id)}
         />
       ))}
       partiesTab={
@@ -174,7 +204,11 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
           anchorSlot={editingRev.anchorSlot}
           onUpdateSlot={(slot, data) => updateRevelationSlot(editingRevThief.id, slot, data)}
           onSavePreferences={(prefs) => updateRevelationPreferences(editingRevThief.id, prefs)}
-          onClose={() => setEditingRev(null)}
+          onClose={() => {
+            // Equipment-modal close is a release point
+            projection.refreshBasis(editingRevThief.id);
+            setEditingRev(null);
+          }}
         />
       )}
     </RosterPageLayout>

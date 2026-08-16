@@ -280,6 +280,7 @@ describe('HsrPage', () => {
       'Blade',
       expect.any(String),
       expect.any(Function),
+      expect.any(Array),
     );
   });
 
@@ -378,7 +379,12 @@ describe('HsrPage', () => {
     });
     renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByTitle(/sorted by build score/i));
-    expect(getFilteredRoster).toHaveBeenCalledWith('', 'ALPHA', expect.any(Function));
+    expect(getFilteredRoster).toHaveBeenCalledWith(
+      '',
+      'ALPHA',
+      expect.any(Function),
+      expect.any(Array),
+    );
   });
 
   // --- AddCharacterModal: adding closes the modal ---
@@ -475,5 +481,51 @@ describe('HsrPage', () => {
     expect(screen.getByText(/no parties configured/i)).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: /roster/i }));
     expect(screen.getByText('Acheron')).toBeInTheDocument();
+  });
+
+  // --- Projection stability: order holds mid-edit, re-sorts on ✓ commit ---
+  it('SCORE sort does not reorder mid-edit, reorders on commit', () => {
+    const session = createMockSession();
+    const live = {
+      current: [
+        { ...makeChar('acheron', 'Acheron'), level: 10 },
+        { ...makeChar('blade', 'Blade'), level: 20 },
+      ],
+    };
+    // Stands in for the SCORE comparator — only basis-vs-live ordering is under
+    // test, so level doubles as the score. Identity must stay stable across
+    // rerenders (a new identity is the refresh-all signal).
+    const filter = vi.fn(
+      (term: string, _sortBy: string, _scoreFor: unknown, entities?: HsrTrackedCharacter[]) => {
+        let list = entities ?? live.current;
+        if (term.trim()) list = list.filter((c) => c.name.includes(term));
+        return [...list].sort((a, b) => b.level - a.level);
+      },
+    );
+    const mock = () =>
+      vi.mocked(useCharacters).mockReturnValue({
+        ...defaultCharactersHook,
+        trackedCharacters: live.current,
+        getFilteredRoster: filter,
+      });
+    mock();
+    const { rerender, container } = renderWithProviders(
+      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    const names = () =>
+      [...container.querySelectorAll('.game-card-name')].map((n) => n.textContent);
+    expect(names()).toEqual(['Blade', 'Acheron']);
+
+    fireEvent.click(screen.getAllByTitle('Edit')[1]); // Acheron's card
+    live.current = [
+      { ...makeChar('acheron', 'Acheron'), level: 50 },
+      { ...makeChar('blade', 'Blade'), level: 20 },
+    ];
+    mock();
+    rerender(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(names()).toEqual(['Blade', 'Acheron']); // order held mid-edit
+
+    fireEvent.click(screen.getByTitle('Done editing'));
+    expect(names()).toEqual(['Acheron', 'Blade']); // released: re-sorted
   });
 });

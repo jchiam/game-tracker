@@ -32,6 +32,8 @@ interface CharacterCardProps {
     id: string,
     prefs: N2ETrackedCharacter['cartridgePreferences'],
   ) => void;
+  /** Projection-stability release point — fired on the ✓ edit collapse and cartridge-modal close. */
+  onEditCommit?: () => void;
 }
 
 export function CharacterCard({
@@ -44,6 +46,7 @@ export function CharacterCard({
   onUpdateCartridge,
   onToggleFavorite,
   onSaveCartridgePreferences,
+  onEditCommit,
 }: CharacterCardProps) {
   const [isCartridgeEditorOpen, setIsCartridgeEditorOpen] = useState(false);
 
@@ -87,6 +90,7 @@ export function CharacterCard({
         isFavorited={character.isFavorited}
         onToggleFavorite={(value) => onToggleFavorite(character.id!, value)}
         onRemove={(e) => onRemove(character.id!, e)}
+        onEditCommit={onEditCommit}
         badges={
           <>
             <GameBadge
@@ -328,7 +332,11 @@ export function CharacterCard({
           character={character}
           onSaveCartridge={(patch) => onUpdateCartridge(character.id!, patch)}
           onSavePreferences={(prefs) => onSaveCartridgePreferences(character.id!, prefs)}
-          onClose={() => setIsCartridgeEditorOpen(false)}
+          onClose={() => {
+            // Equipment-modal close is a release point
+            setIsCartridgeEditorOpen(false);
+            onEditCommit?.();
+          }}
         />
       )}
     </>

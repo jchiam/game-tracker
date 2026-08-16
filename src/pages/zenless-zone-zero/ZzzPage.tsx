@@ -9,6 +9,7 @@ import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import { calculateDiscScore } from '@/utils/discScoring';
 import type { ZzzDiscSlot } from '@/data/zenless-zone-zero/discs';
+import type { ZzzTrackedAgent } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 import './ZzzPage.css';
 
@@ -41,23 +42,33 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
   const filterRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE') =>
-      getFilteredRoster(searchTerm, sortBy, calculateDiscScore),
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE', entities?: ZzzTrackedAgent[]) =>
+      getFilteredRoster(searchTerm, sortBy, calculateDiscScore, entities),
     [getFilteredRoster],
   );
 
-  const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
-    useRosterView({
-      sortModes: [
-        { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
-        { key: 'LEVEL', label: 'Lv', described: 'by Level' },
-        { key: 'SCORE', label: '★', described: 'by Disc Score' },
-      ],
-      searchPlaceholder: 'Search by name, specialty, or element...',
-      addTitle: 'Add Agent',
-      addDisabled: isLoadError,
-      filterRoster,
-    });
+  const {
+    view,
+    setView,
+    filteredRoster,
+    isAddModalOpen,
+    closeAddModal,
+    search,
+    sort,
+    add,
+    projection,
+  } = useRosterView({
+    sortModes: [
+      { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+      { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+      { key: 'SCORE', label: '★', described: 'by Disc Score' },
+    ],
+    searchPlaceholder: 'Search by name, specialty, or element...',
+    addTitle: 'Add Agent',
+    addDisabled: isLoadError,
+    filterRoster,
+    trackedEntities: trackedAgents,
+  });
 
   const [editingDisc, setEditingDisc] = useState<{
     agentId: string;
@@ -96,8 +107,13 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
           onUpdateLevel={updateLevel}
           onUpdateMindscape={updateMindscape}
           onUpdateCoreSkill={updateCoreSkill}
-          onToggleFavorite={toggleFavorite}
+          onToggleFavorite={(id, value) => {
+            // Favorite is a completed intent — release in the same handler
+            toggleFavorite(id, value);
+            projection.refreshBasis(id);
+          }}
           onToggleDisc={(id, slot) => setEditingDisc({ agentId: id, anchorSlot: slot })}
+          onEditCommit={() => projection.refreshBasis(agent.id)}
         />
       ))}
       partiesTab={
@@ -121,7 +137,11 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
           }
           onRemoveDisc={(slot) => removeDiscData({ agentId: editingAgent.id, slot })}
           onUpdateBuildPreferences={(newPrefs) => saveDiscPreferences(editingAgent.id, newPrefs)}
-          onClose={() => setEditingDisc(null)}
+          onClose={() => {
+            // Equipment-modal close is a release point
+            projection.refreshBasis(editingAgent.id);
+            setEditingDisc(null);
+          }}
         />
       )}
 

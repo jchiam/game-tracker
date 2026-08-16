@@ -66,8 +66,12 @@ export function useOperators(session: Session | null, isAuthLoading: boolean) {
   };
 
   const getFilteredRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') =>
-      filterRoster(searchTerm, sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined),
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL', entities?: AeTrackedOperator[]) =>
+      filterRoster(
+        searchTerm,
+        sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined,
+        entities,
+      ),
     [filterRoster],
   );
 

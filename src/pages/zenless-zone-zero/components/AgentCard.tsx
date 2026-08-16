@@ -41,6 +41,8 @@ interface AgentCardProps {
   onUpdateCoreSkill: (id: string, coreSkill: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
   onToggleDisc: (id: string, slot: ZzzDiscSlot) => void;
+  /** Projection-stability release point — fired on the ✓ edit collapse. */
+  onEditCommit?: () => void;
 }
 
 export function AgentCard({
@@ -51,6 +53,7 @@ export function AgentCard({
   onUpdateCoreSkill,
   onToggleFavorite,
   onToggleDisc,
+  onEditCommit,
 }: AgentCardProps) {
   const rarity = getRarityBadge(agent.rarity);
   const specialty = getSpecialtyBadge(agent.specialty);
@@ -92,6 +95,7 @@ export function AgentCard({
       entityNoun="Agent"
       isFavorited={agent.isFavorited}
       onToggleFavorite={(value) => onToggleFavorite(agent.id, value)}
+      onEditCommit={onEditCommit}
       onRemove={(e) => onRemove(agent.id, e)}
       badges={
         <>

@@ -40,6 +40,8 @@ interface CharacterCardProps {
   onUpdateLightConeSuperimposition: (id: string, rank: number) => void;
   onEditLightConePrefs: (id: string) => void;
   onUpdateUseAltPortrait: (id: string, value: boolean) => void;
+  /** Projection-stability release point — fired on the ✓ edit collapse. */
+  onEditCommit?: () => void;
 }
 
 const PORTRAIT_OPTIONS = [
@@ -60,6 +62,7 @@ export function CharacterCard({
   onUpdateLightConeSuperimposition,
   onEditLightConePrefs,
   onUpdateUseAltPortrait,
+  onEditCommit,
 }: CharacterCardProps) {
   // The scorer owns the insufficient-data decision: -1 when neither the relic
   // side nor the Light Cone preference side has enough data.
@@ -120,6 +123,7 @@ export function CharacterCard({
       isFavorited={char.isFavorited}
       onToggleFavorite={(value) => onToggleFavorite(char.id, value)}
       onRemove={(e) => onRemove(char.id, e)}
+      onEditCommit={onEditCommit}
       badges={
         <>
           <GameBadge label={char.element} variant="element" modifier={char.element.toLowerCase()} />

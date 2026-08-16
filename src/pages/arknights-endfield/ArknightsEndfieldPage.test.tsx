@@ -347,4 +347,49 @@ describe('ArknightsEndfieldPage', () => {
       expect(screen.queryByRole('heading', { name: /add operator/i })).not.toBeInTheDocument();
     });
   });
+
+  // --- Projection stability: order holds mid-edit, re-sorts on ✓ commit ---
+  it('LEVEL sort does not reorder mid-edit, reorders on commit', () => {
+    const session = createMockSession();
+    const live = {
+      current: [
+        { ...makeOperator('ember', 'Ember'), level: 10 },
+        { ...makeOperator('perlica', 'Perlica'), level: 20 },
+      ],
+    };
+    // Identity must stay stable across rerenders (new identity = refresh-all)
+    const filter = vi.fn((term: string, sortBy: string, entities?: AeTrackedOperator[]) => {
+      let list = entities ?? live.current;
+      if (term.trim()) list = list.filter((o) => o.name.includes(term));
+      return [...list].sort(
+        sortBy === 'LEVEL' ? (a, b) => b.level - a.level : (a, b) => a.name.localeCompare(b.name),
+      );
+    });
+    const mock = () =>
+      vi.mocked(useOperators).mockReturnValue({
+        ...defaultOperatorsHook,
+        trackedOperators: live.current,
+        getFilteredRoster: filter,
+      });
+    mock();
+    const { rerender, container } = renderWithProviders(
+      <ArknightsEndfieldPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/sorted alphabetically/i)); // LEVEL sort
+    const names = () =>
+      [...container.querySelectorAll('.game-card-name')].map((n) => n.textContent);
+    expect(names()).toEqual(['Perlica', 'Ember']);
+
+    fireEvent.click(screen.getAllByTitle('Edit')[1]); // Ember's card
+    live.current = [
+      { ...makeOperator('ember', 'Ember'), level: 80 },
+      { ...makeOperator('perlica', 'Perlica'), level: 20 },
+    ];
+    mock();
+    rerender(<ArknightsEndfieldPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(names()).toEqual(['Perlica', 'Ember']); // order held mid-edit
+
+    fireEvent.click(screen.getByTitle('Done editing'));
+    expect(names()).toEqual(['Ember', 'Perlica']); // released: re-sorted
+  });
 });

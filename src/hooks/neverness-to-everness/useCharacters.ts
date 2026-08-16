@@ -106,13 +106,13 @@ export function useCharacters(session: Session | null, isAuthLoading: boolean) {
   };
 
   const getFilteredRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE') => {
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE', entities?: N2ETrackedCharacter[]) => {
       let compare: ((a: N2ETrackedCharacter, b: N2ETrackedCharacter) => number) | undefined;
       if (sortBy === 'LEVEL') compare = (a, b) => b.level - a.level;
       // Descending score; insufficient-data (-1) sorts last among non-favorites.
       else if (sortBy === 'SCORE')
         compare = (a, b) => calculateCartridgeScore(b) - calculateCartridgeScore(a);
-      return filterRoster(searchTerm, compare);
+      return filterRoster(searchTerm, compare, entities);
     },
     [filterRoster],
   );

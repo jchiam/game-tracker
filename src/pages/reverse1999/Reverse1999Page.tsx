@@ -41,7 +41,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
   const [gluttonyGateFilter, setGluttonyGateFilter] = useState(false);
 
   const filteredGetRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL') => {
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL', entities?: R1999TrackedArcanist[]) => {
       const gates: Array<(a: R1999TrackedArcanist) => boolean> = [];
       if (resonanceGateFilter) gates.push((a) => a.resonanceLevel > 0 && a.resonanceLevel < 15);
       if (gluttonyGateFilter)
@@ -49,22 +49,46 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       const predicate = gates.length
         ? (a: R1999TrackedArcanist) => gates.every((g) => g(a))
         : undefined;
-      return getFilteredRoster(searchTerm, sortBy, predicate);
+      return getFilteredRoster(searchTerm, sortBy, predicate, entities);
     },
     [getFilteredRoster, resonanceGateFilter, gluttonyGateFilter],
   );
 
-  const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
-    useRosterView({
-      sortModes: [
-        { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
-        { key: 'LEVEL', label: 'Lv', described: 'by Level' },
-      ],
-      searchPlaceholder: 'Search by name, afflatus, or damage type...',
-      addTitle: 'Add Arcanist',
-      addDisabled: isLoadError,
-      filterRoster: filteredGetRoster,
-    });
+  // Ghost-tag copy for a held card — names the first gate its live data fails.
+  const describeHeld = useCallback(
+    (a: R1999TrackedArcanist) => {
+      if (resonanceGateFilter && !(a.resonanceLevel > 0 && a.resonanceLevel < 15))
+        return 'no longer matches 💠 Resonating';
+      if (gluttonyGateFilter && !(a.psychubeName !== null && a.psychubeAmplification < 5))
+        return 'no longer matches 🍽️ Amplifying';
+      return null;
+    },
+    [resonanceGateFilter, gluttonyGateFilter],
+  );
+
+  const {
+    view,
+    setView,
+    filteredRoster,
+    isAddModalOpen,
+    closeAddModal,
+    search,
+    sort,
+    add,
+    projection,
+  } = useRosterView({
+    sortModes: [
+      { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+      { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+    ],
+    searchPlaceholder: 'Search by name, afflatus, or damage type...',
+    addTitle: 'Add Arcanist',
+    addDisabled: isLoadError,
+    filterRoster: filteredGetRoster,
+    trackedEntities: trackedArcanists,
+    // Held detection only pays its extra projection pass while a gate is on
+    describeHeld: resonanceGateFilter || gluttonyGateFilter ? describeHeld : undefined,
+  });
 
   return (
     <RosterPageLayout
@@ -134,7 +158,15 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
           onUpdateEuphoriaStage={updateEuphoriaStage}
           onUpdatePsychube={updatePsychube}
           onUpdatePsychubeAmplification={updatePsychubeAmplification}
-          onToggleFavorite={toggleFavoriteArcanist}
+          onToggleFavorite={(id, value) => {
+            // Favorite is a completed intent — release in the same handler
+            toggleFavoriteArcanist(id, value);
+            projection.refreshBasis(id);
+          }}
+          onEditCommit={() => projection.refreshBasis(arcanist.id!)}
+          heldReason={projection.heldReason(arcanist.id!)}
+          isExiting={projection.isExiting(arcanist.id!)}
+          onExitEnd={() => projection.completeExit(arcanist.id!)}
         />
       ))}
       partiesTab={

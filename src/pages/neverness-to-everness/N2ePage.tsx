@@ -35,18 +35,28 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
-  const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
-    useRosterView({
-      sortModes: [
-        { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
-        { key: 'LEVEL', label: 'Lv', described: 'by Level' },
-        { key: 'SCORE', label: '★', described: 'by Cartridge Score' },
-      ],
-      searchPlaceholder: 'Search by name, esper type, or role...',
-      addTitle: 'Add Character',
-      addDisabled: isLoadError,
-      filterRoster: getFilteredRoster,
-    });
+  const {
+    view,
+    setView,
+    filteredRoster,
+    isAddModalOpen,
+    closeAddModal,
+    search,
+    sort,
+    add,
+    projection,
+  } = useRosterView({
+    sortModes: [
+      { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+      { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+      { key: 'SCORE', label: '★', described: 'by Cartridge Score' },
+    ],
+    searchPlaceholder: 'Search by name, esper type, or role...',
+    addTitle: 'Add Character',
+    addDisabled: isLoadError,
+    filterRoster: getFilteredRoster,
+    trackedEntities: trackedCharacters,
+  });
 
   return (
     <RosterPageLayout
@@ -78,8 +88,13 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
           onToggleAwakening={toggleAwakeningSlot}
           onUpdateArc={updateArc}
           onUpdateCartridge={updateCartridge}
-          onToggleFavorite={toggleFavoriteCharacter}
+          onToggleFavorite={(id, value) => {
+            // Favorite is a completed intent — release in the same handler
+            toggleFavoriteCharacter(id, value);
+            projection.refreshBasis(id);
+          }}
           onSaveCartridgePreferences={saveCartridgePreferences}
+          onEditCommit={() => projection.refreshBasis(character.id!)}
         />
       ))}
       partiesTab={

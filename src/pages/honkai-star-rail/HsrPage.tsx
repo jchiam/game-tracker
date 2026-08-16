@@ -58,22 +58,32 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
   );
 
   const filterRoster = useCallback(
-    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA') =>
-      getFilteredRoster(searchTerm, sortBy, calculateBuildScore),
+    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', entities?: HsrTrackedCharacter[]) =>
+      getFilteredRoster(searchTerm, sortBy, calculateBuildScore, entities),
     [getFilteredRoster],
   );
 
-  const { view, setView, filteredRoster, isAddModalOpen, closeAddModal, search, sort, add } =
-    useRosterView({
-      sortModes: [
-        { key: 'SCORE', label: '★', described: 'by Build Score' },
-        { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
-      ],
-      searchPlaceholder: 'Search by name, element, or path...',
-      addTitle: 'Add Character',
-      addDisabled: isLoadError,
-      filterRoster,
-    });
+  const {
+    view,
+    setView,
+    filteredRoster,
+    isAddModalOpen,
+    closeAddModal,
+    search,
+    sort,
+    add,
+    projection,
+  } = useRosterView({
+    sortModes: [
+      { key: 'SCORE', label: '★', described: 'by Build Score' },
+      { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
+    ],
+    searchPlaceholder: 'Search by name, element, or path...',
+    addTitle: 'Add Character',
+    addDisabled: isLoadError,
+    filterRoster,
+    trackedEntities: trackedCharacters,
+  });
 
   const [editingRelic, setEditingRelic] = useState<{
     charId: string;
@@ -122,13 +132,18 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           onRemove={removeCharacter}
           onUpdateLevel={updateCharacterLevel}
           onToggleTraces={toggleCharacterTraces}
-          onToggleFavorite={toggleFavoriteCharacter}
+          onToggleFavorite={(id, value) => {
+            // Favorite is a completed intent — release in the same handler
+            toggleFavoriteCharacter(id, value);
+            projection.refreshBasis(id);
+          }}
           onToggleRelic={(id, slot) => setEditingRelic({ charId: id, anchorSlot: slot })}
           onUpdateLightCone={updateLightCone}
           onUpdateLightConeLevel={updateLightConeLevel}
           onUpdateLightConeSuperimposition={updateLightConeSuperimposition}
           onEditLightConePrefs={setEditingConePrefsCharId}
           onUpdateUseAltPortrait={updateUseAltPortrait}
+          onEditCommit={() => projection.refreshBasis(char.id)}
         />
       ))}
       partiesTab={
@@ -154,7 +169,11 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           }
           onRemoveRelic={(slot) => removeRelicData({ charId: editingChar.id, slot })}
           onUpdateBuildPreferences={(newPrefs) => saveBuildPreferences(editingChar.id, newPrefs)}
-          onClose={() => setEditingRelic(null)}
+          onClose={() => {
+            // Equipment-modal close is a release point
+            projection.refreshBasis(editingChar.id);
+            setEditingRelic(null);
+          }}
         />
       )}
 
@@ -164,7 +183,10 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           onUpdatePreferences={(prefs) =>
             updateLightConePreferences(editingConePrefsChar.id, prefs)
           }
-          onClose={() => setEditingConePrefsCharId(null)}
+          onClose={() => {
+            projection.refreshBasis(editingConePrefsChar.id);
+            setEditingConePrefsCharId(null);
+          }}
         />
       )}
 

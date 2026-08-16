@@ -35,6 +35,14 @@ interface ArcanistCardProps {
   onUpdatePsychube: (id: string, psychubeName: string | null, psychubeLevel: number) => void;
   onUpdatePsychubeAmplification: (id: string, level: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
+  /** Projection-stability release point — fired on the ✓ edit collapse. */
+  onEditCommit?: () => void;
+  /** Ghost-tag copy while the card is held; null renders a normal card. */
+  heldReason?: string | null;
+  /** Plays the exit animation after an evicting release. */
+  isExiting?: boolean;
+  /** Commits the eviction when the exit animation completes. */
+  onExitEnd?: () => void;
 }
 
 export function ArcanistCard({
@@ -47,6 +55,10 @@ export function ArcanistCard({
   onUpdatePsychube,
   onUpdatePsychubeAmplification,
   onToggleFavorite,
+  onEditCommit,
+  heldReason,
+  isExiting,
+  onExitEnd,
 }: ArcanistCardProps) {
   const staticArcanist = ALL_ARCANISTS.find((a) => a.name === arcanist.name);
   const hasEuphoria = staticArcanist?.hasEuphoria ?? false;
@@ -79,6 +91,10 @@ export function ArcanistCard({
       isFavorited={arcanist.isFavorited}
       onToggleFavorite={(value) => onToggleFavorite(arcanist.id!, value)}
       onRemove={(e) => onRemove(arcanist.id!, e)}
+      onEditCommit={onEditCommit}
+      heldReason={heldReason}
+      isExiting={isExiting}
+      onExitEnd={onExitEnd}
       badges={
         <>
           <GameBadge
