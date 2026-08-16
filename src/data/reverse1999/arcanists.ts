@@ -111,6 +111,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: false,
   },
   {
+    id: 'cheng_heguang',
+    name: 'Cheng Heguang',
+    afflatus: 'Star',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/cheng_heguang.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'copp_lia',
     name: 'Coppélia',
     afflatus: 'Mineral',
@@ -397,6 +405,14 @@ export const ALL_ARCANISTS: Arcanist[] = [
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/pickles.webp',
     hasEuphoria: true,
+  },
+  {
+    id: 'ramona',
+    name: 'Ramona',
+    afflatus: 'Plant',
+    damageType: 'Mental',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/ramona.webp',
+    hasEuphoria: false,
   },
   {
     id: 'recoleta',

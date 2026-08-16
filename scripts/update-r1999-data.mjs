@@ -59,6 +59,15 @@ const NAME_OVERRIDES = {
   Yenisei: 3082, // nameEng: 'Енисей' — Cyrillic
 };
 
+// Arcanists released on Global that kornblume still flags IsReleased: false.
+// Their upstream records are stubs (all-zero Stats) even though the character
+// is live, so the release filter below has to let them through explicitly.
+// Prune a name from this set once upstream corrects its flag.
+const FORCE_RELEASED = new Set([
+  'Cheng Heguang', // Global release 2026-05-07
+  'Ramona', // Global release 2026-06-18
+]);
+
 // Build a lookup function from ArcanistMap entries: kornblumeName → headiconId string.
 // Uses four strategies in priority order before falling back to NAME_OVERRIDES.
 function buildHeadiconLookup(arcanistMap) {
@@ -389,9 +398,14 @@ async function main() {
   const findHeadiconId = buildHeadiconLookup(arcanistMap);
   console.log(`  ArcanistMap loaded (${arcanistMap.length} entries)`);
 
-  // Filter to released playable characters only (rarity 5 and 6)
+  // Filter to released playable characters only (rarity 5 and 6).
+  // FORCE_RELEASED covers Global-released arcanists kornblume still flags unreleased.
   const releasedRaw = kornblumeData.filter(
-    (c) => c.IsReleased === true && c.Name && c.Id && (c.Rarity === 5 || c.Rarity === 6),
+    (c) =>
+      (c.IsReleased === true || FORCE_RELEASED.has(c.Name)) &&
+      c.Name &&
+      c.Id &&
+      (c.Rarity === 5 || c.Rarity === 6),
   );
 
   console.log(`  Found ${releasedRaw.length} released arcanists in kornblume`);
