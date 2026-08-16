@@ -1,8 +1,11 @@
 # zzz-data-pipeline Specification
 
 ## Purpose
+
 Automated update pipeline for Zenless Zone Zero catalog data: fetches the Enka.Network store JSONs, resolves localized names, regenerates the agent catalog file, seeds portraits to ImageKit, and runs weekly via GitHub Actions with an auto-PR on changes. Structured so later phases extend it with Drive Disc and W-Engine catalogs.
+
 ## Requirements
+
 ### Requirement: Automated ZZZ update script
 
 The system SHALL provide `scripts/update-zzz-data.mjs`, composed from the shared pipeline plumbing (`scripts/lib/pipeline.mjs`), that fetches ZZZ catalog data from the Enka.Network store (GitHub raw: `EnkaNetwork/API-docs` → `store/zzz/avatars.json`, `store/zzz/locs.json`), resolves agent display names from the English localization table, regenerates `src/data/zenless-zone-zero/agents.ts`, and uploads agent portraits to ImageKit under a `zenless_zone_zero` folder. Portraits SHALL be uploaded as the **untouched Enka originals** (full-res PNG, transparent canvas included) — display crops (trim + top-anchored square, face crop) are on-the-fly ImageKit transforms owned by `src/lib/imagekit.ts`, never baked into the stored asset. The script SHALL be idempotent: already-uploaded assets are skipped unless a `--reupload-*` flag is passed, and per-asset loops drive counters off the shared `ensureAsset` result.
@@ -53,4 +56,3 @@ The script SHALL structure its fetch and codegen so that Phase 2 (Drive Disc sui
 
 - **WHEN** a later phase adds W-Engine or Drive Disc catalog generation
 - **THEN** the addition is a new fetch + map + emit section reusing the same loc resolution and `ensureAsset` plumbing, and the agent codegen path is unchanged
-

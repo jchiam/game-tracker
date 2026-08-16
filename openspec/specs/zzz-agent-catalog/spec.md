@@ -1,8 +1,11 @@
 # zzz-agent-catalog Specification
 
 ## Purpose
+
 Generated catalog of Zenless Zone Zero Agents, consumed at runtime via `ALL_ZZZ_AGENTS`. Carries the Enka store's exact taxonomy — open element strings and specialties including Rupture — so new source vocabulary is data, not a code change.
+
 ## Requirements
+
 ### Requirement: Agent catalog data file
 
 The system SHALL maintain a static catalog of ZZZ Agents in `src/data/zenless-zone-zero/agents.ts`, exporting a `ZzzAgent` interface and a `const ALL_ZZZ_AGENTS: ZzzAgent[]`. Each entry SHALL have: `id` (string, Enka avatar id, e.g. `1011`), `name` (string, English display name resolved from the Enka localization table), `rarity` (number, Enka rarity code — `4` = S, `3` = A), `specialty` (string, Enka `ProfessionType` verbatim, e.g. `Attack`, `Stun`, `Anomaly`, `Support`, `Defense`, `Rupture`), `element` (string, first Enka `ElementTypes` value verbatim), and `imageUrl` (string, local path `/assets/zenless-zone-zero/agents/{id}.png` — the untouched Enka original; display crops are on-the-fly CDN transforms, never baked into the asset).
@@ -30,4 +33,3 @@ Element and specialty SHALL be typed as open `string` fields (never a closed uni
 
 - **WHEN** an agent with element `Elec` renders
 - **THEN** the badge may display `Electric` while filters, search, and persistence continue to use the stored `Elec` value
-

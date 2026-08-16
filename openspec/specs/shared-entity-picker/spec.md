@@ -1,7 +1,9 @@
 ## Purpose
 
 The shared add-entity picker modal — one `AddEntityModal` component (`src/components/AddEntityModal.tsx`) implementing search, tracked-entity exclusion, avatar resolution, badge rendering, and the add flow for every game's roster picker, with per-game files reduced to thin config wrappers.
+
 ## Requirements
+
 ### Requirement: Shared add-entity picker modal
 
 The system SHALL provide a single shared `AddEntityModal` component (`src/components/AddEntityModal.tsx`) implementing the add-entity picker used by every game: a `Modal` shell titled per game, a search input, and a scrollable list of untracked catalog entities each showing an avatar, name, badges, and a `+` add button. It SHALL be generic over the catalog entity type, constrained to `{ id: string; name: string; imageUrl: string }`, configured per game via props: `title`, `entityNoun` (drives the search placeholder and empty message), `available` (catalog entities), `tracked` (entities to exclude), `searchKeys` (Fuse.js keys), `getBadges` (badge descriptors), `onAdd`, and `onClose`.
@@ -81,4 +83,3 @@ Each game's picker file (`AddCharacterModal` ×2, `AddArcanistModal`, `AddOperat
 
 - **WHEN** a per-game wrapper test suite runs
 - **THEN** it asserts the game's title, badge variant/modifier classes, a secondary-key search hit, and the add callback receiving the full entity — without duplicating the shared suite's empty-state, image-fallback, or input-mechanics tests
-

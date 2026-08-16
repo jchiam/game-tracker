@@ -1,7 +1,9 @@
 ## Purpose
 
 Shared party lineup management used by all game modules via `useParties`. Covers party CRUD, slot constraints per game, reload-after-save, optimistic delete, and game-specific extensions (tier and favorite toggle for all games).
+
 ## Requirements
+
 ### Requirement: Load parties from DB on session change
 
 The system SHALL load parties from the DB when a user session becomes available, and clear parties when the session is lost.
@@ -222,4 +224,3 @@ The party editor SHALL support per-game exclusion groups: entities that share a 
 
 - **WHEN** a game's party view config defines no exclusion groups
 - **THEN** the member picker filters only exact duplicates, identical to prior behavior
-

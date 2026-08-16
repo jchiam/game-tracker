@@ -1,8 +1,11 @@
 # zzz-agent-detail Specification
 
 ## Purpose
+
 Zenless Zone Zero per-Agent tracked fields: level (1–60), Mindscape (M0–M6), Core Skill rung (F→A), favorite toggle, level-based sort, roster search keys, and the agent card's composition over the shared Game Card Shell.
+
 ## Requirements
+
 ### Requirement: Agent level field
 
 The system SHALL track an Agent's level as an integer in the range 1–60, defaulting to 1 on add. Updates SHALL be clamped to this range before persisting. 60 is the current live-game cap; a future cap raise is a paired slider-max + DB CHECK change.
@@ -85,4 +88,3 @@ The agent card SHALL be composed from the shared Game Card Shell: header portrai
 
 - **WHEN** user toggles the card into edit mode
 - **THEN** Level, Mindscape, and Core Skill controls are shown in that order
-

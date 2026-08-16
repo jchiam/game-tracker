@@ -8,7 +8,9 @@ behaviour is not already owned by another capability: `GameCardShell`, `StatChip
 behaviourally elsewhere are referenced, not redeclared: `AuthGate` (`shared-auth`), `SavingToast`
 / `ToastContainer` (`shared-save-behaviour`), `RosterPageLayout` / `LoadErrorState`
 (`shared-roster`), and `GameBadge` (`shared-card-badges`).
+
 ## Requirements
+
 ### Requirement: GameCardShell provides the shared roster-card structure
 
 The shared `GameCardShell` component SHALL render the structural shell of every game's roster card
@@ -809,4 +811,3 @@ The system SHALL provide a shared presentational `PreferenceChainReadout` compon
 
 - **WHEN** the inline `--temper` value is compared with `getProgressStyle(score, 0, 100).color`
 - **THEN** they are identical, so the edge, the score badge grades, and the investment sliders all speak the same ramp
-
