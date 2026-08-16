@@ -302,6 +302,18 @@ describe('useRosterView', () => {
       expect(result.current.projection.heldReason('b')).toBeNull();
     });
 
+    it('falls back to the generic held label when describeHeld returns null', () => {
+      const { result, setLive } = setupProjection({
+        initial: [ent('a', 'Alpha', 5)],
+        predicate: inProgress,
+        describeHeld: () => null,
+      });
+      act(() => setLive([ent('a', 'Alpha', 15)]));
+      expect(result.current.projection.heldReason('a')).toBe(
+        'No longer matches the active filters',
+      );
+    });
+
     it('a held card that matches again returns to normal without a release', () => {
       const { result, setLive } = setupProjection({
         initial: [ent('a', 'Alpha', 5)],

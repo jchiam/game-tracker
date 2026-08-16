@@ -112,6 +112,8 @@ export function GameCardShell({
   const editInnerRef = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     const card = cardRef.current;
+    /* v8 ignore next -- defensive: the ref is attached to the always-rendered
+       card div before layout effects run */
     if (!card) return;
     if (summaryInnerRef.current) {
       card.style.setProperty(
@@ -145,6 +147,9 @@ export function GameCardShell({
       style={temperStyle}
       ref={cardRef}
       onAnimationEnd={
+        /* v8 ignore next 5 -- jsdom: React's animation-event mapping never
+           delivers animationend under jsdom, so this handler is only reachable
+           in a real browser; eviction is covered via the exit fallback timer */
         isExiting
           ? (e) => {
               if (e.animationName === 'card-exit') onExitEnd?.();

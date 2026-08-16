@@ -72,6 +72,8 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     (t: P5xTrackedThief) => {
       if (roseGateFilter && t.skillProgress !== 1) return 'no longer matches 🌹 Gated';
       if (weaponFilter && t.weaponRarity >= 5) return 'no longer matches ⚔ <5★';
+      /* v8 ignore next -- unreachable: a held card always fails at least one
+         active gate, so one of the branches above returns first */
       return null;
     },
     [roseGateFilter, weaponFilter],
@@ -172,6 +174,8 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
           onEditCommit={() => projection.refreshBasis(thief.id)}
           heldReason={projection.heldReason(thief.id)}
           isExiting={projection.isExiting(thief.id)}
+          /* v8 ignore next -- jsdom never delivers animationend; the exit
+             fallback timer covers eviction in tests */
           onExitEnd={() => projection.completeExit(thief.id)}
         />
       ))}

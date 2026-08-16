@@ -61,6 +61,8 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
         return 'no longer matches 💠 Resonating';
       if (gluttonyGateFilter && !(a.psychubeName !== null && a.psychubeAmplification < 5))
         return 'no longer matches 🍽️ Amplifying';
+      /* v8 ignore next -- unreachable: a held card always fails at least one
+         active gate, so one of the branches above returns first */
       return null;
     },
     [resonanceGateFilter, gluttonyGateFilter],
@@ -166,6 +168,8 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
           onEditCommit={() => projection.refreshBasis(arcanist.id!)}
           heldReason={projection.heldReason(arcanist.id!)}
           isExiting={projection.isExiting(arcanist.id!)}
+          /* v8 ignore next -- jsdom never delivers animationend; the exit
+             fallback timer covers eviction in tests */
           onExitEnd={() => projection.completeExit(arcanist.id!)}
         />
       ))}

@@ -151,6 +151,9 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
       pendingRefreshRef.current.delete(id);
       if (!basis.has(id)) continue;
       const live = liveById.get(id);
+      /* v8 ignore next 4 -- defensive: the sync loop above already dropped
+         bases whose id left the live set, so a pending id with a basis always
+         resolves to a live entity */
       if (!live) {
         basis.delete(id);
         continue;
@@ -212,6 +215,9 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
     if (!exitingRef.current.has(id)) return;
     exitingRef.current.delete(id);
     const live = liveByIdRef.current.get(id);
+    /* v8 ignore else -- defensive: an exiting id whose entity leaves the live
+       set is cleared by the projection sync loop before completeExit can
+       observe it missing */
     if (live) basisRef.current.set(id, live);
     else basisRef.current.delete(id);
     setProjectionVersion((v) => v + 1);
