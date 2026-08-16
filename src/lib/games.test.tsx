@@ -1,5 +1,8 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, afterEach, vi } from 'vitest';
+import { Suspense } from 'react';
+import { screen, cleanup } from '@testing-library/react';
 import { GAMES } from '@/lib/games';
+import { renderWithProviders } from '@/test/utils';
 
 describe('GAMES registry', () => {
   it('contains the six tracked games', () => {
@@ -28,5 +31,25 @@ describe('GAMES registry', () => {
       expect(game.bgClass).toMatch(/^bg-.+-sel$/);
       expect(game.Page).toBeDefined();
     }
+  });
+
+  // Renders each lazy Page so the dynamic import() and its module mapper
+  // actually execute — a typo in either would otherwise only surface at runtime.
+  describe('lazy pages', () => {
+    afterEach(() => cleanup());
+
+    it.each(GAMES.map((game) => [game.id, game] as const))(
+      '%s Page resolves and renders its auth gate',
+      async (_id, game) => {
+        renderWithProviders(
+          <Suspense fallback={<div>chunk-loading</div>}>
+            <game.Page session={null} isAuthLoading={false} onSignIn={vi.fn()} />
+          </Suspense>,
+        );
+        expect(
+          await screen.findByRole('button', { name: /sign in with google/i }),
+        ).toBeInTheDocument();
+      },
+    );
   });
 });
