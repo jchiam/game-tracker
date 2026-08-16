@@ -15,7 +15,8 @@ behaviourally elsewhere are referenced, not redeclared: `AuthGate` (`shared-auth
 
 The shared `GameCardShell` component SHALL render the structural shell of every game's roster card
 over the canonical `.game-card-*` skeleton (`shared-card-base`) and collapse mechanism
-(`shared-card-collapse`): the header image resolved via `getMugshotUrl` with a loading spinner
+(`shared-card-collapse`): the header image resolved via the optional `resolveImage` prop
+(defaulting to `getMugshotUrl`) with a loading spinner
 while loading and a ui-avatars fallback on error, favorite and remove buttons titled
 `Favorite {entityNoun}` / `Unfavorite {entityNoun}` / `Remove {entityNoun}`, an edit toggle titled
 `Edit` / `Done editing`, and the summary ⇄ edit-body collapse driven by the `is-editing` class,
@@ -26,7 +27,9 @@ only through named slots: `badges` (rendered inside `.game-card-badges`), option
 single node renders inside one `.game-card-static-line` (unchanged behaviour), while an array
 renders one `.game-card-static-line` per entry in order, each line independently subject to the
 canonical nowrap/ellipsis truncation. Remaining props: `name` (card title and image alt),
-`imageUrl` (catalog path), `entityNoun` (capitalised), `isFavorited`,
+`imageUrl` (catalog path), optional `resolveImage((imageUrl: string) => string)` overriding the
+header-image URL resolver for games whose stored assets need a different CDN transform (ZZZ trims
+its full-body originals on the fly), `entityNoun` (capitalised), `isFavorited`,
 `onToggleFavorite((value: boolean) => void)` invoked with the inverted value, and `onRemove(e)`.
 Game cards SHALL compose `GameCardShell` rather than re-implementing the header, controls, or
 collapse mechanics.
@@ -69,6 +72,16 @@ collapse mechanics.
 - **WHEN** the header image is still loading
 - **THEN** a spinner shows in the image wrapper; on load it disappears, and on error the image
   source falls back to a ui-avatars URL derived from `name`
+
+#### Scenario: Default image resolver unchanged
+
+- **WHEN** a game composes `GameCardShell` without `resolveImage`
+- **THEN** the header image resolves via `getMugshotUrl`, identical to prior behaviour
+
+#### Scenario: Custom image resolver applied
+
+- **WHEN** a game passes `resolveImage` (ZZZ passes its trim + top-crop transform resolver)
+- **THEN** the header `<img src>` is the resolver's return value for the card's `imageUrl`
 
 ### Requirement: StatChip renders the canonical stat-chip
 

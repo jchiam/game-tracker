@@ -1,0 +1,132 @@
+/* ZZZ agent card — game-unique badge colours only; structure comes from
+   card.css / controls.css via GameCardShell. Badge convention: fill 25% /
+   border 60% of the token hue via color-mix. */
+
+/* Rarity */
+.zzz-rarity-s {
+  color: var(--color-zzz-rarity-s);
+  background: color-mix(in srgb, var(--color-zzz-rarity-s) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-rarity-s) 60%, transparent);
+}
+
+.zzz-rarity-a {
+  color: var(--color-zzz-rarity-a);
+  background: color-mix(in srgb, var(--color-zzz-rarity-a) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-rarity-a) 60%, transparent);
+}
+
+.zzz-rarity-unknown {
+  color: var(--color-zzz-element-unknown);
+  background: color-mix(in srgb, var(--color-zzz-element-unknown) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-unknown) 60%, transparent);
+}
+
+/* Specialty */
+.zzz-specialty-attack {
+  color: var(--color-zzz-specialty-attack);
+  background: color-mix(in srgb, var(--color-zzz-specialty-attack) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-specialty-attack) 60%, transparent);
+}
+
+.zzz-specialty-stun {
+  color: var(--color-zzz-specialty-stun);
+  background: color-mix(in srgb, var(--color-zzz-specialty-stun) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-specialty-stun) 60%, transparent);
+}
+
+.zzz-specialty-anomaly {
+  color: var(--color-zzz-specialty-anomaly);
+  background: color-mix(in srgb, var(--color-zzz-specialty-anomaly) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-specialty-anomaly) 60%, transparent);
+}
+
+.zzz-specialty-support {
+  color: var(--color-zzz-specialty-support);
+  background: color-mix(in srgb, var(--color-zzz-specialty-support) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-specialty-support) 60%, transparent);
+}
+
+.zzz-specialty-defense {
+  color: var(--color-zzz-specialty-defense);
+  background: color-mix(in srgb, var(--color-zzz-specialty-defense) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-specialty-defense) 60%, transparent);
+}
+
+.zzz-specialty-rupture {
+  color: var(--color-zzz-specialty-rupture);
+  background: color-mix(in srgb, var(--color-zzz-specialty-rupture) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-specialty-rupture) 60%, transparent);
+}
+
+.zzz-specialty-unknown {
+  color: var(--color-zzz-specialty-unknown);
+  background: color-mix(in srgb, var(--color-zzz-specialty-unknown) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-specialty-unknown) 60%, transparent);
+}
+
+/* Element */
+.zzz-element-elec {
+  color: var(--color-zzz-element-elec);
+  background: color-mix(in srgb, var(--color-zzz-element-elec) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-elec) 60%, transparent);
+}
+
+.zzz-element-physics {
+  color: var(--color-zzz-element-physics);
+  background: color-mix(in srgb, var(--color-zzz-element-physics) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-physics) 60%, transparent);
+}
+
+.zzz-element-fire {
+  color: var(--color-zzz-element-fire);
+  background: color-mix(in srgb, var(--color-zzz-element-fire) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-fire) 60%, transparent);
+}
+
+.zzz-element-ice {
+  color: var(--color-zzz-element-ice);
+  background: color-mix(in srgb, var(--color-zzz-element-ice) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-ice) 60%, transparent);
+}
+
+.zzz-element-frost {
+  color: var(--color-zzz-element-frost);
+  background: color-mix(in srgb, var(--color-zzz-element-frost) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-frost) 60%, transparent);
+}
+
+.zzz-element-ether {
+  color: var(--color-zzz-element-ether);
+  background: color-mix(in srgb, var(--color-zzz-element-ether) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-ether) 60%, transparent);
+}
+
+.zzz-element-auric-ink {
+  color: var(--color-zzz-element-auric-ink);
+  background: color-mix(in srgb, var(--color-zzz-element-auric-ink) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-auric-ink) 60%, transparent);
+}
+
+.zzz-element-zhenzhen {
+  color: var(--color-zzz-element-zhenzhen);
+  background: color-mix(in srgb, var(--color-zzz-element-zhenzhen) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-zhenzhen) 60%, transparent);
+}
+
+.zzz-element-wind {
+  color: var(--color-zzz-element-wind);
+  background: color-mix(in srgb, var(--color-zzz-element-wind) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-wind) 60%, transparent);
+}
+
+.zzz-element-lumen {
+  color: var(--color-zzz-element-lumen);
+  background: color-mix(in srgb, var(--color-zzz-element-lumen) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-lumen) 60%, transparent);
+}
+
+.zzz-element-unknown {
+  color: var(--color-zzz-element-unknown);
+  background: color-mix(in srgb, var(--color-zzz-element-unknown) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-zzz-element-unknown) 60%, transparent);
+}

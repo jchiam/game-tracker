@@ -70,6 +70,11 @@ The system SHALL enforce slot index constraints per game when saving party membe
 - **WHEN** saving an N2E party
 - **THEN** member slot indices are in range 0–3 (maximum 4 members)
 
+#### Scenario: ZZZ party slots
+
+- **WHEN** saving a ZZZ party
+- **THEN** member slot indices are in range 0–2 (maximum 3 agents)
+
 #### Scenario: P5X party slots
 
 - **WHEN** saving a P5X party
@@ -92,7 +97,7 @@ The system SHALL enforce slot index constraints per game when saving party membe
 
 ### Requirement: Party favorite toggle
 
-The system SHALL allow toggling the favorite status of a party optimistically, reverting on failure. This capability is available for all games (HSR, R1999, N2E, AE, P5X).
+The system SHALL allow toggling the favorite status of a party optimistically, reverting on failure. This capability is available for all games (HSR, R1999, N2E, AE, P5X, ZZZ).
 
 #### Scenario: Favorite toggled successfully
 
@@ -106,7 +111,7 @@ The system SHALL allow toggling the favorite status of a party optimistically, r
 
 ### Requirement: Party tier field
 
-The system SHALL support an optional tier field on parties for all games (HSR, R1999, N2E, AE, P5X). Tier is one of S+/S/A/B or null.
+The system SHALL support an optional tier field on parties for all games (HSR, R1999, N2E, AE, P5X, ZZZ). Tier is one of S+/S/A/B or null.
 
 #### Scenario: Tier saved with party
 
@@ -148,12 +153,17 @@ The P5X module SHALL present its lineup feature using the party flavor noun. The
 
 ### Requirement: Configurable party slots
 
-The shared party editor and card SHALL support an optional per-slot configuration (`PartyViewConfig.slots`) enabling heterogeneous slot types. When a game provides no `slots`, the editor and card SHALL fall back to four uniform, unfiltered slots at indices 0–3 — the pre-existing behaviour for HSR, R1999, N2E, and AE.
+The shared party editor and card SHALL support an optional per-slot configuration (`PartyViewConfig.slots`) enabling heterogeneous slot types or a non-default slot count. When a game provides no `slots`, the editor and card SHALL fall back to four uniform, unfiltered slots at indices 0–3 — the pre-existing behaviour for HSR, R1999, N2E, and AE.
 
 #### Scenario: Default slots when unconfigured
 
 - **WHEN** a game's `PartyViewConfig` omits `slots`
 - **THEN** the editor and card render four uniform slots (indices 0–3) with no entity filtering, identical to prior behaviour
+
+#### Scenario: Uniform reduced slot count
+
+- **WHEN** a game's `PartyViewConfig` declares fewer uniform slots (ZZZ: three unfiltered slots at indices 0–2)
+- **THEN** the editor and card render exactly that many slots and no member can be saved at an index outside them
 
 #### Scenario: Fixed display slot
 

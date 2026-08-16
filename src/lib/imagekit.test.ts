@@ -67,6 +67,20 @@ describe('imagekit', () => {
         '/assets/honkai-star-rail/light-cones/23024.webp',
       );
     });
+
+    it('getZzzAgentMugshotUrl returns the local path', async () => {
+      const { getZzzAgentMugshotUrl } = await import('@/lib/imagekit');
+      expect(getZzzAgentMugshotUrl('/assets/zenless-zone-zero/agents/1191.png')).toBe(
+        '/assets/zenless-zone-zero/agents/1191.png',
+      );
+    });
+
+    it('getZzzAgentAvatarUrl returns the local path', async () => {
+      const { getZzzAgentAvatarUrl } = await import('@/lib/imagekit');
+      expect(getZzzAgentAvatarUrl('/assets/zenless-zone-zero/agents/1191.png')).toBe(
+        '/assets/zenless-zone-zero/agents/1191.png',
+      );
+    });
   });
 
   describe('when ImageKit is configured', () => {
@@ -102,6 +116,20 @@ describe('imagekit', () => {
       const { getLightConeUrl } = await import('@/lib/imagekit');
       expect(getLightConeUrl('/assets/honkai-star-rail/light-cones/23024.webp')).toBe(
         'https://ik.imagekit.io/test/honkai_star_rail/light_cones/23024.webp',
+      );
+    });
+
+    it('getZzzAgentMugshotUrl chains trim, height-relative extract, and 256px width', async () => {
+      const { getZzzAgentMugshotUrl } = await import('@/lib/imagekit');
+      expect(getZzzAgentMugshotUrl('/assets/zenless-zone-zero/agents/1191.png')).toBe(
+        'https://ik.imagekit.io/test/tr:t-true:h-0.45,ar-1-1,cm-extract,fo-top:w-256/zenless_zone_zero/agents/1191.png',
+      );
+    });
+
+    it('getZzzAgentAvatarUrl applies the same crop chain at 128px', async () => {
+      const { getZzzAgentAvatarUrl } = await import('@/lib/imagekit');
+      expect(getZzzAgentAvatarUrl('/assets/zenless-zone-zero/agents/1191.png')).toBe(
+        'https://ik.imagekit.io/test/tr:t-true:h-0.45,ar-1-1,cm-extract,fo-top:w-128/zenless_zone_zero/agents/1191.png',
       );
     });
 

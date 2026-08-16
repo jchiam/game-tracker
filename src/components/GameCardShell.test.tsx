@@ -35,6 +35,14 @@ describe('GameCardShell', () => {
     );
   });
 
+  it('resolves the image via a custom resolveImage override', () => {
+    render(<GameCardShell {...defaultProps} resolveImage={(url) => `https://custom.cdn${url}`} />);
+    expect(screen.getByAltText('Test Entity')).toHaveAttribute(
+      'src',
+      expect.stringContaining('custom.cdn'),
+    );
+  });
+
   it('renders all slots in their structural containers', () => {
     const { container } = render(<GameCardShell {...defaultProps} />);
     expect(container.querySelector('.game-card-badges')).toHaveTextContent('badge-slot');

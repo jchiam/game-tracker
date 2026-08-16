@@ -25,6 +25,12 @@ interface AddEntityModalProps<T extends PickerEntity> {
   tracked: readonly { id: string }[];
   searchKeys: string[];
   getBadges: (entity: T) => EntityBadgeDescriptor[];
+  /**
+   * Overrides the list-avatar URL resolver for games whose stored assets need
+   * a different CDN transform (ZZZ trims its full-body originals on the fly).
+   * Defaults to getAvatarUrl.
+   */
+  resolveImage?: (imageUrl: string) => string;
   onAdd: (entity: T) => void;
   onClose: () => void;
 }
@@ -36,6 +42,7 @@ export function AddEntityModal<T extends PickerEntity>({
   tracked,
   searchKeys,
   getBadges,
+  resolveImage = getAvatarUrl,
   onAdd,
   onClose,
 }: AddEntityModalProps<T>) {
@@ -78,7 +85,7 @@ export function AddEntityModal<T extends PickerEntity>({
               <div className="modal-list-info">
                 <div className="modal-list-img-wrapper">
                   <img
-                    src={getAvatarUrl(entity.imageUrl)}
+                    src={resolveImage(entity.imageUrl)}
                     alt={entity.name}
                     className="modal-list-img"
                     onError={(e) => {

@@ -53,6 +53,37 @@ export function getPersonaAvatarUrl(localPath: string): string {
   return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
 }
 
+// ZZZ agent crop, shared by the card mugshot and picker avatar below.
+// Stored assets are the untouched Enka IconRole originals: full-body art on a
+// large transparent canvas whose margins vary per agent. The chain: trim the
+// transparent padding, then extract a top-anchored square whose side is 45% of
+// the trimmed figure HEIGHT (relative `h-0.45` + `cm-extract`). Anchoring to
+// height keeps the head-to-bust framing consistent across poses — a plain
+// top square sides on the trimmed WIDTH, so wide poses (spread coats, held
+// weapons) zoom out to tiny faces while narrow poses zoom in. Face-detection
+// crops (`fo-face` / `fo-auto`) were rejected: detection fails on several
+// agents' stylized art and falls back to headless torso crops.
+const ZZZ_AGENT_CROP = 't-true:h-0.45,ar-1-1,cm-extract,fo-top';
+
+// Returns a fully-formed ImageKit URL for a ZZZ agent card portrait.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getZzzAgentMugshotUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  const tr = `tr:${ZZZ_AGENT_CROP}:w-256`;
+  return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
+}
+
+// Returns a fully-formed ImageKit URL for a small ZZZ agent avatar (picker
+// lists, party slots) — same head-to-bust framing at 128px. Tighter head-only
+// zooms were rejected: art with tall props above the head (Sigrid's spear)
+// shifts the figure off the bbox centerline and clips the face at small crops.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getZzzAgentAvatarUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  const tr = `tr:${ZZZ_AGENT_CROP}:w-128`;
+  return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
+}
+
 // Returns a fully-formed ImageKit URL for a psychube icon.
 // Psychube icons are already square artwork — no crop transform needed.
 // Falls back to the raw local path when ImageKit is not configured.

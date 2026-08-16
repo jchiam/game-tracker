@@ -104,6 +104,12 @@ describe('AddEntityModal', () => {
     expect(img.src).toBe('https://ik.test/assets/test/alpha.webp');
   });
 
+  it('resolves avatars through a custom resolveImage override', () => {
+    render(<AddEntityModal {...makeProps()} resolveImage={(url) => `https://custom.cdn${url}`} />);
+    const img = screen.getByAltText('Alpha') as HTMLImageElement;
+    expect(img.src).toBe('https://custom.cdn/assets/test/alpha.webp');
+  });
+
   it('falls back to ui-avatars when the image fails to load', () => {
     render(<AddEntityModal {...makeProps()} />);
     const img = screen.getByAltText('Alpha') as HTMLImageElement;
