@@ -8,6 +8,9 @@ vi.mock('@/services/zenless-zone-zero/agentService', () => ({
   insertAgent: vi.fn(),
   deleteAgent: vi.fn(),
   updateAgent: vi.fn(),
+  upsertDisc: vi.fn(),
+  deleteDisc: vi.fn(),
+  saveDiscPreferences: vi.fn(),
 }));
 
 vi.mock('@/hooks/usePendingSaves', () => ({
@@ -37,10 +40,29 @@ const mockLoadAgentsFromDB = vi.mocked(agentService.loadAgentsFromDB);
 const mockInsertAgent = vi.mocked(agentService.insertAgent);
 const mockDeleteAgent = vi.mocked(agentService.deleteAgent);
 const mockUpdateAgent = vi.mocked(agentService.updateAgent);
+const mockUpsertDisc = vi.mocked(agentService.upsertDisc);
+const mockDeleteDisc = vi.mocked(agentService.deleteDisc);
+const mockSaveDiscPreferences = vi.mocked(agentService.saveDiscPreferences);
 const mockAddToast = vi.mocked(toastUtils.addToast);
 
 const mockSession = createMockSession();
 const firstAgent = ALL_ZZZ_AGENTS[0];
+
+const emptyDiscs = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null } as const;
+const emptyPrefs = { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] };
+
+function trackedFixture(index: number, overrides: Record<string, unknown>) {
+  return {
+    ...ALL_ZZZ_AGENTS[index],
+    isFavorited: false,
+    level: 1,
+    mindscape: 0,
+    coreSkill: 0,
+    discs: { ...emptyDiscs },
+    buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    ...overrides,
+  };
+}
 
 describe('useAgents', () => {
   beforeEach(() => {
@@ -137,26 +159,77 @@ describe('useAgents', () => {
 
   it('getFilteredRoster returns favorites first in level sort', async () => {
     mockLoadAgentsFromDB.mockResolvedValue([
-      {
-        ...ALL_ZZZ_AGENTS[0],
-        dbId: 'db-1',
-        isFavorited: false,
-        level: 50,
-        mindscape: 0,
-        coreSkill: 0,
-      },
-      {
-        ...ALL_ZZZ_AGENTS[1],
-        dbId: 'db-2',
-        isFavorited: true,
-        level: 30,
-        mindscape: 0,
-        coreSkill: 0,
-      },
+      trackedFixture(0, { dbId: 'db-1', level: 50 }),
+      trackedFixture(1, { dbId: 'db-2', isFavorited: true, level: 30 }),
     ]);
     const { result } = await setup();
     const sorted = result.current.getFilteredRoster('', 'LEVEL');
     expect(sorted[0].isFavorited).toBe(true);
+  });
+
+  it('getFilteredRoster score sort orders by score descending, sentinel last', async () => {
+    mockLoadAgentsFromDB.mockResolvedValue([
+      trackedFixture(0, { dbId: 'db-1' }),
+      trackedFixture(1, { dbId: 'db-2' }),
+      trackedFixture(2, { dbId: 'db-3' }),
+    ]);
+    const { result } = await setup();
+    const scores: Record<string, number> = {
+      [ALL_ZZZ_AGENTS[0].id]: 42,
+      [ALL_ZZZ_AGENTS[1].id]: -1,
+      [ALL_ZZZ_AGENTS[2].id]: 88,
+    };
+    const sorted = result.current.getFilteredRoster('', 'SCORE', (a) => scores[a.id]);
+    expect(sorted.map((a) => scores[a.id])).toEqual([88, 42, -1]);
+  });
+
+  it('saveDiscData updates the slot optimistically and queues the upsert', async () => {
+    const { result } = await setupWithAgent();
+    const disc = { suitId: '31000', mainStat: 'CRIT Rate', subStats: ['ATK%'] };
+    await act(async () => {
+      await result.current.saveDiscData({ agentId: firstAgent.id, slot: 4 }, disc);
+    });
+    expect(result.current.trackedAgents[0].discs[4]).toEqual(disc);
+    expect(result.current.trackedAgents[0].discs[1]).toBeNull();
+    expect(mockUpsertDisc).toHaveBeenCalledWith('new-db-id', 4, disc);
+  });
+
+  it('removeDiscData writes null into the slot and queues the delete', async () => {
+    const { result } = await setupWithAgent();
+    const disc = { suitId: '31000', mainStat: 'CRIT Rate', subStats: [] };
+    await act(async () => {
+      await result.current.saveDiscData({ agentId: firstAgent.id, slot: 4 }, disc);
+    });
+    await act(async () => {
+      await result.current.removeDiscData({ agentId: firstAgent.id, slot: 4 });
+    });
+    // Null, not an empty-disc sentinel — in-session state matches a reload.
+    expect(result.current.trackedAgents[0].discs[4]).toBeNull();
+    expect(mockDeleteDisc).toHaveBeenCalledWith('new-db-id', 4);
+  });
+
+  it('saveDiscPreferences replaces the whole preferences object and queues the save', async () => {
+    const { result } = await setupWithAgent();
+    const prefs = {
+      mainStats: {
+        4: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
+        5: [],
+        6: [],
+      },
+      subStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
+      discSuit4Id: '31000',
+      discSuit2Id: null,
+      comments: 'notes',
+    };
+    act(() => result.current.saveDiscPreferences(firstAgent.id, prefs));
+    expect(result.current.trackedAgents[0].buildPreferences).toEqual(prefs);
+    expect(mockSaveDiscPreferences).toHaveBeenCalledWith('new-db-id', prefs);
+  });
+
+  it('adds an agent with empty discs and default preferences', async () => {
+    const { result } = await setupWithAgent();
+    expect(result.current.trackedAgents[0].discs).toEqual(emptyDiscs);
+    expect(result.current.trackedAgents[0].buildPreferences).toEqual(emptyPrefs);
   });
 
   it('shows error toast when add fails', async () => {

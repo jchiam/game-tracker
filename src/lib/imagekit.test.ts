@@ -81,6 +81,13 @@ describe('imagekit', () => {
         '/assets/zenless-zone-zero/agents/1191.png',
       );
     });
+
+    it('getZzzDiscSuitIconUrl returns the local path', async () => {
+      const { getZzzDiscSuitIconUrl } = await import('@/lib/imagekit');
+      expect(getZzzDiscSuitIconUrl('/assets/zenless-zone-zero/disc-suits/31000.png')).toBe(
+        '/assets/zenless-zone-zero/disc-suits/31000.png',
+      );
+    });
   });
 
   describe('when ImageKit is configured', () => {
@@ -130,6 +137,13 @@ describe('imagekit', () => {
       const { getZzzAgentAvatarUrl } = await import('@/lib/imagekit');
       expect(getZzzAgentAvatarUrl('/assets/zenless-zone-zero/agents/1191.png')).toBe(
         'https://ik.imagekit.io/test/tr:t-true:h-0.45,ar-1-1,cm-extract,fo-top:w-128/zenless_zone_zero/agents/1191.png',
+      );
+    });
+
+    it('getZzzDiscSuitIconUrl resizes to 128px with no crop', async () => {
+      const { getZzzDiscSuitIconUrl } = await import('@/lib/imagekit');
+      expect(getZzzDiscSuitIconUrl('/assets/zenless-zone-zero/disc-suits/31000.png')).toBe(
+        'https://ik.imagekit.io/test/tr:w-128/zenless_zone_zero/disc_suits/31000.png',
       );
     });
 

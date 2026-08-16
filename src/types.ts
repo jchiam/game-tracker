@@ -5,6 +5,7 @@ import { type N2ECharacter } from '@/data/neverness-to-everness/characters';
 import { type AeOperator } from '@/data/arknights-endfield/operators';
 import { type P5xThief } from '@/data/persona-5-phantom-x/thieves';
 import { type ZzzAgent } from '@/data/zenless-zone-zero/agents';
+import { type ZzzDiscSlot, type ZzzEquippedDisc } from '@/data/zenless-zone-zero/discs';
 import { type EquippedRevelation } from '@/data/persona-5-phantom-x/revelations';
 
 /** One entry in a build/cartridge stat-preference priority chain. */
@@ -180,12 +181,29 @@ export interface AeOperatorPatch {
 /** Patch shape for the AE operator weapon-equip callback (`onUpdateWeapon`). */
 export type AeWeaponPatch = Pick<AeOperatorPatch, 'weaponName' | 'weaponLevel'>;
 
+export interface ZzzDiscBuildPreferences {
+  mainStats: {
+    4: StatPreference[];
+    5: StatPreference[];
+    6: StatPreference[];
+  };
+  subStats: StatPreference[];
+  /** Preferred 4-piece Drive Disc suit — single choice, feeds the set-term score. */
+  discSuit4Id?: string | null;
+  /** Preferred 2-piece Drive Disc suit — may equal discSuit4Id (6pc of one suit). */
+  discSuit2Id?: string | null;
+  comments?: string;
+}
+
 export interface ZzzTrackedAgent extends ZzzAgent {
   dbId?: string;
   isFavorited: boolean;
   level: number; // 1–60 (live cap)
   mindscape: number; // 0–6 (Mindscape Cinema, shown as M0–M6)
   coreSkill: number; // 0–6: 0 locked, 1–6 shown as the F→A letter rungs
+  /** Equipped Drive Discs by slot; null = empty slot (never a sentinel object). */
+  discs: Record<ZzzDiscSlot, ZzzEquippedDisc | null>;
+  buildPreferences: ZzzDiscBuildPreferences;
 }
 
 /** Typed partial update for a ZZZ tracked agent row (camelCase keys). */

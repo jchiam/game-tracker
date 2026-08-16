@@ -84,6 +84,14 @@ export function getZzzAgentAvatarUrl(localPath: string): string {
   return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
 }
 
+// Returns a fully-formed ImageKit URL for a ZZZ Drive Disc suit icon.
+// Suit icons are already square Enka artwork — plain width resize, no crop.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getZzzDiscSuitIconUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  return `${IMAGEKIT_URL_ENDPOINT}/tr:w-128${toImageKitPath(localPath)}`;
+}
+
 // Returns a fully-formed ImageKit URL for a psychube icon.
 // Psychube icons are already square artwork — no crop transform needed.
 // Falls back to the raw local path when ImageKit is not configured.
