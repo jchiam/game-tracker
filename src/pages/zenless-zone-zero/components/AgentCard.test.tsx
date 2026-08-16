@@ -27,6 +27,10 @@ const baseAgent: ZzzTrackedAgent = {
   coreSkill: 4,
   discs: { ...emptyDiscs },
   buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+  wEngineId: null,
+  wEngineLevel: 0,
+  wEnginePhase: 1,
+  wEnginePreferences: [],
 };
 
 describe('AgentCard', () => {
@@ -38,6 +42,10 @@ describe('AgentCard', () => {
     onUpdateCoreSkill: vi.fn(),
     onToggleFavorite: vi.fn(),
     onToggleDisc: vi.fn(),
+    onUpdateWEngine: vi.fn(),
+    onUpdateWEngineLevel: vi.fn(),
+    onUpdateWEnginePhase: vi.fn(),
+    onEditWEnginePrefs: vi.fn(),
   };
 
   beforeEach(() => {
@@ -239,5 +247,173 @@ describe('AgentCard', () => {
     expect(suitBadges).toContain('Woodpecker Electro');
     expect(suitBadges).toContain('Swing Jazz');
     expect(screen.getByText('stun crit')).toBeInTheDocument();
+  });
+
+  // --- W-Engine ---
+
+  // Hellfire Gears (14110) and Steam Oven (13005) are Stun engines — matching
+  // Anby's specialty so the strict filter keeps them selectable.
+  const agentWithWEngine = (): ZzzTrackedAgent => ({
+    ...baseAgent,
+    wEngineId: '14110',
+    wEngineLevel: 50,
+    wEnginePhase: 3,
+    wEnginePreferences: ['14110', '13005'],
+  });
+
+  it('renders the W-Engine summary line with name, level, Phase, and rank badge', () => {
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    expect(screen.getByText('Hellfire Gears')).toBeInTheDocument();
+    expect(screen.getByText(/Lv 50/)).toBeInTheDocument();
+    // /P3/ alone would also match the edit body's Phase rung button.
+    expect(screen.getByText(/· P3/)).toBeInTheDocument();
+    expect(container.querySelector('.wengine-match-badge')?.textContent).toBe('#1');
+  });
+
+  it('shows Off-build when the equipped engine is not in the preference list', () => {
+    const agent = { ...agentWithWEngine(), wEnginePreferences: ['13005'] };
+    const { container } = render(<AgentCard {...defaultProps} agent={agent} />);
+    expect(container.querySelector('.wengine-match-badge')?.textContent).toBe('Off-build');
+  });
+
+  it('hides the match badge without preferences and renders an em-dash when unequipped', () => {
+    const { container } = render(<AgentCard {...defaultProps} />);
+    expect(container.querySelector('.wengine-match-badge')).toBeNull();
+    // Line 1 (engine) and line 2 (discs) both show the em-dash placeholder.
+    expect(container.querySelectorAll('.no-equip')).toHaveLength(2);
+  });
+
+  it('equip select offers only same-specialty engines and reports changes', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} />);
+    await enterEditMode(user);
+    const select = container.querySelector(
+      `select[name="wengine-${baseAgent.id}"]`,
+    ) as HTMLSelectElement;
+    const labels = [...select.options].map((o) => o.textContent);
+    expect(labels).toContain('Hellfire Gears (S)');
+    expect(labels).not.toContain('Deep Sea Visitor (S)'); // Attack engine — filtered out
+    await user.selectOptions(select, '14110');
+    expect(defaultProps.onUpdateWEngine).toHaveBeenCalledWith('1011', '14110');
+  });
+
+  it('W-Engine level slider spans 0–60 and reports changes', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    await enterEditMode(user);
+    const slider = container.querySelector(
+      `input[name="wengine-level-${baseAgent.id}"]`,
+    ) as HTMLInputElement;
+    expect(slider.min).toBe('0');
+    expect(slider.max).toBe('60');
+    fireEvent.change(slider, { target: { value: '60' } });
+    expect(defaultProps.onUpdateWEngineLevel).toHaveBeenCalledWith('1011', 60);
+  });
+
+  it('Phase rung click reports the numeric phase', async () => {
+    const user = userEvent.setup();
+    render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    await enterEditMode(user);
+    await user.click(screen.getByRole('button', { name: 'P5' }));
+    expect(defaultProps.onUpdateWEnginePhase).toHaveBeenCalledWith('1011', 5);
+  });
+
+  it('renders the preference strip with rank badges; tapping only toggles the caption', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    await enterEditMode(user);
+    const tiles = container.querySelectorAll('.wengine-pref-tile');
+    expect(tiles).toHaveLength(2);
+    expect(container.querySelector('.wengine-pref-rank')?.textContent).toBe('#1');
+    await user.click(tiles[1]);
+    expect(container.querySelector('.wengine-pref-caption')?.textContent).toContain('Steam Oven');
+    // Display-only tiles — no mutation callbacks fire.
+    expect(defaultProps.onUpdateWEngine).not.toHaveBeenCalled();
+    await user.click(tiles[1]);
+    expect(container.querySelector('.wengine-pref-caption')).toBeNull();
+  });
+
+  it('collapses ranks past the cap into a +N overflow tile that opens the editor', async () => {
+    const user = userEvent.setup();
+    const agent = {
+      ...agentWithWEngine(),
+      wEnginePreferences: ['14110', '13005', '13101', '13006', '12007', '14125'],
+    };
+    const { container } = render(<AgentCard {...defaultProps} agent={agent} />);
+    await enterEditMode(user);
+    const overflow = container.querySelector('.wengine-pref-overflow') as HTMLElement;
+    expect(overflow.textContent).toBe('+1');
+    await user.click(overflow);
+    expect(defaultProps.onEditWEnginePrefs).toHaveBeenCalledWith('1011');
+  });
+
+  it('hides the summary W-Engine icon when it fails to load', () => {
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    const img = container.querySelector('.wengine-icon') as HTMLImageElement;
+    fireEvent.error(img);
+    expect(img.style.display).toBe('none');
+  });
+
+  it('hides a strip tile icon that fails to load', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    await enterEditMode(user);
+    const img = container.querySelector('.wengine-pref-tile .equip-slot-img') as HTMLImageElement;
+    fireEvent.error(img);
+    expect(img.style.display).toBe('none');
+  });
+
+  it('renders the em-dash line when the equipped engine id is not in the catalog', () => {
+    const agent = { ...agentWithWEngine(), wEngineId: 'ghost', wEnginePreferences: [] };
+    const { container } = render(<AgentCard {...defaultProps} agent={agent} />);
+    expect(container.querySelectorAll('.no-equip').length).toBeGreaterThanOrEqual(1);
+  });
+
+  it('clearing the equip select reports null', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} agent={agentWithWEngine()} />);
+    await enterEditMode(user);
+    const select = container.querySelector(
+      `select[name="wengine-${baseAgent.id}"]`,
+    ) as HTMLSelectElement;
+    await user.selectOptions(select, '');
+    expect(defaultProps.onUpdateWEngine).toHaveBeenCalledWith('1011', null);
+  });
+
+  it('falls back to the raw id for a preference not in the catalog, in tile title and caption', async () => {
+    const user = userEvent.setup();
+    const agent = { ...agentWithWEngine(), wEnginePreferences: ['ghost-id'] };
+    const { container } = render(<AgentCard {...defaultProps} agent={agent} />);
+    await enterEditMode(user);
+    const tile = container.querySelector('.wengine-pref-tile') as HTMLElement;
+    expect(tile.title).toBe('ghost-id');
+    await user.click(tile);
+    expect(container.querySelector('.wengine-pref-caption')?.textContent).toContain('ghost-id');
+  });
+
+  it('shows the Target Build readout when only the 2pc suit is picked', async () => {
+    const user = userEvent.setup();
+    const agent = {
+      ...baseAgent,
+      buildPreferences: {
+        mainStats: { 4: [], 5: [], 6: [] },
+        subStats: [],
+        discSuit2Id: '31600',
+      },
+    };
+    const { container } = render(<AgentCard {...defaultProps} agent={agent} />);
+    await user.click(screen.getByTitle('Edit'));
+    const suitBadges = [...container.querySelectorAll('.pref-stat-badge')].map(
+      (el) => el.textContent,
+    );
+    expect(suitBadges).toContain('Swing Jazz');
+  });
+
+  it('Edit Preferences button opens the W-Engine editor', async () => {
+    const user = userEvent.setup();
+    render(<AgentCard {...defaultProps} />);
+    await enterEditMode(user);
+    await user.click(screen.getByRole('button', { name: 'Edit Preferences' }));
+    expect(defaultProps.onEditWEnginePrefs).toHaveBeenCalledWith('1011');
   });
 });

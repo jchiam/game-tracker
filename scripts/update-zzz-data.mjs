@@ -2,24 +2,23 @@
 // Fetches the latest data from the Enka.Network store (GitHub raw) and regenerates:
 //   - src/data/zenless-zone-zero/agents.ts
 //   - src/data/zenless-zone-zero/disc_suits.ts
+//   - src/data/zenless-zone-zero/wengines.ts
 // Downloads images from the Enka CDN and uploads to ImageKit:
 //   - agent portraits → ImageKit: /zenless_zone_zero/agents
 //   - disc suit icons → ImageKit: /zenless_zone_zero/disc-suits
+//   - W-Engine icons → ImageKit: /zenless_zone_zero/wengines
 //
 // Source notes: Hakush.in and its nankoa.cc revival are dead (NXDOMAIN, verified
 // 2026-08-16); the Enka store is the maintained community source. Fallback if the
 // store restructures: Dimbreath's ZenlessData mirror at git.mero.moe (raw game
 // configs + TextMap — needs loc joins).
 //
-// Phase 3 extends this script with W-Engines (store/zzz/weapons.json,
-// store/zzz/property.json for stat names) as a further fetch + map + emit section
-// reusing the same loc resolution and ensureAsset plumbing.
-//
 // Usage:
-//   node scripts/update-zzz-data.mjs                   # only upload missing assets
-//   node scripts/update-zzz-data.mjs --reupload-all    # force reupload all assets
-//   node scripts/update-zzz-data.mjs --reupload-agents # force reupload agent portraits
-//   node scripts/update-zzz-data.mjs --reupload-discs  # force reupload disc suit icons
+//   node scripts/update-zzz-data.mjs                      # only upload missing assets
+//   node scripts/update-zzz-data.mjs --reupload-all       # force reupload all assets
+//   node scripts/update-zzz-data.mjs --reupload-agents    # force reupload agent portraits
+//   node scripts/update-zzz-data.mjs --reupload-discs     # force reupload disc suit icons
+//   node scripts/update-zzz-data.mjs --reupload-wengines  # force reupload W-Engine icons
 
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { resolve } from 'path';
@@ -42,9 +41,10 @@ const ENKA_CDN_BASE = 'https://enka.network';
 loadLocalEnv();
 const { ensureAsset } = initImageKit();
 
-const { flags: reuploadFlags } = parseReuploadFlags(['agents', 'discs']);
+const { flags: reuploadFlags } = parseReuploadFlags(['agents', 'discs', 'wengines']);
 const reuploadAgents = reuploadFlags.agents;
 const reuploadDiscs = reuploadFlags.discs;
+const reuploadWEngines = reuploadFlags.wengines;
 
 async function loadExistingAgents() {
   const filePath = resolve(ROOT, 'src/data/zenless-zone-zero/agents.ts');
@@ -162,16 +162,71 @@ function generateDiscSuitsTs(suits) {
   return lines.join('\n');
 }
 
+async function loadExistingWEngines() {
+  const filePath = resolve(ROOT, 'src/data/zenless-zone-zero/wengines.ts');
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    const entries = [];
+    const regex = /id:\s*'([^']+)'[^}]*?name:\s*(['"])((?:\\.|(?!\2)[^\\])*)\2/gs;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      entries.push({ id: match[1], name: match[3].replace(/\\(.)/g, '$1') });
+    }
+    return entries;
+  } catch {
+    return [];
+  }
+}
+
+function generateWEnginesTs(wengines) {
+  const lines = [
+    ...generatedHeader(
+      'Enka.Network store (github.com/EnkaNetwork/API-docs)',
+      'update-zzz-data.mjs',
+    ),
+    '',
+    'export interface ZzzWEngine {',
+    '  id: string;',
+    '  name: string;',
+    '  /** Enka rarity code: 4 = S-rank, 3 = A-rank, 2 = B-rank. */',
+    '  rarity: number;',
+    '  /** Enka ProfessionType verbatim — same enum as the agent catalog. */',
+    '  specialty: string;',
+    '  imageUrl: string;',
+    '}',
+    '',
+    'export const ALL_ZZZ_WENGINES: ZzzWEngine[] = [',
+  ];
+
+  const formatEntry = (w) =>
+    [
+      `  {`,
+      `    id: '${w.id}',`,
+      `    name: ${jsStr(w.name)},`,
+      `    rarity: ${w.rarity},`,
+      `    specialty: ${jsStr(w.specialty)},`,
+      `    imageUrl: '${w.imageUrl}',`,
+      `  },`,
+    ].join('\n');
+
+  lines.push(...wengines.map(formatEntry));
+  lines.push('];', '');
+  return lines.join('\n');
+}
+
 async function main() {
   console.log('Fetching ZZZ data from the Enka.Network store...');
 
-  const [avatars, equipments, locs, existingAgents, existingSuits] = await Promise.all([
-    fetchJSON(`${ENKA_STORE_BASE}/avatars.json`),
-    fetchJSON(`${ENKA_STORE_BASE}/equipments.json`),
-    fetchJSON(`${ENKA_STORE_BASE}/locs.json`),
-    loadExistingAgents(),
-    loadExistingSuits(),
-  ]);
+  const [avatars, equipments, weapons, locs, existingAgents, existingSuits, existingWEngines] =
+    await Promise.all([
+      fetchJSON(`${ENKA_STORE_BASE}/avatars.json`),
+      fetchJSON(`${ENKA_STORE_BASE}/equipments.json`),
+      fetchJSON(`${ENKA_STORE_BASE}/weapons.json`),
+      fetchJSON(`${ENKA_STORE_BASE}/locs.json`),
+      loadExistingAgents(),
+      loadExistingSuits(),
+      loadExistingWEngines(),
+    ]);
 
   const en = locs?.en;
   const avatarIds = Object.keys(avatars ?? {});
@@ -266,6 +321,51 @@ async function main() {
 
   suits.sort((a, b) => a.name.localeCompare(b.name));
 
+  // --- W-Engines (Phase 3) ---
+  const weaponEntries = Object.entries(weapons ?? {});
+  if (weaponEntries.length === 0) {
+    throw new Error('Enka store shape changed: weapons.json empty');
+  }
+  console.log(`  ${weaponEntries.length} W-Engines listed`);
+
+  const wengines = [];
+  let wengineImgCount = 0;
+  const failedWEngineIcons = [];
+  const skippedWEngines = [];
+
+  for (const [wengineId, weapon] of weaponEntries) {
+    const name = (en[weapon.ItemName] ?? '').trim();
+    if (!name || !weapon.ImagePath || !weapon.ProfessionType) {
+      skippedWEngines.push(`${wengineId}:${weapon.ItemName}`);
+      continue;
+    }
+
+    const imageUrl = `/assets/zenless-zone-zero/wengines/${wengineId}.png`;
+    const result = await ensureAsset({
+      localPath: imageUrl,
+      label: `W-Engine icon for ${name}`,
+      reupload: reuploadWEngines,
+      mimeType: 'image/png',
+      fetchBuffer: () => downloadImage(`${ENKA_CDN_BASE}${weapon.ImagePath}`),
+    });
+    if (result === 'uploaded') wengineImgCount++;
+    if (result === 'failed') failedWEngineIcons.push(wengineId);
+
+    wengines.push({
+      id: wengineId,
+      name,
+      rarity: Number(weapon.Rarity),
+      specialty: weapon.ProfessionType,
+      imageUrl,
+    });
+  }
+
+  // Sort: S-rank first, then alphabetically within each rarity band.
+  wengines.sort((a, b) => {
+    if (a.rarity !== b.rarity) return b.rarity - a.rarity;
+    return a.name.localeCompare(b.name);
+  });
+
   await mkdir(resolve(ROOT, 'src/data/zenless-zone-zero'), { recursive: true });
   await writeFile(
     resolve(ROOT, 'src/data/zenless-zone-zero/agents.ts'),
@@ -277,9 +377,15 @@ async function main() {
     generateDiscSuitsTs(suits),
     'utf-8',
   );
+  await writeFile(
+    resolve(ROOT, 'src/data/zenless-zone-zero/wengines.ts'),
+    generateWEnginesTs(wengines),
+    'utf-8',
+  );
 
   const { added, removed } = diffByKey(existingAgents, agents, (a) => a.id);
   const suitDiff = diffByKey(existingSuits, suits, (s) => s.id);
+  const wengineDiff = diffByKey(existingWEngines, wengines, (w) => w.id);
   console.log('\nDone!');
   console.log(
     `  Agents: ${agents.length} total (${formatDiff(added, removed)}) — ${imgCount} images uploaded`,
@@ -292,17 +398,31 @@ async function main() {
   );
   for (const s of suitDiff.added) console.log(`    + ${s.name}`);
   for (const s of suitDiff.removed) console.log(`    - ${s.name} (removed from source)`);
+  console.log(
+    `  W-Engines: ${wengines.length} total (${formatDiff(wengineDiff.added, wengineDiff.removed)}) — ${wengineImgCount} icons uploaded`,
+  );
+  for (const w of wengineDiff.added)
+    console.log(
+      `    + ${w.name} [${w.rarity === 4 ? 'S' : w.rarity === 3 ? 'A' : 'B'} ${w.specialty}]`,
+    );
+  for (const w of wengineDiff.removed) console.log(`    - ${w.name} (removed from source)`);
   if (skippedEntries.length > 0) {
     console.log(`  Skipped entries: ${skippedEntries.join(', ')}`);
   }
   if (skippedSuits.length > 0) {
     console.log(`  Skipped suits: ${skippedSuits.join(', ')}`);
   }
+  if (skippedWEngines.length > 0) {
+    console.log(`  Skipped W-Engines: ${skippedWEngines.join(', ')}`);
+  }
   if (failedImages.length > 0) {
     console.warn(`  Missing agent images: ${failedImages.join(', ')}`);
   }
   if (failedSuitIcons.length > 0) {
     console.warn(`  Missing suit icons: ${failedSuitIcons.join(', ')}`);
+  }
+  if (failedWEngineIcons.length > 0) {
+    console.warn(`  Missing W-Engine icons: ${failedWEngineIcons.join(', ')}`);
   }
 }
 

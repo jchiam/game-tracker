@@ -204,6 +204,10 @@ export interface ZzzTrackedAgent extends ZzzAgent {
   /** Equipped Drive Discs by slot; null = empty slot (never a sentinel object). */
   discs: Record<ZzzDiscSlot, ZzzEquippedDisc | null>;
   buildPreferences: ZzzDiscBuildPreferences;
+  wEngineId: string | null; // catalog id of equipped W-Engine (from wengines.ts)
+  wEngineLevel: number; // 0–60 (engines start at level 0)
+  wEnginePhase: number; // 1–5 (P1–P5)
+  wEnginePreferences: string[]; // ordered ALL_ZZZ_WENGINES ids, highest priority first, no duplicates
 }
 
 /** Typed partial update for a ZZZ tracked agent row (camelCase keys). */
@@ -212,6 +216,10 @@ export interface ZzzAgentPatch {
   mindscape?: number;
   coreSkill?: number;
   isFavorited?: boolean;
+  wEngineId?: string | null;
+  wEngineLevel?: number;
+  wEnginePhase?: number;
+  wEnginePreferences?: string[];
 }
 
 export interface P5xRevelationPreferences {

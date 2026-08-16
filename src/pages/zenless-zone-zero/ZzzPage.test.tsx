@@ -18,6 +18,7 @@ vi.mock('@/lib/imagekit', () => ({
   getZzzAgentMugshotUrl: (path: string) => path,
   getZzzAgentAvatarUrl: (path: string) => path,
   getZzzDiscSuitIconUrl: (path: string) => path,
+  getZzzWEngineIconUrl: (path: string) => path,
 }));
 
 import { useAgents } from '@/hooks/zenless-zone-zero/useAgents';
@@ -38,6 +39,10 @@ function makeAgent(id: string, name: string): ZzzTrackedAgent {
     coreSkill: 3,
     discs: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
     buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    wEngineId: null,
+    wEngineLevel: 0,
+    wEnginePhase: 1,
+    wEnginePreferences: [],
   };
 }
 
@@ -68,6 +73,10 @@ const defaultAgentsHook = {
   saveDiscData: vi.fn(),
   removeDiscData: vi.fn(),
   saveDiscPreferences: vi.fn(),
+  updateWEngine: vi.fn(),
+  updateWEngineLevel: vi.fn(),
+  updateWEnginePhase: vi.fn(),
+  updateWEnginePreferences: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };
 
@@ -192,7 +201,7 @@ describe('ZzzPage', () => {
     expect(screen.getByRole('heading', { name: /zenless zone zero/i })).toBeInTheDocument();
   });
 
-  it('sort button cycles AZ → Lv → ★ (Disc Score)', () => {
+  it('sort button cycles AZ → Lv → ★ (Build Score)', () => {
     const session = createMockSession();
     const agents = [makeAgent('1191', 'Ellen')];
     vi.mocked(useAgents).mockReturnValue({
@@ -206,7 +215,7 @@ describe('ZzzPage', () => {
     fireEvent.click(sortBtn);
     expect(screen.getByTitle(/sorted by level/i)).toHaveTextContent('Lv');
     fireEvent.click(screen.getByTitle(/sorted by level/i));
-    expect(screen.getByTitle(/sorted by disc score/i)).toHaveTextContent('★');
+    expect(screen.getByTitle(/sorted by build score/i)).toHaveTextContent('★');
   });
 
   it('passes the disc scorer to getFilteredRoster', () => {
@@ -301,6 +310,30 @@ describe('ZzzPage', () => {
     // Done unmounts the editor.
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(screen.queryByText('Drive Discs — Ellen')).toBeNull();
+  });
+
+  it('opens the W-Engine editor from the card and wires preference updates', () => {
+    const session = createMockSession();
+    const updateWEnginePreferences = vi.fn();
+    const agents = [makeAgent('1191', 'Ellen')];
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      trackedAgents: agents,
+      updateWEnginePreferences,
+      getFilteredRoster: vi.fn().mockReturnValue(agents),
+    });
+    renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(screen.getByRole('button', { name: 'Edit Preferences' }));
+    expect(screen.getByText('W-Engines — Ellen')).toBeInTheDocument();
+
+    // Adding a ranked engine routes through the hook updater.
+    fireEvent.click(screen.getByRole('button', { name: '+ Add W-Engine' }));
+    expect(updateWEnginePreferences).toHaveBeenCalledWith('1191', expect.any(Array));
+
+    // Done unmounts the editor.
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByText('W-Engines — Ellen')).toBeNull();
   });
 
   it('closes AddAgentModal after an agent is added', async () => {

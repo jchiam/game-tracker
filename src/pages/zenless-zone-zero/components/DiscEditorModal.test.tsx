@@ -27,6 +27,10 @@ function makeAgent(overrides: Partial<ZzzTrackedAgent> = {}): ZzzTrackedAgent {
     coreSkill: 0,
     discs: { ...emptyDiscs },
     buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    wEngineId: null,
+    wEngineLevel: 0,
+    wEnginePhase: 1,
+    wEnginePreferences: [],
     ...overrides,
   };
 }

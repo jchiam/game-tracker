@@ -30,6 +30,10 @@ const AGENT_COLUMNS: Record<keyof ZzzAgentPatch, string> = {
   mindscape: 'mindscape',
   coreSkill: 'core_skill',
   isFavorited: 'is_favorited',
+  wEngineId: 'wengine_id',
+  wEngineLevel: 'wengine_level',
+  wEnginePhase: 'wengine_phase',
+  wEnginePreferences: 'wengine_preferences',
 };
 
 const svc = createRosterPersistence<ZzzAgent, ZzzTrackedAgent, ZzzAgentPatch>({
@@ -41,9 +45,12 @@ const svc = createRosterPersistence<ZzzAgent, ZzzTrackedAgent, ZzzAgentPatch>({
     level: 1,
     mindscape: 0,
     core_skill: 0,
+    wengine_id: null,
+    wengine_level: 0,
+    wengine_phase: 1,
   },
   select:
-    'id, agent_id, level, mindscape, core_skill, is_favorited, disc_suit_4_id, disc_suit_2_id, disc_comments',
+    'id, agent_id, level, mindscape, core_skill, is_favorited, disc_suit_4_id, disc_suit_2_id, disc_comments, wengine_id, wengine_level, wengine_phase, wengine_preferences',
   fromRow: (row, base) => ({
     ...base,
     dbId: row.id,
@@ -51,6 +58,10 @@ const svc = createRosterPersistence<ZzzAgent, ZzzTrackedAgent, ZzzAgentPatch>({
     level: row.level,
     mindscape: row.mindscape ?? 0,
     coreSkill: row.core_skill ?? 0,
+    wEngineId: row.wengine_id ?? null,
+    wEngineLevel: row.wengine_level ?? 0,
+    wEnginePhase: row.wengine_phase ?? 1,
+    wEnginePreferences: row.wengine_preferences ?? [],
     discs: { ...defaultDiscs },
     buildPreferences: {
       mainStats: { 4: [], 5: [], 6: [] },
