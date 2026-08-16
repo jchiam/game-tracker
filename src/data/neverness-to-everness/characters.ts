@@ -139,6 +139,24 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     roles: ['Damage', 'Instant Cycle', 'Burst DPS'],
     imageUrl: '/assets/neverness-to-everness/characters/zero.webp',
   },
+  {
+    id: '',
+    name: '残虹',
+    rarity: 'S',
+    esperType: 'Incantation',
+    arcType: 'Gas',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/.webp',
+  },
+  {
+    id: '',
+    name: '灵可',
+    rarity: 'S',
+    esperType: 'Anima',
+    arcType: 'Plasma',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/.webp',
+  },
   // A-Rank
   {
     id: 'adler',

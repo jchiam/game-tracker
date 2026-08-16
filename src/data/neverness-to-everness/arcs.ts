@@ -193,6 +193,20 @@ export const ALL_ARCS: N2EArc[] = [
     arcType: 'Liquid',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_BlackBook.webp',
   },
+  {
+    id: 'fork_DemonBlade',
+    name: '噬心诡刃',
+    rarity: 'S',
+    arcType: 'Gas',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_DemonBlade.webp',
+  },
+  {
+    id: 'fork_GoldRecord',
+    name: '远行者之声',
+    rarity: 'S',
+    arcType: 'Plasma',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_GoldRecord.webp',
+  },
   // A-Rank
   {
     id: 'fork_koinobori',
