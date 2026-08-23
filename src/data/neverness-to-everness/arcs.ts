@@ -117,6 +117,13 @@ export const ALL_ARCS: N2EArc[] = [
     imageUrl: '/assets/neverness-to-everness/arcs/fork_wushoutieyu.webp',
   },
   {
+    id: 'fork_DemonBlade',
+    name: 'Ravenous Blade',
+    rarity: 'S',
+    arcType: 'Gas',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_DemonBlade.webp',
+  },
+  {
     id: 'fork_TigerTally',
     name: 'Ready-Ready',
     rarity: 'S',
@@ -173,6 +180,13 @@ export const ALL_ARCS: N2EArc[] = [
     imageUrl: '/assets/neverness-to-everness/arcs/fork_Door.webp',
   },
   {
+    id: 'fork_GoldRecord',
+    name: 'Voice of the Voyager',
+    rarity: 'S',
+    arcType: 'Plasma',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_GoldRecord.webp',
+  },
+  {
     id: 'fork_GoldWool',
     name: "What's Desired",
     rarity: 'S',
@@ -192,20 +206,6 @@ export const ALL_ARCS: N2EArc[] = [
     rarity: 'S',
     arcType: 'Liquid',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_BlackBook.webp',
-  },
-  {
-    id: 'fork_DemonBlade',
-    name: '噬心诡刃',
-    rarity: 'S',
-    arcType: 'Gas',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_DemonBlade.webp',
-  },
-  {
-    id: 'fork_GoldRecord',
-    name: '远行者之声',
-    rarity: 'S',
-    arcType: 'Plasma',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_GoldRecord.webp',
   },
   // A-Rank
   {

@@ -104,6 +104,15 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     imageUrl: '/assets/neverness-to-everness/characters/lacrimosa.webp',
   },
   {
+    id: 'linko',
+    name: 'Linko',
+    rarity: 'S',
+    esperType: 'Anima',
+    arcType: 'Plasma',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/linko.webp',
+  },
+  {
     id: 'nanally',
     name: 'Nanally',
     rarity: 'S',
@@ -131,6 +140,15 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     imageUrl: '/assets/neverness-to-everness/characters/shinku.webp',
   },
   {
+    id: 'zankou',
+    name: 'Zankou',
+    rarity: 'S',
+    esperType: 'Incantation',
+    arcType: 'Gas',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/zankou.webp',
+  },
+  {
     id: 'zero',
     name: 'Zero',
     rarity: 'S',
@@ -138,24 +156,6 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     arcType: 'Solid',
     roles: ['Damage', 'Instant Cycle', 'Burst DPS'],
     imageUrl: '/assets/neverness-to-everness/characters/zero.webp',
-  },
-  {
-    id: '',
-    name: '残虹',
-    rarity: 'S',
-    esperType: 'Incantation',
-    arcType: 'Gas',
-    roles: [],
-    imageUrl: '/assets/neverness-to-everness/characters/.webp',
-  },
-  {
-    id: '',
-    name: '灵可',
-    rarity: 'S',
-    esperType: 'Anima',
-    arcType: 'Plasma',
-    roles: [],
-    imageUrl: '/assets/neverness-to-everness/characters/.webp',
   },
   // A-Rank
   {
