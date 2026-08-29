@@ -9,6 +9,7 @@ const firstCartridge = ALL_CARTRIDGES[0]; // S rarity
 function makeChar(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedCharacter {
   return {
     id: 'char-1',
+    sourceId: 'char-1',
     name: 'Baicang',
     rarity: 'S',
     esperType: 'Incantation',

@@ -28,7 +28,7 @@ import {
   parseReuploadFlags,
   fetchJSON,
   downloadImage,
-  slugify,
+  mintId,
   jsStr,
   diffByKey,
   formatDiff,
@@ -133,14 +133,23 @@ async function loadExistingPersonas() {
   try {
     const content = await readFile(filePath, 'utf-8');
     const entries = [];
-    const regex = /id:\s*'([^']+)'[^}]*?name:\s*(['"])((?:\\.|(?!\2)[^\\])*)\2/gs;
+    const idByName = new Map();
+    const idBySourceId = new Map();
+    // `sourceId` is optional so a catalog generated before it existed still parses — those entries
+    // fall back to the name-keyed map for one run (see design D4).
+    const regex =
+      /id:\s*'([^']+)',(?:\s*sourceId:\s*'([^']+)',)?[^}]*?name:\s*(['"])((?:\\.|(?!\3)[^\\])*)\3/gs;
     let match;
     while ((match = regex.exec(content)) !== null) {
-      entries.push({ id: match[1], name: match[3].replace(/\\(.)/g, '$1') });
+      const [, id, sourceId] = match;
+      const name = match[4].replace(/\\(.)/g, '$1');
+      entries.push({ id, sourceId, name });
+      idByName.set(name, id);
+      if (sourceId) idBySourceId.set(sourceId, id);
     }
-    return entries;
+    return { entries, idByName, idBySourceId };
   } catch {
-    return [];
+    return { entries: [], idByName: new Map(), idBySourceId: new Map() };
   }
 }
 
@@ -169,6 +178,8 @@ function generatePersonasTs(personas) {
     '',
     'export interface P5xPersona {',
     '  id: string;',
+    '  /** Upstream Prydwen unitId. Pins `id` across renames — see mintId in scripts/lib/pipeline.mjs. */',
+    '  sourceId: string;',
     '  name: string;',
     '  rarity: number;',
     '  role: string;',
@@ -183,6 +194,7 @@ function generatePersonasTs(personas) {
     [
       `  {`,
       `    id: '${p.id}',`,
+      `    sourceId: '${p.sourceId}',`,
       `    name: ${jsStr(p.name)},`,
       `    rarity: ${p.rarity},`,
       `    role: ${jsStr(p.role)},`,
@@ -198,7 +210,11 @@ function generatePersonasTs(personas) {
 
 async function processPersonas() {
   console.log('\nFetching P5X persona list from Prydwen...');
-  const [listData, html, existingPersonas] = await Promise.all([
+  const [
+    listData,
+    html,
+    { entries: existingPersonas, idByName: existingIdsByName, idBySourceId: existingIdsBySourceId },
+  ] = await Promise.all([
     fetchJSON(PERSONA_LIST_PAGE_DATA),
     fetch(PERSONA_PAGE_HTML).then((r) => {
       if (!r.ok) throw new Error(`Failed to fetch ${PERSONA_PAGE_HTML}: ${r.status}`);
@@ -221,8 +237,27 @@ async function processPersonas() {
   let imgCount = 0;
   const failedImages = [];
 
+  // Pin map: Prydwen unitId → already-minted catalog id. Bootstrapped by name for entries generated
+  // before `sourceId` existed, so the first run after that field landed re-pins them in place
+  // instead of re-minting from the current name (design D4).
+  const pinnedIds = new Map(existingIdsBySourceId);
   for (const node of nodes) {
-    const id = slugify(node.name, '-');
+    const key = String(node.unitId);
+    if (!pinnedIds.has(key) && existingIdsByName.has(node.name)) {
+      pinnedIds.set(key, existingIdsByName.get(node.name));
+    }
+  }
+  const takenIds = new Map();
+
+  for (const node of nodes) {
+    const id = mintId({
+      name: node.name,
+      sourceId: node.unitId,
+      pinned: pinnedIds,
+      taken: takenIds,
+      separator: '-',
+      fallbackPrefix: 'persona',
+    });
     const imageUrl = `/assets/persona-5-phantom-x/personas/${id}.webp`;
     const img = imageByUnit.get(String(node.unitId));
 
@@ -247,6 +282,7 @@ async function processPersonas() {
     const rarity = Number(node.rarity);
     personas.push({
       id,
+      sourceId: String(node.unitId),
       name: clean(node.name),
       rarity: Number.isFinite(rarity) ? rarity : 0,
       role: clean(node.job, 'Unknown'),

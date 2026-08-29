@@ -25,6 +25,7 @@ const emptyPrefs: N2ETrackedCharacter['cartridgePreferences'] = {
 function makeChar(id: string, name: string): N2ETrackedCharacter {
   return {
     id,
+    sourceId: id,
     name,
     rarity: 'S',
     esperType: 'Incantation',
@@ -311,6 +312,7 @@ describe('N2ePage', () => {
       availableCharacters: [
         {
           id: 'baicang',
+          sourceId: 'baicang',
           name: 'Baicang',
           rarity: 'S',
           esperType: 'Incantation',

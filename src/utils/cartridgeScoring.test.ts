@@ -65,6 +65,7 @@ describe('getCartridgeIdMatchScore', () => {
 function makeCharacter(overrides: Partial<N2ETrackedCharacter> = {}): N2ETrackedCharacter {
   return {
     id: 'test',
+    sourceId: 'test',
     name: 'Test',
     rarity: 'S',
     esperType: 'Cosmos',

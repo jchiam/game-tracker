@@ -16,6 +16,7 @@ vi.mock('@/lib/imagekit', () => ({
 const availableArcanists: Arcanist[] = [
   {
     id: 'an_an',
+    sourceId: 'an_an',
     name: 'An-an Lee',
     afflatus: 'Star',
     damageType: 'Mental',

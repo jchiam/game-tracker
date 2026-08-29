@@ -30,6 +30,7 @@ import {
   fetchJSON,
   downloadImage,
   slugify,
+  mintId,
   jsStr,
   diffByKey,
   formatDiff,
@@ -115,21 +116,34 @@ async function loadExistingArcanists() {
     const content = await readFile(filePath, 'utf-8');
     const entries = [];
     const idMap = new Map();
+    const idBySourceId = new Map();
     const damageMap = new Map();
     const euphoriaMap = new Map();
+    // `sourceId` is optional so a catalog generated before it existed still parses — those entries
+    // fall back to the name-keyed `idMap` for one run (see design D4). `name` accepts either quote
+    // style: jsStr emits double quotes for names containing an apostrophe, and a single-quote-only
+    // pattern would skip those entries, losing their `sourceId` pin.
     const regex =
-      /id:\s*'([^']+)'[^}]*?name:\s*'([^']+)'[^}]*?afflatus:\s*'([^']+)'[^}]*?damageType:\s*'([^']+)'[^}]*?hasEuphoria:\s*(true|false)/gs;
+      /id:\s*'([^']+)',(?:\s*sourceId:\s*'([^']+)',)?[^}]*?name:\s*(['"])((?:\\.|(?!\3)[^\\])*)\3[^}]*?afflatus:\s*'([^']+)'[^}]*?damageType:\s*'([^']+)'[^}]*?hasEuphoria:\s*(true|false)/gs;
     let match;
     while ((match = regex.exec(content)) !== null) {
-      const [, id, name, afflatus, damageType, hasEuphoria] = match;
-      entries.push({ id, name, afflatus, damageType });
+      const [, id, sourceId, , rawName, afflatus, damageType, hasEuphoria] = match;
+      const name = rawName.replace(/\\(.)/g, '$1');
+      entries.push({ id, sourceId, name, afflatus, damageType });
       idMap.set(name, id);
+      if (sourceId) idBySourceId.set(sourceId, id);
       damageMap.set(name, damageType);
       euphoriaMap.set(name, hasEuphoria === 'true');
     }
-    return { entries, idMap, damageMap, euphoriaMap };
+    return { entries, idMap, idBySourceId, damageMap, euphoriaMap };
   } catch {
-    return { entries: [], idMap: new Map(), damageMap: new Map(), euphoriaMap: new Map() };
+    return {
+      entries: [],
+      idMap: new Map(),
+      idBySourceId: new Map(),
+      damageMap: new Map(),
+      euphoriaMap: new Map(),
+    };
   }
 }
 
@@ -195,6 +209,8 @@ function generateArcanistsTs(arcanists) {
     '',
     'export interface Arcanist {',
     '  id: string;',
+    '  /** Upstream kornblume id. Pins `id` across renames — see mintId in scripts/lib/pipeline.mjs. */',
+    '  sourceId: string;',
     '  name: string;',
     '  afflatus: string;',
     '  damageType: string;',
@@ -209,6 +225,7 @@ function generateArcanistsTs(arcanists) {
     return [
       `  {`,
       `    id: '${a.id}',`,
+      `    sourceId: '${a.sourceId}',`,
       `    name: ${jsStr(a.name)},`,
       `    afflatus: '${a.afflatus}',`,
       `    damageType: '${a.damageType}',`,
@@ -384,7 +401,8 @@ async function main() {
     arcanistMap,
     {
       entries: existingEntries,
-      idMap: existingIds,
+      idMap: existingIdsByName,
+      idBySourceId: existingIdsBySourceId,
       damageMap: existingDamage,
       euphoriaMap: existingEuphoria,
     },
@@ -437,11 +455,23 @@ async function main() {
   const unmatchedHeadicons = [];
   const total = releasedRaw.length;
 
+  // Pin map: kornblume Id → already-minted catalog id. Bootstrapped by name for entries generated
+  // before `sourceId` existed, so the first run after that field landed re-pins them in place
+  // instead of re-minting from the current name (design D4).
+  const pinnedIds = new Map(existingIdsBySourceId);
+  for (const c of releasedRaw) {
+    const key = String(c.Id);
+    if (!pinnedIds.has(key) && existingIdsByName.has(c.Name)) {
+      pinnedIds.set(key, existingIdsByName.get(c.Name));
+    }
+  }
+  const takenIds = new Map();
+
   console.log(`\nProcessing images for ${total} arcanists...`);
 
   for (let idx = 0; idx < releasedRaw.length; idx++) {
     const c = releasedRaw[idx];
-    const id = existingIds.get(c.Name) ?? slugify(c.Name);
+    const id = mintId({ name: c.Name, sourceId: c.Id, pinned: pinnedIds, taken: takenIds });
     const afflatus = c.Afflatus ?? 'Unknown';
     const damageType = wikiDamage.get(c.Name) ?? existingDamage.get(c.Name) ?? 'Unknown';
 
@@ -490,6 +520,7 @@ async function main() {
 
     arcanists.push({
       id,
+      sourceId: String(c.Id),
       name: c.Name,
       afflatus,
       damageType,

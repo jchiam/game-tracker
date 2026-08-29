@@ -16,6 +16,7 @@ vi.mock('@/lib/imagekit', () => ({
 const sampleChars: N2ECharacter[] = [
   {
     id: 'baicang',
+    sourceId: 'baicang',
     name: 'Baicang',
     rarity: 'S',
     esperType: 'Incantation',

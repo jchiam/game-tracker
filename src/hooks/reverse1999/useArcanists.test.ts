@@ -45,6 +45,7 @@ const mockUpdateArcanist = vi.mocked(arcanistService.updateArcanist);
 // Test fixtures - use real arcanist IDs from ALL_ARCANISTS
 const mockArcanist = {
   id: '37',
+  sourceId: '37',
   name: '37',
   afflatus: 'Star',
   damageType: 'Mental',
@@ -54,6 +55,7 @@ const mockArcanist = {
 
 const mockArcanist2 = {
   id: '6',
+  sourceId: '6',
   name: '6',
   afflatus: 'Intellect',
   damageType: 'Mental',
@@ -90,6 +92,7 @@ function trackedArcanist(
 ): R1999TrackedArcanist {
   return {
     id: arcanistId,
+    sourceId: arcanistId,
     name,
     afflatus: 'Star',
     damageType: 'Mental',

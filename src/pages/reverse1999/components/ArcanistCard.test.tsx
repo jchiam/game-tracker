@@ -7,6 +7,7 @@ import type { R1999TrackedArcanist } from '@/types';
 function makeArcanist(overrides: Partial<R1999TrackedArcanist> = {}): R1999TrackedArcanist {
   return {
     id: 'arc-1',
+    sourceId: 'arc-1',
     name: 'Regulus',
     afflatus: 'Star',
     damageType: 'Mental',

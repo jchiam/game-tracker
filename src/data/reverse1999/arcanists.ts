@@ -6,6 +6,8 @@
 
 export interface Arcanist {
   id: string;
+  /** Upstream kornblume id. Pins `id` across renames — see mintId in scripts/lib/pipeline.mjs. */
+  sourceId: string;
   name: string;
   afflatus: string;
   damageType: string;
@@ -17,6 +19,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   // 6-Stars
   {
     id: '37',
+    sourceId: '10060',
     name: '37',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -25,6 +28,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: '6',
+    sourceId: '10064',
     name: '6',
     afflatus: 'Intellect',
     damageType: 'Mental',
@@ -33,6 +37,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'a_knight',
+    sourceId: '10005',
     name: 'A Knight',
     afflatus: 'Spirit',
     damageType: 'Real',
@@ -41,6 +46,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'aleph',
+    sourceId: '10100',
     name: 'Aleph',
     afflatus: 'Intellect',
     damageType: 'Mental',
@@ -49,6 +55,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'an_an_lee',
+    sourceId: '10034',
     name: 'An-an Lee',
     afflatus: 'Plant',
     damageType: 'Real',
@@ -57,6 +64,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'anjo_nala',
+    sourceId: '10087',
     name: 'Anjo Nala',
     afflatus: 'Beast',
     damageType: 'Mental',
@@ -65,6 +73,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'argus',
+    sourceId: '10086',
     name: 'Argus',
     afflatus: 'Plant',
     damageType: 'Real',
@@ -73,6 +82,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'barcarola',
+    sourceId: '10094',
     name: 'Barcarola',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -81,6 +91,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'beryl',
+    sourceId: '10115',
     name: 'Beryl',
     afflatus: 'Intellect',
     damageType: 'Mental',
@@ -89,6 +100,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'brume',
+    sourceId: '10116',
     name: 'Brume',
     afflatus: 'Beast',
     damageType: 'Mental',
@@ -97,6 +109,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'centurion',
+    sourceId: '10027',
     name: 'Centurion',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -105,6 +118,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'charon',
+    sourceId: '10109',
     name: 'Charon',
     afflatus: 'Spirit',
     damageType: 'Mental',
@@ -113,6 +127,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'cheng_heguang',
+    sourceId: '10121',
     name: 'Cheng Heguang',
     afflatus: 'Star',
     damageType: 'Real',
@@ -121,6 +136,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'copp_lia',
+    sourceId: '10127',
     name: 'Coppélia',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -129,6 +145,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'corvus',
+    sourceId: '10114',
     name: 'Corvus',
     afflatus: 'Intellect',
     damageType: 'Mental',
@@ -137,6 +154,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'druvis_iii',
+    sourceId: '10001',
     name: 'Druvis III',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -145,6 +163,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'enigma',
+    sourceId: '10125',
     name: 'Enigma',
     afflatus: 'Intellect',
     damageType: 'Real',
@@ -153,6 +172,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'eternity',
+    sourceId: '10046',
     name: 'Eternity',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -161,6 +181,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'ezio_auditore',
+    sourceId: '10110',
     name: 'Ezio Auditore',
     afflatus: 'Star',
     damageType: 'Real',
@@ -169,6 +190,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'ezra_theodore',
+    sourceId: '10067',
     name: 'Ezra Theodore',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -177,6 +199,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'fatutu',
+    sourceId: '10095',
     name: 'Fatutu',
     afflatus: 'Mineral',
     damageType: 'Mental',
@@ -185,6 +208,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'flutterpage',
+    sourceId: '10092',
     name: 'Flutterpage',
     afflatus: 'Star',
     damageType: 'Real',
@@ -193,6 +217,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'getian',
+    sourceId: '10071',
     name: 'Getian',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -201,6 +226,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'hissabeth',
+    sourceId: '10101',
     name: 'Hissabeth',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -209,6 +235,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'igor',
+    sourceId: '10118',
     name: 'Igor',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -217,6 +244,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'isolde',
+    sourceId: '10072',
     name: 'Isolde',
     afflatus: 'Spirit',
     damageType: 'Real',
@@ -225,6 +253,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'j',
+    sourceId: '10081',
     name: 'J',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -233,6 +262,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'jessica',
+    sourceId: '10051',
     name: 'Jessica',
     afflatus: 'Plant',
     damageType: 'Real',
@@ -241,6 +271,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'jiu_niangzi',
+    sourceId: '10069',
     name: 'Jiu Niangzi',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -249,6 +280,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'kaalaa_baunaa',
+    sourceId: '10061',
     name: 'Kaalaa Baunaa',
     afflatus: 'Mineral',
     damageType: 'Mental',
@@ -257,6 +289,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'kakania',
+    sourceId: '10080',
     name: 'Kakania',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -265,6 +298,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'kassandra',
+    sourceId: '10111',
     name: 'Kassandra',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -273,6 +307,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'kiperina',
+    sourceId: '10103',
     name: 'Kiperina',
     afflatus: 'Star',
     damageType: 'Real',
@@ -281,6 +316,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'liang_yue',
+    sourceId: '10096',
     name: 'Liang Yue',
     afflatus: 'Star',
     damageType: 'Real',
@@ -289,6 +325,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'lilya',
+    sourceId: '10002',
     name: 'Lilya',
     afflatus: 'Star',
     damageType: 'Real',
@@ -297,6 +334,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'lopera',
+    sourceId: '10090',
     name: 'Lopera',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -305,6 +343,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'lorentz_butterfly',
+    sourceId: '10122',
     name: 'Lorentz Butterfly',
     afflatus: 'Intellect',
     damageType: 'Mental',
@@ -313,6 +352,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'lucy',
+    sourceId: '10078',
     name: 'Lucy',
     afflatus: 'Intellect',
     damageType: 'Real',
@@ -321,6 +361,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'marcus',
+    sourceId: '10073',
     name: 'Marcus',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -329,6 +370,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'marsha',
+    sourceId: '10117',
     name: 'Marsha',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -337,6 +379,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'medicine_pocket',
+    sourceId: '10042',
     name: 'Medicine Pocket',
     afflatus: 'Beast',
     damageType: 'Mental',
@@ -345,6 +388,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'melania',
+    sourceId: '10057',
     name: 'Melania',
     afflatus: 'Beast',
     damageType: 'Mental',
@@ -353,6 +397,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'mercuria',
+    sourceId: '10083',
     name: 'Mercuria',
     afflatus: 'Spirit',
     damageType: 'Mental',
@@ -361,14 +406,16 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'moldir',
+    sourceId: '10107',
     name: 'Moldir',
     afflatus: 'Beast',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/moldir.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'ms_newbabel',
+    sourceId: '10047',
     name: 'Ms. NewBabel',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -377,6 +424,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'nautika',
+    sourceId: '10104',
     name: 'Nautika',
     afflatus: 'Spirit',
     damageType: 'Real',
@@ -385,14 +433,16 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'noire',
+    sourceId: '10098',
     name: 'Noire',
     afflatus: 'Plant',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/noire.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'paper_heron',
+    sourceId: '10119',
     name: 'Paper Heron',
     afflatus: 'Plant',
     damageType: 'Real',
@@ -401,6 +451,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'pickles',
+    sourceId: '10058',
     name: 'Pickles',
     afflatus: 'Mineral',
     damageType: 'Mental',
@@ -409,6 +460,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'ramona',
+    sourceId: '10124',
     name: 'Ramona',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -417,6 +469,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'recoleta',
+    sourceId: '10099',
     name: 'Recoleta',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -425,6 +478,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'regulus',
+    sourceId: '10020',
     name: 'Regulus',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -433,6 +487,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'rhiannon',
+    sourceId: '10126',
     name: 'Rhiannon',
     afflatus: 'Beast',
     damageType: 'Mental',
@@ -441,6 +496,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'rubuska',
+    sourceId: '10113',
     name: 'Rubuska',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -449,6 +505,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'semmelweis',
+    sourceId: '10077',
     name: 'Semmelweis',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -457,6 +514,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'sentinel',
+    sourceId: '10108',
     name: 'Sentinel',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -465,6 +523,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'shamane',
+    sourceId: '10063',
     name: 'Shamane',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -473,6 +532,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'sotheby',
+    sourceId: '10006',
     name: 'Sotheby',
     afflatus: 'Plant',
     damageType: 'Real',
@@ -481,6 +541,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'spathodea',
+    sourceId: '10065',
     name: 'Spathodea',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -489,6 +550,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'the_twins',
+    sourceId: '10132',
     name: 'The Twins',
     afflatus: 'Mineral & star',
     damageType: 'Reality',
@@ -497,6 +559,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'tooth_fairy',
+    sourceId: '10048',
     name: 'Tooth Fairy',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -505,6 +568,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'tuesday',
+    sourceId: '10084',
     name: 'Tuesday',
     afflatus: 'Spirit',
     damageType: 'Mental',
@@ -513,6 +577,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'ulrich',
+    sourceId: '10105',
     name: 'Ulrich',
     afflatus: 'Intellect',
     damageType: 'Real',
@@ -521,6 +586,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'vila',
+    sourceId: '10074',
     name: 'Vila',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -529,6 +595,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'voyager',
+    sourceId: '10043',
     name: 'Voyager',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -537,6 +604,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'willow',
+    sourceId: '10091',
     name: 'Willow',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -545,6 +613,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'windsong',
+    sourceId: '10076',
     name: 'Windsong',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -554,6 +623,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   // 5-Stars
   {
     id: 'alexios',
+    sourceId: '10112',
     name: 'Alexios',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -562,6 +632,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'avgust',
+    sourceId: '10075',
     name: 'Avgust',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -570,6 +641,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'baby_blue',
+    sourceId: '10013',
     name: 'Baby Blue',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -578,6 +650,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'balloon_party',
+    sourceId: '10019',
     name: 'Balloon Party',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -586,6 +659,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'barbara',
+    sourceId: '10085',
     name: 'Barbara',
     afflatus: 'Spirit',
     damageType: 'Mental',
@@ -594,6 +668,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'bkornblume',
+    sourceId: '10016',
     name: 'Bkornblume',
     afflatus: 'Plant',
     damageType: 'Real',
@@ -602,6 +677,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'blonney',
+    sourceId: '10055',
     name: 'Blonney',
     afflatus: 'Star',
     damageType: 'Real',
@@ -610,6 +686,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'brimley',
+    sourceId: '10093',
     name: 'Brimley',
     afflatus: 'Mineral',
     damageType: 'Mental',
@@ -618,6 +695,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'buddy_fairchild',
+    sourceId: '10106',
     name: 'Buddy Fairchild',
     afflatus: 'Plant',
     damageType: 'Real',
@@ -626,6 +704,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'charlie',
+    sourceId: '10014',
     name: 'Charlie',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -634,6 +713,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'click',
+    sourceId: '10044',
     name: 'Click',
     afflatus: 'Spirit',
     damageType: 'Mental',
@@ -642,6 +722,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'desert_flannel',
+    sourceId: '10068',
     name: 'Desert Flannel',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -650,6 +731,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'diggers',
+    sourceId: '10059',
     name: 'Diggers',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -658,6 +740,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'dikke',
+    sourceId: '10017',
     name: 'Dikke',
     afflatus: 'Beast',
     damageType: 'Mental',
@@ -666,6 +749,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'horropedia',
+    sourceId: '10056',
     name: 'Horropedia',
     afflatus: 'Mineral',
     damageType: 'Mental',
@@ -674,6 +758,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'kanjira',
+    sourceId: '10062',
     name: 'Kanjira',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -682,6 +767,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'loggerhead',
+    sourceId: '10097',
     name: 'Loggerhead',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -690,6 +776,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'lorelei',
+    sourceId: '10079',
     name: 'Lorelei',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -698,6 +785,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'matilda',
+    sourceId: '10036',
     name: 'Matilda',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -706,6 +794,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'mr_duncan',
+    sourceId: '10088',
     name: 'Mr. Duncan',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -714,6 +803,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'name_day',
+    sourceId: '10102',
     name: 'Name Day',
     afflatus: 'Mineral',
     damageType: 'Mental',
@@ -722,6 +812,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'necrologist',
+    sourceId: '10032',
     name: 'Necrologist',
     afflatus: 'Mineral',
     damageType: 'Mental',
@@ -730,6 +821,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'satsuki',
+    sourceId: '10033',
     name: 'Satsuki',
     afflatus: 'Plant',
     damageType: 'Mental',
@@ -738,6 +830,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'silverwing_eagle',
+    sourceId: '10128',
     name: 'Silverwing Eagle',
     afflatus: 'Plant',
     damageType: 'Real',
@@ -746,6 +839,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'sonetto',
+    sourceId: '10018',
     name: 'Sonetto',
     afflatus: 'Mineral',
     damageType: 'Real',
@@ -754,6 +848,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'sweetheart',
+    sourceId: '10008',
     name: 'Sweetheart',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -762,6 +857,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'tennant',
+    sourceId: '10038',
     name: 'Tennant',
     afflatus: 'Beast',
     damageType: 'Real',
@@ -770,6 +866,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'ulu',
+    sourceId: '10066',
     name: 'Ulu',
     afflatus: 'Mineral',
     damageType: 'Mental',
@@ -778,6 +875,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'x',
+    sourceId: '10007',
     name: 'X',
     afflatus: 'Intellect',
     damageType: 'Real',
@@ -786,6 +884,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
   },
   {
     id: 'yenisei',
+    sourceId: '10070',
     name: 'Yenisei',
     afflatus: 'Star',
     damageType: 'Mental',

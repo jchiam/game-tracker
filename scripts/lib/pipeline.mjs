@@ -176,6 +176,43 @@ export function slugify(name, separator = '_') {
     .replace(trim, '');
 }
 
+// Mint a catalog entry's `id` — the value stored in Supabase FK columns, used as the ImageKit asset
+// filename, and keyed on by script-local override maps. It must never change once assigned, so it is
+// pinned to the upstream source's own stable key rather than re-derived from the display name (which
+// upstream renames freely: N2E's Zankou shipped as '残虹' before localization).
+//
+// Resolution order:
+//   1. `pinned` — the id minted on an earlier run, looked up by sourceId. Wins unconditionally.
+//   2. `slugify(name)` — first sighting of this entity.
+//   3. `{fallbackPrefix}{separator}{sourceId}` — when the name slugifies to nothing (a fully
+//      non-Latin name). Permanent and deliberately so: promoting it later would be an id change.
+//
+// Throws on a duplicate rather than emitting a catalog with two entries sharing an id — under
+// UNIQUE(profile_id, entity_id) that would silently make one of them untrackable.
+export function mintId({
+  name,
+  sourceId,
+  pinned,
+  taken,
+  separator = '_',
+  fallbackPrefix = 'unnamed',
+}) {
+  const key = String(sourceId);
+  const id =
+    pinned?.get(key) ||
+    slugify(name, separator) ||
+    `${fallbackPrefix}${separator}${slugify(key, separator)}`;
+
+  if (taken.has(id)) {
+    throw new Error(
+      `Duplicate catalog id '${id}': '${name}' (sourceId ${key}) collides with '${taken.get(id)}'. ` +
+        `Refusing to emit a catalog with a duplicate id.`,
+    );
+  }
+  taken.set(id, `${name} (sourceId ${key})`);
+  return id;
+}
+
 // Escape single quotes so they're safe inside single-quoted JS string literals.
 export function esc(str) {
   return str.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
