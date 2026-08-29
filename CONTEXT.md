@@ -4,14 +4,14 @@ Canonical glossary of the domain concepts used across this codebase, its openspe
 
 ## The Games
 
-| Game                     | Short ID | Directory name          | Primary entity noun | Game-specific concepts                                                                                                                              |
-| ------------------------ | -------- | ----------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Honkai Star Rail         | `hsr`    | `honkai-star-rail`      | **character**       | Relics (equippable, with substats), build preferences, relic scoring                                                                                |
-| Reverse: 1999            | `r1999`  | `reverse1999`           | **arcanist**        | Psychubes, afflatus; parties support `tier` and favorite toggle                                                                                     |
-| Neverness to Everness    | `n2e`    | `neverness-to-everness` | **character**       | Espers (`esperType` on each character), the Console (cartridge + cartridge preferences + modules), arcs; parties support `tier` and favorite toggle |
-| Arknights: Endfield      | `ae`     | `arknights-endfield`    | **operator**        | Weapons; Phase-1 scope is roster + parties; weapon catalog is hand-authored (see Update Pipeline)                                                   |
-| Persona 5: The Phantom X | `p5x`    | `persona-5-phantom-x`   | **thief**           | Awareness (A0–A6 duplicate ranks), bound Persona per thief (`personaName`), codename; Phase-1 scope is roster + parties                             |
-| Zenless Zone Zero        | `zzz`    | `zenless-zone-zero`     | **agent**           | Mindscape (M0–M6), Core Skill (F→A rungs), specialty + exact-element taxonomy (open strings); 3-slot parties; Phase-1 scope is roster + parties     |
+| Game                     | Short ID | Directory name          | Primary entity noun | Game-specific concepts                                                                                                                                         |
+| ------------------------ | -------- | ----------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Honkai Star Rail         | `hsr`    | `honkai-star-rail`      | **character**       | Relics (equippable, with substats), build preferences, relic scoring                                                                                           |
+| Reverse: 1999            | `r1999`  | `reverse1999`           | **arcanist**        | Psychubes, afflatus; parties support `tier` and favorite toggle                                                                                                |
+| Neverness to Everness    | `n2e`    | `neverness-to-everness` | **character**       | Espers (`esperType` on each character), the Console (cartridge + cartridge preferences + modules), arcs; parties support `tier` and favorite toggle            |
+| Arknights: Endfield      | `ae`     | `arknights-endfield`    | **operator**        | Weapons; Phase-1 scope is roster + parties; weapon catalog is hand-authored (see Update Pipeline)                                                              |
+| Persona 5: The Phantom X | `p5x`    | `persona-5-phantom-x`   | **thief**           | Awareness (A0–A6 duplicate ranks), Mindscape node tree (Outer/Inner — see Mindscape), bound Persona per thief (`personaName`), codename, Revelations + weapons |
+| Zenless Zone Zero        | `zzz`    | `zenless-zone-zero`     | **agent**           | Mindscape (M0–M6), Core Skill (F→A rungs), specialty + exact-element taxonomy (open strings); 3-slot parties; Phase-1 scope is roster + parties                |
 
 Each game is a self-contained module under `src/data/{game}/`, `src/services/{game}/`, `src/hooks/{game}/`, `src/pages/{game}/`, with shared code in `src/components/`, `src/lib/`, `src/utils/`, `src/types.ts`.
 
@@ -93,6 +93,21 @@ cartridge-preference readout: Set, Main chain, Subs chain, comments) is the Cons
 preference display, relevant to both cartridge and modules. In the character card the Console renders
 as a single labeled group in the edit body (after Arc), ordered cartridge → modules → Target Build.
 Its full behaviour lives in the `n2e-character-detail` spec.
+
+### Mindscape (ZZZ, P5X)
+
+Two unrelated in-game systems that share the word; both names are verbatim in-game and neither is
+renamed. Always qualify by game in specs and review.
+
+**ZZZ — Mindscape Cinema.** The Agent duplicate system: rank 0–6, one rung per extra copy. Field
+`mindscape` (`ZzzTrackedAgent`), DB column `mindscape` with `CHECK 0..6`, displayed `M{n}`
+(`M0`–`M6`). This is ZZZ's dupe axis. Its full behaviour lives in the `zzz-agent-detail` spec.
+
+**P5X — Mindscape.** The Thief passive node tree, split into an Outer half and an Inner half that
+gates behind it. Tracked as ordered completion, not a rank: field `mindscapeProgress`
+(`P5xTrackedThief`), `0` not started / `1` Outer maxed / `2` Inner maxed, chip `MS O` / `MS I`,
+absent at `0`. P5X's dupe axis is a _separate_ field, `awareness` (A0–A6). Its full behaviour lives
+in the `p5x-thief-detail` spec.
 
 ### Party / Lineup
 
