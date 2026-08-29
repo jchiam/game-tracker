@@ -18,6 +18,7 @@ import { useParties } from '@/hooks/reverse1999/useParties';
 function makeArcanist(id: string, name: string): R1999TrackedArcanist {
   return {
     id,
+    sourceId: id,
     name,
     afflatus: 'Star',
     damageType: 'Mental',
@@ -320,6 +321,7 @@ describe('Reverse1999Page', () => {
       availableArcanists: [
         {
           id: 'regulus',
+          sourceId: 'regulus',
           name: 'Regulus',
           afflatus: 'Star',
           damageType: 'Mental',

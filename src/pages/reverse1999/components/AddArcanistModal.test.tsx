@@ -15,6 +15,7 @@ vi.mock('@/lib/imagekit', () => ({
 const availableArcanists: Arcanist[] = [
   {
     id: '37',
+    sourceId: '37',
     name: '37',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -23,6 +24,7 @@ const availableArcanists: Arcanist[] = [
   },
   {
     id: 'regulus',
+    sourceId: 'regulus',
     name: 'Regulus',
     afflatus: 'Star',
     damageType: 'Mental',
@@ -31,6 +33,7 @@ const availableArcanists: Arcanist[] = [
   },
   {
     id: 'druvis-iii',
+    sourceId: 'druvis-iii',
     name: 'Druvis III',
     afflatus: 'Plant',
     damageType: 'Mental',

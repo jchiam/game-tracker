@@ -27,7 +27,7 @@ import {
   initImageKit,
   parseReuploadFlags,
   downloadImage,
-  slugify,
+  mintId,
   jsStr,
   diffByKey,
   formatDiff,
@@ -146,17 +146,25 @@ async function loadExistingCharacters() {
     const content = await readFile(filePath, 'utf-8');
     const entries = [];
     const idMap = new Map();
+    const idBySourceId = new Map();
+    // `sourceId` is optional in the pattern so a catalog generated before it existed still parses —
+    // those entries fall back to the name-keyed `idMap` for one run (see design D4).
+    // `name` must accept either quote style: jsStr emits double quotes for names containing an
+    // apostrophe, and a single-quote-only pattern would skip those entries — losing their `sourceId`
+    // pin and re-minting their id, the exact failure this pinning exists to prevent.
     const regex =
-      /id:\s*'([^']+)'[^}]*?name:\s*'([^']+)'[^}]*?rarity:\s*'([^']+)'[^}]*?esperType:\s*'([^']+)'[^}]*?arcType:\s*'([^']+)'/gs;
+      /id:\s*'([^']+)',(?:\s*sourceId:\s*'([^']+)',)?[^}]*?name:\s*(['"])((?:\\.|(?!\3)[^\\])*)\3[^}]*?rarity:\s*'([^']+)'[^}]*?esperType:\s*'([^']+)'[^}]*?arcType:\s*'([^']+)'/gs;
     let match;
     while ((match = regex.exec(content)) !== null) {
-      const [, id, name, rarity, esperType, arcType] = match;
-      entries.push({ id, name, rarity, esperType, arcType });
+      const [, id, sourceId, , rawName, rarity, esperType, arcType] = match;
+      const name = rawName.replace(/\\(.)/g, '$1');
+      entries.push({ id, sourceId, name, rarity, esperType, arcType });
       idMap.set(name, id);
+      if (sourceId) idBySourceId.set(sourceId, id);
     }
-    return { entries, idMap };
+    return { entries, idMap, idBySourceId };
   } catch {
-    return { entries: [], idMap: new Map() };
+    return { entries: [], idMap: new Map(), idBySourceId: new Map() };
   }
 }
 
@@ -203,6 +211,8 @@ function generateCharactersTs(characters) {
     '',
     'export interface N2ECharacter {',
     '  id: string;',
+    '  /** Upstream esper id. Pins `id` across renames — see mintId in scripts/lib/pipeline.mjs. */',
+    '  sourceId: string;',
     '  name: string;',
     '  rarity: string;',
     '  esperType: string;',
@@ -219,6 +229,7 @@ function generateCharactersTs(characters) {
     return [
       '  {',
       `    id: '${c.id}',`,
+      `    sourceId: '${c.sourceId}',`,
       `    name: ${jsStr(c.name)},`,
       `    rarity: '${c.rarity}',`,
       `    esperType: '${c.esperType}',`,
@@ -363,7 +374,7 @@ async function main() {
     shardData,
     mainStatData,
     subStatData,
-    { entries: existingChars, idMap: existingIds },
+    { entries: existingChars, idMap: existingIdsByName, idBySourceId: existingIdsBySourceId },
     existingArcs,
     existingCartridges,
   ] = await Promise.all([
@@ -409,6 +420,17 @@ async function main() {
     return a.name.localeCompare(b.name);
   });
 
+  // Pin map: esper id → already-minted catalog id. Bootstrapped by name for entries generated
+  // before `sourceId` existed, so the first run after that field landed re-pins them in place
+  // instead of re-minting from the current name (design D4).
+  const pinnedIds = new Map(existingIdsBySourceId);
+  for (const e of espers) {
+    if (!pinnedIds.has(e.id) && existingIdsByName.has(e.name)) {
+      pinnedIds.set(e.id, existingIdsByName.get(e.name));
+    }
+  }
+  const takenIds = new Map();
+
   const characters = [];
   let charImageCount = 0;
   const missingImages = [];
@@ -417,7 +439,7 @@ async function main() {
 
   for (let idx = 0; idx < espers.length; idx++) {
     const e = espers[idx];
-    const id = existingIds.get(e.name) ?? slugify(e.name);
+    const id = mintId({ name: e.name, sourceId: e.id, pinned: pinnedIds, taken: takenIds });
     const rarity = RARITY_MAP[e.rarity] ?? 'Unknown';
     const esperType = e.element ?? 'Unknown';
     const arcType = e.arcs_tags?.name ?? 'Unknown';
@@ -429,7 +451,16 @@ async function main() {
     if (!e.iconGacha) {
       console.warn(`    No gacha art (iconGacha) for ${e.name} — skipping image`);
       missingImages.push(e.name);
-      characters.push({ id, name: e.name, rarity, esperType, arcType, roles, imageUrl });
+      characters.push({
+        id,
+        sourceId: e.id,
+        name: e.name,
+        rarity,
+        esperType,
+        arcType,
+        roles,
+        imageUrl,
+      });
       continue;
     }
 
@@ -444,7 +475,16 @@ async function main() {
     if (charResult === 'uploaded') charImageCount++;
     if (charResult === 'failed') missingImages.push(e.name);
 
-    characters.push({ id, name: e.name, rarity, esperType, arcType, roles, imageUrl });
+    characters.push({
+      id,
+      sourceId: e.id,
+      name: e.name,
+      rarity,
+      esperType,
+      arcType,
+      roles,
+      imageUrl,
+    });
   }
 
   // ── Process alternate art variants ───────────────────────────────

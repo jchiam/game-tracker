@@ -7,6 +7,7 @@ import {
   initImageKit,
   parseReuploadFlags,
   slugify,
+  mintId,
   esc,
   jsStr,
   diffByKey,
@@ -28,6 +29,64 @@ describe('slugify', () => {
   it('collapses runs and trims leading/trailing separators', () => {
     expect(slugify('--Weird__Name--', '-')).toBe('weird-name');
     expect(slugify('__Weird__Name__')).toBe('weird_name');
+  });
+});
+
+describe('mintId', () => {
+  it('prefers the pinned id over a slug of the current name', () => {
+    // Zankou: pinned while upstream still called it '残虹', kept after localization.
+    const pinned = new Map([['1046', 'unnamed_1046']]);
+    expect(mintId({ name: 'Zankou', sourceId: '1046', pinned, taken: new Map() })).toBe(
+      'unnamed_1046',
+    );
+  });
+
+  it('slugs the name on first sighting', () => {
+    expect(
+      mintId({ name: 'Liang Yue', sourceId: '2001', pinned: new Map(), taken: new Map() }),
+    ).toBe('liang_yue');
+  });
+
+  it('falls back to a sourceId-derived id when the name slugifies to nothing', () => {
+    expect(mintId({ name: '残虹', sourceId: '1046', pinned: new Map(), taken: new Map() })).toBe(
+      'unnamed_1046',
+    );
+  });
+
+  it('honours the separator and fallback prefix', () => {
+    expect(
+      mintId({
+        name: '灵可',
+        sourceId: '1047',
+        pinned: new Map(),
+        taken: new Map(),
+        separator: '-',
+        fallbackPrefix: 'persona',
+      }),
+    ).toBe('persona-1047');
+  });
+
+  it('accumulates minted ids in taken', () => {
+    const taken = new Map();
+    mintId({ name: 'Zero', sourceId: '1', pinned: new Map(), taken });
+    mintId({ name: 'Shinku', sourceId: '2', pinned: new Map(), taken });
+    expect([...taken.keys()]).toEqual(['zero', 'shinku']);
+  });
+
+  it('gives two un-slugifiable names distinct ids (the 残虹/灵可 collision)', () => {
+    const taken = new Map();
+    const a = mintId({ name: '残虹', sourceId: '1046', pinned: new Map(), taken });
+    const b = mintId({ name: '灵可', sourceId: '1047', pinned: new Map(), taken });
+    expect(a).toBe('unnamed_1046');
+    expect(b).toBe('unnamed_1047');
+  });
+
+  it('throws on a collision, naming both entities', () => {
+    const taken = new Map();
+    mintId({ name: 'A.K.A.-6', sourceId: '1', pinned: new Map(), taken });
+    expect(() => mintId({ name: 'A K A 6', sourceId: '2', pinned: new Map(), taken })).toThrow(
+      /Duplicate catalog id 'a_k_a_6'.*sourceId 2.*A\.K\.A\.-6/s,
+    );
   });
 });
 

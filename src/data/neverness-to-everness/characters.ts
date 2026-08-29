@@ -3,6 +3,8 @@
 
 export interface N2ECharacter {
   id: string;
+  /** Upstream esper id. Pins `id` across renames — see mintId in scripts/lib/pipeline.mjs. */
+  sourceId: string;
   name: string;
   rarity: string;
   esperType: string;
@@ -15,6 +17,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   // S-Rank
   {
     id: 'baicang',
+    sourceId: '1023',
     name: 'Baicang',
     rarity: 'S',
     esperType: 'Incantation',
@@ -24,6 +27,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'chaos',
+    sourceId: '1071',
     name: 'Chaos',
     rarity: 'S',
     esperType: 'Lakshana',
@@ -33,6 +37,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'chiz',
+    sourceId: '1073',
     name: 'Chiz',
     rarity: 'S',
     esperType: 'Cosmos',
@@ -42,6 +47,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'daffodill',
+    sourceId: '1054',
     name: 'Daffodill',
     rarity: 'S',
     esperType: 'Chaos',
@@ -51,6 +57,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'fadia',
+    sourceId: '1039',
     name: 'Fadia',
     rarity: 'S',
     esperType: 'Psyche',
@@ -60,6 +67,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'hathor',
+    sourceId: '1025',
     name: 'Hathor',
     rarity: 'S',
     esperType: 'Lakshana',
@@ -69,6 +77,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'hotori',
+    sourceId: '1052',
     name: 'Hotori',
     rarity: 'S',
     esperType: 'Cosmos',
@@ -78,6 +87,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'iroi',
+    sourceId: '1075',
     name: 'Iroi',
     rarity: 'S',
     esperType: 'Anima',
@@ -87,6 +97,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'jiuyuan',
+    sourceId: '1055',
     name: 'Jiuyuan',
     rarity: 'S',
     esperType: 'Anima',
@@ -96,6 +107,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'lacrimosa',
+    sourceId: '1004',
     name: 'Lacrimosa',
     rarity: 'S',
     esperType: 'Chaos',
@@ -105,6 +117,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'linko',
+    sourceId: '1072',
     name: 'Linko',
     rarity: 'S',
     esperType: 'Anima',
@@ -114,6 +127,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'nanally',
+    sourceId: '1010',
     name: 'Nanally',
     rarity: 'S',
     esperType: 'Anima',
@@ -123,6 +137,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'sakiri',
+    sourceId: '1003',
     name: 'Sakiri',
     rarity: 'S',
     esperType: 'Incantation',
@@ -132,6 +147,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'shinku',
+    sourceId: '1076',
     name: 'Shinku',
     rarity: 'S',
     esperType: 'Cosmos',
@@ -141,6 +157,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'zankou',
+    sourceId: '1036',
     name: 'Zankou',
     rarity: 'S',
     esperType: 'Incantation',
@@ -150,6 +167,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'zero',
+    sourceId: '1046',
     name: 'Zero',
     rarity: 'S',
     esperType: 'Cosmos',
@@ -160,6 +178,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   // A-Rank
   {
     id: 'adler',
+    sourceId: '1033',
     name: 'Adler',
     rarity: 'A',
     esperType: 'Incantation',
@@ -169,6 +188,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'aurelia',
+    sourceId: '1070',
     name: 'Aurelia',
     rarity: 'A',
     esperType: 'Psyche',
@@ -178,6 +198,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'edgar',
+    sourceId: '1021',
     name: 'Edgar',
     rarity: 'A',
     esperType: 'Cosmos',
@@ -187,6 +208,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'haniel',
+    sourceId: '1020',
     name: 'Haniel',
     rarity: 'A',
     esperType: 'Psyche',
@@ -196,6 +218,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'mint',
+    sourceId: '1019',
     name: 'Mint',
     rarity: 'A',
     esperType: 'Anima',
@@ -205,6 +228,7 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
   },
   {
     id: 'skia',
+    sourceId: '1008',
     name: 'Skia',
     rarity: 'A',
     esperType: 'Lakshana',

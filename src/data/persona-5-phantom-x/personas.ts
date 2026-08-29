@@ -3,6 +3,8 @@
 
 export interface P5xPersona {
   id: string;
+  /** Upstream Prydwen unitId. Pins `id` across renames — see mintId in scripts/lib/pipeline.mjs. */
+  sourceId: string;
   name: string;
   rarity: number;
   role: string;
@@ -13,6 +15,7 @@ export interface P5xPersona {
 export const ALL_PERSONAS: P5xPersona[] = [
   {
     id: 'alice',
+    sourceId: '141',
     name: 'Alice',
     rarity: 5,
     role: 'Debuffer',
@@ -21,6 +24,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'ame-no-uzume',
+    sourceId: '106',
     name: 'Ame-no-Uzume',
     rarity: 5,
     role: 'Single-target',
@@ -29,6 +33,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'anubis',
+    sourceId: '114',
     name: 'Anubis',
     rarity: 5,
     role: 'Single-target',
@@ -37,6 +42,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'archangel',
+    sourceId: '104',
     name: 'Archangel',
     rarity: 5,
     role: 'Debuffer',
@@ -45,6 +51,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'baphomet',
+    sourceId: '121',
     name: 'Baphomet',
     rarity: 5,
     role: 'Multi-target',
@@ -53,6 +60,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'belial',
+    sourceId: '125',
     name: 'Belial',
     rarity: 5,
     role: 'Debuffer',
@@ -61,6 +69,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'bishamonten',
+    sourceId: '133',
     name: 'Bishamonten',
     rarity: 5,
     role: 'Single-target',
@@ -69,6 +78,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'black-frost',
+    sourceId: '136',
     name: 'Black Frost',
     rarity: 5,
     role: 'Single-target',
@@ -77,6 +87,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'byakko',
+    sourceId: '118',
     name: 'Byakko',
     rarity: 5,
     role: 'Single-target',
@@ -85,6 +96,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'chernobog',
+    sourceId: '135',
     name: 'Chernobog',
     rarity: 5,
     role: 'Debuffer',
@@ -93,6 +105,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'cu-chulainn',
+    sourceId: '139',
     name: 'Cu Chulainn',
     rarity: 5,
     role: 'Single-target',
@@ -101,6 +114,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'daisoujou',
+    sourceId: '116',
     name: 'Daisoujou',
     rarity: 5,
     role: 'Multi-target',
@@ -109,6 +123,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'dominion',
+    sourceId: '130',
     name: 'Dominion',
     rarity: 5,
     role: 'Buffer',
@@ -117,6 +132,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'eligor',
+    sourceId: '103',
     name: 'Eligor',
     rarity: 5,
     role: 'Single-target',
@@ -125,6 +141,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'genbu',
+    sourceId: '102',
     name: 'Genbu',
     rarity: 5,
     role: 'Tank',
@@ -133,6 +150,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'hell-biker',
+    sourceId: '111',
     name: 'Hell Biker',
     rarity: 5,
     role: 'Single-target',
@@ -141,6 +159,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'janosik',
+    sourceId: '13',
     name: 'Janosik',
     rarity: 5,
     role: 'Single-target',
@@ -149,6 +168,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'king-frost',
+    sourceId: '132',
     name: 'King Frost',
     rarity: 5,
     role: 'Tank',
@@ -157,6 +177,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'kohryu',
+    sourceId: '142',
     name: 'Kohryu',
     rarity: 5,
     role: 'Multi-target',
@@ -165,6 +186,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'lakshmi',
+    sourceId: '131',
     name: 'Lakshmi',
     rarity: 5,
     role: 'Healer',
@@ -173,6 +195,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'lamia',
+    sourceId: '127',
     name: 'Lamia',
     rarity: 5,
     role: 'Debuffer',
@@ -181,6 +204,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'leanan-sidhe',
+    sourceId: '105',
     name: 'Leanan Sidhe',
     rarity: 5,
     role: 'Multi-target',
@@ -189,6 +213,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'lilith',
+    sourceId: '134',
     name: 'Lilith',
     rarity: 5,
     role: 'Multi-target',
@@ -197,6 +222,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'melchizedek',
+    sourceId: '124',
     name: 'Melchizedek',
     rarity: 5,
     role: 'Multi-target',
@@ -205,6 +231,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'narcissus',
+    sourceId: '119',
     name: 'Narcissus',
     rarity: 5,
     role: 'Debuffer',
@@ -213,6 +240,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'neko-shogun',
+    sourceId: '108',
     name: 'Neko Shogun',
     rarity: 5,
     role: 'Buffer',
@@ -221,6 +249,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'nian',
+    sourceId: '138',
     name: 'Nian',
     rarity: 5,
     role: 'Debuffer',
@@ -229,6 +258,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'norn',
+    sourceId: '122',
     name: 'Norn',
     rarity: 5,
     role: 'Tank',
@@ -237,6 +267,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'okuninushi',
+    sourceId: '115',
     name: 'Okuninushi',
     rarity: 5,
     role: 'Multi-target',
@@ -245,6 +276,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'principality',
+    sourceId: '107',
     name: 'Principality',
     rarity: 5,
     role: 'Healer',
@@ -253,6 +285,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'sandalphon',
+    sourceId: '146',
     name: 'Sandalphon',
     rarity: 5,
     role: 'Tank',
@@ -261,6 +294,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'sarasvati',
+    sourceId: '117',
     name: 'Sarasvati',
     rarity: 5,
     role: 'Healer',
@@ -269,6 +303,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'setanta',
+    sourceId: '110',
     name: 'Setanta',
     rarity: 5,
     role: 'Multi-target',
@@ -277,6 +312,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'seth',
+    sourceId: '120',
     name: 'Seth',
     rarity: 5,
     role: 'Single-target',
@@ -285,6 +321,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'shiki-ouji',
+    sourceId: '126',
     name: 'Shiki-Ouji',
     rarity: 5,
     role: 'Tank',
@@ -293,6 +330,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'shiva',
+    sourceId: '144',
     name: 'Shiva',
     rarity: 5,
     role: 'Debuffer',
@@ -301,6 +339,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'siegfried',
+    sourceId: '137',
     name: 'Siegfried',
     rarity: 5,
     role: 'Multi-target',
@@ -309,6 +348,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'sraosha',
+    sourceId: '147',
     name: 'Sraosha',
     rarity: 5,
     role: 'Debuffer',
@@ -317,6 +357,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'thor',
+    sourceId: '128',
     name: 'Thor',
     rarity: 5,
     role: 'Multi-target',
@@ -325,6 +366,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'throne',
+    sourceId: '149',
     name: 'Throne',
     rarity: 5,
     role: 'Buffer',
@@ -333,6 +375,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'titania',
+    sourceId: '123',
     name: 'Titania',
     rarity: 5,
     role: 'Healer',
@@ -341,6 +384,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'unicorn',
+    sourceId: '112',
     name: 'Unicorn',
     rarity: 5,
     role: 'Healer',
@@ -349,6 +393,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'vishnu',
+    sourceId: '145',
     name: 'Vishnu',
     rarity: 5,
     role: 'Single-target',
@@ -357,6 +402,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'white-rider',
+    sourceId: '113',
     name: 'White Rider',
     rarity: 5,
     role: 'Debuffer',
@@ -365,6 +411,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'yamata-no-orochi',
+    sourceId: '129',
     name: 'Yamata-no-Orochi',
     rarity: 5,
     role: 'Single-target',
@@ -373,6 +420,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'yoshitsune',
+    sourceId: '143',
     name: 'Yoshitsune',
     rarity: 5,
     role: 'Multi-target',
@@ -381,6 +429,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'zaou-gongen',
+    sourceId: '148',
     name: 'Zaou-Gongen',
     rarity: 5,
     role: 'Single-target',
@@ -389,6 +438,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'angel',
+    sourceId: '67',
     name: 'Angel',
     rarity: 4,
     role: 'Healer',
@@ -397,6 +447,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'anzu',
+    sourceId: '72',
     name: 'Anzu',
     rarity: 4,
     role: 'Multi-target',
@@ -405,6 +456,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'arahabaki',
+    sourceId: '77',
     name: 'Arahabaki',
     rarity: 4,
     role: 'Tank',
@@ -413,6 +465,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'atropos',
+    sourceId: '81',
     name: 'Atropos',
     rarity: 4,
     role: 'Buffer',
@@ -421,6 +474,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'belphegor',
+    sourceId: '80',
     name: 'Belphegor',
     rarity: 4,
     role: 'Debuffer',
@@ -429,6 +483,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'berith',
+    sourceId: '63',
     name: 'Berith',
     rarity: 4,
     role: 'Buffer',
@@ -437,6 +492,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'black-rider',
+    sourceId: '96',
     name: 'Black Rider',
     rarity: 4,
     role: 'Multi-target',
@@ -445,6 +501,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'bugs',
+    sourceId: '84',
     name: 'Bugs',
     rarity: 4,
     role: 'Single-target',
@@ -453,6 +510,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'cerberus',
+    sourceId: '94',
     name: 'Cerberus',
     rarity: 4,
     role: 'Multi-target',
@@ -461,6 +519,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'dakini',
+    sourceId: '88',
     name: 'Dakini',
     rarity: 4,
     role: 'Debuffer',
@@ -469,6 +528,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'dionysus',
+    sourceId: '98',
     name: 'Dionysus',
     rarity: 4,
     role: 'Buffer',
@@ -477,6 +537,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'fuu-ki',
+    sourceId: '35',
     name: 'Fuu-Ki',
     rarity: 4,
     role: 'Single-target',
@@ -485,6 +546,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'ganesha',
+    sourceId: '92',
     name: 'Ganesha',
     rarity: 4,
     role: 'Tank',
@@ -493,6 +555,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'hariti',
+    sourceId: '79',
     name: 'Hariti',
     rarity: 4,
     role: 'Multi-target',
@@ -501,6 +564,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'horus',
+    sourceId: '89',
     name: 'Horus',
     rarity: 4,
     role: 'Multi-target',
@@ -509,6 +573,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'incubus',
+    sourceId: '64',
     name: 'Incubus',
     rarity: 4,
     role: 'Single-target',
@@ -517,6 +582,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'jack-frost',
+    sourceId: '69',
     name: 'Jack Frost',
     rarity: 4,
     role: 'Multi-target',
@@ -525,6 +591,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'jikokuten',
+    sourceId: '73',
     name: 'Jikokuten',
     rarity: 4,
     role: 'Buffer',
@@ -533,6 +600,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'kin-ki',
+    sourceId: '75',
     name: 'Kin-Ki',
     rarity: 4,
     role: 'Multi-target',
@@ -541,6 +609,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'koumokuten',
+    sourceId: '86',
     name: 'Koumokuten',
     rarity: 4,
     role: 'Buffer',
@@ -549,6 +618,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'kumbhanda',
+    sourceId: '90',
     name: 'Kumbhanda',
     rarity: 4,
     role: 'Multi-target',
@@ -557,6 +627,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'kushinada-hime',
+    sourceId: '82',
     name: 'Kushinada-Hime',
     rarity: 4,
     role: 'Buffer',
@@ -565,6 +636,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'lachesis',
+    sourceId: '76',
     name: 'Lachesis',
     rarity: 4,
     role: 'Healer',
@@ -573,6 +645,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'lilim',
+    sourceId: '78',
     name: 'Lilim',
     rarity: 4,
     role: 'Single-target',
@@ -581,6 +654,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'matador',
+    sourceId: '68',
     name: 'Matador',
     rarity: 4,
     role: 'Single-target',
@@ -589,6 +663,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'moloch',
+    sourceId: '95',
     name: 'Moloch',
     rarity: 4,
     role: 'Tank',
@@ -597,6 +672,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'nebiros',
+    sourceId: '101',
     name: 'Nebiros',
     rarity: 4,
     role: 'Debuffer',
@@ -605,6 +681,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'nue',
+    sourceId: '140',
     name: 'Nue',
     rarity: 4,
     role: 'Multi-target',
@@ -613,6 +690,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'obariyon',
+    sourceId: '65',
     name: 'Obariyon',
     rarity: 4,
     role: 'Single-target',
@@ -621,6 +699,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'oberon',
+    sourceId: '99',
     name: 'Oberon',
     rarity: 4,
     role: 'Single-target',
@@ -629,6 +708,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'oni',
+    sourceId: '66',
     name: 'Oni',
     rarity: 4,
     role: 'Multi-target',
@@ -637,6 +717,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'orthrus',
+    sourceId: '74',
     name: 'Orthrus',
     rarity: 4,
     role: 'Single-target',
@@ -645,6 +726,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'ose',
+    sourceId: '87',
     name: 'Ose',
     rarity: 4,
     role: 'Debuffer',
@@ -653,6 +735,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'pale-rider',
+    sourceId: '91',
     name: 'Pale Rider',
     rarity: 4,
     role: 'Debuffer',
@@ -661,6 +744,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'parvati',
+    sourceId: '93',
     name: 'Parvati',
     rarity: 4,
     role: 'Healer',
@@ -669,6 +753,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'pazuzu',
+    sourceId: '85',
     name: 'Pazuzu',
     rarity: 4,
     role: 'Multi-target',
@@ -677,6 +762,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'phoenix',
+    sourceId: '71',
     name: 'Phoenix',
     rarity: 4,
     role: 'Multi-target',
@@ -685,6 +771,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'queen-mab',
+    sourceId: '83',
     name: 'Queen Mab',
     rarity: 4,
     role: 'Multi-target',
@@ -693,6 +780,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'seiryu',
+    sourceId: '100',
     name: 'Seiryu',
     rarity: 4,
     role: 'Healer',
@@ -701,6 +789,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'silky',
+    sourceId: '62',
     name: 'Silky',
     rarity: 4,
     role: 'Healer',
@@ -709,6 +798,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'skadi',
+    sourceId: '97',
     name: 'Skadi',
     rarity: 4,
     role: 'Debuffer',
@@ -717,6 +807,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'succubus',
+    sourceId: '61',
     name: 'Succubus',
     rarity: 4,
     role: 'Buffer',
@@ -725,6 +816,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'yaksini',
+    sourceId: '70',
     name: 'Yaksini',
     rarity: 4,
     role: 'Single-target',
@@ -733,6 +825,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'ara-mitama',
+    sourceId: '45',
     name: 'Ara Mitama',
     rarity: 3,
     role: 'Single-target',
@@ -741,6 +834,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'barong',
+    sourceId: '55',
     name: 'Barong',
     rarity: 3,
     role: 'Single-target',
@@ -749,6 +843,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'black-ooze',
+    sourceId: '36',
     name: 'Black Ooze',
     rarity: 3,
     role: 'Debuffer',
@@ -757,6 +852,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'clotho',
+    sourceId: '109',
     name: 'Clotho',
     rarity: 3,
     role: 'Single-target',
@@ -765,6 +861,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'decarabia',
+    sourceId: '38',
     name: 'Decarabia',
     rarity: 3,
     role: 'Multi-target',
@@ -773,6 +870,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'flauros',
+    sourceId: '30',
     name: 'Flauros',
     rarity: 3,
     role: 'Single-target',
@@ -781,6 +879,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'garuda',
+    sourceId: '58',
     name: 'Garuda',
     rarity: 3,
     role: 'Debuffer',
@@ -789,6 +888,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'girimehkala',
+    sourceId: '47',
     name: 'Girimehkala',
     rarity: 3,
     role: 'Tank',
@@ -797,6 +897,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'hecatoncheires',
+    sourceId: '48',
     name: 'Hecatoncheires',
     rarity: 3,
     role: 'Tank',
@@ -805,6 +906,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'isis',
+    sourceId: '29',
     name: 'Isis',
     rarity: 3,
     role: 'Healer',
@@ -813,6 +915,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'jatayu',
+    sourceId: '37',
     name: 'Jatayu',
     rarity: 3,
     role: 'Debuffer',
@@ -821,6 +924,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'kaiwan',
+    sourceId: '44',
     name: 'Kaiwan',
     rarity: 3,
     role: 'Debuffer',
@@ -829,6 +933,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'kikuri-hime',
+    sourceId: '43',
     name: 'Kikuri-Hime',
     rarity: 3,
     role: 'Healer',
@@ -837,6 +942,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'mithra',
+    sourceId: '46',
     name: 'Mithra',
     rarity: 3,
     role: 'Multi-target',
@@ -845,6 +951,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'mithras',
+    sourceId: '42',
     name: 'Mithras',
     rarity: 3,
     role: 'Tank',
@@ -853,6 +960,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'mothman',
+    sourceId: '40',
     name: 'Mothman',
     rarity: 3,
     role: 'Multi-target',
@@ -861,6 +969,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'naga',
+    sourceId: '34',
     name: 'Naga',
     rarity: 3,
     role: 'Multi-target',
@@ -869,6 +978,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'power',
+    sourceId: '50',
     name: 'Power',
     rarity: 3,
     role: 'Single-target',
@@ -877,6 +987,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'quetzalcoatl',
+    sourceId: '60',
     name: 'Quetzalcoatl',
     rarity: 3,
     role: 'Multi-target',
@@ -885,6 +996,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'raja-naga',
+    sourceId: '57',
     name: 'Raja Naga',
     rarity: 3,
     role: 'Multi-target',
@@ -893,6 +1005,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'rakshasa',
+    sourceId: '33',
     name: 'Rakshasa',
     rarity: 3,
     role: 'Single-target',
@@ -901,6 +1014,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'rangda',
+    sourceId: '54',
     name: 'Rangda',
     rarity: 3,
     role: 'Debuffer',
@@ -909,6 +1023,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'red-rider',
+    sourceId: '49',
     name: 'Red Rider',
     rarity: 3,
     role: 'Debuffer',
@@ -917,6 +1032,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'sandman',
+    sourceId: '32',
     name: 'Sandman',
     rarity: 3,
     role: 'Debuffer',
@@ -925,6 +1041,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'scathach',
+    sourceId: '52',
     name: 'Scathach',
     rarity: 3,
     role: 'Debuffer',
@@ -933,6 +1050,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'sui-ki',
+    sourceId: '31',
     name: 'Sui-Ki',
     rarity: 3,
     role: 'Single-target',
@@ -941,6 +1059,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'surt',
+    sourceId: '59',
     name: 'Surt',
     rarity: 3,
     role: 'Debuffer',
@@ -949,6 +1068,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'thoth',
+    sourceId: '41',
     name: 'Thoth',
     rarity: 3,
     role: 'Multi-target',
@@ -957,6 +1077,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'valkyrie',
+    sourceId: '53',
     name: 'Valkyrie',
     rarity: 3,
     role: 'Single-target',
@@ -965,6 +1086,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'yatagarasu',
+    sourceId: '56',
     name: 'Yatagarasu',
     rarity: 3,
     role: 'Multi-target',
@@ -973,6 +1095,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'yurlungur',
+    sourceId: '51',
     name: 'Yurlungur',
     rarity: 3,
     role: 'Debuffer',
@@ -981,6 +1104,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'zouchouten',
+    sourceId: '39',
     name: 'Zouchouten',
     rarity: 3,
     role: 'Single-target',
@@ -989,6 +1113,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'agathion',
+    sourceId: '12',
     name: 'Agathion',
     rarity: 2,
     role: 'Healer',
@@ -997,6 +1122,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'andras',
+    sourceId: '4',
     name: 'Andras',
     rarity: 2,
     role: 'Multi-target',
@@ -1005,6 +1131,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'apsaras',
+    sourceId: '27',
     name: 'Apsaras',
     rarity: 2,
     role: 'Buffer',
@@ -1013,6 +1140,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'bicorn',
+    sourceId: '3',
     name: 'Bicorn',
     rarity: 2,
     role: 'Single-target',
@@ -1021,6 +1149,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'high-pixie',
+    sourceId: '28',
     name: 'High Pixie',
     rarity: 2,
     role: 'Healer',
@@ -1029,6 +1158,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'hua-po',
+    sourceId: '9',
     name: 'Hua Po',
     rarity: 2,
     role: 'Single-target',
@@ -1037,6 +1167,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'inugami',
+    sourceId: '16',
     name: 'Inugami',
     rarity: 2,
     role: 'Debuffer',
@@ -1045,6 +1176,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'ippon-datara',
+    sourceId: '14',
     name: 'Ippon-Datara',
     rarity: 2,
     role: 'Single-target',
@@ -1053,6 +1185,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'jack-o-lantern',
+    sourceId: '7',
     name: "Jack-o'-Lantern",
     rarity: 2,
     role: 'Single-target',
@@ -1061,6 +1194,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'kelpie',
+    sourceId: '2',
     name: 'Kelpie',
     rarity: 2,
     role: 'Single-target',
@@ -1069,6 +1203,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'kodama',
+    sourceId: '19',
     name: 'Kodama',
     rarity: 2,
     role: 'Debuffer',
@@ -1077,6 +1212,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'koppa-tengu',
+    sourceId: '20',
     name: 'Koppa Tengu',
     rarity: 2,
     role: 'Single-target',
@@ -1085,6 +1221,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'koropokkuru',
+    sourceId: '1',
     name: 'Koropokkuru',
     rarity: 2,
     role: 'Single-target',
@@ -1093,6 +1230,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'kusi-mitama',
+    sourceId: '17',
     name: 'Kusi Mitama',
     rarity: 2,
     role: 'Single-target',
@@ -1101,6 +1239,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'makami',
+    sourceId: '25',
     name: 'Makami',
     rarity: 2,
     role: 'Single-target',
@@ -1109,6 +1248,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'mandrake',
+    sourceId: '6',
     name: 'Mandrake',
     rarity: 2,
     role: 'Debuffer',
@@ -1117,6 +1257,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'mokoi',
+    sourceId: '10',
     name: 'Mokoi',
     rarity: 2,
     role: 'Debuffer',
@@ -1125,6 +1266,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'nekomata',
+    sourceId: '24',
     name: 'Nekomata',
     rarity: 2,
     role: 'Debuffer',
@@ -1133,6 +1275,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'nigi-mitama',
+    sourceId: '15',
     name: 'Nigi Mitama',
     rarity: 2,
     role: 'Healer',
@@ -1141,6 +1284,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'onmoraki',
+    sourceId: '26',
     name: 'Onmoraki',
     rarity: 2,
     role: 'Single-target',
@@ -1149,6 +1293,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'orobas',
+    sourceId: '22',
     name: 'Orobas',
     rarity: 2,
     role: 'Debuffer',
@@ -1157,6 +1302,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'pixie',
+    sourceId: '8',
     name: 'Pixie',
     rarity: 2,
     role: 'Single-target',
@@ -1165,6 +1311,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'saki-mitama',
+    sourceId: '5',
     name: 'Saki Mitama',
     rarity: 2,
     role: 'Healer',
@@ -1173,6 +1320,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'shiisaa',
+    sourceId: '23',
     name: 'Shiisaa',
     rarity: 2,
     role: 'Single-target',
@@ -1181,6 +1329,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'slime',
+    sourceId: '11',
     name: 'Slime',
     rarity: 2,
     role: 'Debuffer',
@@ -1189,6 +1338,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'sudama',
+    sourceId: '18',
     name: 'Sudama',
     rarity: 2,
     role: 'Multi-target',
@@ -1197,6 +1347,7 @@ export const ALL_PERSONAS: P5xPersona[] = [
   },
   {
     id: 'suzaku',
+    sourceId: '21',
     name: 'Suzaku',
     rarity: 2,
     role: 'Multi-target',
