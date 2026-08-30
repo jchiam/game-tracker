@@ -9,6 +9,7 @@ import { WEngineEditorModal } from './components/WEngineEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import { calculateZzzBuildScore } from '@/utils/zzzBuildScore';
+import type { ZzzSkillKey } from './components/agentBadges';
 import type { ZzzDiscSlot } from '@/data/zenless-zone-zero/discs';
 import type { ZzzTrackedAgent } from '@/types';
 import type { Session } from '@supabase/supabase-js';
@@ -33,6 +34,11 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     updateLevel,
     updateMindscape,
     updateCoreSkill,
+    toggleSkillBasicMaxed,
+    toggleSkillDodgeMaxed,
+    toggleSkillAssistMaxed,
+    toggleSkillSpecialMaxed,
+    toggleSkillChainMaxed,
     toggleFavorite,
     saveDiscData,
     removeDiscData,
@@ -45,6 +51,16 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
   } = useAgents(session, isAuthLoading);
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
+
+  // One card prop dispatches to five independent field updaters, so the card
+  // never grows five near-identical callbacks.
+  const skillUpdaters: Record<ZzzSkillKey, (id: string, value: boolean) => void> = {
+    basic: toggleSkillBasicMaxed,
+    dodge: toggleSkillDodgeMaxed,
+    assist: toggleSkillAssistMaxed,
+    special: toggleSkillSpecialMaxed,
+    chain: toggleSkillChainMaxed,
+  };
 
   const filterRoster = useCallback(
     (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE', entities?: ZzzTrackedAgent[]) =>
@@ -117,6 +133,7 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
           onUpdateLevel={updateLevel}
           onUpdateMindscape={updateMindscape}
           onUpdateCoreSkill={updateCoreSkill}
+          onToggleSkillMaxed={(id, skill, value) => skillUpdaters[skill](id, value)}
           onToggleFavorite={(id, value) => {
             // Favorite is a completed intent — release in the same handler
             toggleFavorite(id, value);

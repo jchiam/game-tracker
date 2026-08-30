@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Zenless Zone Zero per-Agent tracked fields: level (1–60), Mindscape (M0–M6), Core Skill rung (F→A), favorite toggle, equipped Drive Disc tracking, disc build preferences, the disc editor modal, equipped W-Engine tracking, the W-Engine preference list and modal, build score, level- and score-based sort, roster search keys, and the agent card's composition over the shared Game Card Shell.
+Zenless Zone Zero per-Agent tracked fields: level (1–60), Mindscape (M0–M6), Core Skill rung (cumulative A→F, A first and F max), the five combat-skill maxed-at-Lv12 flags, favorite toggle, equipped Drive Disc tracking, disc build preferences, the disc editor modal, equipped W-Engine tracking, the W-Engine preference list and modal, build score, level- and score-based sort, roster search keys, and the agent card's composition over the shared Game Card Shell.
 
 ## Requirements
 

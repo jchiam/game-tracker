@@ -200,7 +200,17 @@ export interface ZzzTrackedAgent extends ZzzAgent {
   isFavorited: boolean;
   level: number; // 1–60 (live cap)
   mindscape: number; // 0–6 (Mindscape Cinema, shown as M0–M6)
-  coreSkill: number; // 0–6: 0 locked, 1–6 shown as the F→A letter rungs
+  coreSkill: number; // 0–6: 0 unenhanced, 1–6 shown as the A→F letter rungs (A first, F max)
+  /**
+   * The five leveled combat skills, each flagged once its base Lv. 12 track is
+   * finished. Levels below the cap are not tracked, and the Mindscape 3/5 bonus
+   * that pushes these past Lv. 12 is derived from `mindscape`, never entered.
+   */
+  skillBasicMaxed: boolean;
+  skillDodgeMaxed: boolean;
+  skillAssistMaxed: boolean;
+  skillSpecialMaxed: boolean;
+  skillChainMaxed: boolean;
   /** Equipped Drive Discs by slot; null = empty slot (never a sentinel object). */
   discs: Record<ZzzDiscSlot, ZzzEquippedDisc | null>;
   buildPreferences: ZzzDiscBuildPreferences;
@@ -215,6 +225,11 @@ export interface ZzzAgentPatch {
   level?: number;
   mindscape?: number;
   coreSkill?: number;
+  skillBasicMaxed?: boolean;
+  skillDodgeMaxed?: boolean;
+  skillAssistMaxed?: boolean;
+  skillSpecialMaxed?: boolean;
+  skillChainMaxed?: boolean;
   isFavorited?: boolean;
   wEngineId?: string | null;
   wEngineLevel?: number;

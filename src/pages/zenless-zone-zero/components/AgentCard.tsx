@@ -10,6 +10,7 @@ import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { Select } from '@/components/Select';
 import { StatChip } from '@/components/StatChip';
+import { ToggleChips } from '@/components/ToggleChips';
 import { getProgressStyle } from '@/utils/progressGradient';
 import { calculateZzzBuildScore } from '@/utils/zzzBuildScore';
 import { ALL_ZZZ_DISC_SUITS } from '@/data/zenless-zone-zero/disc_suits';
@@ -25,6 +26,8 @@ import {
   getElementBadge,
   getRarityBadge,
   getSpecialtyBadge,
+  ZZZ_COMBAT_SKILLS,
+  type ZzzSkillKey,
 } from './agentBadges';
 import './AgentCard.css';
 
@@ -38,7 +41,9 @@ const WENGINE_STRIP_MAX = 5;
 
 const wengineRarityLetter = (rarity: number) => (rarity === 4 ? 'S' : rarity === 3 ? 'A' : 'B');
 
-// Core Skill rungs are edited F→A; deselecting the active rung returns to 0 (locked).
+// Core Skill rungs are edited A→F (A first, F max) as a cumulative ladder — each
+// rung is a prerequisite of the next. Deselecting the selected rung returns to 0
+// (unenhanced; the Core Passive itself is always active).
 const CORE_SKILL_OPTIONS = [1, 2, 3, 4, 5, 6].map((c) => ({
   value: String(c),
   label: getCoreSkillLetter(c),
@@ -50,6 +55,8 @@ interface AgentCardProps {
   onUpdateLevel: (id: string, level: number) => void;
   onUpdateMindscape: (id: string, mindscape: number) => void;
   onUpdateCoreSkill: (id: string, coreSkill: number) => void;
+  /** One callback for all five flags — the page dispatches by skill key. */
+  onToggleSkillMaxed: (id: string, skill: ZzzSkillKey, value: boolean) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
   onToggleDisc: (id: string, slot: ZzzDiscSlot) => void;
   /** Projection-stability release point — fired on the ✓ edit collapse. */
@@ -66,6 +73,7 @@ export function AgentCard({
   onUpdateLevel,
   onUpdateMindscape,
   onUpdateCoreSkill,
+  onToggleSkillMaxed,
   onToggleFavorite,
   onToggleDisc,
   onEditCommit,
@@ -85,6 +93,12 @@ export function AgentCard({
   const levelPs = getProgressStyle(agent.level, 1, 60);
   const mindscapePs = getProgressStyle(agent.mindscape, 0, 6);
   const coreSkillPs = getProgressStyle(agent.coreSkill, 0, 6);
+
+  // Combat skill flags: the row's on-values and the maxed count they summarise.
+  const maxedSkillValues = ZZZ_COMBAT_SKILLS.filter(({ key }) => agent[key]).map(
+    ({ value }) => value,
+  );
+  const skillsPs = getProgressStyle(maxedSkillValues.length, 0, ZZZ_COMBAT_SKILLS.length);
 
   // W-Engine summary segments — name teal when equipped, level/Phase on the
   // shared gradient. Only same-specialty engines are offered (off-specialty
@@ -164,6 +178,10 @@ export function AgentCard({
           <StatChip
             label={`Core ${getCoreSkillLetter(agent.coreSkill)}`}
             style={{ color: coreSkillPs.color, borderColor: coreSkillPs.borderColor }}
+          />
+          <StatChip
+            label={`Skl ${maxedSkillValues.length}/${ZZZ_COMBAT_SKILLS.length}`}
+            style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
           />
         </>
       }
@@ -250,8 +268,22 @@ export function AgentCard({
               options={CORE_SKILL_OPTIONS}
               value={agent.coreSkill > 0 ? String(agent.coreSkill) : null}
               coloring="investment"
+              fill="cumulative"
               allowDeselect
               onChange={(v) => onUpdateCoreSkill(agent.id, v === null ? 0 : Number(v))}
+            />
+          </ProgressSection>
+
+          <ProgressSection
+            label="Skills at Lv12"
+            value={`${maxedSkillValues.length} / ${ZZZ_COMBAT_SKILLS.length}`}
+          >
+            <ToggleChips
+              className="combat-skill-row"
+              size="compact"
+              options={ZZZ_COMBAT_SKILLS.map(({ value, label }) => ({ value, label }))}
+              values={maxedSkillValues}
+              onToggle={(v) => onToggleSkillMaxed(agent.id, v, !maxedSkillValues.includes(v))}
             />
           </ProgressSection>
 

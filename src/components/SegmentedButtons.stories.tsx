@@ -71,3 +71,59 @@ export const Deselectable: Story = {
 export const Investment: Story = {
   render: () => <InvestmentRow />,
 };
+
+const coreSkill: SegmentedOption[] = ['A', 'B', 'C', 'D', 'E', 'F'].map((letter, i) => ({
+  value: String(i + 1),
+  label: letter,
+}));
+
+function CumulativeRow({ fill }: { fill: 'exact' | 'cumulative' }) {
+  const [value, setValue] = useState<string | null>('3');
+  return (
+    <SegmentedButtons
+      options={coreSkill}
+      value={value}
+      fill={fill}
+      coloring="investment"
+      allowDeselect
+      onChange={setValue}
+    />
+  );
+}
+
+/**
+ * A prerequisite ladder (ZZZ Core Skill A→F): every rung up to the selected one
+ * renders attained, each on its own point of the gradient, so the row reads as a
+ * ramp rather than one lit pill.
+ *
+ * Hover to see the range preview — the states are only reachable by pointing:
+ * - **attained** — owned rungs, full gradient strength
+ * - **add** — hover a rung *above* the selection: dashed, preview-strength hue,
+ *   the rungs the click would buy
+ * - **drop** — hover a rung *below* it (or the selected rung itself, since
+ *   `allowDeselect` clears the run): neutral, no hue, what the click gives up
+ * - **empty** — resting, unattained
+ *
+ * Keyboard-tab the row to see the identical preview on focus.
+ */
+export const Cumulative: Story = {
+  render: () => <CumulativeRow fill="cumulative" />,
+};
+
+/** The same options under the default `fill="exact"`, for side-by-side comparison. */
+export const CumulativeVsExact: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div>
+        <div style={{ color: '#b3ad9e', fontSize: 12, marginBottom: 8 }}>fill="cumulative"</div>
+        <CumulativeRow fill="cumulative" />
+      </div>
+      <div>
+        <div style={{ color: '#b3ad9e', fontSize: 12, marginBottom: 8 }}>
+          fill="exact" (default)
+        </div>
+        <CumulativeRow fill="exact" />
+      </div>
+    </div>
+  ),
+};

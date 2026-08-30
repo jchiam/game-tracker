@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { screen, fireEvent, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { ZzzPage } from './ZzzPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import type { ZzzTrackedAgent, Party } from '@/types';
@@ -37,6 +38,11 @@ function makeAgent(id: string, name: string): ZzzTrackedAgent {
     level: 45,
     mindscape: 2,
     coreSkill: 3,
+    skillBasicMaxed: false,
+    skillDodgeMaxed: false,
+    skillAssistMaxed: false,
+    skillSpecialMaxed: false,
+    skillChainMaxed: false,
     discs: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
     buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
     wEngineId: null,
@@ -69,6 +75,11 @@ const defaultAgentsHook = {
   updateLevel: vi.fn(),
   updateMindscape: vi.fn(),
   updateCoreSkill: vi.fn(),
+  toggleSkillBasicMaxed: vi.fn(),
+  toggleSkillDodgeMaxed: vi.fn(),
+  toggleSkillAssistMaxed: vi.fn(),
+  toggleSkillSpecialMaxed: vi.fn(),
+  toggleSkillChainMaxed: vi.fn(),
   toggleFavorite: vi.fn(),
   saveDiscData: vi.fn(),
   removeDiscData: vi.fn(),
@@ -184,6 +195,45 @@ describe('ZzzPage', () => {
     fireEvent.click(screen.getByRole('button', { name: /parties/i }));
     expect(screen.getByText('Shiyu Alpha')).toBeInTheDocument();
     expect(screen.getByText('Shiyu Beta')).toBeInTheDocument();
+  });
+
+  it('dispatches each combat skill chip to its own hook updater', async () => {
+    const user = userEvent.setup();
+    const session = createMockSession();
+    const agents = [makeAgent('1191', 'Ellen')];
+    const updaters = {
+      toggleSkillBasicMaxed: vi.fn(),
+      toggleSkillDodgeMaxed: vi.fn(),
+      toggleSkillAssistMaxed: vi.fn(),
+      toggleSkillSpecialMaxed: vi.fn(),
+      toggleSkillChainMaxed: vi.fn(),
+    };
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      ...updaters,
+      trackedAgents: agents,
+      getFilteredRoster: vi.fn().mockReturnValue(agents),
+    });
+    renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    await user.click(screen.getByTitle('Edit'));
+
+    const cases = [
+      ['Basic', 'toggleSkillBasicMaxed'],
+      ['Dodge', 'toggleSkillDodgeMaxed'],
+      ['Assist', 'toggleSkillAssistMaxed'],
+      ['Special', 'toggleSkillSpecialMaxed'],
+      ['Chain', 'toggleSkillChainMaxed'],
+    ] as const;
+
+    for (const [label, updater] of cases) {
+      await user.click(screen.getByRole('button', { name: label }));
+      expect(updaters[updater]).toHaveBeenCalledWith('1191', true);
+      // Only its own updater fires
+      for (const [, other] of cases) {
+        if (other !== updater) expect(updaters[other]).not.toHaveBeenCalled();
+      }
+      updaters[updater].mockClear();
+    }
   });
 
   it('shows SavingToast when pendingSaveCount > 0', () => {

@@ -58,6 +58,11 @@ function trackedFixture(index: number, overrides: Record<string, unknown>) {
     level: 1,
     mindscape: 0,
     coreSkill: 0,
+    skillBasicMaxed: false,
+    skillDodgeMaxed: false,
+    skillAssistMaxed: false,
+    skillSpecialMaxed: false,
+    skillChainMaxed: false,
     discs: { ...emptyDiscs },
     buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
     wEngineId: null,
@@ -147,6 +152,31 @@ describe('useAgents', () => {
 
     act(() => result.current.updateCoreSkill(firstAgent.id, -1));
     expect(result.current.trackedAgents[0].coreSkill).toBe(0);
+  });
+
+  it('toggles one combat skill flag without disturbing the other four', async () => {
+    const { result } = await setupWithAgent();
+
+    act(() => result.current.toggleSkillSpecialMaxed(firstAgent.id, true));
+    expect(result.current.trackedAgents[0].skillSpecialMaxed).toBe(true);
+    expect(result.current.trackedAgents[0].skillBasicMaxed).toBe(false);
+    expect(result.current.trackedAgents[0].skillDodgeMaxed).toBe(false);
+    expect(result.current.trackedAgents[0].skillAssistMaxed).toBe(false);
+    expect(result.current.trackedAgents[0].skillChainMaxed).toBe(false);
+
+    act(() => result.current.toggleSkillChainMaxed(firstAgent.id, true));
+    expect(result.current.trackedAgents[0].skillChainMaxed).toBe(true);
+    expect(result.current.trackedAgents[0].skillSpecialMaxed).toBe(true);
+
+    act(() => result.current.toggleSkillSpecialMaxed(firstAgent.id, false));
+    expect(result.current.trackedAgents[0].skillSpecialMaxed).toBe(false);
+    expect(result.current.trackedAgents[0].skillChainMaxed).toBe(true);
+  });
+
+  it('queues a DB write for a combat skill flag toggle', async () => {
+    const { result } = await setupWithAgent();
+    act(() => result.current.toggleSkillBasicMaxed(firstAgent.id, true));
+    expect(mockUpdateAgent).toHaveBeenCalledWith('new-db-id', { skillBasicMaxed: true });
   });
 
   it('queues a DB write for field updates', async () => {
