@@ -63,6 +63,13 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/aventurine.webp',
   },
   {
+    id: 'aventurine-waveflair',
+    name: 'Aventurine • Waveflair',
+    element: 'Quantum',
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/characters/aventurine-waveflair.webp',
+  },
+  {
     id: 'bailu',
     name: 'Bailu',
     element: 'Thunder',
@@ -334,6 +341,13 @@ export const ALL_CHARACTERS: Character[] = [
     element: 'Physical',
     path: 'Harmony',
     imageUrl: '/assets/honkai-star-rail/characters/robin.webp',
+  },
+  {
+    id: 'robin-summeretto',
+    name: 'Robin • Summeretto',
+    element: 'Wind',
+    path: 'Remembrance',
+    imageUrl: '/assets/honkai-star-rail/characters/robin-summeretto.webp',
   },
   {
     id: 'ruan_mei',
