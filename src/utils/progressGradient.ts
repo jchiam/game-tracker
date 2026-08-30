@@ -56,3 +56,22 @@ export function getProgressStyle(value: number, min: number, max: number): Progr
     activeBg: `rgba(${r}, ${g}, ${b}, 0.12)`,
   };
 }
+
+/**
+ * Reduced-strength twin of `getProgressStyle` for not-yet-committed surfaces —
+ * the rungs a click would add to a cumulative ladder. Same interpolated hue as
+ * the committed style for the same `(value, min, max)`; only the border and
+ * active-background opacities drop, so a previewed surface reads as weaker than
+ * a committed one while unmistakably belonging to the same ramp. Consumers take
+ * preview colours from here rather than mixing their own alphas off `color`.
+ */
+export function getPreviewStyle(value: number, min: number, max: number): ProgressStyle {
+  const pct = max === min ? 1 : (value - min) / (max - min);
+  const [r, g, b] = lerpColor(pct);
+  return {
+    color: `rgb(${r}, ${g}, ${b})`,
+    borderColor: `rgba(${r}, ${g}, ${b}, 0.28)`,
+    glowColor: `rgba(${r}, ${g}, ${b}, 0.12)`,
+    activeBg: `rgba(${r}, ${g}, ${b}, 0.05)`,
+  };
+}

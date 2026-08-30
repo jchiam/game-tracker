@@ -25,6 +25,11 @@ const baseAgent: ZzzTrackedAgent = {
   level: 45,
   mindscape: 2,
   coreSkill: 4,
+  skillBasicMaxed: false,
+  skillDodgeMaxed: false,
+  skillAssistMaxed: false,
+  skillSpecialMaxed: false,
+  skillChainMaxed: false,
   discs: { ...emptyDiscs },
   buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
   wEngineId: null,
@@ -40,6 +45,7 @@ describe('AgentCard', () => {
     onUpdateLevel: vi.fn(),
     onUpdateMindscape: vi.fn(),
     onUpdateCoreSkill: vi.fn(),
+    onToggleSkillMaxed: vi.fn(),
     onToggleFavorite: vi.fn(),
     onToggleDisc: vi.fn(),
     onUpdateWEngine: vi.fn(),
@@ -96,10 +102,19 @@ describe('AgentCard', () => {
     render(<AgentCard {...defaultProps} />);
     expect(screen.getByText('Lv 45')).toBeInTheDocument();
     expect(screen.getAllByText('M2').length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText('Core C')).toBeInTheDocument();
+    expect(screen.getByText('Core D')).toBeInTheDocument();
   });
 
-  it('shows a locked core skill as —', () => {
+  it('maps core skill rungs A→F, with A as the first rung and F as the max', () => {
+    const { rerender } = render(
+      <AgentCard {...defaultProps} agent={{ ...baseAgent, coreSkill: 1 }} />,
+    );
+    expect(screen.getByText('Core A')).toBeInTheDocument();
+    rerender(<AgentCard {...defaultProps} agent={{ ...baseAgent, coreSkill: 6 }} />);
+    expect(screen.getByText('Core F')).toBeInTheDocument();
+  });
+
+  it('shows an unenhanced core skill as —', () => {
     render(<AgentCard {...defaultProps} agent={{ ...baseAgent, coreSkill: 0 }} />);
     expect(screen.getByText('Core —')).toBeInTheDocument();
   });
@@ -107,6 +122,67 @@ describe('AgentCard', () => {
   it('shows an out-of-range core skill as —', () => {
     render(<AgentCard {...defaultProps} agent={{ ...baseAgent, coreSkill: 7 }} />);
     expect(screen.getByText('Core —')).toBeInTheDocument();
+  });
+
+  it('summarises the maxed combat skill count as a single collapsed chip', () => {
+    render(
+      <AgentCard
+        {...defaultProps}
+        agent={{
+          ...baseAgent,
+          skillBasicMaxed: true,
+          skillSpecialMaxed: true,
+          skillChainMaxed: true,
+        }}
+      />,
+    );
+    expect(screen.getByText('Skl 3/5')).toBeInTheDocument();
+  });
+
+  it('shows 0/5 when no combat skill is maxed', () => {
+    render(<AgentCard {...defaultProps} />);
+    expect(screen.getByText('Skl 0/5')).toBeInTheDocument();
+  });
+
+  it('renders the combat skill row between Core Skill and the W-Engine group', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<AgentCard {...defaultProps} />);
+    await enterEditMode(user);
+
+    const chips = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('.combat-skill-row .toggle-btn'),
+    );
+    expect(chips.map((b) => b.textContent)).toEqual([
+      'Basic',
+      'Dodge',
+      'Assist',
+      'Special',
+      'Chain',
+    ]);
+
+    // Section order: … Core Skill → Skills at Lv12 → W-Engine group
+    const labels = Array.from(container.querySelectorAll('.section-header')).map(
+      (el) => el.textContent,
+    );
+    const coreIdx = labels.findIndex((l) => l?.includes('Core Skill'));
+    const skillsIdx = labels.findIndex((l) => l?.includes('Skills at Lv12'));
+    const engineIdx = labels.findIndex((l) => l?.includes('Equipped'));
+    expect(coreIdx).toBeGreaterThanOrEqual(0);
+    expect(skillsIdx).toBe(coreIdx + 1);
+    expect(engineIdx).toBeGreaterThan(skillsIdx);
+  });
+
+  it('toggles a combat skill flag independently of the others', async () => {
+    const user = userEvent.setup();
+    render(<AgentCard {...defaultProps} agent={{ ...baseAgent, skillBasicMaxed: true }} />);
+    await enterEditMode(user);
+
+    await user.click(screen.getByRole('button', { name: 'Chain' }));
+    expect(defaultProps.onToggleSkillMaxed).toHaveBeenCalledWith('1011', 'chain', true);
+
+    // Clicking an on flag turns it off
+    await user.click(screen.getByRole('button', { name: 'Basic' }));
+    expect(defaultProps.onToggleSkillMaxed).toHaveBeenLastCalledWith('1011', 'basic', false);
   });
 
   it('updates level via the slider', () => {
@@ -137,20 +213,52 @@ describe('AgentCard', () => {
     expect(defaultProps.onUpdateMindscape).toHaveBeenCalledWith('1011', 6);
   });
 
-  it('calls onUpdateCoreSkill when a core skill rung is clicked', async () => {
+  it('calls onUpdateCoreSkill with the rung position, A being the first rung', async () => {
     const user = userEvent.setup();
     render(<AgentCard {...defaultProps} />);
     await enterEditMode(user);
     await user.click(screen.getByRole('button', { name: 'A' }));
-    expect(defaultProps.onUpdateCoreSkill).toHaveBeenCalledWith('1011', 6);
+    expect(defaultProps.onUpdateCoreSkill).toHaveBeenCalledWith('1011', 1);
   });
 
-  it('deselecting the active core skill rung returns 0', async () => {
+  it('calls onUpdateCoreSkill with 6 for the max rung F', async () => {
     const user = userEvent.setup();
     render(<AgentCard {...defaultProps} />);
     await enterEditMode(user);
-    await user.click(screen.getByRole('button', { name: 'C' }));
+    await user.click(screen.getByRole('button', { name: 'F' }));
+    expect(defaultProps.onUpdateCoreSkill).toHaveBeenCalledWith('1011', 6);
+  });
+
+  it('deselecting the selected core skill rung returns 0', async () => {
+    const user = userEvent.setup();
+    render(<AgentCard {...defaultProps} />);
+    await enterEditMode(user);
+    // baseAgent sits at core skill 4, which is rung D
+    await user.click(screen.getByRole('button', { name: 'D' }));
     expect(defaultProps.onUpdateCoreSkill).toHaveBeenCalledWith('1011', 0);
+  });
+
+  it('renders the core skill row as a cumulative ladder', async () => {
+    const user = userEvent.setup();
+    const { container } = render(
+      <AgentCard {...defaultProps} agent={{ ...baseAgent, coreSkill: 3 }} />,
+    );
+    await enterEditMode(user);
+    const rungs = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('.core-skill-row .toggle-btn'),
+    );
+    expect(rungs.map((b) => b.textContent)).toEqual(['A', 'B', 'C', 'D', 'E', 'F']);
+    // A–C attained (the prerequisite chain), D–F not
+    expect(rungs.map((b) => b.getAttribute('aria-pressed'))).toEqual([
+      'true',
+      'true',
+      'true',
+      'false',
+      'false',
+      'false',
+    ]);
+    expect(rungs.slice(0, 3).every((b) => b.classList.contains('rung-attained'))).toBe(true);
+    expect(rungs.slice(3).some((b) => b.classList.contains('rung-attained'))).toBe(false);
   });
 
   it('calls onToggleFavorite from the favorite control', async () => {

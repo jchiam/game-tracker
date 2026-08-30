@@ -163,7 +163,13 @@
   text-align: center;
 }
 
-.toggle-btn:hover {
+/* Scoped away from cumulative rungs at the declaration itself: a rung row's
+   hover feedback is the prerequisite *range* (see the rung states below), and a
+   per-button highlight would contradict it. Scoping by the button's own
+   `.is-rung` class rather than by container keeps every non-rung site matched —
+   including the N2E awakening row, which renders `.toggle-btn` outside any
+   `.segmented-buttons` container. */
+.toggle-btn:not(.is-rung):hover {
   border-color: var(--color-brand-primary);
   color: var(--color-brand-primary);
 }
@@ -179,6 +185,33 @@
 .toggle-btn.compact {
   padding: 5px 4px;
   font-size: 0.78rem;
+}
+
+/* ─── Cumulative rung states (SegmentedButtons fill="cumulative") ──
+   A rung ladder is a prerequisite chain: rung N is only reachable once every
+   rung before it is owned. `.is-rung` marks a button as part of such a ladder
+   (and opts it out of the per-button hover above). The gradient hue for the
+   attained and added states is supplied inline by the component from
+   `progressGradient`; these rules own only the structural treatment that ranks
+   the states against each other. `rung-drop` carries no hue on purpose — the
+   hue is exactly what the click would take away — so the component passes no
+   inline style for it and these neutral tokens paint it. */
+
+.toggle-btn.is-rung.rung-attained {
+  box-shadow: var(--shadow-inset-glow);
+}
+
+/* Weaker than attained, stronger than resting: same hue at preview opacity
+   (inline) plus a dashed edge, so a previewed range reads as a continuation of
+   the attained run rather than as already owned. */
+.toggle-btn.is-rung.rung-add {
+  border-style: dashed;
+}
+
+.toggle-btn.is-rung.rung-drop {
+  background: color-mix(in srgb, var(--color-text-dim) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-text-dim) 35%, transparent);
+  color: var(--color-text-dim);
 }
 
 /* Pill-button row container (SegmentedButtons) */
