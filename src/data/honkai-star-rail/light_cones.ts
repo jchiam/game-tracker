@@ -327,6 +327,13 @@ export const ALL_LIGHT_CONES: LightCone[] = [
     imageUrl: '/assets/honkai-star-rail/light-cones/23022.webp',
   },
   {
+    id: '23063',
+    name: 'Rise and Sing',
+    rarity: 5,
+    path: 'Remembrance',
+    imageUrl: '/assets/honkai-star-rail/light-cones/23063.webp',
+  },
+  {
     id: '23027',
     name: 'Sailing Towards a Second Life',
     rarity: 5,
@@ -367,6 +374,13 @@ export const ALL_LIGHT_CONES: LightCone[] = [
     rarity: 5,
     path: 'Destruction',
     imageUrl: '/assets/honkai-star-rail/light-cones/23002.webp',
+  },
+  {
+    id: '23064',
+    name: 'Summer Rides the Surf',
+    rarity: 5,
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/light-cones/23064.webp',
   },
   {
     id: '24002',
@@ -501,6 +515,13 @@ export const ALL_LIGHT_CONES: LightCone[] = [
     rarity: 4,
     path: 'Erudition',
     imageUrl: '/assets/honkai-star-rail/light-cones/21060.webp',
+  },
+  {
+    id: '21066',
+    name: 'A Little Getaway',
+    rarity: 4,
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/light-cones/21066.webp',
   },
   {
     id: '21012',
@@ -781,6 +802,13 @@ export const ALL_LIGHT_CONES: LightCone[] = [
     rarity: 4,
     path: 'Abundance',
     imageUrl: '/assets/honkai-star-rail/light-cones/21021.webp',
+  },
+  {
+    id: '22008',
+    name: 'Race to the Horizon',
+    rarity: 4,
+    path: 'The Hunt',
+    imageUrl: '/assets/honkai-star-rail/light-cones/22008.webp',
   },
   {
     id: '21015',
