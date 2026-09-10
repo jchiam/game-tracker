@@ -6,7 +6,7 @@
       `skill_progress SMALLINT NOT NULL DEFAULT 0 CHECK (skill_progress BETWEEN 0 AND 2)` to
       `zzz_tracked_agents`; backfill `2` where all five `skill_*_maxed` are `true`, `0` otherwise;
       drop the five boolean columns — mirroring `20260810000001_p5x_skill_progress.sql`
-- [ ] 1.2 Jonathan applies the migration to the live DB and confirms
+- [x] 1.2 Jonathan applies the migration to the live DB and confirms
 
 ## 2. Types
 
@@ -54,5 +54,5 @@
 
 - [x] 7.1 `CONTEXT.md`: update the ZZZ row if it names the five skill flags
 - [x] 7.2 `npm run lint && npm run format:check && npm test && npm run build` green
-- [ ] 7.3 Manually exercise in `npm run dev`: milestone row selects/deselects, summary chip states,
+- [x] 7.3 Manually exercise in `npm run dev`: milestone row selects/deselects, summary chip states,
       filter chip narrows and ghost-holds an edited card

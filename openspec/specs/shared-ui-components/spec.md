@@ -478,11 +478,11 @@ assistive technology reports the whole attained run in cumulative mode rather th
 selection.
 
 The N2E cartridge rarity row, R1999 party tier row, AE operator phase row, the R1999 arcanist
-portrait / euphoria / amplification rows, and the N2E character-card **arc-tier** row SHALL use
-`SegmentedButtons`. The ZZZ **Core Skill** row SHALL use `SegmentedButtons` with
-`fill="cumulative"`. Rows of independently-toggleable booleans — the N2E character-card
-**awakening** row and the ZZZ combat-skill maxed row — SHALL NOT use `SegmentedButtons`, which
-models a single selected value; they belong to `ToggleChips`.
+portrait / euphoria / amplification rows, the N2E character-card **arc-tier** row, the P5X
+**Skills** milestone row, and the ZZZ **Skills** milestone row SHALL use `SegmentedButtons`. The
+ZZZ **Core Skill** row SHALL use `SegmentedButtons` with `fill="cumulative"`. Rows of
+independently-toggleable booleans — the N2E character-card **awakening** row — SHALL NOT use
+`SegmentedButtons`, which models a single selected value; they belong to `ToggleChips`.
 
 #### Scenario: Single-exact selection
 
