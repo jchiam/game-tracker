@@ -8,7 +8,7 @@ Static catalog of Zenless Zone Zero Bangboos — companion units picked once per
 
 ### Requirement: Bangboo catalog
 
-The system SHALL provide a static Bangboo catalog at `src/data/zenless-zone-zero/bangboos.ts` exporting a `ZzzBangboo` interface and an `ALL_ZZZ_BANGBOOS` array. Each entry SHALL carry a stable string `id` (the HoyoLab wiki entry id), the English display `name`, a `rarity` of `'S' | 'A' | null` (null where the source leaves the Bangboo untagged), and a local `imageUrl` under `/assets/zenless-zone-zero/bangboos/`. The array SHALL be ordered rarity S first, then A, then untagged, alphabetically by name within each band.
+The system SHALL provide a static Bangboo catalog at `src/data/zenless-zone-zero/bangboos.ts` exporting a `ZzzBangboo` interface and an `ALL_ZZZ_BANGBOOS` array. Each entry SHALL carry a stable string `id` (the HoyoLab wiki entry id, or the in-game id for entries supplemented from the Fandom wiki), the English display `name`, a `rarity` of `'S' | 'A' | null` (null where no source tags the Bangboo), and a local `imageUrl` under `/assets/zenless-zone-zero/bangboos/`. The array SHALL be ordered rarity S first, then A, then untagged, alphabetically by name within each band.
 
 #### Scenario: Catalog entries carry rarity where known
 
@@ -17,7 +17,7 @@ The system SHALL provide a static Bangboo catalog at `src/data/zenless-zone-zero
 
 #### Scenario: Untagged rarity is null, not guessed
 
-- **WHEN** the source provides no rarity tag for a Bangboo (e.g. Booltergeist)
+- **WHEN** neither the HoyoLab tag nor the Fandom rank category provides a rarity for a Bangboo
 - **THEN** the catalog entry's `rarity` is `null` and the Bangboo still appears in the catalog
 
 #### Scenario: Ordering
