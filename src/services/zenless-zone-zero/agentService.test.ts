@@ -64,37 +64,25 @@ describe('agentService', () => {
     expect(result[0].wEngineLevel).toBe(0);
     expect(result[0].wEnginePhase).toBe(1);
     expect(result[0].wEnginePreferences).toEqual([]);
-    // Combat skill flag columns absent — all unfinished.
-    expect(result[0].skillBasicMaxed).toBe(false);
-    expect(result[0].skillDodgeMaxed).toBe(false);
-    expect(result[0].skillAssistMaxed).toBe(false);
-    expect(result[0].skillSpecialMaxed).toBe(false);
-    expect(result[0].skillChainMaxed).toBe(false);
+    // Skill progress column absent — not started.
+    expect(result[0].skillProgress).toBe(0);
   });
 
-  it('loadAgentsFromDB maps the combat skill maxed columns independently', async () => {
+  it('loadAgentsFromDB maps the skill progress column', async () => {
     const dbRow = {
       id: 'db-uuid-1',
       agent_id: '1011',
       level: 60,
       mindscape: 0,
       core_skill: 0,
-      skill_basic_maxed: true,
-      skill_dodge_maxed: false,
-      skill_assist_maxed: false,
-      skill_special_maxed: true,
-      skill_chain_maxed: true,
+      skill_progress: 1,
     };
 
     mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
 
     const result = await service.loadAgentsFromDB('user-1');
 
-    expect(result[0].skillBasicMaxed).toBe(true);
-    expect(result[0].skillDodgeMaxed).toBe(false);
-    expect(result[0].skillAssistMaxed).toBe(false);
-    expect(result[0].skillSpecialMaxed).toBe(true);
-    expect(result[0].skillChainMaxed).toBe(true);
+    expect(result[0].skillProgress).toBe(1);
   });
 
   it('loadAgentsFromDB maps W-Engine columns', async () => {
@@ -215,11 +203,7 @@ describe('agentService', () => {
       level: 1,
       mindscape: 0,
       core_skill: 0,
-      skill_basic_maxed: false,
-      skill_dodge_maxed: false,
-      skill_assist_maxed: false,
-      skill_special_maxed: false,
-      skill_chain_maxed: false,
+      skill_progress: 0,
       wengine_id: null,
       wengine_level: 0,
       wengine_phase: 1,
@@ -235,8 +219,7 @@ describe('agentService', () => {
       level: 50,
       mindscape: 2,
       coreSkill: 4,
-      skillBasicMaxed: true,
-      skillChainMaxed: true,
+      skillProgress: 2,
       isFavorited: true,
       wEngineId: '14110',
       wEngineLevel: 45,
@@ -249,8 +232,7 @@ describe('agentService', () => {
       level: 50,
       mindscape: 2,
       core_skill: 4,
-      skill_basic_maxed: true,
-      skill_chain_maxed: true,
+      skill_progress: 2,
       is_favorited: true,
       wengine_id: '14110',
       wengine_level: 45,

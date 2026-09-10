@@ -10,7 +10,6 @@ import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { Select } from '@/components/Select';
 import { StatChip } from '@/components/StatChip';
-import { ToggleChips } from '@/components/ToggleChips';
 import { getProgressStyle } from '@/utils/progressGradient';
 import { calculateZzzBuildScore } from '@/utils/zzzBuildScore';
 import { ALL_ZZZ_DISC_SUITS } from '@/data/zenless-zone-zero/disc_suits';
@@ -26,8 +25,6 @@ import {
   getElementBadge,
   getRarityBadge,
   getSpecialtyBadge,
-  ZZZ_COMBAT_SKILLS,
-  type ZzzSkillKey,
 } from './agentBadges';
 import './AgentCard.css';
 
@@ -49,14 +46,22 @@ const CORE_SKILL_OPTIONS = [1, 2, 3, 4, 5, 6].map((c) => ({
   label: getCoreSkillLetter(c),
 }));
 
+// Skills are a monotone two-milestone progression, mirroring the P5X shape: all
+// five combat skills reach the base Lv. 11 cap first, then Hamster Cage Passes
+// unlock Lv. 12. One ordered value, edited by a segmented row; deselecting the
+// active milestone returns to 0.
+const SKILL_OPTIONS = [
+  { value: '1', label: 'Lv11' },
+  { value: '2', label: 'Pass Lv12' },
+];
+
 interface AgentCardProps {
   agent: ZzzTrackedAgent;
   onRemove: (id: string, e: React.MouseEvent) => void;
   onUpdateLevel: (id: string, level: number) => void;
   onUpdateMindscape: (id: string, mindscape: number) => void;
   onUpdateCoreSkill: (id: string, coreSkill: number) => void;
-  /** One callback for all five flags — the page dispatches by skill key. */
-  onToggleSkillMaxed: (id: string, skill: ZzzSkillKey, value: boolean) => void;
+  onUpdateSkillProgress: (id: string, value: number) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
   onToggleDisc: (id: string, slot: ZzzDiscSlot) => void;
   /** Projection-stability release point — fired on the ✓ edit collapse. */
@@ -65,6 +70,12 @@ interface AgentCardProps {
   onUpdateWEngineLevel: (id: string, level: number) => void;
   onUpdateWEnginePhase: (id: string, phase: number) => void;
   onEditWEnginePrefs: (id: string) => void;
+  /** Ghost-tag copy while the card is held; null renders a normal card. */
+  heldReason?: string | null;
+  /** Plays the exit animation after an evicting release. */
+  isExiting?: boolean;
+  /** Commits the eviction when the exit animation completes. */
+  onExitEnd?: () => void;
 }
 
 export function AgentCard({
@@ -73,7 +84,7 @@ export function AgentCard({
   onUpdateLevel,
   onUpdateMindscape,
   onUpdateCoreSkill,
-  onToggleSkillMaxed,
+  onUpdateSkillProgress,
   onToggleFavorite,
   onToggleDisc,
   onEditCommit,
@@ -81,6 +92,9 @@ export function AgentCard({
   onUpdateWEngineLevel,
   onUpdateWEnginePhase,
   onEditWEnginePrefs,
+  heldReason,
+  isExiting,
+  onExitEnd,
 }: AgentCardProps) {
   const [captionWEngineId, setCaptionWEngineId] = useState<string | null>(null);
   const rarity = getRarityBadge(agent.rarity);
@@ -94,11 +108,10 @@ export function AgentCard({
   const mindscapePs = getProgressStyle(agent.mindscape, 0, 6);
   const coreSkillPs = getProgressStyle(agent.coreSkill, 0, 6);
 
-  // Combat skill flags: the row's on-values and the maxed count they summarise.
-  const maxedSkillValues = ZZZ_COMBAT_SKILLS.filter(({ key }) => agent[key]).map(
-    ({ value }) => value,
-  );
-  const skillsPs = getProgressStyle(maxedSkillValues.length, 0, ZZZ_COMBAT_SKILLS.length);
+  // Skill progress collapses to one summary chip: maxed (teal) vs Pass-gated at
+  // Lv11 (mid rust→teal). Untouched agents show no chip, keeping early cards clean.
+  const passGated = agent.skillProgress === 1;
+  const skillsPs = getProgressStyle(agent.skillProgress, 0, 2);
 
   // W-Engine summary segments — name teal when equipped, level/Phase on the
   // shared gradient. Only same-specialty engines are offered (off-specialty
@@ -154,6 +167,9 @@ export function AgentCard({
       onToggleFavorite={(value) => onToggleFavorite(agent.id, value)}
       onEditCommit={onEditCommit}
       onRemove={(e) => onRemove(agent.id, e)}
+      heldReason={heldReason}
+      isExiting={isExiting}
+      onExitEnd={onExitEnd}
       badges={
         <>
           <GameBadge label={rarity.label} variant="zzz-rarity" modifier={rarity.modifier} />
@@ -179,10 +195,12 @@ export function AgentCard({
             label={`Core ${getCoreSkillLetter(agent.coreSkill)}`}
             style={{ color: coreSkillPs.color, borderColor: coreSkillPs.borderColor }}
           />
-          <StatChip
-            label={`Skl ${maxedSkillValues.length}/${ZZZ_COMBAT_SKILLS.length}`}
-            style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
-          />
+          {agent.skillProgress > 0 && (
+            <StatChip
+              label={agent.skillProgress === 2 ? 'Skills ✓' : '🐹 Gated'}
+              style={{ color: skillsPs.color, borderColor: skillsPs.borderColor }}
+            />
+          )}
         </>
       }
       headerExtra={<ScoreBadge score={score} />}
@@ -275,15 +293,16 @@ export function AgentCard({
           </ProgressSection>
 
           <ProgressSection
-            label="Skills at Lv12"
-            value={`${maxedSkillValues.length} / ${ZZZ_COMBAT_SKILLS.length}`}
+            label="Skills"
+            value={agent.skillProgress === 2 ? 'Maxed' : passGated ? 'Pass-gated' : '—'}
           >
-            <ToggleChips
-              className="combat-skill-row"
-              size="compact"
-              options={ZZZ_COMBAT_SKILLS.map(({ value, label }) => ({ value, label }))}
-              values={maxedSkillValues}
-              onToggle={(v) => onToggleSkillMaxed(agent.id, v, !maxedSkillValues.includes(v))}
+            <SegmentedButtons
+              className="skills-row"
+              options={SKILL_OPTIONS}
+              value={agent.skillProgress > 0 ? String(agent.skillProgress) : null}
+              coloring="investment"
+              allowDeselect
+              onChange={(v) => onUpdateSkillProgress(agent.id, v === null ? 0 : Number(v))}
             />
           </ProgressSection>
 

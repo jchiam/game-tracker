@@ -11,11 +11,11 @@ extra granularity was judged not worth five columns and a bespoke tri-state cont
 
 `skill_progress` is a monotone two-milestone progression:
 
-| Value | Meaning | P5X analogue |
-| ----- | ------------------------------------------------------------- | ------------------- |
-| 0 | not started | not started |
-| 1 | all five combat skills at the base Lv. 11 cap, Pass-gated | Lv8 incense cap |
-| 2 | Hamster Cage Passes spent, all five tracks at the Lv. 12 max | rose-maxed Lv10 |
+| Value | Meaning                                                      | P5X analogue    |
+| ----- | ------------------------------------------------------------ | --------------- |
+| 0     | not started                                                  | not started     |
+| 1     | all five combat skills at the base Lv. 11 cap, Pass-gated    | Lv8 incense cap |
+| 2     | Hamster Cage Passes spent, all five tracks at the Lv. 12 max | rose-maxed Lv10 |
 
 The single ordered field makes "maxed without the Lv. 11 cap" unrepresentable — no pair CHECK
 needed, only the 0–2 range CHECK. Mindscape-derived bonus levels past the base cap stay derived

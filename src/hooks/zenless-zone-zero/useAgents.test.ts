@@ -58,11 +58,7 @@ function trackedFixture(index: number, overrides: Record<string, unknown>) {
     level: 1,
     mindscape: 0,
     coreSkill: 0,
-    skillBasicMaxed: false,
-    skillDodgeMaxed: false,
-    skillAssistMaxed: false,
-    skillSpecialMaxed: false,
-    skillChainMaxed: false,
+    skillProgress: 0,
     discs: { ...emptyDiscs },
     buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
     wEngineId: null,
@@ -154,29 +150,19 @@ describe('useAgents', () => {
     expect(result.current.trackedAgents[0].coreSkill).toBe(0);
   });
 
-  it('toggles one combat skill flag without disturbing the other four', async () => {
+  it('updateSkillProgress clamps to 0–2', async () => {
     const { result } = await setupWithAgent();
+    act(() => result.current.updateSkillProgress(firstAgent.id, 5));
+    expect(result.current.trackedAgents[0].skillProgress).toBe(2);
 
-    act(() => result.current.toggleSkillSpecialMaxed(firstAgent.id, true));
-    expect(result.current.trackedAgents[0].skillSpecialMaxed).toBe(true);
-    expect(result.current.trackedAgents[0].skillBasicMaxed).toBe(false);
-    expect(result.current.trackedAgents[0].skillDodgeMaxed).toBe(false);
-    expect(result.current.trackedAgents[0].skillAssistMaxed).toBe(false);
-    expect(result.current.trackedAgents[0].skillChainMaxed).toBe(false);
-
-    act(() => result.current.toggleSkillChainMaxed(firstAgent.id, true));
-    expect(result.current.trackedAgents[0].skillChainMaxed).toBe(true);
-    expect(result.current.trackedAgents[0].skillSpecialMaxed).toBe(true);
-
-    act(() => result.current.toggleSkillSpecialMaxed(firstAgent.id, false));
-    expect(result.current.trackedAgents[0].skillSpecialMaxed).toBe(false);
-    expect(result.current.trackedAgents[0].skillChainMaxed).toBe(true);
+    act(() => result.current.updateSkillProgress(firstAgent.id, -1));
+    expect(result.current.trackedAgents[0].skillProgress).toBe(0);
   });
 
-  it('queues a DB write for a combat skill flag toggle', async () => {
+  it('queues a DB write for a skill progress update', async () => {
     const { result } = await setupWithAgent();
-    act(() => result.current.toggleSkillBasicMaxed(firstAgent.id, true));
-    expect(mockUpdateAgent).toHaveBeenCalledWith('new-db-id', { skillBasicMaxed: true });
+    act(() => result.current.updateSkillProgress(firstAgent.id, 1));
+    expect(mockUpdateAgent).toHaveBeenCalledWith('new-db-id', { skillProgress: 1 });
   });
 
   it('queues a DB write for field updates', async () => {
@@ -225,6 +211,21 @@ describe('useAgents', () => {
     };
     const sorted = result.current.getFilteredRoster('', 'SCORE', (a) => scores[a.id]);
     expect(sorted.map((a) => scores[a.id])).toEqual([88, 42, -1]);
+  });
+
+  it('getFilteredRoster applies the optional predicate after search and sort', async () => {
+    mockLoadAgentsFromDB.mockResolvedValue([
+      trackedFixture(0, { dbId: 'db-1', skillProgress: 1 }),
+      trackedFixture(1, { dbId: 'db-2', skillProgress: 2 }),
+    ]);
+    const { result } = await setup();
+    const gatedOnly = result.current.getFilteredRoster(
+      '',
+      'ALPHA',
+      undefined,
+      (a) => a.skillProgress === 1,
+    );
+    expect(gatedOnly.map((a) => a.skillProgress)).toEqual([1]);
   });
 
   it('saveDiscData updates the slot optimistically and queues the upsert', async () => {

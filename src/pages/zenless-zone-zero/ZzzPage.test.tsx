@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent, waitFor } from '@testing-library/react';
+import { screen, fireEvent, waitFor, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ZzzPage } from './ZzzPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
@@ -38,11 +38,7 @@ function makeAgent(id: string, name: string): ZzzTrackedAgent {
     level: 45,
     mindscape: 2,
     coreSkill: 3,
-    skillBasicMaxed: false,
-    skillDodgeMaxed: false,
-    skillAssistMaxed: false,
-    skillSpecialMaxed: false,
-    skillChainMaxed: false,
+    skillProgress: 0,
     discs: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
     buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
     wEngineId: null,
@@ -75,11 +71,7 @@ const defaultAgentsHook = {
   updateLevel: vi.fn(),
   updateMindscape: vi.fn(),
   updateCoreSkill: vi.fn(),
-  toggleSkillBasicMaxed: vi.fn(),
-  toggleSkillDodgeMaxed: vi.fn(),
-  toggleSkillAssistMaxed: vi.fn(),
-  toggleSkillSpecialMaxed: vi.fn(),
-  toggleSkillChainMaxed: vi.fn(),
+  updateSkillProgress: vi.fn(),
   toggleFavorite: vi.fn(),
   saveDiscData: vi.fn(),
   removeDiscData: vi.fn(),
@@ -197,43 +189,24 @@ describe('ZzzPage', () => {
     expect(screen.getByText('Shiyu Beta')).toBeInTheDocument();
   });
 
-  it('dispatches each combat skill chip to its own hook updater', async () => {
+  it('routes skill milestone selections through updateSkillProgress', async () => {
     const user = userEvent.setup();
     const session = createMockSession();
     const agents = [makeAgent('1191', 'Ellen')];
-    const updaters = {
-      toggleSkillBasicMaxed: vi.fn(),
-      toggleSkillDodgeMaxed: vi.fn(),
-      toggleSkillAssistMaxed: vi.fn(),
-      toggleSkillSpecialMaxed: vi.fn(),
-      toggleSkillChainMaxed: vi.fn(),
-    };
+    const updateSkillProgress = vi.fn();
     vi.mocked(useAgents).mockReturnValue({
       ...defaultAgentsHook,
-      ...updaters,
+      updateSkillProgress,
       trackedAgents: agents,
       getFilteredRoster: vi.fn().mockReturnValue(agents),
     });
     renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     await user.click(screen.getByTitle('Edit'));
 
-    const cases = [
-      ['Basic', 'toggleSkillBasicMaxed'],
-      ['Dodge', 'toggleSkillDodgeMaxed'],
-      ['Assist', 'toggleSkillAssistMaxed'],
-      ['Special', 'toggleSkillSpecialMaxed'],
-      ['Chain', 'toggleSkillChainMaxed'],
-    ] as const;
-
-    for (const [label, updater] of cases) {
-      await user.click(screen.getByRole('button', { name: label }));
-      expect(updaters[updater]).toHaveBeenCalledWith('1191', true);
-      // Only its own updater fires
-      for (const [, other] of cases) {
-        if (other !== updater) expect(updaters[other]).not.toHaveBeenCalled();
-      }
-      updaters[updater].mockClear();
-    }
+    await user.click(screen.getByRole('button', { name: 'Lv11' }));
+    expect(updateSkillProgress).toHaveBeenCalledWith('1191', 1);
+    await user.click(screen.getByRole('button', { name: 'Pass Lv12' }));
+    expect(updateSkillProgress).toHaveBeenLastCalledWith('1191', 2);
   });
 
   it('shows SavingToast when pendingSaveCount > 0', () => {
@@ -281,8 +254,121 @@ describe('ZzzPage', () => {
       '',
       'ALPHA',
       expect.any(Function),
+      undefined,
       expect.any(Array),
     );
+  });
+
+  it('renders the 🐹 Gated filter chip and passes the predicate when active', () => {
+    const session = createMockSession();
+    const gated = { ...makeAgent('1191', 'Ellen'), skillProgress: 1 };
+    const maxed = { ...makeAgent('1041', 'Soldier 11'), skillProgress: 2 };
+    const getFilteredRoster = vi.fn(
+      (
+        _term: string,
+        _sort: string,
+        _score: unknown,
+        predicate?: (a: ZzzTrackedAgent) => boolean,
+        entities?: ZzzTrackedAgent[],
+      ) => (predicate ? (entities ?? []).filter(predicate) : (entities ?? [])),
+    );
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      trackedAgents: [gated, maxed],
+      getFilteredRoster,
+    });
+    renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    // Chip present, both agents shown while inactive
+    const chip = screen.getByRole('button', { name: '🐹 Gated' });
+    expect(screen.getByText('Ellen')).toBeInTheDocument();
+    expect(screen.getByText('Soldier 11')).toBeInTheDocument();
+
+    // Activating narrows to the Pass-gated agent
+    fireEvent.click(chip);
+    expect(screen.getByText('Ellen')).toBeInTheDocument();
+    expect(screen.queryByText('Soldier 11')).not.toBeInTheDocument();
+
+    // Deactivating restores the full roster
+    fireEvent.click(chip);
+    expect(screen.getByText('Soldier 11')).toBeInTheDocument();
+  });
+
+  it('shows the filter-specific empty state when no agents are Pass-gated', () => {
+    const session = createMockSession();
+    const maxed = { ...makeAgent('1041', 'Soldier 11'), skillProgress: 2 };
+    const getFilteredRoster = vi.fn(
+      (
+        _term: string,
+        _sort: string,
+        _score: unknown,
+        predicate?: (a: ZzzTrackedAgent) => boolean,
+        entities?: ZzzTrackedAgent[],
+      ) => (predicate ? (entities ?? []).filter(predicate) : (entities ?? [])),
+    );
+    vi.mocked(useAgents).mockReturnValue({
+      ...defaultAgentsHook,
+      trackedAgents: [maxed],
+      getFilteredRoster,
+    });
+    renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: '🐹 Gated' }));
+    expect(screen.getByText('No Pass-gated agents found.')).toBeInTheDocument();
+  });
+
+  it('holds a card that stops matching the Pass gate until edit commit', () => {
+    const session = createMockSession();
+    const live = { current: [{ ...makeAgent('1191', 'Ellen'), skillProgress: 1 }] };
+    // Identity must stay stable across rerenders (new identity = refresh-all)
+    const filter = vi.fn(
+      (
+        term: string,
+        _sortBy: string,
+        _scoreFor: unknown,
+        predicate?: (a: ZzzTrackedAgent) => boolean,
+        entities?: ZzzTrackedAgent[],
+      ) => {
+        let list = entities ?? live.current;
+        if (predicate) list = list.filter(predicate);
+        if (term.trim()) list = list.filter((a) => a.name.includes(term));
+        return [...list].sort((a, b) => a.name.localeCompare(b.name));
+      },
+    );
+    const mock = () =>
+      vi.mocked(useAgents).mockReturnValue({
+        ...defaultAgentsHook,
+        trackedAgents: live.current,
+        getFilteredRoster: filter,
+      });
+    mock();
+    const { rerender, container } = renderWithProviders(
+      <ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '🐹 Gated' }));
+    expect(screen.getByText('Ellen')).toBeInTheDocument();
+
+    // "Spend the Passes": live data stops matching mid-edit
+    fireEvent.click(screen.getByTitle('Edit'));
+    live.current = [{ ...makeAgent('1191', 'Ellen'), skillProgress: 2 }];
+    mock();
+    rerender(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    expect(screen.getByText('Ellen')).toBeInTheDocument();
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches 🐹 Gated/)).toBeInTheDocument();
+
+    // ✓ commit releases via the exit animation (fallback timer in jsdom)
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(screen.getByTitle('Done editing'));
+      expect(container.querySelector('.game-card.is-exiting')).not.toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(700);
+      });
+      expect(screen.queryByText('Ellen')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('opens the disc editor anchored to the clicked slot and wires the hook actions', () => {
@@ -422,7 +508,13 @@ describe('ZzzPage', () => {
     };
     // Identity must stay stable across rerenders (new identity = refresh-all)
     const filter = vi.fn(
-      (term: string, sortBy: string, _scoreFor: unknown, entities?: ZzzTrackedAgent[]) => {
+      (
+        term: string,
+        sortBy: string,
+        _scoreFor: unknown,
+        _predicate?: (a: ZzzTrackedAgent) => boolean,
+        entities?: ZzzTrackedAgent[],
+      ) => {
         let list = entities ?? live.current;
         if (term.trim()) list = list.filter((a) => a.name.includes(term));
         return [...list].sort(
