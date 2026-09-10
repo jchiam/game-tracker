@@ -1,10 +1,10 @@
-// Auto-generated from HoyoLab wiki API (sg-wiki-api.hoyolab.com) — do not edit manually.
+// Auto-generated from the HoyoLab wiki API (sg-wiki-api.hoyolab.com), reconciled against the ZZZ Fandom wiki — do not edit manually.
 // Run `node scripts/update-zzz-data.mjs` or trigger the GitHub Actions workflow to update.
 
 export interface ZzzBangboo {
   id: string;
   name: string;
-  /** Wiki bangboo_rarity tag; null where the wiki leaves the Bangboo untagged. */
+  /** HoyoLab bangboo_rarity tag, else Fandom rank category; null when untagged in both. */
   rarity: 'S' | 'A' | null;
   imageUrl: string;
 }
@@ -21,6 +21,12 @@ export const ALL_ZZZ_BANGBOOS: ZzzBangboo[] = [
     name: 'Amillion',
     rarity: 'S',
     imageUrl: '/assets/zenless-zone-zero/bangboos/100.png',
+  },
+  {
+    id: '54023',
+    name: 'Ariel',
+    rarity: 'S',
+    imageUrl: '/assets/zenless-zone-zero/bangboos/54023.png',
   },
   {
     id: '108',
@@ -119,6 +125,18 @@ export const ALL_ZZZ_BANGBOOS: ZzzBangboo[] = [
     imageUrl: '/assets/zenless-zone-zero/bangboos/592.png',
   },
   {
+    id: '54021',
+    name: 'Sprout',
+    rarity: 'S',
+    imageUrl: '/assets/zenless-zone-zero/bangboos/54021.png',
+  },
+  {
+    id: '54022',
+    name: 'Ultra Jake',
+    rarity: 'S',
+    imageUrl: '/assets/zenless-zone-zero/bangboos/54022.png',
+  },
+  {
     id: '118',
     name: 'Avocaboo',
     rarity: 'A',
@@ -147,6 +165,12 @@ export const ALL_ZZZ_BANGBOOS: ZzzBangboo[] = [
     name: 'Boollseye',
     rarity: 'A',
     imageUrl: '/assets/zenless-zone-zero/bangboos/117.png',
+  },
+  {
+    id: '1092',
+    name: 'Booltergeist',
+    rarity: 'A',
+    imageUrl: '/assets/zenless-zone-zero/bangboos/1092.png',
   },
   {
     id: '114',
@@ -231,11 +255,5 @@ export const ALL_ZZZ_BANGBOOS: ZzzBangboo[] = [
     name: 'Sumoboo',
     rarity: 'A',
     imageUrl: '/assets/zenless-zone-zero/bangboos/122.png',
-  },
-  {
-    id: '1092',
-    name: 'Booltergeist',
-    rarity: null,
-    imageUrl: '/assets/zenless-zone-zero/bangboos/1092.png',
   },
 ];

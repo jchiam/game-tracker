@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Automated update pipeline for Zenless Zone Zero catalog data: fetches the Enka.Network store JSONs (agents, Drive Disc suits, W-Engines) and the HoyoLab wiki API Bangboo list, resolves localized names, regenerates the catalog files, seeds portraits and icons to ImageKit, and runs weekly via GitHub Actions with an auto-PR on changes.
+Automated update pipeline for Zenless Zone Zero catalog data: fetches the Enka.Network store JSONs (agents, Drive Disc suits, W-Engines) and the HoyoLab wiki API Bangboo list (reconciled against the ZZZ Fandom wiki), resolves localized names, regenerates the catalog files, seeds portraits and icons to ImageKit, and runs weekly via GitHub Actions with an auto-PR on changes.
 
 ## Requirements
 
@@ -97,7 +97,9 @@ The update script SHALL additionally fetch `store/zzz/weapons.json`, resolve eng
 
 ### Requirement: Bangboo catalog generation
 
-The update script SHALL additionally fetch the Bangboo entry list from the HoyoLab wiki API (`sg-wiki-api.hoyolab.com`, `hoyowiki/zzz/wapi/get_entry_page_list`, Bangboo menu, English language, paginated) — a distinct source from the Enka store, which carries no Bangboo data. For each entry it SHALL take the wiki entry id as the catalog id, the English display name, the rarity from the entry's `bangboo_rarity` filter value where tagged (`null` where absent), and the wiki icon URL. Icons SHALL be uploaded to ImageKit under `zenless_zone_zero/bangboos/{id}.png` via the shared `ensureAsset` plumbing, and `src/data/zenless-zone-zero/bangboos.ts` SHALL be regenerated with the generated-file banner and a catalog diff printed per run. A `--reupload-bangboos` flag (and the existing `--reupload-all`) SHALL force icon re-upload. The agent, disc-suit, and W-Engine codegen paths SHALL be unchanged by this addition.
+The update script SHALL additionally fetch the Bangboo entry list from the HoyoLab wiki API (`sg-wiki-api.hoyolab.com`, `hoyowiki/zzz/wapi/get_entry_page_list`, Bangboo menu, English language, paginated) — a distinct source from the Enka store, which carries no Bangboo data. For each entry it SHALL take the wiki entry id as the catalog id, the English display name, the rarity from the entry's `bangboo_rarity` filter value where tagged, and the wiki icon URL. Icons SHALL be uploaded to ImageKit under `zenless_zone_zero/bangboos/{id}.png` via the shared `ensureAsset` plumbing, and `src/data/zenless-zone-zero/bangboos.ts` SHALL be regenerated with the generated-file banner and a catalog diff printed per run. A `--reupload-bangboos` flag (and the existing `--reupload-all`) SHALL force icon re-upload. The agent, disc-suit, and W-Engine codegen paths SHALL be unchanged by this addition.
+
+The HoyoLab list SHALL be reconciled against the ZZZ Fandom wiki's playable-Bangboo category (`zenless-zone-zero.fandom.com`, MediaWiki API): any Fandom Bangboo missing from the HoyoLab set is supplemented into the catalog with its in-game id from the page infobox as the catalog id, its rank from the S/A rank category membership, and its full-resolution page portrait as the icon source. Rarity untagged on HoyoLab SHALL fall back to the Fandom rank category, and to `null` only when absent in both. Catalog ids SHALL be name-stable: a name already present in the generated catalog keeps its existing id even if a source later lists it under a different key.
 
 #### Scenario: Fresh run emits Bangboo catalog
 
@@ -118,3 +120,18 @@ The update script SHALL additionally fetch the Bangboo entry list from the HoyoL
 
 - **WHEN** a Bangboo icon download or upload fails
 - **THEN** the Bangboo still appears in the catalog, the failure is counted and the icon listed as missing, and the run completes
+
+#### Scenario: Fandom fills a hidden HoyoLab stub
+
+- **WHEN** a playable Bangboo exists on the Fandom wiki but is absent from the HoyoLab list (e.g. an incomplete stub the list endpoint hides)
+- **THEN** the Bangboo is supplemented into the catalog with its infobox in-game id, Fandom rank, and Fandom portrait, and the supplement is named in the run summary
+
+#### Scenario: Fandom outage degrades softly
+
+- **WHEN** the Fandom API is unreachable or its category list comes back empty
+- **THEN** the run completes with the HoyoLab-only catalog and prints a reconcile-skipped warning instead of failing
+
+#### Scenario: Completed stub keeps its supplement id
+
+- **WHEN** a previously supplemented Bangboo later appears in the HoyoLab list under a new wiki entry id
+- **THEN** the catalog keeps the id the supplement shipped with, so `zzz_parties.bangboo_id` references stay valid

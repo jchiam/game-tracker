@@ -16,7 +16,11 @@
 // store restructures: Dimbreath's ZenlessData mirror at git.mero.moe (raw game
 // configs + TextMap — needs loc joins; FileCfg filenames are hash-obfuscated as
 // of 2026-08-17). Bangboos come from the HoyoLab wiki API instead — the Enka
-// store carries no bangboo file (verified 2026-08-17).
+// store carries no bangboo file (verified 2026-08-17). The HoyoLab list is
+// reconciled against the ZZZ Fandom wiki's playable-Bangboo category: HoyoLab
+// hides incomplete stubs from its list (Sprout sat as an empty stub for 9+
+// months), so any Fandom entry missing from the HoyoLab set is supplemented
+// with Fandom's rank and portrait, keyed by the in-game id from its infobox.
 //
 // Usage:
 //   node scripts/update-zzz-data.mjs                      # only upload missing assets
@@ -56,6 +60,13 @@ const WIKI_HEADERS = {
   'X-Rpc-Wiki_app': 'zzz',
   'x-rpc-language': 'en-us',
 };
+// ZZZ Fandom wiki — Bangboo reconciliation source (see the source notes above).
+// Rank comes from category membership, not infobox parsing: the S/A categories
+// partition the playable category exactly.
+const FANDOM_API_BASE = 'https://zenless-zone-zero.fandom.com/api.php';
+const FANDOM_BANGBOO_CATEGORY = 'Category:Playable Combat Bangboo';
+const FANDOM_S_RANK_CATEGORY = 'Category:S-Rank Combat Bangboo';
+const FANDOM_A_RANK_CATEGORY = 'Category:A-Rank Combat Bangboo';
 
 loadLocalEnv();
 const { ensureAsset } = initImageKit();
@@ -278,14 +289,70 @@ async function fetchBangbooEntries() {
   return entries;
 }
 
+// Mainspace page titles in a Fandom category, following cmcontinue pagination.
+async function fetchFandomCategoryTitles(category) {
+  const titles = [];
+  let cont = '';
+  do {
+    const res = await fetchJSON(
+      `${FANDOM_API_BASE}?action=query&list=categorymembers` +
+        `&cmtitle=${encodeURIComponent(category)}&cmlimit=500&format=json${cont}`,
+    );
+    const members = res.query?.categorymembers ?? [];
+    titles.push(...members.filter((m) => m.ns === 0).map((m) => m.title));
+    cont = res.continue?.cmcontinue
+      ? `&cmcontinue=${encodeURIComponent(res.continue.cmcontinue)}`
+      : '';
+  } while (cont);
+  return titles;
+}
+
+// Every playable Bangboo on the Fandom wiki with its rank. Rank falls back to
+// null (no badge) if the category structure ever stops partitioning cleanly.
+async function fetchFandomBangboos() {
+  const [titles, sRank, aRank] = await Promise.all([
+    fetchFandomCategoryTitles(FANDOM_BANGBOO_CATEGORY),
+    fetchFandomCategoryTitles(FANDOM_S_RANK_CATEGORY),
+    fetchFandomCategoryTitles(FANDOM_A_RANK_CATEGORY),
+  ]);
+  if (titles.length === 0) {
+    throw new Error(`Fandom wiki shape changed: ${FANDOM_BANGBOO_CATEGORY} empty`);
+  }
+  const sSet = new Set(sRank);
+  const aSet = new Set(aRank);
+  return titles.map((name) => ({
+    name,
+    rarity: sSet.has(name) ? 'S' : aSet.has(name) ? 'A' : null,
+  }));
+}
+
+// In-game id (infobox `id` field) and full-res portrait URL for one Fandom
+// Bangboo page. Only called for entries the HoyoLab list is missing.
+async function fetchFandomBangbooDetail(title) {
+  const res = await fetchJSON(
+    `${FANDOM_API_BASE}?action=query&titles=${encodeURIComponent(title)}` +
+      `&prop=revisions|pageimages&rvprop=content&rvslots=main&piprop=original` +
+      `&format=json&formatversion=2`,
+  );
+  const page = res.query?.pages?.[0];
+  const wikitext = page?.revisions?.[0]?.slots?.main?.content ?? '';
+  return {
+    gameId: wikitext.match(/\|\s*id\s*=\s*(\d+)/)?.[1] ?? null,
+    imageUrl: page?.original?.source ?? null,
+  };
+}
+
 function generateBangboosTs(bangboos) {
   const lines = [
-    ...generatedHeader('HoyoLab wiki API (sg-wiki-api.hoyolab.com)', 'update-zzz-data.mjs'),
+    ...generatedHeader(
+      'the HoyoLab wiki API (sg-wiki-api.hoyolab.com), reconciled against the ZZZ Fandom wiki',
+      'update-zzz-data.mjs',
+    ),
     '',
     'export interface ZzzBangboo {',
     '  id: string;',
     '  name: string;',
-    '  /** Wiki bangboo_rarity tag; null where the wiki leaves the Bangboo untagged. */',
+    '  /** HoyoLab bangboo_rarity tag, else Fandom rank category; null when untagged in both. */',
     "  rarity: 'S' | 'A' | null;",
     '  imageUrl: string;',
     '}',
@@ -471,11 +538,26 @@ async function main() {
     return a.name.localeCompare(b.name);
   });
 
-  // --- Bangboos (Phase 4, HoyoLab wiki API) ---
+  // --- Bangboos (Phase 4, HoyoLab wiki API + Fandom reconcile) ---
   if (bangbooEntries.length === 0) {
     throw new Error('HoyoLab wiki API shape changed: Bangboo entry list empty');
   }
   console.log(`  ${bangbooEntries.length} Bangboos listed`);
+
+  // Fandom is a soft source: an outage degrades to HoyoLab-only with a loud
+  // warning instead of failing the weekly run.
+  let fandomBangboos = [];
+  try {
+    fandomBangboos = await fetchFandomBangboos();
+    console.log(`  ${fandomBangboos.length} Bangboos on the Fandom wiki`);
+  } catch (e) {
+    console.warn(`  Fandom reconcile skipped: ${e?.message ?? String(e)}`);
+  }
+  const fandomRankByName = new Map(fandomBangboos.map((f) => [f.name, f.rarity]));
+  // Ids are FK targets (zzz_parties.bangboo_id) — once a name has shipped with
+  // an id, keep it, even if the entry later (re)appears in the HoyoLab list
+  // under a different entry_page_id (a completed stub arrives that way).
+  const existingIdByName = new Map(existingBangboos.map((b) => [b.name, b.id]));
 
   const bangboos = [];
   let bangbooImgCount = 0;
@@ -483,17 +565,18 @@ async function main() {
   const skippedBangboos = [];
 
   for (const entry of bangbooEntries) {
-    const id = entry.entry_page_id;
     const name = (entry.name ?? '').trim();
+    const id = existingIdByName.get(name) ?? entry.entry_page_id;
     if (!id || !name || !entry.icon_url) {
       skippedBangboos.push(`${id ?? '?'}:${entry.name ?? '?'}`);
       continue;
     }
 
-    // Rarity tagging on the wiki is incomplete — untagged entries stay null
-    // rather than guessed (renders as no badge in the picker).
+    // HoyoLab rarity tagging is incomplete — untagged entries fall back to the
+    // Fandom rank category, then to null (renders as no badge in the picker).
     const rarityTag = entry.filter_values?.bangboo_rarity?.values?.[0];
-    const rarity = rarityTag === 'S' || rarityTag === 'A' ? rarityTag : null;
+    const rarity =
+      rarityTag === 'S' || rarityTag === 'A' ? rarityTag : (fandomRankByName.get(name) ?? null);
 
     const imageUrl = `/assets/zenless-zone-zero/bangboos/${id}.png`;
     const result = await ensureAsset({
@@ -507,6 +590,35 @@ async function main() {
     if (result === 'failed') failedBangbooIcons.push(id);
 
     bangboos.push({ id, name, rarity, imageUrl });
+  }
+
+  // Supplement Bangboos the HoyoLab list omits (hidden stubs) from Fandom.
+  const hoyolabNames = new Set(bangboos.map((b) => b.name));
+  const supplementedBangboos = [];
+  for (const f of fandomBangboos) {
+    if (hoyolabNames.has(f.name)) continue;
+    const detail = await fetchFandomBangbooDetail(f.name);
+    const id = existingIdByName.get(f.name) ?? detail.gameId;
+    if (!id) {
+      skippedBangboos.push(`fandom:${f.name} (no infobox id)`);
+      continue;
+    }
+    const imageUrl = `/assets/zenless-zone-zero/bangboos/${id}.png`;
+    const result = await ensureAsset({
+      localPath: imageUrl,
+      label: `Bangboo icon for ${f.name} (Fandom)`,
+      reupload: reuploadBangboos,
+      mimeType: 'image/png',
+      fetchBuffer: () => {
+        if (!detail.imageUrl) throw new Error('Fandom page has no portrait image');
+        return downloadImage(detail.imageUrl);
+      },
+    });
+    if (result === 'uploaded') bangbooImgCount++;
+    if (result === 'failed') failedBangbooIcons.push(id);
+
+    bangboos.push({ id, name: f.name, rarity: f.rarity, imageUrl });
+    supplementedBangboos.push(f.name);
   }
 
   // Sort: S first, then A, untagged last; alphabetical within each band.
@@ -568,6 +680,9 @@ async function main() {
   );
   for (const b of bangbooDiff.added) console.log(`    + ${b.name} [${b.rarity ?? '?'}]`);
   for (const b of bangbooDiff.removed) console.log(`    - ${b.name} (removed from source)`);
+  if (supplementedBangboos.length > 0) {
+    console.log(`  Fandom-supplemented Bangboos: ${supplementedBangboos.join(', ')}`);
+  }
   if (skippedEntries.length > 0) {
     console.log(`  Skipped entries: ${skippedEntries.join(', ')}`);
   }
