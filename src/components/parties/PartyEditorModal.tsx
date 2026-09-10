@@ -50,9 +50,8 @@ export function PartyEditorModal<E extends PartyEntity>({
   const pickerItems = useMemo(() => {
     const term = searchTerm.trim();
 
-    if (activeSlot === 'companion') {
-      const companion = config.companionSlot;
-      if (!companion) return [];
+    const companion = config.companionSlot;
+    if (activeSlot === 'companion' && companion) {
       const matched = term
         ? new Fuse(companion.entities, { keys: ['name'], threshold: 0.3 })
             .search(term)

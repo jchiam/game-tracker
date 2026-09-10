@@ -95,6 +95,13 @@ describe('imagekit', () => {
         '/assets/zenless-zone-zero/wengines/14119.png',
       );
     });
+
+    it('getZzzBangbooIconUrl returns the local path', async () => {
+      const { getZzzBangbooIconUrl } = await import('@/lib/imagekit');
+      expect(getZzzBangbooIconUrl('/assets/zenless-zone-zero/bangboos/912.png')).toBe(
+        '/assets/zenless-zone-zero/bangboos/912.png',
+      );
+    });
   });
 
   describe('when ImageKit is configured', () => {
@@ -158,6 +165,13 @@ describe('imagekit', () => {
       const { getZzzWEngineIconUrl } = await import('@/lib/imagekit');
       expect(getZzzWEngineIconUrl('/assets/zenless-zone-zero/wengines/14119.png')).toBe(
         'https://ik.imagekit.io/test/tr:w-128/zenless_zone_zero/wengines/14119.png',
+      );
+    });
+
+    it('getZzzBangbooIconUrl resizes to 128px with no crop', async () => {
+      const { getZzzBangbooIconUrl } = await import('@/lib/imagekit');
+      expect(getZzzBangbooIconUrl('/assets/zenless-zone-zero/bangboos/912.png')).toBe(
+        'https://ik.imagekit.io/test/tr:w-128/zenless_zone_zero/bangboos/912.png',
       );
     });
 

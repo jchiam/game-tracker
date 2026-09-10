@@ -733,6 +733,18 @@ describe('PartiesView', () => {
       );
     });
 
+    it('filters the companion picker by name search', () => {
+      renderWithProviders(
+        <PartiesView config={companionConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      const picker = openCompanionPicker();
+      fireEvent.change(within(picker).getByPlaceholderText('Search bangboo...'), {
+        target: { value: 'Butler' },
+      });
+      expect(within(picker).getByText('Butler')).toBeInTheDocument();
+      expect(within(picker).queryByText('Amboo')).not.toBeInTheDocument();
+    });
+
     it('companions never appear in member slot pickers', () => {
       renderWithProviders(
         <PartiesView config={companionConfig} {...defaultProps} session={createMockSession()} />,

@@ -1,11 +1,12 @@
 // Unit tests for the shared update-pipeline helpers. Network-bound paths
-// (fetchJSON, downloadImage, live ImageKit calls) are exercised by the real
-// weekly workflows, not here.
+// (downloadImage, live ImageKit calls) are exercised by the real weekly
+// workflows, not here; fetchJSON is tested against a stubbed global fetch.
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import {
   toImageKitLocation,
   initImageKit,
   parseReuploadFlags,
+  fetchJSON,
   slugify,
   mintId,
   esc,
@@ -14,6 +15,29 @@ import {
   formatDiff,
   generatedHeader,
 } from './pipeline.mjs';
+
+describe('fetchJSON', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('passes the optional RequestInit through to fetch and returns parsed JSON', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue({ ok: true, json: () => Promise.resolve({ retcode: 0 }) });
+    vi.stubGlobal('fetch', fetchMock);
+    const init = { method: 'POST', headers: { 'X-Rpc-Wiki_app': 'zzz' } };
+    await expect(fetchJSON('https://example.test/api', init)).resolves.toEqual({ retcode: 0 });
+    expect(fetchMock).toHaveBeenCalledWith('https://example.test/api', init);
+  });
+
+  it('throws with the URL and status on a non-ok response', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({ ok: false, status: 429 }));
+    await expect(fetchJSON('https://example.test/api')).rejects.toThrow(
+      'Failed to fetch https://example.test/api: 429',
+    );
+  });
+});
 
 describe('slugify', () => {
   it('slugs with underscore by default (R1999/N2E convention)', () => {
