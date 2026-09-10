@@ -1,17 +1,22 @@
 // Auto-update script for Zenless Zone Zero catalog data.
-// Fetches the latest data from the Enka.Network store (GitHub raw) and regenerates:
+// Fetches the latest data from the Enka.Network store (GitHub raw) and the
+// HoyoLab wiki API, and regenerates:
 //   - src/data/zenless-zone-zero/agents.ts
 //   - src/data/zenless-zone-zero/disc_suits.ts
 //   - src/data/zenless-zone-zero/wengines.ts
-// Downloads images from the Enka CDN and uploads to ImageKit:
+//   - src/data/zenless-zone-zero/bangboos.ts
+// Downloads images from the Enka CDN / hoyoverse CDN and uploads to ImageKit:
 //   - agent portraits → ImageKit: /zenless_zone_zero/agents
 //   - disc suit icons → ImageKit: /zenless_zone_zero/disc-suits
 //   - W-Engine icons → ImageKit: /zenless_zone_zero/wengines
+//   - Bangboo icons → ImageKit: /zenless_zone_zero/bangboos
 //
 // Source notes: Hakush.in and its nankoa.cc revival are dead (NXDOMAIN, verified
 // 2026-08-16); the Enka store is the maintained community source. Fallback if the
 // store restructures: Dimbreath's ZenlessData mirror at git.mero.moe (raw game
-// configs + TextMap — needs loc joins).
+// configs + TextMap — needs loc joins; FileCfg filenames are hash-obfuscated as
+// of 2026-08-17). Bangboos come from the HoyoLab wiki API instead — the Enka
+// store carries no bangboo file (verified 2026-08-17).
 //
 // Usage:
 //   node scripts/update-zzz-data.mjs                      # only upload missing assets
@@ -19,6 +24,7 @@
 //   node scripts/update-zzz-data.mjs --reupload-agents    # force reupload agent portraits
 //   node scripts/update-zzz-data.mjs --reupload-discs     # force reupload disc suit icons
 //   node scripts/update-zzz-data.mjs --reupload-wengines  # force reupload W-Engine icons
+//   node scripts/update-zzz-data.mjs --reupload-bangboos  # force reupload Bangboo icons
 
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { resolve } from 'path';
@@ -37,14 +43,28 @@ import {
 
 const ENKA_STORE_BASE = 'https://raw.githubusercontent.com/EnkaNetwork/API-docs/master/store/zzz';
 const ENKA_CDN_BASE = 'https://enka.network';
+// HoyoLab wiki API — unauthenticated, but requires browser-like headers.
+// Menu 15 is "Bangboo" under "Bangboo Database" (see get_menus).
+const WIKI_API_BASE = 'https://sg-wiki-api.hoyolab.com/hoyowiki/zzz/wapi';
+const WIKI_BANGBOO_MENU_ID = '15';
+// The list endpoint rejects page_size > 30, so the fetch paginates.
+const WIKI_PAGE_SIZE = 30;
+const WIKI_HEADERS = {
+  'Content-Type': 'application/json',
+  Origin: 'https://wiki.hoyolab.com',
+  Referer: 'https://wiki.hoyolab.com/',
+  'X-Rpc-Wiki_app': 'zzz',
+  'x-rpc-language': 'en-us',
+};
 
 loadLocalEnv();
 const { ensureAsset } = initImageKit();
 
-const { flags: reuploadFlags } = parseReuploadFlags(['agents', 'discs', 'wengines']);
+const { flags: reuploadFlags } = parseReuploadFlags(['agents', 'discs', 'wengines', 'bangboos']);
 const reuploadAgents = reuploadFlags.agents;
 const reuploadDiscs = reuploadFlags.discs;
 const reuploadWEngines = reuploadFlags.wengines;
+const reuploadBangboos = reuploadFlags.bangboos;
 
 async function loadExistingAgents() {
   const filePath = resolve(ROOT, 'src/data/zenless-zone-zero/agents.ts');
@@ -214,19 +234,104 @@ function generateWEnginesTs(wengines) {
   return lines.join('\n');
 }
 
-async function main() {
-  console.log('Fetching ZZZ data from the Enka.Network store...');
+async function loadExistingBangboos() {
+  const filePath = resolve(ROOT, 'src/data/zenless-zone-zero/bangboos.ts');
+  try {
+    const content = await readFile(filePath, 'utf-8');
+    const entries = [];
+    const regex = /id:\s*'([^']+)'[^}]*?name:\s*(['"])((?:\\.|(?!\2)[^\\])*)\2/gs;
+    let match;
+    while ((match = regex.exec(content)) !== null) {
+      entries.push({ id: match[1], name: match[3].replace(/\\(.)/g, '$1') });
+    }
+    return entries;
+  } catch {
+    return [];
+  }
+}
 
-  const [avatars, equipments, weapons, locs, existingAgents, existingSuits, existingWEngines] =
-    await Promise.all([
-      fetchJSON(`${ENKA_STORE_BASE}/avatars.json`),
-      fetchJSON(`${ENKA_STORE_BASE}/equipments.json`),
-      fetchJSON(`${ENKA_STORE_BASE}/weapons.json`),
-      fetchJSON(`${ENKA_STORE_BASE}/locs.json`),
-      loadExistingAgents(),
-      loadExistingSuits(),
-      loadExistingWEngines(),
-    ]);
+// Paginated POST against the wiki list endpoint; follows `total` with an
+// empty-page break so a source-side semantics change can't loop forever.
+async function fetchBangbooEntries() {
+  const entries = [];
+  let total = Infinity;
+  for (let pageNum = 1; entries.length < total; pageNum++) {
+    const res = await fetchJSON(`${WIKI_API_BASE}/get_entry_page_list`, {
+      method: 'POST',
+      headers: WIKI_HEADERS,
+      body: JSON.stringify({
+        filters: [],
+        menu_id: WIKI_BANGBOO_MENU_ID,
+        page_num: pageNum,
+        page_size: WIKI_PAGE_SIZE,
+        use_es: true,
+      }),
+    });
+    if (res.retcode !== 0 || !res.data) {
+      throw new Error(`HoyoLab wiki API error: retcode ${res.retcode} (${res.message})`);
+    }
+    const list = res.data.list ?? [];
+    if (list.length === 0) break;
+    total = Number(res.data.total) || list.length;
+    entries.push(...list);
+  }
+  return entries;
+}
+
+function generateBangboosTs(bangboos) {
+  const lines = [
+    ...generatedHeader('HoyoLab wiki API (sg-wiki-api.hoyolab.com)', 'update-zzz-data.mjs'),
+    '',
+    'export interface ZzzBangboo {',
+    '  id: string;',
+    '  name: string;',
+    '  /** Wiki bangboo_rarity tag; null where the wiki leaves the Bangboo untagged. */',
+    "  rarity: 'S' | 'A' | null;",
+    '  imageUrl: string;',
+    '}',
+    '',
+    'export const ALL_ZZZ_BANGBOOS: ZzzBangboo[] = [',
+  ];
+
+  const formatEntry = (b) =>
+    [
+      `  {`,
+      `    id: '${b.id}',`,
+      `    name: ${jsStr(b.name)},`,
+      `    rarity: ${b.rarity === null ? 'null' : `'${b.rarity}'`},`,
+      `    imageUrl: '${b.imageUrl}',`,
+      `  },`,
+    ].join('\n');
+
+  lines.push(...bangboos.map(formatEntry));
+  lines.push('];', '');
+  return lines.join('\n');
+}
+
+async function main() {
+  console.log('Fetching ZZZ data from the Enka.Network store and the HoyoLab wiki API...');
+
+  const [
+    avatars,
+    equipments,
+    weapons,
+    locs,
+    bangbooEntries,
+    existingAgents,
+    existingSuits,
+    existingWEngines,
+    existingBangboos,
+  ] = await Promise.all([
+    fetchJSON(`${ENKA_STORE_BASE}/avatars.json`),
+    fetchJSON(`${ENKA_STORE_BASE}/equipments.json`),
+    fetchJSON(`${ENKA_STORE_BASE}/weapons.json`),
+    fetchJSON(`${ENKA_STORE_BASE}/locs.json`),
+    fetchBangbooEntries(),
+    loadExistingAgents(),
+    loadExistingSuits(),
+    loadExistingWEngines(),
+    loadExistingBangboos(),
+  ]);
 
   const en = locs?.en;
   const avatarIds = Object.keys(avatars ?? {});
@@ -366,6 +471,52 @@ async function main() {
     return a.name.localeCompare(b.name);
   });
 
+  // --- Bangboos (Phase 4, HoyoLab wiki API) ---
+  if (bangbooEntries.length === 0) {
+    throw new Error('HoyoLab wiki API shape changed: Bangboo entry list empty');
+  }
+  console.log(`  ${bangbooEntries.length} Bangboos listed`);
+
+  const bangboos = [];
+  let bangbooImgCount = 0;
+  const failedBangbooIcons = [];
+  const skippedBangboos = [];
+
+  for (const entry of bangbooEntries) {
+    const id = entry.entry_page_id;
+    const name = (entry.name ?? '').trim();
+    if (!id || !name || !entry.icon_url) {
+      skippedBangboos.push(`${id ?? '?'}:${entry.name ?? '?'}`);
+      continue;
+    }
+
+    // Rarity tagging on the wiki is incomplete — untagged entries stay null
+    // rather than guessed (renders as no badge in the picker).
+    const rarityTag = entry.filter_values?.bangboo_rarity?.values?.[0];
+    const rarity = rarityTag === 'S' || rarityTag === 'A' ? rarityTag : null;
+
+    const imageUrl = `/assets/zenless-zone-zero/bangboos/${id}.png`;
+    const result = await ensureAsset({
+      localPath: imageUrl,
+      label: `Bangboo icon for ${name}`,
+      reupload: reuploadBangboos,
+      mimeType: 'image/png',
+      fetchBuffer: () => downloadImage(entry.icon_url),
+    });
+    if (result === 'uploaded') bangbooImgCount++;
+    if (result === 'failed') failedBangbooIcons.push(id);
+
+    bangboos.push({ id, name, rarity, imageUrl });
+  }
+
+  // Sort: S first, then A, untagged last; alphabetical within each band.
+  const rarityRank = (r) => (r === 'S' ? 0 : r === 'A' ? 1 : 2);
+  bangboos.sort((a, b) => {
+    if (rarityRank(a.rarity) !== rarityRank(b.rarity))
+      return rarityRank(a.rarity) - rarityRank(b.rarity);
+    return a.name.localeCompare(b.name);
+  });
+
   await mkdir(resolve(ROOT, 'src/data/zenless-zone-zero'), { recursive: true });
   await writeFile(
     resolve(ROOT, 'src/data/zenless-zone-zero/agents.ts'),
@@ -382,10 +533,16 @@ async function main() {
     generateWEnginesTs(wengines),
     'utf-8',
   );
+  await writeFile(
+    resolve(ROOT, 'src/data/zenless-zone-zero/bangboos.ts'),
+    generateBangboosTs(bangboos),
+    'utf-8',
+  );
 
   const { added, removed } = diffByKey(existingAgents, agents, (a) => a.id);
   const suitDiff = diffByKey(existingSuits, suits, (s) => s.id);
   const wengineDiff = diffByKey(existingWEngines, wengines, (w) => w.id);
+  const bangbooDiff = diffByKey(existingBangboos, bangboos, (b) => b.id);
   console.log('\nDone!');
   console.log(
     `  Agents: ${agents.length} total (${formatDiff(added, removed)}) — ${imgCount} images uploaded`,
@@ -406,6 +563,11 @@ async function main() {
       `    + ${w.name} [${w.rarity === 4 ? 'S' : w.rarity === 3 ? 'A' : 'B'} ${w.specialty}]`,
     );
   for (const w of wengineDiff.removed) console.log(`    - ${w.name} (removed from source)`);
+  console.log(
+    `  Bangboos: ${bangboos.length} total (${formatDiff(bangbooDiff.added, bangbooDiff.removed)}) — ${bangbooImgCount} icons uploaded`,
+  );
+  for (const b of bangbooDiff.added) console.log(`    + ${b.name} [${b.rarity ?? '?'}]`);
+  for (const b of bangbooDiff.removed) console.log(`    - ${b.name} (removed from source)`);
   if (skippedEntries.length > 0) {
     console.log(`  Skipped entries: ${skippedEntries.join(', ')}`);
   }
@@ -415,6 +577,9 @@ async function main() {
   if (skippedWEngines.length > 0) {
     console.log(`  Skipped W-Engines: ${skippedWEngines.join(', ')}`);
   }
+  if (skippedBangboos.length > 0) {
+    console.log(`  Skipped Bangboos: ${skippedBangboos.join(', ')}`);
+  }
   if (failedImages.length > 0) {
     console.warn(`  Missing agent images: ${failedImages.join(', ')}`);
   }
@@ -423,6 +588,9 @@ async function main() {
   }
   if (failedWEngineIcons.length > 0) {
     console.warn(`  Missing W-Engine icons: ${failedWEngineIcons.join(', ')}`);
+  }
+  if (failedBangbooIcons.length > 0) {
+    console.warn(`  Missing Bangboo icons: ${failedBangbooIcons.join(', ')}`);
   }
 }
 

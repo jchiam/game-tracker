@@ -193,6 +193,17 @@
   gap: var(--spacing-sm);
 }
 
+/* Companion tile (party-level pick, e.g. ZZZ Bangboo) — a one-slot labelled
+   panel sharing a member-row grid cell, so its chrome stays compact. */
+.party-members-row .companion-panel {
+  padding: var(--spacing-xs);
+  gap: var(--spacing-1);
+}
+
+.party-members-row .companion-panel .slot-group-row {
+  grid-template-columns: 1fr;
+}
+
 .slot-item {
   display: flex;
   flex-direction: column;

@@ -55,6 +55,20 @@ export const ALL_ZZZ_WENGINES: ZzzWEngine[] = [
     imageUrl: '/assets/zenless-zone-zero/wengines/14146.png',
   },
   {
+    id: '14162',
+    name: 'Crimson Moon Casket',
+    rarity: 4,
+    specialty: 'Stun',
+    imageUrl: '/assets/zenless-zone-zero/wengines/14162.png',
+  },
+  {
+    id: '14161',
+    name: 'Crimson Thirst',
+    rarity: 4,
+    specialty: 'Armorer',
+    imageUrl: '/assets/zenless-zone-zero/wengines/14161.png',
+  },
+  {
     id: '14119',
     name: 'Deep Sea Visitor',
     rarity: 4,
@@ -342,6 +356,13 @@ export const ALL_ZZZ_WENGINES: ZzzWEngine[] = [
     imageUrl: '/assets/zenless-zone-zero/wengines/13112.png',
   },
   {
+    id: '13021',
+    name: 'Bloodmarrow Coffer',
+    rarity: 3,
+    specialty: 'Armorer',
+    imageUrl: '/assets/zenless-zone-zero/wengines/13021.png',
+  },
+  {
     id: '13018',
     name: 'Boisterous Echoes',
     rarity: 3,
@@ -368,6 +389,13 @@ export const ALL_ZZZ_WENGINES: ZzzWEngine[] = [
     rarity: 3,
     specialty: 'Attack',
     imageUrl: '/assets/zenless-zone-zero/wengines/14001.png',
+  },
+  {
+    id: '13017',
+    name: 'Catty Luck',
+    rarity: 3,
+    specialty: 'Armorer',
+    imageUrl: '/assets/zenless-zone-zero/wengines/13017.png',
   },
   {
     id: '13019',
@@ -613,6 +641,13 @@ export const ALL_ZZZ_WENGINES: ZzzWEngine[] = [
     rarity: 2,
     specialty: 'Attack',
     imageUrl: '/assets/zenless-zone-zero/wengines/12001.png',
+  },
+  {
+    id: '12016',
+    name: '[Lunar] Semiluna',
+    rarity: 2,
+    specialty: 'Armorer',
+    imageUrl: '/assets/zenless-zone-zero/wengines/12016.png',
   },
   {
     id: '12010',

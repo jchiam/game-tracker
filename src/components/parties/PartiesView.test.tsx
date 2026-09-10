@@ -681,4 +681,150 @@ describe('PartiesView', () => {
       expect(within(picker).queryByText('Bob')).not.toBeInTheDocument();
     });
   });
+
+  describe('companion slot', () => {
+    const companions = [
+      { id: 'boo-1', name: 'Amboo', imageUrl: '/amboo.webp' },
+      { id: 'boo-2', name: 'Butler', imageUrl: '/butler.webp' },
+    ];
+
+    const companionConfig: PartyViewConfig<TestEntity> = {
+      ...plainConfig,
+      companionSlot: {
+        label: 'Bangboo',
+        entities: companions,
+        resolveSlotImage: (e) => e.imageUrl,
+        resolveListImage: (e) => e.imageUrl,
+      },
+    };
+
+    function openCompanionPicker() {
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      fireEvent.click(document.querySelector('.companion-panel .builder-slot') as HTMLElement);
+      return screen
+        .getByPlaceholderText('Search bangboo...')
+        .closest('.character-picker') as HTMLElement;
+    }
+
+    it('picks a companion from the companion catalog, not the roster', async () => {
+      const user = userEvent.setup();
+      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      renderWithProviders(
+        <PartiesView
+          config={companionConfig}
+          {...defaultProps}
+          onSaveParty={onSaveParty}
+          session={createMockSession()}
+        />,
+      );
+      const picker = openCompanionPicker();
+      // Companion picker lists companions only — roster entities are absent.
+      expect(within(picker).getByText('Amboo')).toBeInTheDocument();
+      expect(within(picker).queryByText('Alice')).not.toBeInTheDocument();
+      fireEvent.click(within(picker).getByText('Amboo'));
+      expect(screen.getByAltText('Amboo')).toBeInTheDocument();
+
+      await user.type(screen.getByPlaceholderText(/test stage/i), 'With Bangboo');
+      fireEvent.click(screen.getByRole('button', { name: 'Save Party' }));
+      await waitFor(() =>
+        expect(onSaveParty).toHaveBeenCalledWith(
+          expect.objectContaining({ companionId: 'boo-1', members: [] }),
+        ),
+      );
+    });
+
+    it('companions never appear in member slot pickers', () => {
+      renderWithProviders(
+        <PartiesView config={companionConfig} {...defaultProps} session={createMockSession()} />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      fireEvent.click(screen.getByText('Slot 1'));
+      const picker = screen
+        .getByPlaceholderText('Search character...')
+        .closest('.character-picker') as HTMLElement;
+      expect(within(picker).getByText('Alice')).toBeInTheDocument();
+      expect(within(picker).queryByText('Amboo')).not.toBeInTheDocument();
+    });
+
+    it('clears the companion and saves null', async () => {
+      const user = userEvent.setup();
+      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      renderWithProviders(
+        <PartiesView
+          config={companionConfig}
+          {...defaultProps}
+          onSaveParty={onSaveParty}
+          session={createMockSession()}
+        />,
+      );
+      const picker = openCompanionPicker();
+      fireEvent.click(within(picker).getByText('Amboo'));
+      fireEvent.click(document.querySelector('.companion-panel .remove-member-btn') as HTMLElement);
+      expect(screen.queryByAltText('Amboo')).not.toBeInTheDocument();
+      expect(screen.getByText('Bangboo')).toBeInTheDocument();
+
+      await user.type(screen.getByPlaceholderText(/test stage/i), 'No Bangboo');
+      fireEvent.click(screen.getByRole('button', { name: 'Save Party' }));
+      await waitFor(() =>
+        expect(onSaveParty).toHaveBeenCalledWith(expect.objectContaining({ companionId: null })),
+      );
+    });
+
+    it('prefills the editor companion from the party and shows the card tile', () => {
+      renderWithProviders(
+        <PartiesView
+          config={companionConfig}
+          {...defaultProps}
+          parties={[makeParty({ companionId: 'boo-2' })]}
+          session={createMockSession()}
+        />,
+      );
+      // Card tile: labelled, avatar + name.
+      const tile = document.querySelector('.party-card .companion-panel') as HTMLElement;
+      expect(tile).toBeInTheDocument();
+      expect(within(tile).getByText('Bangboo')).toBeInTheDocument();
+      expect(within(tile).getByAltText('Butler')).toBeInTheDocument();
+
+      // Editor round-trip.
+      fireEvent.click(screen.getByTitle('Edit Party'));
+      expect(document.querySelector('.party-editor .companion-panel img')).toHaveAttribute(
+        'alt',
+        'Butler',
+      );
+    });
+
+    it('shows an empty placeholder tile on the card when unset', () => {
+      renderWithProviders(
+        <PartiesView
+          config={companionConfig}
+          {...defaultProps}
+          parties={[makeParty()]}
+          session={createMockSession()}
+        />,
+      );
+      const tile = document.querySelector('.party-card .companion-panel') as HTMLElement;
+      expect(within(tile).getByText('+')).toBeInTheDocument();
+    });
+
+    it('games without companion config are unchanged — no tile, no payload field', async () => {
+      const user = userEvent.setup();
+      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      renderWithProviders(
+        <PartiesView
+          config={plainConfig}
+          {...defaultProps}
+          onSaveParty={onSaveParty}
+          parties={[makeParty()]}
+          session={createMockSession()}
+        />,
+      );
+      expect(document.querySelector('.companion-panel')).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      expect(screen.queryByText('Bangboo')).not.toBeInTheDocument();
+      await user.type(screen.getByPlaceholderText(/test stage/i), 'Plain');
+      fireEvent.click(screen.getByRole('button', { name: 'Save Party' }));
+      await waitFor(() => expect(onSaveParty).toHaveBeenCalled());
+      expect(onSaveParty.mock.calls[0][0]).not.toHaveProperty('companionId');
+    });
+  });
 });

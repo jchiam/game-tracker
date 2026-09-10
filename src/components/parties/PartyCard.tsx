@@ -46,6 +46,36 @@ interface PartyCardProps<E extends PartyEntity> {
   onToggleFavorite?: (value: boolean) => void;
 }
 
+function renderCompanionTile<E extends PartyEntity>(
+  companion: NonNullable<PartyViewConfig<E>['companionSlot']>,
+  party: Party,
+) {
+  const entity = party.companionId
+    ? companion.entities.find((e) => e.id === party.companionId)
+    : null;
+  return (
+    <div className="slot-group-panel companion-panel">
+      <span className="slot-group-label">{companion.label}</span>
+      <div className="slot-group-row">
+        <div className="slot-item">
+          <div className={`slot-avatar ${entity ? '' : 'empty'}`}>
+            {entity ? (
+              <img
+                src={companion.resolveSlotImage(entity)}
+                alt={entity.name}
+                className="char-img"
+              />
+            ) : (
+              <span className="empty-plus">+</span>
+            )}
+          </div>
+          {entity && <span className="char-name-small">{entity.name}</span>}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function PartyCard<E extends PartyEntity>({
   config,
   party,
@@ -105,6 +135,7 @@ export function PartyCard<E extends PartyEntity>({
               </div>
             ))
           : slots.map((sc) => renderCardSlot(sc, party, entities, config))}
+        {config.companionSlot && renderCompanionTile(config.companionSlot, party)}
       </div>
     </div>
   );
