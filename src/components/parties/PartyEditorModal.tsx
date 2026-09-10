@@ -33,16 +33,35 @@ export function PartyEditorModal<E extends PartyEntity>({
   const [tier, setTier] = useState<string | null>(party?.tier ?? null);
   const [notes, setNotes] = useState(party?.notes || '');
   const [members, setMembers] = useState<PartyMember[]>(party?.members || []);
+  const [companionId, setCompanionId] = useState<string | null>(party?.companionId ?? null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [activeSlot, setActiveSlot] = useState<number | null>(null);
+  // 'companion' activates the party-level companion pick (config.companionSlot).
+  const [activeSlot, setActiveSlot] = useState<number | 'companion' | null>(null);
   const { nouns } = config;
   const partyLower = nouns.party.toLowerCase();
   const slots: SlotConfig<E>[] = config.slots ?? [0, 1, 2, 3].map((index) => ({ index }));
   const activeSlotConfig =
-    activeSlot === null ? null : (slots.find((s) => s.index === activeSlot) ?? null);
+    typeof activeSlot !== 'number' ? null : (slots.find((s) => s.index === activeSlot) ?? null);
 
-  const filteredEntities = useMemo(() => {
+  // One list for both picker modes: member slots search the roster entities
+  // with the config's searchKeys; the companion slot searches its own catalog
+  // by name only. Each item carries its resolved list image so the render
+  // path never branches on the active mode.
+  const pickerItems = useMemo(() => {
     const term = searchTerm.trim();
+
+    const companion = config.companionSlot;
+    if (activeSlot === 'companion' && companion) {
+      const matched = term
+        ? new Fuse(companion.entities, { keys: ['name'], threshold: 0.3 })
+            .search(term)
+            .map((r) => r.item)
+        : companion.entities;
+      return matched
+        .filter((e) => e.id !== companionId)
+        .map((entity) => ({ entity, image: companion.resolveListImage(entity) }));
+    }
+
     const matched = term
       ? new Fuse(entities, { keys: config.searchKeys ?? ['name'], threshold: 0.3 })
           .search(term)
@@ -57,16 +76,25 @@ export function PartyEditorModal<E extends PartyEntity>({
         if (group) selectedGroups.add(group);
       }
     }
-    return matched.filter((e) => {
-      if (members.some((m) => m.entityId === e.id)) return false;
-      if (activeSlotConfig?.entityFilter && !activeSlotConfig.entityFilter(e)) return false;
-      const group = config.exclusionGroup?.(e);
-      return !group || !selectedGroups.has(group);
-    });
-  }, [entities, searchTerm, config, members, activeSlotConfig]);
+    return matched
+      .filter((e) => {
+        if (members.some((m) => m.entityId === e.id)) return false;
+        if (activeSlotConfig?.entityFilter && !activeSlotConfig.entityFilter(e)) return false;
+        const group = config.exclusionGroup?.(e);
+        return !group || !selectedGroups.has(group);
+      })
+      .map((entity) => ({ entity, image: config.resolveListImage(entity) }));
+  }, [entities, searchTerm, config, members, activeSlotConfig, activeSlot, companionId]);
 
   const handleSelectEntity = (entityId: string) => {
     if (activeSlot === null) return;
+
+    if (activeSlot === 'companion') {
+      setCompanionId(entityId);
+      setActiveSlot(null);
+      setSearchTerm('');
+      return;
+    }
 
     const newMembers = [...members.filter((m) => m.slotIndex !== activeSlot)];
     newMembers.push({ entityId, slotIndex: activeSlot });
@@ -88,9 +116,44 @@ export function PartyEditorModal<E extends PartyEntity>({
       id: party?.id,
       name,
       ...(config.supportsTier ? { tier } : {}),
+      ...(config.companionSlot ? { companionId } : {}),
       notes,
       members,
     });
+  };
+
+  const renderCompanionSlot = (companion: NonNullable<PartyViewConfig<E>['companionSlot']>) => {
+    const entity = companionId ? companion.entities.find((e) => e.id === companionId) : null;
+    return (
+      <div
+        className={`builder-slot ${activeSlot === 'companion' ? 'active' : ''} ${entity ? 'occupied' : 'empty'}`}
+        onClick={() => setActiveSlot('companion')}
+      >
+        {entity ? (
+          <>
+            <img src={companion.resolveSlotImage(entity)} alt={entity.name} className="slot-img" />
+            <div className="slot-overlay">
+              <span className="slot-name">{entity.name}</span>
+            </div>
+            <button
+              className="remove-member-btn"
+              onClick={(e) => {
+                e.stopPropagation();
+                setCompanionId(null);
+              }}
+            >
+              ✕
+            </button>
+          </>
+        ) : (
+          // The group panel already carries the companion label — the empty
+          // slot shows only the plus to avoid stacking the same word twice.
+          <div className="slot-placeholder">
+            <span className="plus">+</span>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const renderSlot = (slotConfig: SlotConfig<E>) => {
@@ -220,13 +283,25 @@ export function PartyEditorModal<E extends PartyEntity>({
           <div className="team-slots">{slots.map((slotConfig) => renderSlot(slotConfig))}</div>
         )}
 
+        {config.companionSlot && (
+          <div className="slot-group-panel companion-panel">
+            <span className="slot-group-label">{config.companionSlot.label}</span>
+            <div className="slot-group-slots">{renderCompanionSlot(config.companionSlot)}</div>
+          </div>
+        )}
+
         {activeSlot !== null && (
           <div className="character-picker">
             <div className="picker-header">
               <input
                 type="text"
                 name={`${partyLower}-${nouns.entity}-search`}
-                placeholder={activeSlotConfig?.searchPlaceholder ?? nouns.searchPlaceholder}
+                placeholder={
+                  activeSlot === 'companion'
+                    ? (config.companionSlot?.searchPlaceholder ??
+                      `Search ${config.companionSlot?.label.toLowerCase()}...`)
+                    : (activeSlotConfig?.searchPlaceholder ?? nouns.searchPlaceholder)
+                }
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 autoFocus
@@ -236,13 +311,13 @@ export function PartyEditorModal<E extends PartyEntity>({
               </button>
             </div>
             <div className="picker-list">
-              {filteredEntities.map((entity) => (
+              {pickerItems.map(({ entity, image }) => (
                 <div
                   key={entity.id}
                   className="picker-item"
                   onClick={() => handleSelectEntity(entity.id)}
                 >
-                  <img src={config.resolveListImage(entity)} alt={entity.name} />
+                  <img src={image} alt={entity.name} />
                   <span>{entity.name}</span>
                 </div>
               ))}

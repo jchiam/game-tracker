@@ -97,6 +97,26 @@ export interface PartyViewConfig<E extends PartyEntity> {
    * the canonical `party.css` rules (AE's lighter 'endfield' card).
    */
   variantClass?: string;
+  /**
+   * Optional party-level companion pick (ZZZ Bangboo): one entity chosen from
+   * a separate catalog — not the roster `entities` — rendered as an extra
+   * editor slot and a card tile, and persisted as `Party.companionId` (a
+   * single nullable column on the parties table via the game's persistence
+   * extras, never a member row). Games that omit this are unchanged; the save
+   * payload only carries `companionId` when the config declares the slot.
+   */
+  companionSlot?: {
+    /** Slot and tile label, e.g. 'Bangboo'. */
+    label: string;
+    /** Companion catalog — searched by `name` only. */
+    entities: PartyEntity[];
+    /** Resolves the image shown in the editor slot and card tile. */
+    resolveSlotImage: (entity: PartyEntity) => string;
+    /** Resolves the image shown in the companion picker list. */
+    resolveListImage: (entity: PartyEntity) => string;
+    /** Overrides the picker search placeholder for the companion slot. */
+    searchPlaceholder?: string;
+  };
 }
 
 interface PartiesViewProps<E extends PartyEntity> {

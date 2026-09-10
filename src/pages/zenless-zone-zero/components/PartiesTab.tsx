@@ -1,7 +1,8 @@
 import type { Session } from '@supabase/supabase-js';
 import type { Party, PartyMember } from '@/types';
 import type { ZzzAgent } from '@/data/zenless-zone-zero/agents';
-import { getZzzAgentMugshotUrl, getZzzAgentAvatarUrl } from '@/lib/imagekit';
+import { ALL_ZZZ_BANGBOOS } from '@/data/zenless-zone-zero/bangboos';
+import { getZzzAgentMugshotUrl, getZzzAgentAvatarUrl, getZzzBangbooIconUrl } from '@/lib/imagekit';
 import { PartiesView, type PartyViewConfig } from '@/components/parties/PartiesView';
 import { getElementBadge } from './agentBadges';
 import './PartiesTab.css';
@@ -29,6 +30,15 @@ const ZZZ_PARTY_VIEW: PartyViewConfig<ZzzAgent> = {
     { index: 1, label: 'Agent 2' },
     { index: 2, label: 'Agent 3' },
   ],
+  // Party-level Bangboo pick — persisted as bangboo_id on zzz_parties via the
+  // partyService extras, never a member row.
+  companionSlot: {
+    label: 'Bangboo',
+    entities: ALL_ZZZ_BANGBOOS,
+    resolveSlotImage: (b) => getZzzBangbooIconUrl(b.imageUrl),
+    resolveListImage: (b) => getZzzBangbooIconUrl(b.imageUrl),
+    searchPlaceholder: 'Search bangboo...',
+  },
 };
 
 interface PartiesTabProps {

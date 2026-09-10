@@ -152,8 +152,10 @@ export function parseReuploadFlags(types, argv = process.argv.slice(2)) {
   return { all, flags };
 }
 
-export async function fetchJSON(url) {
-  const res = await fetch(url);
+// `init` is an optional fetch RequestInit for sources that need POST bodies
+// or custom headers (e.g. the HoyoLab wiki API).
+export async function fetchJSON(url, init) {
+  const res = await fetch(url, init);
   if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
   return res.json();
 }

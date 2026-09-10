@@ -7,9 +7,13 @@ const persistence = createPartyPersistence<Party, PartyMember>({
   defaultName: 'New Party',
   memberFromRow: (row) => ({ entityId: row.agent_id, slotIndex: row.slot_index }),
   memberToRow: (member) => ({ agent_id: member.entityId, slot_index: member.slotIndex }),
-  extraSelect: 'tier, is_favorited',
-  extraFromRow: (row) => ({ tier: row.tier, isFavorited: !!row.is_favorited }),
-  extraToRow: (party) => ({ tier: party.tier ?? null }),
+  extraSelect: 'tier, is_favorited, bangboo_id',
+  extraFromRow: (row) => ({
+    tier: row.tier,
+    isFavorited: !!row.is_favorited,
+    companionId: row.bangboo_id ?? null,
+  }),
+  extraToRow: (party) => ({ tier: party.tier ?? null, bangboo_id: party.companionId ?? null }),
 });
 
 export const loadParties = persistence.loadParties;

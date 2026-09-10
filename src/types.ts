@@ -30,6 +30,9 @@ export interface PartyMember {
  * A saved Party/Lineup, shared across all games. `tier` and `isFavorited`
  * exist for the games whose party tables carry them (all games); they
  * stay undefined for any game whose config leaves the columns off.
+ * `companionId` is the party-level Companion Slot pick (ZZZ Bangboo) for
+ * games whose `PartyViewConfig` declares a `companionSlot` — a catalog id
+ * persisted as one column on the parties table, never a member row.
  */
 export interface Party {
   id: string;
@@ -38,6 +41,7 @@ export interface Party {
   notes: string | null;
   tier?: string | null;
   isFavorited?: boolean;
+  companionId?: string | null;
   members: PartyMember[];
   createdAt: string;
 }

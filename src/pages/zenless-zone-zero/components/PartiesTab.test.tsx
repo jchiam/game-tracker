@@ -11,6 +11,7 @@ import { ALL_ZZZ_AGENTS } from '@/data/zenless-zone-zero/agents';
 vi.mock('@/lib/imagekit', () => ({
   getZzzAgentMugshotUrl: vi.fn((url: string) => `mugshot:${url}`),
   getZzzAgentAvatarUrl: vi.fn((url: string) => `avatar:${url}`),
+  getZzzBangbooIconUrl: vi.fn((url: string) => `bangboo:${url}`),
 }));
 
 const firstAgent = ALL_ZZZ_AGENTS[0];
@@ -44,11 +45,35 @@ describe('PartiesTab (ZZZ config wiring)', () => {
     expect(screen.getByText('Tier')).toBeInTheDocument();
   });
 
-  it('renders exactly three member slots in the editor', () => {
+  it('renders exactly three member slots plus the Bangboo companion slot in the editor', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
     fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
-    const slots = document.querySelectorAll('.builder-slot');
-    expect(slots).toHaveLength(3);
+    expect(document.querySelectorAll('.team-slots .builder-slot')).toHaveLength(3);
+    const companionPanel = document.querySelector('.party-editor .companion-panel') as HTMLElement;
+    expect(companionPanel).not.toBeNull();
+    expect(companionPanel.textContent).toContain('Bangboo');
+    expect(companionPanel.querySelectorAll('.builder-slot')).toHaveLength(1);
+  });
+
+  it('resolves companion picker images through getZzzBangbooIconUrl', () => {
+    renderWithProviders(<PartiesTab {...defaultProps} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+    fireEvent.click(document.querySelector('.companion-panel .builder-slot') as HTMLElement);
+    expect(screen.getByPlaceholderText('Search bangboo...')).toBeInTheDocument();
+    const pickerImg = document.querySelector('.picker-item img') as HTMLImageElement;
+    expect(pickerImg.getAttribute('src')).toMatch(
+      /^bangboo:\/assets\/zenless-zone-zero\/bangboos\//,
+    );
+  });
+
+  it('shows the Bangboo tile on the party card from companionId', () => {
+    const bangbooParty = { ...party, companionId: '912' };
+    renderWithProviders(<PartiesTab {...defaultProps} parties={[bangbooParty]} />);
+    const tile = document.querySelector('.party-card .companion-panel') as HTMLElement;
+    expect(tile).not.toBeNull();
+    expect(tile.querySelector('img')?.getAttribute('src')).toBe(
+      'bangboo:/assets/zenless-zone-zero/bangboos/912.png',
+    );
   });
 
   it('renders the tier banner and favorite toggle', () => {

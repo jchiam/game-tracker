@@ -98,6 +98,31 @@ export const WithTierAndFavorite: Story = {
   },
 };
 
+// Party-level companion pick (ZZZ Bangboo): one extra labelled slot in the
+// editor and a labelled tile on the card, sourced from its own catalog.
+export const WithCompanionSlot: Story = {
+  args: {
+    config: {
+      ...PLAIN_CONFIG,
+      companionSlot: {
+        label: 'Bangboo',
+        entities: [
+          { id: 'amboo', name: 'Amboo', imageUrl: '/amboo.webp' },
+          { id: 'butler', name: 'Butler', imageUrl: '/butler.webp' },
+          { id: 'penguinboo', name: 'Penguinboo', imageUrl: '/penguinboo.webp' },
+        ],
+        resolveSlotImage: (e) => e.imageUrl,
+        resolveListImage: (e) => e.imageUrl,
+        searchPlaceholder: 'Search bangboo...',
+      },
+    },
+    parties: [
+      makeParty({ id: 'p1', name: 'Shiyu Squad', companionId: 'butler' }),
+      makeParty({ id: 'p2', name: 'No Bangboo yet', companionId: null, members: [] }),
+    ],
+  },
+};
+
 export const Empty: Story = {
   args: {
     parties: [],
