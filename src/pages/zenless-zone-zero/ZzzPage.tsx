@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useState, type CSSProperties } from 'react';
 import { useAgents } from '@/hooks/zenless-zone-zero/useAgents';
 import { useParties } from '@/hooks/zenless-zone-zero/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
@@ -9,7 +9,6 @@ import { WEngineEditorModal } from './components/WEngineEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import { calculateZzzBuildScore } from '@/utils/zzzBuildScore';
-import type { ZzzSkillKey } from './components/agentBadges';
 import type { ZzzDiscSlot } from '@/data/zenless-zone-zero/discs';
 import type { ZzzTrackedAgent } from '@/types';
 import type { Session } from '@supabase/supabase-js';
@@ -34,11 +33,7 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     updateLevel,
     updateMindscape,
     updateCoreSkill,
-    toggleSkillBasicMaxed,
-    toggleSkillDodgeMaxed,
-    toggleSkillAssistMaxed,
-    toggleSkillSpecialMaxed,
-    toggleSkillChainMaxed,
+    updateSkillProgress,
     toggleFavorite,
     saveDiscData,
     removeDiscData,
@@ -52,20 +47,21 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
 
   const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
 
-  // One card prop dispatches to five independent field updaters, so the card
-  // never grows five near-identical callbacks.
-  const skillUpdaters: Record<ZzzSkillKey, (id: string, value: boolean) => void> = {
-    basic: toggleSkillBasicMaxed,
-    dodge: toggleSkillDodgeMaxed,
-    assist: toggleSkillAssistMaxed,
-    special: toggleSkillSpecialMaxed,
-    chain: toggleSkillChainMaxed,
-  };
+  const [passGateFilter, setPassGateFilter] = useState(false);
 
   const filterRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE', entities?: ZzzTrackedAgent[]) =>
-      getFilteredRoster(searchTerm, sortBy, calculateZzzBuildScore, entities),
-    [getFilteredRoster],
+    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE', entities?: ZzzTrackedAgent[]) => {
+      // Undefined when the chip is off preserves the no-predicate fast path.
+      const predicate = passGateFilter ? (a: ZzzTrackedAgent) => a.skillProgress === 1 : undefined;
+      return getFilteredRoster(searchTerm, sortBy, calculateZzzBuildScore, predicate, entities);
+    },
+    [getFilteredRoster, passGateFilter],
+  );
+
+  // Ghost-tag copy for a held card — names the gate its live data fails.
+  const describeHeld = useCallback(
+    (a: ZzzTrackedAgent) => (a.skillProgress !== 1 ? 'no longer matches 🐹 Gated' : null),
+    [],
   );
 
   const {
@@ -89,6 +85,8 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     addDisabled: isLoadError,
     filterRoster,
     trackedEntities: trackedAgents,
+    // Held detection only pays its extra projection pass while the gate is on
+    describeHeld: passGateFilter ? describeHeld : undefined,
   });
 
   const [editingDisc, setEditingDisc] = useState<{
@@ -121,7 +119,23 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
       hasTracked={trackedAgents.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No agents tracked yet. Use the + button to begin!"
-      noMatchMessage="No agents match your search."
+      noMatchMessage={
+        passGateFilter ? 'No Pass-gated agents found.' : 'No agents match your search.'
+      }
+      filterRow={
+        <div
+          className="filter-row"
+          style={{ '--filter-chip-accent': 'var(--color-zzz-rarity-s)' } as CSSProperties}
+        >
+          <button
+            className={`filter-chip ${passGateFilter ? 'active' : ''}`}
+            onClick={() => setPassGateFilter((v) => !v)}
+            title={passGateFilter ? 'Show all agents' : 'Show only Pass-gated agents'}
+          >
+            🐹 Gated
+          </button>
+        </div>
+      }
       search={search}
       sort={sort}
       add={add}
@@ -133,7 +147,7 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
           onUpdateLevel={updateLevel}
           onUpdateMindscape={updateMindscape}
           onUpdateCoreSkill={updateCoreSkill}
-          onToggleSkillMaxed={(id, skill, value) => skillUpdaters[skill](id, value)}
+          onUpdateSkillProgress={updateSkillProgress}
           onToggleFavorite={(id, value) => {
             // Favorite is a completed intent — release in the same handler
             toggleFavorite(id, value);
@@ -145,6 +159,11 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
           onUpdateWEngineLevel={updateWEngineLevel}
           onUpdateWEnginePhase={updateWEnginePhase}
           onEditWEnginePrefs={setEditingWEnginePrefsFor}
+          heldReason={projection.heldReason(agent.id)}
+          isExiting={projection.isExiting(agent.id)}
+          /* v8 ignore next -- jsdom never delivers animationend; the exit
+             fallback timer covers eviction in tests */
+          onExitEnd={() => projection.completeExit(agent.id)}
         />
       ))}
       partiesTab={

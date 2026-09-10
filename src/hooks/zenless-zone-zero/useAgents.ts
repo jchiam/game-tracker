@@ -21,11 +21,7 @@ function createTrackedAgent(agent: ZzzAgent): ZzzTrackedAgent {
     level: 1,
     mindscape: 0,
     coreSkill: 0,
-    skillBasicMaxed: false,
-    skillDodgeMaxed: false,
-    skillAssistMaxed: false,
-    skillSpecialMaxed: false,
-    skillChainMaxed: false,
+    skillProgress: 0,
     // Fresh objects per agent — a module-level default assigned directly would
     // share one identity across every added agent (P5X aliasing bug class).
     discs: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
@@ -67,13 +63,7 @@ export function useAgents(session: Session | null, isAuthLoading: boolean) {
   const updateLevel = makeFieldUpdater('level', { clamp: [1, 60] });
   const updateMindscape = makeFieldUpdater('mindscape', { clamp: [0, 6] });
   const updateCoreSkill = makeFieldUpdater('coreSkill', { clamp: [0, 6] });
-  // One updater per combat skill flag — independent by construction, so toggling
-  // one can never disturb another.
-  const toggleSkillBasicMaxed = makeFieldUpdater('skillBasicMaxed');
-  const toggleSkillDodgeMaxed = makeFieldUpdater('skillDodgeMaxed');
-  const toggleSkillAssistMaxed = makeFieldUpdater('skillAssistMaxed');
-  const toggleSkillSpecialMaxed = makeFieldUpdater('skillSpecialMaxed');
-  const toggleSkillChainMaxed = makeFieldUpdater('skillChainMaxed');
+  const updateSkillProgress = makeFieldUpdater('skillProgress', { clamp: [0, 2] });
   const toggleFavorite = makeFieldUpdater('isFavorited');
   const updateWEngine = makeFieldUpdater('wEngineId');
   const updateWEngineLevel = makeFieldUpdater('wEngineLevel', { clamp: [0, 60] });
@@ -121,9 +111,10 @@ export function useAgents(session: Session | null, isAuthLoading: boolean) {
       searchTerm: string,
       sortBy: 'ALPHA' | 'LEVEL' | 'SCORE',
       scoreFor?: (a: ZzzTrackedAgent) => number,
+      predicate?: (a: ZzzTrackedAgent) => boolean,
       entities?: ZzzTrackedAgent[],
-    ) =>
-      filterRoster(
+    ) => {
+      const sorted = filterRoster(
         searchTerm,
         sortBy === 'LEVEL'
           ? (a, b) => b.level - a.level
@@ -131,7 +122,9 @@ export function useAgents(session: Session | null, isAuthLoading: boolean) {
             ? (a, b) => scoreFor(b) - scoreFor(a)
             : undefined,
         entities,
-      ),
+      );
+      return predicate ? sorted.filter(predicate) : sorted;
+    },
     [filterRoster],
   );
 
@@ -147,11 +140,7 @@ export function useAgents(session: Session | null, isAuthLoading: boolean) {
     updateLevel,
     updateMindscape,
     updateCoreSkill,
-    toggleSkillBasicMaxed,
-    toggleSkillDodgeMaxed,
-    toggleSkillAssistMaxed,
-    toggleSkillSpecialMaxed,
-    toggleSkillChainMaxed,
+    updateSkillProgress,
     toggleFavorite,
     updateWEngine,
     updateWEngineLevel,

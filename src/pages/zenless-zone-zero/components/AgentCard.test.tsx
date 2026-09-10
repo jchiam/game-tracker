@@ -25,11 +25,7 @@ const baseAgent: ZzzTrackedAgent = {
   level: 45,
   mindscape: 2,
   coreSkill: 4,
-  skillBasicMaxed: false,
-  skillDodgeMaxed: false,
-  skillAssistMaxed: false,
-  skillSpecialMaxed: false,
-  skillChainMaxed: false,
+  skillProgress: 0,
   discs: { ...emptyDiscs },
   buildPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
   wEngineId: null,
@@ -45,7 +41,7 @@ describe('AgentCard', () => {
     onUpdateLevel: vi.fn(),
     onUpdateMindscape: vi.fn(),
     onUpdateCoreSkill: vi.fn(),
-    onToggleSkillMaxed: vi.fn(),
+    onUpdateSkillProgress: vi.fn(),
     onToggleFavorite: vi.fn(),
     onToggleDisc: vi.fn(),
     onUpdateWEngine: vi.fn(),
@@ -124,65 +120,68 @@ describe('AgentCard', () => {
     expect(screen.getByText('Core —')).toBeInTheDocument();
   });
 
-  it('summarises the maxed combat skill count as a single collapsed chip', () => {
-    render(
-      <AgentCard
-        {...defaultProps}
-        agent={{
-          ...baseAgent,
-          skillBasicMaxed: true,
-          skillSpecialMaxed: true,
-          skillChainMaxed: true,
-        }}
-      />,
-    );
-    expect(screen.getByText('Skl 3/5')).toBeInTheDocument();
+  it('shows a 🐹 Gated chip when skills are Pass-gated at Lv11', () => {
+    render(<AgentCard {...defaultProps} agent={{ ...baseAgent, skillProgress: 1 }} />);
+    expect(screen.getByText('🐹 Gated')).toBeInTheDocument();
+    expect(screen.queryByText('Skills ✓')).not.toBeInTheDocument();
   });
 
-  it('shows 0/5 when no combat skill is maxed', () => {
+  it('shows a Skills ✓ chip when skills are Pass-maxed', () => {
+    render(<AgentCard {...defaultProps} agent={{ ...baseAgent, skillProgress: 2 }} />);
+    expect(screen.getByText('Skills ✓')).toBeInTheDocument();
+    expect(screen.queryByText('🐹 Gated')).not.toBeInTheDocument();
+  });
+
+  it('shows no skill chip when skill progress is untouched', () => {
     render(<AgentCard {...defaultProps} />);
-    expect(screen.getByText('Skl 0/5')).toBeInTheDocument();
+    expect(screen.queryByText('🐹 Gated')).not.toBeInTheDocument();
+    expect(screen.queryByText('Skills ✓')).not.toBeInTheDocument();
   });
 
-  it('renders the combat skill row between Core Skill and the W-Engine group', async () => {
+  it('renders the Skills milestone row between Core Skill and the W-Engine group', async () => {
     const user = userEvent.setup();
     const { container } = render(<AgentCard {...defaultProps} />);
     await enterEditMode(user);
 
-    const chips = Array.from(
-      container.querySelectorAll<HTMLButtonElement>('.combat-skill-row .toggle-btn'),
+    const milestones = Array.from(
+      container.querySelectorAll<HTMLButtonElement>('.skills-row .toggle-btn'),
     );
-    expect(chips.map((b) => b.textContent)).toEqual([
-      'Basic',
-      'Dodge',
-      'Assist',
-      'Special',
-      'Chain',
-    ]);
+    expect(milestones.map((b) => b.textContent)).toEqual(['Lv11', 'Pass Lv12']);
 
-    // Section order: … Core Skill → Skills at Lv12 → W-Engine group
+    // Section order: … Core Skill → Skills → W-Engine group
     const labels = Array.from(container.querySelectorAll('.section-header')).map(
       (el) => el.textContent,
     );
     const coreIdx = labels.findIndex((l) => l?.includes('Core Skill'));
-    const skillsIdx = labels.findIndex((l) => l?.includes('Skills at Lv12'));
+    const skillsIdx = labels.findIndex((l) => l?.startsWith('Skills'));
     const engineIdx = labels.findIndex((l) => l?.includes('Equipped'));
     expect(coreIdx).toBeGreaterThanOrEqual(0);
     expect(skillsIdx).toBe(coreIdx + 1);
     expect(engineIdx).toBeGreaterThan(skillsIdx);
   });
 
-  it('toggles a combat skill flag independently of the others', async () => {
+  it('reflects skill progress in the Skills section value', async () => {
     const user = userEvent.setup();
-    render(<AgentCard {...defaultProps} agent={{ ...baseAgent, skillBasicMaxed: true }} />);
+    const { rerender } = render(
+      <AgentCard {...defaultProps} agent={{ ...baseAgent, skillProgress: 2 }} />,
+    );
+    await enterEditMode(user);
+    expect(screen.getByText('Maxed')).toBeInTheDocument();
+    rerender(<AgentCard {...defaultProps} agent={{ ...baseAgent, skillProgress: 1 }} />);
+    expect(screen.getByText('Pass-gated')).toBeInTheDocument();
+  });
+
+  it('selects and deselects skill milestones through the segmented row', async () => {
+    const user = userEvent.setup();
+    render(<AgentCard {...defaultProps} agent={{ ...baseAgent, skillProgress: 1 }} />);
     await enterEditMode(user);
 
-    await user.click(screen.getByRole('button', { name: 'Chain' }));
-    expect(defaultProps.onToggleSkillMaxed).toHaveBeenCalledWith('1011', 'chain', true);
+    await user.click(screen.getByRole('button', { name: 'Pass Lv12' }));
+    expect(defaultProps.onUpdateSkillProgress).toHaveBeenCalledWith('1011', 2);
 
-    // Clicking an on flag turns it off
-    await user.click(screen.getByRole('button', { name: 'Basic' }));
-    expect(defaultProps.onToggleSkillMaxed).toHaveBeenLastCalledWith('1011', 'basic', false);
+    // Clicking the active milestone deselects back to not started
+    await user.click(screen.getByRole('button', { name: 'Lv11' }));
+    expect(defaultProps.onUpdateSkillProgress).toHaveBeenLastCalledWith('1011', 0);
   });
 
   it('updates level via the slider', () => {

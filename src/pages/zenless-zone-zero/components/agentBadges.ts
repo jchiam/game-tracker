@@ -55,23 +55,3 @@ export const CORE_SKILL_LETTERS = ['—', 'A', 'B', 'C', 'D', 'E', 'F'] as const
 export function getCoreSkillLetter(coreSkill: number): string {
   return CORE_SKILL_LETTERS[coreSkill] ?? '—';
 }
-
-/**
- * The five leveled combat skills, ordered as the in-game skills screen lists
- * them. Each `key` is the `ZzzTrackedAgent` flag recording that its base Lv. 12
- * track is finished. The Ultimate is deliberately absent: it scales off the
- * Chain Attack level rather than levelling on its own.
- */
-export const ZZZ_COMBAT_SKILLS = [
-  { key: 'skillBasicMaxed', value: 'basic', label: 'Basic' },
-  { key: 'skillDodgeMaxed', value: 'dodge', label: 'Dodge' },
-  { key: 'skillAssistMaxed', value: 'assist', label: 'Assist' },
-  { key: 'skillSpecialMaxed', value: 'special', label: 'Special' },
-  { key: 'skillChainMaxed', value: 'chain', label: 'Chain' },
-] as const;
-
-/** Row-order identifier for one combat skill (`basic`, `dodge`, …). */
-export type ZzzSkillKey = (typeof ZZZ_COMBAT_SKILLS)[number]['value'];
-
-/** The tracked-agent flag field backing a given combat skill. */
-export type ZzzSkillField = (typeof ZZZ_COMBAT_SKILLS)[number]['key'];
