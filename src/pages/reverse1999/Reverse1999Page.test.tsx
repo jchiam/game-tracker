@@ -74,9 +74,9 @@ describe('Reverse1999Page', () => {
     expect(screen.getByRole('heading', { name: /reverse: 1999 arcanists/i })).toBeInTheDocument();
   });
 
-  it('shows "Authenticating..." while auth is loading', () => {
+  it('shows sign-in check while auth is loading', () => {
     renderWithProviders(<Reverse1999Page session={null} isAuthLoading={true} onSignIn={vi.fn()} />);
-    expect(screen.getByText(/authenticating/i)).toBeInTheDocument();
+    expect(screen.getByText(/checking sign-in/i)).toBeInTheDocument();
   });
 
   it('shows AuthGate when there is no session', () => {
@@ -86,7 +86,7 @@ describe('Reverse1999Page', () => {
     expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument();
   });
 
-  it('shows "Loading database sync..." during initial load with session', () => {
+  it('shows roster loading state during initial load with session', () => {
     vi.mocked(useArcanists).mockReturnValue({
       ...defaultArcanistsHook,
       isInitialLoad: true,
@@ -95,7 +95,7 @@ describe('Reverse1999Page', () => {
     renderWithProviders(
       <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    expect(screen.getByText(/loading database sync/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading your roster/i)).toBeInTheDocument();
   });
 
   it('shows load error state when isLoadError is true', () => {

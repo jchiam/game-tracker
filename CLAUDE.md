@@ -105,6 +105,7 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 | `ScoreBadge`             | `ScoreBadge.css`      | Shared roster-card equipment-match score badge (`.score-badge.grade-{s..d}`); hides on a negative sentinel; used by HSR/N2E/P5X                                                       |
 | `AuthGate`               | —                     | Sign-in prompt                                                                                                                                                                        |
 | `LoadErrorState`         | —                     | Retry prompt                                                                                                                                                                          |
+| `LoadingState`           | uses `controls.css`   | Animated loading indicator (`.loading-state`: spinner-dot trio + label, `role="status"`) — every loading surface uses it; dashed `.empty-state` is reserved for true empty/no-match   |
 | `ConfirmCheckbox`        | `ConfirmCheckbox.css` | Checkbox with confirmation                                                                                                                                                            |
 | `GameSwitcher`           | `GameSwitcher.css`    | Game dropdown                                                                                                                                                                         |
 | `Navbar`                 | `Navbar.css`          | Top nav                                                                                                                                                                               |
@@ -309,6 +310,7 @@ Reuse these existing shared components — don't recreate them:
 
 - `AuthGate` — shown when user is not logged in
 - `LoadErrorState` — retry button for failed DB loads
+- `LoadingState` — animated loading indicator for every loading surface (never render loading text in `.empty-state`)
 - `SavingToast` — shows when pendingSaveCount > 0
 - `Modal` — base modal with overlay, close button, keyboard handling
 - `AddEntityModal` — generic entity-picker modal; per-game `Add*Modal` files are config wrappers over it

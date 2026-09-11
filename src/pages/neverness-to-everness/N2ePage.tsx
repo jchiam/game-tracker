@@ -99,6 +99,7 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
       ))}
       partiesTab={
         <PartiesTab
+          isInitialLoad={isInitialLoad}
           parties={parties}
           availableCharacters={availableCharacters}
           onSaveParty={saveParty}

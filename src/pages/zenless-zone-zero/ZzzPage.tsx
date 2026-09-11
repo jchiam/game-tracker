@@ -168,6 +168,7 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
       ))}
       partiesTab={
         <PartiesTab
+          isInitialLoad={isInitialLoad}
           parties={parties}
           availableAgents={availableAgents}
           onSaveParty={saveParty}

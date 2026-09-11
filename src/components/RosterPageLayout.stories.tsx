@@ -141,7 +141,7 @@ export const Unauthenticated: Story = {
   },
 };
 
-export const Authenticating: Story = {
+export const CheckingSignIn: Story = {
   args: {
     ...baseArgs,
     session: null,

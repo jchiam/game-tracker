@@ -4,6 +4,7 @@ import './App.css';
 import { Navbar } from '@/components/Navbar';
 import { ToastContainer } from '@/components/ToastContainer';
 import { SelectionPage } from '@/pages/SelectionPage';
+import { LoadingState } from '@/components/LoadingState';
 import { useAuth } from '@/hooks/useAuth';
 import { GAMES } from '@/lib/games';
 
@@ -14,7 +15,7 @@ function App() {
     <div className="layout">
       <Navbar userEmail={session?.user?.email} onSignIn={signInWithGoogle} onSignOut={signOut} />
       <ToastContainer />
-      <Suspense fallback={null}>
+      <Suspense fallback={<LoadingState label="Loading…" />}>
         <Routes>
           <Route
             path="/"

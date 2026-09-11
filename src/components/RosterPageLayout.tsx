@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AuthGate } from '@/components/AuthGate';
 import { LoadErrorState } from '@/components/LoadErrorState';
+import { LoadingState } from '@/components/LoadingState';
 import { SavingToast } from '@/components/SavingToast';
 import './RosterPageLayout.css';
 
@@ -148,13 +149,9 @@ export function RosterPageLayout({
       {view === 'roster' ? (
         <section className="roster-grid">
           {isAuthLoading ? (
-            <div className="empty-state">
-              <p>Authenticating...</p>
-            </div>
+            <LoadingState label="Checking sign-in…" />
           ) : isInitialLoad && session ? (
-            <div className="empty-state">
-              <p>Loading database sync...</p>
-            </div>
+            <LoadingState label="Loading your roster…" />
           ) : isLoadError ? (
             <LoadErrorState onRetry={onRetry} />
           ) : !session ? (

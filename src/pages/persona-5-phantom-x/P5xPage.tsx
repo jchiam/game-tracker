@@ -181,6 +181,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
       ))}
       partiesTab={
         <PartiesTab
+          isInitialLoad={isInitialLoad}
           parties={parties}
           availableThieves={availableThieves}
           onSaveParty={saveParty}

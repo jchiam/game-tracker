@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router';
 import type { Session } from '@supabase/supabase-js';
 import { GAMES } from '@/lib/games';
+import { LoadingState } from '@/components/LoadingState';
 import './SelectionPage.css';
 
 interface SelectionPageProps {
@@ -21,11 +22,7 @@ export function SelectionPage({ session, isAuthLoading, signInWithGoogle }: Sele
   };
 
   if (isAuthLoading) {
-    return (
-      <div className="selection-empty">
-        <p>Checking authentication...</p>
-      </div>
-    );
+    return <LoadingState label="Checking sign-in…" />;
   }
 
   return (

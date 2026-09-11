@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import type { Party, PartyMember } from '@/types';
 import { PartyCard } from './PartyCard';
 import { PartyEditorModal } from './PartyEditorModal';
+import { LoadingState } from '@/components/LoadingState';
 
 /** Minimum catalog shape the Party View needs from a game's entities. */
 export interface PartyEntity {
@@ -128,6 +129,8 @@ interface PartiesViewProps<E extends PartyEntity> {
   /** Required when `config.supportsFavorite` is true. */
   onToggleFavorite?: (partyId: string, value: boolean) => void;
   session: Session | null;
+  /** True while the initial DB load is in flight — shows a loader instead of the false empty state. */
+  isInitialLoad?: boolean;
 }
 
 const TIER_RANK: Record<string, number> = { 'S+': 0, S: 1, A: 2, B: 3 };
@@ -145,6 +148,7 @@ export function PartiesView<E extends PartyEntity>({
   onDeleteParty,
   onToggleFavorite,
   session,
+  isInitialLoad = false,
 }: PartiesViewProps<E>) {
   const [editingParty, setEditingParty] = useState<Party | null>(null);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -181,7 +185,9 @@ export function PartiesView<E extends PartyEntity>({
       </div>
 
       <div className="parties-grid">
-        {parties.length === 0 ? (
+        {isInitialLoad ? (
+          <LoadingState label={`Loading your ${nouns.partiesLower}…`} />
+        ) : parties.length === 0 ? (
           <div className="empty-state">
             <p>No {nouns.partiesLower} configured yet. Build your first team!</p>
           </div>
