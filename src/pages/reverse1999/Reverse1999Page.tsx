@@ -175,6 +175,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       ))}
       partiesTab={
         <PartiesTab
+          isInitialLoad={isInitialLoad}
           parties={parties}
           availableArcanists={availableArcanists}
           onSaveParty={saveParty}

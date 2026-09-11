@@ -13,6 +13,7 @@ interface PartiesTabProps {
   onDeleteParty: (id: string) => Promise<boolean>;
   onToggleFavorite: (partyId: string, value: boolean) => void;
   session: Session | null;
+  isInitialLoad?: boolean;
 }
 
 export function PartiesTab({
@@ -22,6 +23,7 @@ export function PartiesTab({
   onDeleteParty,
   onToggleFavorite,
   session,
+  isInitialLoad,
 }: PartiesTabProps) {
   // Thieves come from the user's tracked roster; personas from the full static
   // catalog (personas are equipment, never individually "owned").
@@ -39,6 +41,7 @@ export function PartiesTab({
       onDeleteParty={onDeleteParty}
       onToggleFavorite={onToggleFavorite}
       session={session}
+      isInitialLoad={isInitialLoad}
     />
   );
 }

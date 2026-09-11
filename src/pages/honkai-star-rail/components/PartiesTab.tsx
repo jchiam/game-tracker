@@ -30,6 +30,7 @@ interface PartiesTabProps {
   onDeleteParty: (id: string) => Promise<boolean>;
   onToggleFavorite: (partyId: string, value: boolean) => void;
   session: Session | null;
+  isInitialLoad?: boolean;
 }
 
 export function PartiesTab({
@@ -39,6 +40,7 @@ export function PartiesTab({
   onDeleteParty,
   onToggleFavorite,
   session,
+  isInitialLoad,
 }: PartiesTabProps) {
   return (
     <PartiesView
@@ -49,6 +51,7 @@ export function PartiesTab({
       onDeleteParty={onDeleteParty}
       onToggleFavorite={onToggleFavorite}
       session={session}
+      isInitialLoad={isInitialLoad}
     />
   );
 }

@@ -100,6 +100,7 @@ export function ArknightsEndfieldPage({
       ))}
       partiesTab={
         <PartiesTab
+          isInitialLoad={isInitialLoad}
           parties={parties}
           availableOperators={availableOperators}
           onSaveParty={saveParty}

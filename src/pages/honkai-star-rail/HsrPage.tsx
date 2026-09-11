@@ -148,6 +148,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
       ))}
       partiesTab={
         <PartiesTab
+          isInitialLoad={isInitialLoad}
           parties={parties}
           availableCharacters={partyCharacters}
           onSaveParty={saveParty}

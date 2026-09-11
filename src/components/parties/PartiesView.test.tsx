@@ -81,6 +81,22 @@ describe('PartiesView', () => {
       expect(screen.getByText(/no lineups configured yet/i)).toBeInTheDocument();
     });
 
+    it('shows a loading state instead of the empty state during initial load', () => {
+      renderWithProviders(
+        <PartiesView
+          config={fullConfig}
+          {...defaultProps}
+          session={createMockSession()}
+          isInitialLoad={true}
+        />,
+      );
+      expect(screen.getByRole('status')).toHaveTextContent('Loading your lineups…');
+      expect(screen.queryByText(/no lineups configured yet/i)).not.toBeInTheDocument();
+      // Header and create button stay visible while loading.
+      expect(screen.getByText('Your Lineups')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Create New Lineup' })).toBeInTheDocument();
+    });
+
     it('renders header and create button from config nouns', () => {
       renderWithProviders(
         <PartiesView config={plainConfig} {...defaultProps} session={createMockSession()} />,

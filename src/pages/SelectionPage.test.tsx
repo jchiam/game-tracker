@@ -9,7 +9,7 @@ describe('SelectionPage', () => {
     renderWithProviders(
       <SelectionPage session={null} isAuthLoading={true} signInWithGoogle={vi.fn()} />,
     );
-    expect(screen.getByText(/checking authentication/i)).toBeInTheDocument();
+    expect(screen.getByText(/checking sign-in/i)).toBeInTheDocument();
   });
 
   it('does not render game cards while loading', () => {

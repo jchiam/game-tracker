@@ -98,9 +98,9 @@ describe('ZzzPage', () => {
     vi.mocked(useParties).mockReturnValue(defaultPartiesHook);
   });
 
-  it('shows "Authenticating..." while auth is loading', () => {
+  it('shows sign-in check while auth is loading', () => {
     renderWithProviders(<ZzzPage session={null} isAuthLoading={true} onSignIn={vi.fn()} />);
-    expect(screen.getByText(/authenticating/i)).toBeInTheDocument();
+    expect(screen.getByText(/checking sign-in/i)).toBeInTheDocument();
   });
 
   it('shows AuthGate when there is no session', () => {
@@ -108,14 +108,14 @@ describe('ZzzPage', () => {
     expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument();
   });
 
-  it('shows "Loading database sync..." during initial load with session', () => {
+  it('shows roster loading state during initial load with session', () => {
     vi.mocked(useAgents).mockReturnValue({
       ...defaultAgentsHook,
       isInitialLoad: true,
     });
     const session = createMockSession();
     renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
-    expect(screen.getByText(/loading database sync/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading your roster/i)).toBeInTheDocument();
   });
 
   it('shows load error state and retries', () => {

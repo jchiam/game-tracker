@@ -123,6 +123,29 @@
   animation-delay: 0.3s;
 }
 
+/* ─── Loading state ──────────────────────────────────────────────── */
+/* Shared LoadingState component: spinner trio + label. Deliberately
+   borderless — the dashed `.empty-state` box is reserved for true
+   empty/no-match states so loading never reads as "nothing here". */
+
+.loading-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-3xl) var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--typography-font-size-lg);
+}
+
+.loading-state-dots {
+  display: flex;
+  gap: var(--spacing-2);
+}
+
 /* ─── Stat chip ──────────────────────────────────────────────────── */
 
 .stat-chip {

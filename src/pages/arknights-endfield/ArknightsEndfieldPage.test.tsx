@@ -84,11 +84,11 @@ describe('ArknightsEndfieldPage', () => {
     vi.mocked(useParties).mockReturnValue(defaultPartiesHook);
   });
 
-  it('shows "Authenticating..." while auth is loading', () => {
+  it('shows sign-in check while auth is loading', () => {
     renderWithProviders(
       <ArknightsEndfieldPage session={null} isAuthLoading={true} onSignIn={vi.fn()} />,
     );
-    expect(screen.getByText(/authenticating/i)).toBeInTheDocument();
+    expect(screen.getByText(/checking sign-in/i)).toBeInTheDocument();
   });
 
   it('shows AuthGate when there is no session', () => {
@@ -98,7 +98,7 @@ describe('ArknightsEndfieldPage', () => {
     expect(screen.getByRole('button', { name: /sign in with google/i })).toBeInTheDocument();
   });
 
-  it('shows "Loading database sync..." during initial load with session', () => {
+  it('shows roster loading state during initial load with session', () => {
     vi.mocked(useOperators).mockReturnValue({
       ...defaultOperatorsHook,
       isInitialLoad: true,
@@ -107,7 +107,7 @@ describe('ArknightsEndfieldPage', () => {
     renderWithProviders(
       <ArknightsEndfieldPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    expect(screen.getByText(/loading database sync/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading your roster/i)).toBeInTheDocument();
   });
 
   it('shows load error state when isLoadError is true', () => {

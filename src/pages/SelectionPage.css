@@ -37,13 +37,6 @@
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
 }
 
-.selection-empty {
-  text-align: center;
-  padding: var(--spacing-3xl) var(--spacing-xl);
-  color: var(--color-text-secondary);
-  font-size: var(--typography-font-size-lg);
-}
-
 @media (max-width: 768px) {
   .selection-title {
     font-size: var(--typography-font-size-4xl);
