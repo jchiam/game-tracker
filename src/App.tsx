@@ -5,6 +5,7 @@ import { Navbar } from '@/components/Navbar';
 import { ToastContainer } from '@/components/ToastContainer';
 import { SelectionPage } from '@/pages/SelectionPage';
 import { LoadingState } from '@/components/LoadingState';
+import { RouteErrorBoundary } from '@/components/RouteErrorBoundary';
 import { useAuth } from '@/hooks/useAuth';
 import { GAMES } from '@/lib/games';
 
@@ -15,33 +16,35 @@ function App() {
     <div className="layout">
       <Navbar userEmail={session?.user?.email} onSignIn={signInWithGoogle} onSignOut={signOut} />
       <ToastContainer />
-      <Suspense fallback={<LoadingState label="Loading…" />}>
-        <Routes>
-          <Route
-            path="/"
-            element={
-              <SelectionPage
-                session={session}
-                isAuthLoading={isAuthLoading}
-                signInWithGoogle={signInWithGoogle}
-              />
-            }
-          />
-          {GAMES.map((game) => (
+      <RouteErrorBoundary>
+        <Suspense fallback={<LoadingState label="Loading…" />}>
+          <Routes>
             <Route
-              key={game.id}
-              path={game.path}
+              path="/"
               element={
-                <game.Page
+                <SelectionPage
                   session={session}
                   isAuthLoading={isAuthLoading}
-                  onSignIn={signInWithGoogle}
+                  signInWithGoogle={signInWithGoogle}
                 />
               }
             />
-          ))}
-        </Routes>
-      </Suspense>
+            {GAMES.map((game) => (
+              <Route
+                key={game.id}
+                path={game.path}
+                element={
+                  <game.Page
+                    session={session}
+                    isAuthLoading={isAuthLoading}
+                    onSignIn={signInWithGoogle}
+                  />
+                }
+              />
+            ))}
+          </Routes>
+        </Suspense>
+      </RouteErrorBoundary>
     </div>
   );
 }

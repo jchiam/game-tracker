@@ -85,8 +85,10 @@ const defaultThievesHook = {
 
 const defaultPartiesHook = {
   parties: [] as Party[],
-  isLoading: false,
-  saveParty: vi.fn().mockResolvedValue(null),
+  isInitialLoad: false,
+  isLoadError: false,
+  retryLoad: vi.fn(),
+  saveParty: vi.fn().mockResolvedValue({ partyId: null, membersSaved: false }),
   deleteParty: vi.fn().mockResolvedValue(true),
   toggleFavoriteParty: vi.fn(),
   refreshParties: vi.fn(),
@@ -121,7 +123,7 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    expect(screen.getByText(/failed to load data/i)).toBeInTheDocument();
+    expect(screen.getByText(/couldn.t load your roster/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
   });
 

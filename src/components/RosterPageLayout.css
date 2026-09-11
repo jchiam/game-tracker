@@ -192,21 +192,6 @@
   font-size: var(--typography-font-size-lg);
 }
 
-.retry-button {
-  margin-top: var(--spacing-md);
-  padding: var(--spacing-sm) var(--spacing-lg);
-  background: var(--color-brand-accent);
-  color: var(--color-text-primary);
-  border: none;
-  border-radius: var(--border-radius-md);
-  font-size: 0.95rem;
-  cursor: pointer;
-}
-
-.retry-button:hover {
-  opacity: 0.85;
-}
-
 .empty-state.auth-gate {
   display: flex;
   flex-direction: column;

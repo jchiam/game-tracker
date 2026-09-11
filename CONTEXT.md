@@ -124,10 +124,12 @@ The config-driven factory `createPartyPersistence(config)` in `src/services/rost
 Party error semantics are deliberately **asymmetric**:
 
 - `loadParties` logs and **throws** — the shared party hook catches.
-- `saveParty` never rejects: it logs and **resolves `null`** when the party-row insert/update fails, and still returns the party id when only the member insert fails (the row is already persisted; the returned id triggers the hook's reload so local state reflects true DB state). Nothing in the save call chain catches, so a thrown save error would surface as an unhandled promise rejection.
+- `saveParty` never rejects: it resolves a **`PartySaveResult`** `{ partyId, membersSaved }` — `partyId: null` when the party-row insert/update fails, and `membersSaved: false` (with the id still returned) when only the member insert fails (the row is already persisted; the returned id triggers the hook's reload so local state reflects true DB state). Nothing in the save call chain catches, so a thrown save error would surface as an unhandled promise rejection.
 - `deleteParty` and `toggleFavoriteParty` log and **return `false`**.
 
-With the DB disabled: `loadParties` → `[]`, `saveParty` → `null`, `deleteParty` / `toggleFavoriteParty` → `false`, without touching Supabase.
+These return values are signals for the shared party hook (`useParties`), which owns mutation feedback: every failed outcome reaches the user as a toast (save failed, saved without members, reload after save failed, delete failed, favorite reverted), and the Party View keeps the editor open when a save resolves without an id. The hook also mirrors the roster hook's load state — `isInitialLoad`, `isLoadError`, `retryLoad` — so the parties tab renders the shared `ErrorState` on a failed load instead of a false empty state.
+
+With the DB disabled: `loadParties` → `[]`, `saveParty` → `{ partyId: null, membersSaved: false }`, `deleteParty` / `toggleFavoriteParty` → `false`, without touching Supabase.
 
 ### Party View
 

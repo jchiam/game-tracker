@@ -59,8 +59,10 @@ describe('Reverse1999Page', () => {
     vi.mocked(useArcanists).mockReturnValue(defaultArcanistsHook);
     vi.mocked(useParties).mockReturnValue({
       parties: [],
-      isLoading: false,
-      saveParty: vi.fn().mockResolvedValue(null),
+      isInitialLoad: false,
+      isLoadError: false,
+      retryLoad: vi.fn(),
+      saveParty: vi.fn().mockResolvedValue({ partyId: null, membersSaved: false }),
       deleteParty: vi.fn().mockResolvedValue(false),
       toggleFavoriteParty: vi.fn(),
       refreshParties: vi.fn().mockResolvedValue(undefined),
@@ -107,7 +109,7 @@ describe('Reverse1999Page', () => {
     renderWithProviders(
       <Reverse1999Page session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    expect(screen.getByText(/failed to load data/i)).toBeInTheDocument();
+    expect(screen.getByText(/couldn.t load your roster/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /retry/i })).toBeInTheDocument();
   });
 

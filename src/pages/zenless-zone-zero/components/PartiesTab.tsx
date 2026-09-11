@@ -1,5 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
-import type { Party, PartyMember } from '@/types';
+import type { Party, PartyMember, PartySaveResult } from '@/types';
 import type { ZzzAgent } from '@/data/zenless-zone-zero/agents';
 import { ALL_ZZZ_BANGBOOS } from '@/data/zenless-zone-zero/bangboos';
 import { getZzzAgentMugshotUrl, getZzzAgentAvatarUrl, getZzzBangbooIconUrl } from '@/lib/imagekit';
@@ -44,11 +44,13 @@ const ZZZ_PARTY_VIEW: PartyViewConfig<ZzzAgent> = {
 interface PartiesTabProps {
   parties: Party[];
   availableAgents: ZzzAgent[];
-  onSaveParty: (party: Partial<Party> & { members: PartyMember[] }) => Promise<string | null>;
+  onSaveParty: (party: Partial<Party> & { members: PartyMember[] }) => Promise<PartySaveResult>;
   onDeleteParty: (id: string) => Promise<boolean>;
   onToggleFavorite: (partyId: string, value: boolean) => void;
   session: Session | null;
   isInitialLoad?: boolean;
+  isLoadError?: boolean;
+  onRetry?: () => void;
 }
 
 export function PartiesTab({
@@ -59,6 +61,8 @@ export function PartiesTab({
   onToggleFavorite,
   session,
   isInitialLoad,
+  isLoadError,
+  onRetry,
 }: PartiesTabProps) {
   return (
     <PartiesView
@@ -70,6 +74,8 @@ export function PartiesTab({
       onToggleFavorite={onToggleFavorite}
       session={session}
       isInitialLoad={isInitialLoad}
+      isLoadError={isLoadError}
+      onRetry={onRetry}
     />
   );
 }

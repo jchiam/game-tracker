@@ -23,14 +23,14 @@ describe('useParties', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLoadParties.mockResolvedValue([]);
-    mockSaveParty.mockResolvedValue('new-party-id');
+    mockSaveParty.mockResolvedValue({ partyId: 'new-party-id', membersSaved: true });
     mockDeleteParty.mockResolvedValue(true);
     mockToggleFavoriteParty.mockResolvedValue(true);
   });
 
   it('starts with empty parties', async () => {
     const { result } = renderHook(() => useParties(mockSession));
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
     expect(result.current.parties).toEqual([]);
   });
 
@@ -46,14 +46,14 @@ describe('useParties', () => {
       },
     ]);
     const { result } = renderHook(() => useParties(mockSession));
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
     expect(result.current.parties).toHaveLength(1);
     expect(result.current.parties[0].name).toBe('Shiyu Squad');
   });
 
   it('saveParty creates and reloads', async () => {
     const { result } = renderHook(() => useParties(mockSession));
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
     mockLoadParties.mockResolvedValue([
       {
@@ -96,7 +96,7 @@ describe('useParties', () => {
 
   it('returns empty when no session', async () => {
     const { result } = renderHook(() => useParties(null));
-    await waitFor(() => expect(result.current.isLoading).toBe(false));
+    await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
     expect(result.current.parties).toEqual([]);
   });
 

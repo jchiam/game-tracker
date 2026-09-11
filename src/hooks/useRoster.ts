@@ -79,6 +79,10 @@ export function useRoster<
   const trackedRef = useRef<TTracked[]>([]);
   // eslint-disable-next-line react-hooks/refs
   trackedRef.current = trackedEntities;
+  // Pre-edit row snapshots keyed by dbId, captured when a row's first pending
+  // patch is queued and released when its debounced write starts. A failed
+  // write restores only the fields in the failed payload from this snapshot.
+  const patchSnapshots = useRef<Record<string, TTracked>>({});
 
   const { pendingSaveCount, queueUpdate, queueAction } = usePendingSaves(1000, () =>
     addToast('Failed to save changes. Please try again.', 'error'),
@@ -160,12 +164,36 @@ export function useRoster<
    * DB write through `queueUpdate` (merged per dbId). Rows without a `dbId`
    * (insert still in flight) update locally only — same contract the per-game
    * hand-written updaters had.
+   *
+   * On write failure the fields in the failed merged payload roll back to the
+   * snapshot taken before the row's first pending patch; the error is rethrown
+   * so `usePendingSaves` still raises its toast. Patches to other fields keep
+   * their values.
    */
   const applyPatch = (id: string, patch: TPatch) => {
-    setTrackedEntities((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
     const row = trackedRef.current.find((t) => t.id === id);
+    setTrackedEntities((prev) => prev.map((t) => (t.id === id ? { ...t, ...patch } : t)));
     if (row?.dbId && updateEntity) {
-      queueUpdate(row.dbId, patch, (merged) => updateEntity(row.dbId!, merged as TPatch));
+      const dbId = row.dbId;
+      if (!patchSnapshots.current[dbId]) patchSnapshots.current[dbId] = row;
+      queueUpdate(dbId, patch, async (merged) => {
+        const before = patchSnapshots.current[dbId];
+        delete patchSnapshots.current[dbId];
+        try {
+          await updateEntity(dbId, merged as TPatch);
+        } catch (e) {
+          if (before) {
+            const restored: Partial<TTracked> = {};
+            for (const key of Object.keys(merged) as (keyof TTracked)[]) {
+              restored[key] = before[key];
+            }
+            setTrackedEntities((prev) =>
+              prev.map((t) => (t.dbId === dbId ? { ...t, ...restored } : t)),
+            );
+          }
+          throw e;
+        }
+      });
     }
   };
 

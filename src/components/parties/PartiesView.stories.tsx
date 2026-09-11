@@ -75,7 +75,7 @@ const meta = {
       makeParty({ id: 'p1', name: 'Team Alpha', notes: 'Hypercarry core.' }),
       makeParty({ id: 'p2', name: 'Team Beta', members: [] }),
     ],
-    onSaveParty: fn(async () => 'party-id'),
+    onSaveParty: fn(async () => ({ partyId: 'party-id', membersSaved: true })),
     onDeleteParty: fn(async () => true),
     session: DEMO_SESSION,
   },
@@ -126,6 +126,15 @@ export const WithCompanionSlot: Story = {
 export const Empty: Story = {
   args: {
     parties: [],
+  },
+};
+
+/** Parties load failed — danger-bordered alert with Retry, never the dashed empty box. */
+export const LoadError: Story = {
+  args: {
+    parties: [],
+    isLoadError: true,
+    onRetry: fn(),
   },
 };
 

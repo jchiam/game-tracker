@@ -35,7 +35,22 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     getFilteredRoster,
   } = useArcanists(session, isAuthLoading);
 
-  const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
+  const {
+    parties,
+    isInitialLoad: isPartiesInitialLoad,
+    isLoadError: isPartiesLoadError,
+    retryLoad: retryParties,
+    saveParty,
+    deleteParty,
+    toggleFavoriteParty,
+  } = useParties(session);
+
+  // Roster Retry recovers both data sets after a shared outage; the parties
+  // tab's own Retry (passed below) touches only parties.
+  const retryAll = () => {
+    retryLoad();
+    retryParties();
+  };
 
   const [resonanceGateFilter, setResonanceGateFilter] = useState(false);
   const [gluttonyGateFilter, setGluttonyGateFilter] = useState(false);
@@ -103,7 +118,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       isAuthLoading={isAuthLoading}
       isInitialLoad={isInitialLoad}
       isLoadError={isLoadError}
-      onRetry={retryLoad}
+      onRetry={retryAll}
       onSignIn={onSignIn}
       hasTracked={trackedArcanists.length > 0}
       hasMatches={filteredRoster.length > 0}
@@ -175,7 +190,9 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       ))}
       partiesTab={
         <PartiesTab
-          isInitialLoad={isInitialLoad}
+          isInitialLoad={isPartiesInitialLoad}
+          isLoadError={isPartiesLoadError}
+          onRetry={retryParties}
           parties={parties}
           availableArcanists={availableArcanists}
           onSaveParty={saveParty}

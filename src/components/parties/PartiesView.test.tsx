@@ -58,7 +58,7 @@ function makeParty(overrides: Partial<Party> = {}): Party {
 const defaultProps = {
   entities,
   parties: [] as Party[],
-  onSaveParty: vi.fn().mockResolvedValue('party-1'),
+  onSaveParty: vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true }),
   onDeleteParty: vi.fn().mockResolvedValue(true),
 };
 
@@ -95,6 +95,43 @@ describe('PartiesView', () => {
       // Header and create button stay visible while loading.
       expect(screen.getByText('Your Lineups')).toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Create New Lineup' })).toBeInTheDocument();
+    });
+
+    it('shows the error surface instead of the empty state after a failed load', () => {
+      const onRetry = vi.fn();
+      renderWithProviders(
+        <PartiesView
+          config={fullConfig}
+          {...defaultProps}
+          session={createMockSession()}
+          isLoadError={true}
+          onRetry={onRetry}
+        />,
+      );
+      const alert = screen.getByRole('alert');
+      expect(alert).toHaveTextContent("Couldn't load your lineups.");
+      expect(alert).toHaveClass('error-state');
+      expect(screen.queryByText(/no lineups configured yet/i)).not.toBeInTheDocument();
+      expect(document.querySelector('.empty-state')).toBeNull();
+      // Header and create button stay visible.
+      expect(screen.getByRole('button', { name: 'Create New Lineup' })).toBeInTheDocument();
+
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+      expect(onRetry).toHaveBeenCalledTimes(1);
+    });
+
+    it('loading wins over error while a retry is in flight', () => {
+      renderWithProviders(
+        <PartiesView
+          config={fullConfig}
+          {...defaultProps}
+          session={createMockSession()}
+          isInitialLoad={true}
+          isLoadError={true}
+        />,
+      );
+      expect(screen.getByRole('status')).toBeInTheDocument();
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
     });
 
     it('renders header and create button from config nouns', () => {
@@ -214,7 +251,7 @@ describe('PartiesView', () => {
   describe('editor modal', () => {
     it('opens the create editor and saves a named party', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
       renderWithProviders(
         <PartiesView
           config={plainConfig}
@@ -234,6 +271,26 @@ describe('PartiesView', () => {
         expect.objectContaining({ name: 'My Party', members: [] }),
       );
       expect(onSaveParty.mock.calls[0][0]).not.toHaveProperty('tier');
+    });
+
+    it('keeps the editor open with entries intact when the save fails', async () => {
+      const user = userEvent.setup();
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: null, membersSaved: false });
+      renderWithProviders(
+        <PartiesView
+          config={plainConfig}
+          {...defaultProps}
+          onSaveParty={onSaveParty}
+          session={createMockSession()}
+        />,
+      );
+      fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
+      await user.type(screen.getByPlaceholderText(/test stage/i), 'Doomed Party');
+      fireEvent.click(screen.getByRole('button', { name: 'Save Party' }));
+
+      await waitFor(() => expect(onSaveParty).toHaveBeenCalledTimes(1));
+      expect(screen.getByRole('heading', { name: 'Create New Party' })).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/test stage/i)).toHaveValue('Doomed Party');
     });
 
     it('Escape closes the editor when no slot picker is open', () => {
@@ -260,7 +317,7 @@ describe('PartiesView', () => {
 
     it('saves typed notes in the payload', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
       renderWithProviders(
         <PartiesView
           config={plainConfig}
@@ -295,7 +352,7 @@ describe('PartiesView', () => {
 
     it('includes tier in the save payload when the config supports it', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
       renderWithProviders(
         <PartiesView
           config={fullConfig}
@@ -484,7 +541,7 @@ describe('PartiesView', () => {
 
     it('saves the picked members as entityId/slotIndex pairs', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
       renderWithProviders(
         <PartiesView
           config={plainConfig}
@@ -724,7 +781,7 @@ describe('PartiesView', () => {
 
     it('picks a companion from the companion catalog, not the roster', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
       renderWithProviders(
         <PartiesView
           config={companionConfig}
@@ -776,7 +833,7 @@ describe('PartiesView', () => {
 
     it('clears the companion and saves null', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
       renderWithProviders(
         <PartiesView
           config={companionConfig}
@@ -836,7 +893,7 @@ describe('PartiesView', () => {
 
     it('games without companion config are unchanged — no tile, no payload field', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue('party-1');
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
       renderWithProviders(
         <PartiesView
           config={plainConfig}

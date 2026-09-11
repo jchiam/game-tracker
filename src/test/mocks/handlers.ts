@@ -60,6 +60,27 @@ export function createSupabaseAuthHandlers(options: SupabaseMockOptions = {}) {
 }
 
 /**
+ * REST handlers that answer every request to the given PostgREST tables with
+ * an HTTP error and a PostgREST-shaped error body. Use to prove that a server
+ * failure reaches the app as an error — never as empty content.
+ */
+export function createSupabaseRestErrorHandlers(tables: string[], status = 500) {
+  return tables.map((table) =>
+    http.all(`*/rest/v1/${table}`, async () =>
+      HttpResponse.json(
+        {
+          message: `Simulated ${status} for ${table}`,
+          code: 'XX000',
+          details: null,
+          hint: null,
+        },
+        { status },
+      ),
+    ),
+  );
+}
+
+/**
  * Default handlers with null session (unauthenticated state).
  */
 export const supabaseHandlers = createSupabaseAuthHandlers();

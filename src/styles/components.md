@@ -439,17 +439,18 @@ Stacked toast notification list, fixed bottom-right. Each toast slides in from r
 
 ---
 
-### LoadErrorState / AuthGate
+### ErrorState / AuthGate
 
-`src/components/LoadErrorState.tsx` | `src/components/AuthGate.tsx`
+`src/components/ErrorState.tsx` | `src/components/AuthGate.tsx`
 
-Empty state screens. LoadErrorState shows error + retry button. AuthGate shows sign-in prompt.
+ErrorState is the page-level error surface (`.error-state`, `controls.css`): solid danger-hued border and fill, `role="alert"`, cause-neutral message, optional retry. Never rendered inside `.empty-state` — an error must not read as "nothing here". AuthGate shows the sign-in prompt.
 
 ```html
-<!-- LoadErrorState -->
-<div class="load-error-state">
-  <p>Failed to load data.</p>
-  <button>Retry</button>
+<!-- ErrorState -->
+<div class="error-state" role="alert">
+  <span class="error-state-glyph" aria-hidden="true">⚠</span>
+  <p class="error-state-message">Couldn't load your roster.</p>
+  <button class="btn primary-action">Retry</button>
 </div>
 
 <!-- AuthGate -->

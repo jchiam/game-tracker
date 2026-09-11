@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import { useParties } from '@/hooks/reverse1999/useParties';
 import type { Session } from '@supabase/supabase-js';
-import type { Party } from '@/types';
+import type { Party, PartySaveResult } from '@/types';
 
 vi.mock('@/services/reverse1999/partyService', () => ({
   loadParties: vi.fn(),
@@ -57,7 +57,7 @@ describe('useParties (R1999)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLoadParties.mockResolvedValue([]);
-    mockSaveParty.mockResolvedValue('new-party-id');
+    mockSaveParty.mockResolvedValue({ partyId: 'new-party-id', membersSaved: true });
     mockDeleteParty.mockResolvedValue(true);
     mockToggleFavoriteParty.mockResolvedValue(true);
   });
@@ -67,7 +67,7 @@ describe('useParties (R1999)', () => {
       mockLoadParties.mockResolvedValue([makeParty('p1', 'Limbo Team')]);
 
       const { result } = renderHook(() => useParties(mockSession));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
       await act(async () => {
         await result.current.toggleFavoriteParty('p1', true);
@@ -82,7 +82,7 @@ describe('useParties (R1999)', () => {
       mockToggleFavoriteParty.mockResolvedValue(false);
 
       const { result } = renderHook(() => useParties(mockSession));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
       await act(async () => {
         await result.current.toggleFavoriteParty('p1', true);
@@ -98,7 +98,7 @@ describe('useParties (R1999)', () => {
 
       const { result } = renderHook(() => useParties(mockSession));
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
       expect(mockLoadParties).toHaveBeenCalledWith('test-user-123');
       expect(result.current.parties).toHaveLength(1);
@@ -109,7 +109,7 @@ describe('useParties (R1999)', () => {
       const { result } = renderHook(() => useParties(null));
 
       expect(result.current.parties).toHaveLength(0);
-      expect(result.current.isLoading).toBe(false);
+      expect(result.current.isInitialLoad).toBe(false);
       expect(mockLoadParties).not.toHaveBeenCalled();
     });
 
@@ -121,7 +121,7 @@ describe('useParties (R1999)', () => {
         { initialProps: { session: mockSession as Session | null } },
       );
 
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
       expect(result.current.parties).toHaveLength(1);
 
       rerender({ session: null });
@@ -133,7 +133,7 @@ describe('useParties (R1999)', () => {
   describe('saveParty', () => {
     it('creates a new party and refreshes the list', async () => {
       const { result } = renderHook(() => useParties(mockSession));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
       mockLoadParties.mockResolvedValueOnce([makeParty('new-party-id', 'New Lineup')]);
 
@@ -151,25 +151,25 @@ describe('useParties (R1999)', () => {
 
     it('returns the new partyId on success', async () => {
       const { result } = renderHook(() => useParties(mockSession));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
-      let partyId: string | null = null;
+      let partyId: PartySaveResult | null = null;
       await act(async () => {
         partyId = await result.current.saveParty({ name: 'My Lineup', members: [] });
       });
 
-      expect(partyId).toBe('new-party-id');
+      expect(partyId).toEqual({ partyId: 'new-party-id', membersSaved: true });
     });
 
     it('returns null and does not call DB when session is absent', async () => {
       const { result } = renderHook(() => useParties(null));
 
-      let returned: string | null = 'sentinel' as any;
+      let returned: PartySaveResult | null = 'sentinel' as any;
       await act(async () => {
         returned = await result.current.saveParty({ name: 'Lineup', members: [] });
       });
 
-      expect(returned).toBeNull();
+      expect(returned).toEqual({ partyId: null, membersSaved: false });
       expect(mockSaveParty).not.toHaveBeenCalled();
     });
 
@@ -177,7 +177,7 @@ describe('useParties (R1999)', () => {
       mockLoadParties.mockResolvedValue([makeParty('p1', 'Alpha')]);
 
       const { result } = renderHook(() => useParties(mockSession));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
       mockLoadParties.mockResolvedValueOnce([makeParty('p1', 'Alpha Renamed')]);
 
@@ -197,7 +197,7 @@ describe('useParties (R1999)', () => {
       mockLoadParties.mockResolvedValue([makeParty('p1', 'Alpha'), makeParty('p2', 'Beta')]);
 
       const { result } = renderHook(() => useParties(mockSession));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
       await act(async () => {
         await result.current.deleteParty('p1');
@@ -225,7 +225,7 @@ describe('useParties (R1999)', () => {
       mockLoadParties.mockResolvedValue([makeParty('p1', 'Alpha')]);
 
       const { result } = renderHook(() => useParties(mockSession));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
       await act(async () => {
         await result.current.deleteParty('p1');
@@ -238,7 +238,7 @@ describe('useParties (R1999)', () => {
   describe('refreshParties', () => {
     it('reloads all parties from DB', async () => {
       const { result } = renderHook(() => useParties(mockSession));
-      await waitFor(() => expect(result.current.isLoading).toBe(false));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
       mockLoadParties.mockResolvedValueOnce([makeParty('p1', 'Alpha'), makeParty('p2', 'Beta')]);
 
