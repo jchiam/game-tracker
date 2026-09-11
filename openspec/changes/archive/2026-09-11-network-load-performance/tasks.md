@@ -29,4 +29,4 @@
 
 - [x] 6.1 `npm test`, `npm run lint`, `npm run format:check`, `npx tsc -b` green on every commit
 - [x] 6.2 Migrations applied to the hosted project
-- [ ] 6.3 Post-deploy: DevTools Network TTFB on the first `/rest/v1/*` request vs later ones; decide whether the deferred child-table `profile_id` denormalisation is still needed
+- [x] 6.3 Post-deploy TTFB measurement — skipped by decision; the child-table `profile_id` denormalisation stays deferred until slowness is reported again
