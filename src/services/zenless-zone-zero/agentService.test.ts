@@ -5,6 +5,7 @@ import { createBuilder } from '@/test/mocks/supabase';
 // error rethrow, catalog merge, profile upsert) is covered by rosterPersistence.test.ts.
 describe('agentService', () => {
   let mockFrom: ReturnType<typeof vi.fn>;
+  let mockRpc: ReturnType<typeof vi.fn>;
   let service: typeof import('@/services/zenless-zone-zero/agentService');
 
   beforeEach(async () => {
@@ -13,9 +14,10 @@ describe('agentService', () => {
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
     mockFrom = vi.fn().mockReturnValue(createBuilder());
+    mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
     vi.doMock('@/lib/supabase', () => ({
-      supabase: { from: mockFrom },
+      supabase: { from: mockFrom, rpc: mockRpc },
     }));
 
     service = await import('@/services/zenless-zone-zero/agentService');
@@ -242,40 +244,33 @@ describe('agentService', () => {
     expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
   });
 
-  it('upsertDisc upserts the disc row then replaces its substats', async () => {
-    const discBuilder = createBuilder({ data: { id: 'disc-row-1' }, error: null });
-    const substatBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_equipped_discs' ? discBuilder : substatBuilder,
-    );
-
+  it('upsertDisc upserts the disc row and replaces its substats in one upsert_equipment_slot RPC', async () => {
     await service.upsertDisc('db-uuid-1', 4, {
       suitId: '31000',
       mainStat: 'CRIT Rate',
       subStats: ['ATK%', 'PEN'],
     });
 
-    expect(discBuilder.upsert).toHaveBeenCalledWith(
-      {
+    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).toHaveBeenCalledWith('upsert_equipment_slot', {
+      p_table: 'zzz_equipped_discs',
+      p_row: {
         tracked_agent_id: 'db-uuid-1',
         slot: 4,
         suit_id: '31000',
         main_stat: 'CRIT Rate',
       },
-      { onConflict: 'tracked_agent_id,slot' },
-    );
-    expect(substatBuilder.delete).toHaveBeenCalled();
-    expect(substatBuilder.eq).toHaveBeenCalledWith('disc_id', 'disc-row-1');
-    expect(substatBuilder.insert).toHaveBeenCalledWith([
-      { disc_id: 'disc-row-1', stat_type: 'ATK%' },
-      { disc_id: 'disc-row-1', stat_type: 'PEN' },
-    ]);
+      p_conflict_columns: ['tracked_agent_id', 'slot'],
+      p_substat_table: 'zzz_disc_substats',
+      p_substat_fk: 'disc_id',
+      p_substats: [{ stat_type: 'ATK%' }, { stat_type: 'PEN' }],
+    });
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 
-  it('upsertDisc rethrows when the disc upsert fails', async () => {
+  it('upsertDisc rethrows when the RPC fails', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const discBuilder = createBuilder({ data: null, error: new Error('upsert down') });
-    mockFrom.mockReturnValue(discBuilder);
+    mockRpc.mockResolvedValue({ data: null, error: new Error('upsert down') });
 
     await expect(
       service.upsertDisc('db-uuid-1', 4, { suitId: '31000', mainStat: null, subStats: [] }),
@@ -283,31 +278,10 @@ describe('agentService', () => {
     spy.mockRestore();
   });
 
-  it('upsertDisc rethrows when the substat insert fails', async () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const discBuilder = createBuilder({ data: { id: 'disc-row-1' }, error: null });
-    const substatBuilder = createBuilder({ data: null, error: new Error('insert down') });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_equipped_discs' ? discBuilder : substatBuilder,
-    );
-
-    await expect(
-      service.upsertDisc('db-uuid-1', 4, { suitId: '31000', mainStat: null, subStats: ['PEN'] }),
-    ).rejects.toThrow('insert down');
-    spy.mockRestore();
-  });
-
-  it('upsertDisc skips the substat insert when the list is empty', async () => {
-    const discBuilder = createBuilder({ data: { id: 'disc-row-1' }, error: null });
-    const substatBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_equipped_discs' ? discBuilder : substatBuilder,
-    );
-
+  it('upsertDisc sends an empty substat list when the list is empty', async () => {
     await service.upsertDisc('db-uuid-1', 1, { suitId: '31600', mainStat: 'HP', subStats: [] });
 
-    expect(substatBuilder.delete).toHaveBeenCalled();
-    expect(substatBuilder.insert).not.toHaveBeenCalled();
+    expect(mockRpc.mock.calls[0][1].p_substats).toEqual([]);
   });
 
   it('deleteDisc deletes by agent row id and slot', async () => {
@@ -321,13 +295,7 @@ describe('agentService', () => {
     expect(builder.match).toHaveBeenCalledWith({ tracked_agent_id: 'db-uuid-1', slot: 5 });
   });
 
-  it('saveDiscPreferences replaces category rows and updates parent columns', async () => {
-    const prefBuilder = createBuilder({ data: null, error: null });
-    const parentBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_disc_preferences' ? prefBuilder : parentBuilder,
-    );
-
+  it('saveDiscPreferences replaces category rows and updates parent columns in one RPC', async () => {
     await service.saveDiscPreferences('db-uuid-1', {
       mainStats: {
         4: [
@@ -343,53 +311,59 @@ describe('agentService', () => {
       comments: 'stun build',
     });
 
-    expect(prefBuilder.delete).toHaveBeenCalled();
-    expect(prefBuilder.eq).toHaveBeenCalledWith('tracked_agent_id', 'db-uuid-1');
-    expect(parentBuilder.update).toHaveBeenCalledWith({
-      disc_suit_4_id: '31000',
-      disc_suit_2_id: '31600',
-      disc_comments: 'stun build',
+    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledWith('replace_preference_rows', {
+      p_parent_id: 'db-uuid-1',
+      p_delete_from: [{ table: 'zzz_disc_preferences', fk_column: 'tracked_agent_id' }],
+      p_parent_update: {
+        table: 'zzz_tracked_agents',
+        row: {
+          disc_suit_4_id: '31000',
+          disc_suit_2_id: '31600',
+          disc_comments: 'stun build',
+        },
+      },
+      // order_index re-derived from array position, not the stale orderIndex values.
+      p_inserts: [
+        {
+          table: 'zzz_disc_preferences',
+          rows: [
+            {
+              tracked_agent_id: 'db-uuid-1',
+              category: 'slot4_main',
+              stat: 'CRIT Rate',
+              operator_to_next: 'OR',
+              order_index: 0,
+            },
+            {
+              tracked_agent_id: 'db-uuid-1',
+              category: 'slot4_main',
+              stat: 'CRIT DMG',
+              operator_to_next: null,
+              order_index: 1,
+            },
+            {
+              tracked_agent_id: 'db-uuid-1',
+              category: 'slot6_main',
+              stat: 'Impact',
+              operator_to_next: null,
+              order_index: 0,
+            },
+            {
+              tracked_agent_id: 'db-uuid-1',
+              category: 'sub_stats',
+              stat: 'ATK%',
+              operator_to_next: null,
+              order_index: 0,
+            },
+          ],
+        },
+      ],
     });
-    // order_index re-derived from array position, not the stale orderIndex values.
-    expect(prefBuilder.insert).toHaveBeenCalledWith([
-      {
-        tracked_agent_id: 'db-uuid-1',
-        category: 'slot4_main',
-        stat: 'CRIT Rate',
-        operator_to_next: 'OR',
-        order_index: 0,
-      },
-      {
-        tracked_agent_id: 'db-uuid-1',
-        category: 'slot4_main',
-        stat: 'CRIT DMG',
-        operator_to_next: null,
-        order_index: 1,
-      },
-      {
-        tracked_agent_id: 'db-uuid-1',
-        category: 'slot6_main',
-        stat: 'Impact',
-        operator_to_next: null,
-        order_index: 0,
-      },
-      {
-        tracked_agent_id: 'db-uuid-1',
-        category: 'sub_stats',
-        stat: 'ATK%',
-        operator_to_next: null,
-        order_index: 0,
-      },
-    ]);
   });
 
   it('saveDiscPreferences with empty chains still clears rows and saves parent columns', async () => {
-    const prefBuilder = createBuilder({ data: null, error: null });
-    const parentBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_disc_preferences' ? prefBuilder : parentBuilder,
-    );
-
     await service.saveDiscPreferences('db-uuid-1', {
       mainStats: { 4: [], 5: [], 6: [] },
       subStats: [],
@@ -398,12 +372,14 @@ describe('agentService', () => {
       comments: '',
     });
 
-    expect(prefBuilder.delete).toHaveBeenCalled();
-    expect(parentBuilder.update).toHaveBeenCalledWith({
-      disc_suit_4_id: null,
-      disc_suit_2_id: null,
-      disc_comments: '',
+    expect(mockRpc).toHaveBeenCalledWith('replace_preference_rows', {
+      p_parent_id: 'db-uuid-1',
+      p_delete_from: [{ table: 'zzz_disc_preferences', fk_column: 'tracked_agent_id' }],
+      p_parent_update: {
+        table: 'zzz_tracked_agents',
+        row: { disc_suit_4_id: null, disc_suit_2_id: null, disc_comments: '' },
+      },
+      p_inserts: [],
     });
-    expect(prefBuilder.insert).not.toHaveBeenCalled();
   });
 });

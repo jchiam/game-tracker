@@ -34,6 +34,7 @@ describe('characterService', () => {
 
   describe('DB enabled (VITE_SUPABASE_URL set)', () => {
     let mockFrom: ReturnType<typeof vi.fn>;
+    let mockRpc: ReturnType<typeof vi.fn>;
     let service: typeof import('@/services/honkai-star-rail/characterService');
 
     beforeEach(async () => {
@@ -42,9 +43,10 @@ describe('characterService', () => {
       vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
       mockFrom = vi.fn().mockReturnValue(createBuilder());
+      mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
       vi.doMock('@/lib/supabase', () => ({
-        supabase: { from: mockFrom },
+        supabase: { from: mockFrom, rpc: mockRpc },
       }));
 
       service = await import('@/services/honkai-star-rail/characterService');
@@ -333,76 +335,47 @@ describe('characterService', () => {
     });
 
     describe('upsertRelic', () => {
-      it('upserts relic and manages substats', async () => {
-        const relicBuilder = createBuilder({ data: { id: 'relic-db-id' }, error: null });
-        const substatBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_equipped_relics' ? relicBuilder : substatBuilder,
-        );
-
+      it('upserts the relic row and replaces its substats in one upsert_equipment_slot RPC', async () => {
         await service.upsertRelic('db-uuid-1', 'head', {
           setId: '101',
           mainStat: 'HP',
-          subStats: ['CRIT Rate'],
+          subStats: ['CRIT Rate', 'SPD'],
         });
 
-        expect(mockFrom).toHaveBeenCalledWith('hsr_equipped_relics');
-        expect(mockFrom).toHaveBeenCalledWith('hsr_relic_substats');
-      });
-
-      it('deletes existing substats before inserting new ones', async () => {
-        const relicBuilder = createBuilder({ data: { id: 'relic-db-id' }, error: null });
-        const substatBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_equipped_relics' ? relicBuilder : substatBuilder,
-        );
-
-        await service.upsertRelic('db-uuid-1', 'head', {
-          setId: '101',
-          mainStat: 'HP',
-          subStats: ['CRIT Rate'],
+        expect(mockRpc).toHaveBeenCalledTimes(1);
+        expect(mockRpc).toHaveBeenCalledWith('upsert_equipment_slot', {
+          p_table: 'hsr_equipped_relics',
+          p_row: {
+            tracked_character_id: 'db-uuid-1',
+            slot: 'head',
+            set_id: '101',
+            main_stat: 'HP',
+          },
+          p_conflict_columns: ['tracked_character_id', 'slot'],
+          p_substat_table: 'hsr_relic_substats',
+          p_substat_fk: 'relic_id',
+          p_substats: [{ stat_type: 'CRIT Rate' }, { stat_type: 'SPD' }],
         });
-
-        expect(substatBuilder.delete).toHaveBeenCalled();
-        expect(substatBuilder.eq).toHaveBeenCalledWith('relic_id', 'relic-db-id');
-        expect(substatBuilder.insert).toHaveBeenCalledWith([
-          { relic_id: 'relic-db-id', stat_type: 'CRIT Rate' },
-        ]);
+        expect(mockFrom).not.toHaveBeenCalled();
       });
 
-      it('skips substat insert when subStats is empty', async () => {
-        const relicBuilder = createBuilder({ data: { id: 'relic-db-id' }, error: null });
-        const substatBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_equipped_relics' ? relicBuilder : substatBuilder,
-        );
-
+      it('sends an empty substat list when subStats is empty', async () => {
         await service.upsertRelic('db-uuid-1', 'head', {
           setId: '101',
           mainStat: 'HP',
           subStats: [],
         });
 
-        expect(substatBuilder.delete).toHaveBeenCalled();
-        expect(substatBuilder.insert).not.toHaveBeenCalled();
+        expect(mockRpc.mock.calls[0][1].p_substats).toEqual([]);
       });
 
-      it('throws and skips substats when relic upsert fails', async () => {
-        const relicBuilder = createBuilder({ data: null, error: { message: 'Upsert failed' } });
-        const substatBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_equipped_relics' ? relicBuilder : substatBuilder,
-        );
+      it('throws when the RPC fails', async () => {
+        mockRpc.mockResolvedValue({ data: null, error: { message: 'Upsert failed' } });
 
         const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
         await expect(
           service.upsertRelic('db-uuid-1', 'head', { setId: '101', mainStat: 'HP', subStats: [] }),
         ).rejects.toEqual({ message: 'Upsert failed' });
-        expect(substatBuilder.delete).not.toHaveBeenCalled();
         spy.mockRestore();
       });
     });
@@ -422,30 +395,32 @@ describe('characterService', () => {
     });
 
     describe('saveBuildPrefs', () => {
-      it('deletes old prefs and updates build_comments', async () => {
-        const builder = createBuilder({ data: null, error: null });
-        mockFrom.mockReturnValue(builder);
+      const rpcPayload = () => mockRpc.mock.calls[0][1];
 
+      it('replaces both preference tables and the parent columns in one replace_preference_rows RPC', async () => {
         await service.saveBuildPrefs('db-uuid-1', {
           mainStats: { body: [], feet: [], sphere: [], rope: [] },
           subStats: [],
           comments: 'My build notes',
         });
 
-        expect(mockFrom).toHaveBeenCalledWith('hsr_build_preference_main_stats');
-        expect(mockFrom).toHaveBeenCalledWith('hsr_build_preference_sub_stats');
-        expect(mockFrom).toHaveBeenCalledWith('hsr_tracked_characters');
-        expect(builder.update).toHaveBeenCalledWith({
-          build_comments: 'My build notes',
-          relic_set_id: null,
-          planar_set_id: null,
+        expect(mockRpc).toHaveBeenCalledTimes(1);
+        expect(mockRpc).toHaveBeenCalledWith('replace_preference_rows', {
+          p_parent_id: 'db-uuid-1',
+          p_delete_from: [
+            { table: 'hsr_build_preference_main_stats', fk_column: 'tracked_character_id' },
+            { table: 'hsr_build_preference_sub_stats', fk_column: 'tracked_character_id' },
+          ],
+          p_parent_update: {
+            table: 'hsr_tracked_characters',
+            row: { build_comments: 'My build notes', relic_set_id: null, planar_set_id: null },
+          },
+          p_inserts: [],
         });
+        expect(mockFrom).not.toHaveBeenCalled();
       });
 
       it('persists preferred relic and planar set ids on the parent row', async () => {
-        const builder = createBuilder({ data: null, error: null });
-        mockFrom.mockReturnValue(builder);
-
         await service.saveBuildPrefs('db-uuid-1', {
           mainStats: { body: [], feet: [], sphere: [], rope: [] },
           subStats: [],
@@ -454,7 +429,7 @@ describe('characterService', () => {
           comments: '',
         });
 
-        expect(builder.update).toHaveBeenCalledWith({
+        expect(rpcPayload().p_parent_update.row).toEqual({
           build_comments: '',
           relic_set_id: '108',
           planar_set_id: '301',
@@ -462,13 +437,6 @@ describe('characterService', () => {
       });
 
       it('inserts main stat prefs across slots when present', async () => {
-        const mainBuilder = createBuilder({ data: null, error: null });
-        const otherBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_build_preference_main_stats' ? mainBuilder : otherBuilder,
-        );
-
         await service.saveBuildPrefs('db-uuid-1', {
           mainStats: {
             body: [{ stat: 'CRIT Rate', operator: null, orderIndex: 0 }],
@@ -479,65 +447,48 @@ describe('characterService', () => {
           subStats: [],
         });
 
-        expect(mainBuilder.insert).toHaveBeenCalledWith([
-          expect.objectContaining({
-            tracked_character_id: 'db-uuid-1',
-            slot: 'body',
-            stat: 'CRIT Rate',
-            operator_to_next: null,
-            order_index: 0,
-          }),
-          expect.objectContaining({
-            tracked_character_id: 'db-uuid-1',
-            slot: 'rope',
-            stat: 'Energy Regen',
-            operator_to_next: null,
-            order_index: 0,
-          }),
+        expect(rpcPayload().p_inserts).toEqual([
+          {
+            table: 'hsr_build_preference_main_stats',
+            rows: [
+              expect.objectContaining({
+                tracked_character_id: 'db-uuid-1',
+                slot: 'body',
+                stat: 'CRIT Rate',
+                operator_to_next: null,
+                order_index: 0,
+              }),
+              expect.objectContaining({
+                tracked_character_id: 'db-uuid-1',
+                slot: 'rope',
+                stat: 'Energy Regen',
+                operator_to_next: null,
+                order_index: 0,
+              }),
+            ],
+          },
         ]);
       });
 
       it('inserts sub stat prefs when present', async () => {
-        const subBuilder = createBuilder({ data: null, error: null });
-        const otherBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_build_preference_sub_stats' ? subBuilder : otherBuilder,
-        );
-
         await service.saveBuildPrefs('db-uuid-1', {
           mainStats: { body: [], feet: [], sphere: [], rope: [] },
           subStats: [{ stat: 'CRIT DMG', operator: '>', orderIndex: 0 }],
         });
 
-        expect(subBuilder.insert).toHaveBeenCalledWith([
-          expect.objectContaining({
-            tracked_character_id: 'db-uuid-1',
-            stat: 'CRIT DMG',
-            operator_to_next: '>',
-            order_index: 0,
-          }),
+        expect(rpcPayload().p_inserts).toEqual([
+          {
+            table: 'hsr_build_preference_sub_stats',
+            rows: [
+              expect.objectContaining({
+                tracked_character_id: 'db-uuid-1',
+                stat: 'CRIT DMG',
+                operator_to_next: '>',
+                order_index: 0,
+              }),
+            ],
+          },
         ]);
-      });
-
-      it('skips inserts when all preference sets are empty', async () => {
-        const mainBuilder = createBuilder({ data: null, error: null });
-        const subBuilder = createBuilder({ data: null, error: null });
-        const otherBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) => {
-          if (table === 'hsr_build_preference_main_stats') return mainBuilder;
-          if (table === 'hsr_build_preference_sub_stats') return subBuilder;
-          return otherBuilder;
-        });
-
-        await service.saveBuildPrefs('db-uuid-1', {
-          mainStats: { body: [], feet: [], sphere: [], rope: [] },
-          subStats: [],
-        });
-
-        expect(mainBuilder.insert).not.toHaveBeenCalled();
-        expect(subBuilder.insert).not.toHaveBeenCalled();
       });
     });
   });

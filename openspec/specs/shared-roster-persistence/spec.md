@@ -1,32 +1,8 @@
 ## Purpose
 
-Service-layer persistence core shared by all game modules via `createRosterPersistence` and `createPartyPersistence` (`src/services/rosterPersistence.ts`). Covers config-driven CRUD against per-game Supabase tables, DB-disabled early-return semantics, catalog merge on load, profile upsert on insert, patch-to-column mapping, the extras seam for game-specific joined-table reconstruction, party persistence (load / create-or-update save / delete / favorite toggle), and the shared preference-rows save pattern.
+Service-layer persistence core shared by all game modules via `createRosterPersistence` and `createPartyPersistence` (`src/services/rosterPersistence.ts`). Covers config-driven CRUD against per-game Supabase tables, DB-disabled early-return semantics, catalog merge on load, patch-to-column mapping, the extras seam for game-specific joined-table reconstruction, party persistence (load / atomic create-or-update save / delete / favorite toggle), and the shared atomic preference-rows and equipment-slot save helpers.
 
 ## Requirements
-
-### Requirement: Config-driven roster CRUD factory
-
-The system SHALL provide a `createRosterPersistence(config)` factory that produces `load`, `insert`, `remove`, and `update` functions for a game's tracked-entity table from a per-game config: table name, entity FK column, static catalog array, patch-key-to-column map, insert defaults, own-table select string, and an explicit `fromRow(row, baseEntity)` mapper.
-
-#### Scenario: Load merges DB rows with catalog
-
-- **WHEN** `load(userId)` is called with Supabase configured
-- **THEN** the configured table is queried filtered by `profile_id = userId`, each row is matched to its catalog entry by the entity FK column, `fromRow` builds the tracked entity, and rows without a catalog match are dropped
-
-#### Scenario: Insert upserts profile then inserts row
-
-- **WHEN** `insert(userId, entityId)` is called
-- **THEN** `user_profiles` is upserted for `userId` first, then a row with the configured insert defaults is inserted into the tracked table, and the new row's `id` is returned
-
-#### Scenario: Update maps patch keys to columns
-
-- **WHEN** `update(dbId, patch)` is called
-- **THEN** each camelCase patch key is translated through the configured column map and a single UPDATE is issued against the row matching `dbId`
-
-#### Scenario: Remove deletes by dbId
-
-- **WHEN** `remove(dbId)` is called
-- **THEN** the row matching `dbId` is deleted from the configured table
 
 ### Requirement: DB-disabled early return
 
@@ -70,33 +46,9 @@ The config SHALL accept an optional `extras` adapter — `{ selectFragment, mapR
 - **WHEN** a config omits `extras` (R1999, AE)
 - **THEN** only the own-table select string is queried and `fromRow` output is returned unchanged
 
-### Requirement: Shared preference-rows save
-
-The system SHALL provide a single `savePreferenceRows` helper implementing the delete-existing-rows-then-reinsert pattern for variable-length preference chains, used by HSR `saveBuildPrefs`, N2E `saveCartridgePreferences`, and P5X `saveRevelationPreferences`. It SHALL be the only implementation of this pattern in the codebase, so the documented non-atomic-save limitation has exactly one future fix site. Every step SHALL surface its DB error: a failed delete, parent-row update, or insert is logged and rethrown so the caller's save queue reports it.
-
-#### Scenario: Preference rows replaced
-
-- **WHEN** `savePreferenceRows` is called with delete targets, an optional parent-row update, and ordered insert rows
-- **THEN** existing rows are deleted from each target table by FK, the parent row is updated if provided, and non-empty insert sets are inserted with sequential `order_index`
-
-#### Scenario: Delete failure surfaces
-
-- **WHEN** a delete step returns a DB error
-- **THEN** the error is logged and rethrown before any parent update or insert runs
-
-#### Scenario: Parent update failure surfaces
-
-- **WHEN** the parent-row update returns a DB error
-- **THEN** the error is logged and rethrown before any insert runs
-
-#### Scenario: Insert failure surfaces
-
-- **WHEN** an insert set fails after the deletes have run
-- **THEN** the error is logged and rethrown so the caller's save queue surfaces it
-
 ### Requirement: Config-driven party persistence factory
 
-The system SHALL provide a `createPartyPersistence(config)` factory in `src/services/rosterPersistence.ts` that produces `loadParties`, `saveParty`, `deleteParty`, and `toggleFavoriteParty` for a game's party tables from a per-game config: parties table, members table, default party name, member row mappers (`memberFromRow` / `memberToRow`), and optional extras (`extraSelect` / `extraFromRow` / `extraToRow`) for game-specific party columns such as `tier` and `is_favorited`.
+The system SHALL provide a `createPartyPersistence(config)` factory in `src/services/rosterPersistence.ts` that produces `loadParties`, `saveParty`, `deleteParty`, and `toggleFavoriteParty` for a game's party tables from a per-game config: parties table, members table, default party name, member row mappers (`memberFromRow` / `memberToRow`), and optional extras (`extraSelect` / `extraFromRow` / `extraToRow`) for game-specific party columns such as `tier` and `is_favorited`. `saveParty` SHALL be one call to the `save_party` plpgsql function (`SECURITY INVOKER`), which inserts or updates the party row, replaces its members, and returns the party id inside one statement.
 
 #### Scenario: Load returns parties with sorted members
 
@@ -106,12 +58,12 @@ The system SHALL provide a `createPartyPersistence(config)` factory in `src/serv
 #### Scenario: Save creates a new party
 
 - **WHEN** `saveParty(userId, party)` is called without a party `id`
-- **THEN** a party row is inserted with `profile_id`, `name` (falling back to the configured default), `notes` (defaulting to null), and any extras columns, then the members are inserted with the new party's id, which is returned
+- **THEN** a single `save_party` RPC carries the parties and members tables, `profile_id`, a null party id, the party row (`name` falling back to the configured default, `notes` defaulting to null, plus any extras columns), and the members mapped through `memberToRow` without `party_id`; the new party's id is returned
 
 #### Scenario: Save updates an existing party
 
 - **WHEN** `saveParty(userId, party)` is called with a party `id`
-- **THEN** the party row is updated with the same row shape, all existing member rows are deleted, and the new members are inserted
+- **THEN** the same RPC carries that id; the party row is updated with the same row shape, all existing member rows are deleted, and the new members are inserted, atomically
 
 #### Scenario: Favorite toggle updates the party row
 
@@ -121,36 +73,7 @@ The system SHALL provide a `createPartyPersistence(config)` factory in `src/serv
 #### Scenario: DB disabled
 
 - **WHEN** Supabase is not configured
-- **THEN** `loadParties` returns an empty array, `saveParty` returns `null`, and `deleteParty` / `toggleFavoriteParty` return `false`, without touching Supabase
-
-### Requirement: Unified party error semantics
-
-Party persistence errors SHALL be handled uniformly across all games: `loadParties` logs and throws (the shared party hook catches); `saveParty` never rejects and resolves to a `PartySaveResult` `{ partyId: string | null; membersSaved: boolean }` — `partyId` is `null` when the party row insert/update fails, and `membersSaved` is `false` when the row persisted but the member insert failed (the row is already persisted, and the returned id triggers the hook's reload so local state reflects true DB state); `deleteParty` and `toggleFavoriteParty` log and return `false`. `saveParty` SHALL NOT throw — nothing in the save call chain catches, so a thrown save error would surface as an unhandled promise rejection.
-
-#### Scenario: Party-row save failure
-
-- **WHEN** the party insert or update returns a DB error
-- **THEN** the error is logged and `saveParty` resolves to `{ partyId: null, membersSaved: false }` (no rejection)
-
-#### Scenario: Member insert failure after party row persisted
-
-- **WHEN** the party row write succeeds but the member insert returns a DB error
-- **THEN** the error is logged and `saveParty` resolves to `{ partyId: <id>, membersSaved: false }`
-
-#### Scenario: Full success
-
-- **WHEN** the party row and member writes both succeed (or the party has no members)
-- **THEN** `saveParty` resolves to `{ partyId: <id>, membersSaved: true }`
-
-#### Scenario: Load failure propagates
-
-- **WHEN** the parties query returns a DB error
-- **THEN** the error is logged and thrown to the caller
-
-#### Scenario: HTTP 500 surfaces as a thrown error
-
-- **WHEN** the REST endpoint answers a roster or parties load with HTTP 500
-- **THEN** the factory's load function rejects with the DB error rather than resolving to an empty list
+- **THEN** `loadParties` returns an empty array, `saveParty` resolves `{ partyId: null }`, and `deleteParty` / `toggleFavoriteParty` return `false`, without touching Supabase
 
 ### Requirement: Per-game party adapters preserve public service interface
 
@@ -208,3 +131,89 @@ Game services SHALL use the codec for every preference chain (HSR main-stat/subs
 
 - **WHEN** rows arrive from the DB in arbitrary order
 - **THEN** `rowsToChain` returns entries sorted by `order_index`
+
+### Requirement: Roster CRUD factory
+
+The system SHALL provide a `createRosterPersistence(config)` factory that produces `load`, `insert`, `remove`, and `update` functions for a game's tracked-entity table from a per-game config: table name, entity FK column, static catalog array, patch-key-to-column map, insert defaults, own-table select string, and an explicit `fromRow(row, baseEntity)` mapper. The `user_profiles` row each insert's FK references SHALL be provisioned by the `on_auth_user_created` trigger on `auth.users` (with a one-time backfill), never by the client.
+
+#### Scenario: Load merges DB rows with catalog
+
+- **WHEN** `load(userId)` is called with Supabase configured
+- **THEN** the configured table is queried filtered by `profile_id = userId`, each row is matched to its catalog entry by the entity FK column, `fromRow` builds the tracked entity, and rows without a catalog match are dropped
+
+#### Scenario: Insert is a single call
+
+- **WHEN** `insert(userId, entityId)` is called
+- **THEN** exactly one request is issued — a row with the configured insert defaults is inserted into the tracked table and the new row's `id` is returned — and `user_profiles` is not touched
+
+#### Scenario: Update maps patch keys to columns
+
+- **WHEN** `update(dbId, patch)` is called
+- **THEN** each camelCase patch key is translated through the configured column map and a single UPDATE is issued against the row matching `dbId`
+
+#### Scenario: Remove deletes by dbId
+
+- **WHEN** `remove(dbId)` is called
+- **THEN** the row matching `dbId` is deleted from the configured table
+
+### Requirement: Atomic preference-rows save
+
+The system SHALL provide a single `savePreferenceRows` helper for variable-length preference chains, used by HSR `saveBuildPrefs`, N2E `saveCartridgePreferences`, P5X `saveRevelationPreferences`, and ZZZ `saveDiscPreferences`. It SHALL send the delete targets, optional parent-row update, and ordered insert rows as one call to the `replace_preference_rows` plpgsql function (`SECURITY INVOKER`, so the caller's RLS applies), which performs delete-by-FK, parent update, and reinsert inside one statement — one round trip, committed or rolled back together. Empty insert sets SHALL be dropped from the payload. The helper SHALL be the only client-side implementation of the pattern and the function its only server-side one. A parent update that matches no visible row SHALL raise. Table names SHALL be validated server-side against the game-table allowlist.
+
+#### Scenario: Preference rows replaced in one RPC
+
+- **WHEN** `savePreferenceRows` is called with delete targets, an optional parent-row update, and ordered insert rows
+- **THEN** a single `replace_preference_rows` RPC carries `p_parent_id`, the delete targets as `{ table, fk_column }`, the parent update (or `null`), and only the non-empty insert sets; no direct table request is issued
+
+#### Scenario: RPC failure surfaces
+
+- **WHEN** the RPC returns a DB error
+- **THEN** the error is logged and rethrown so the caller's save queue surfaces it, and no partial write remains in the DB
+
+#### Scenario: Parent row not visible
+
+- **WHEN** the parent update targets a row the caller cannot see under RLS
+- **THEN** the function raises and nothing is written
+
+### Requirement: Shared equipment-slot save
+
+The system SHALL provide a single `upsertEquipmentSlot` helper in `src/services/rosterPersistence.ts` for equipped items that occupy one named slot and carry substat child rows (HSR relics, ZZZ Drive Discs). It SHALL send the slot row, its conflict key, the substat table and FK, and the substat rows (without the FK) as one call to the `upsert_equipment_slot` plpgsql function (`SECURITY INVOKER`), which upserts the slot row on its unique key, deletes the old substat rows, and inserts the new ones with the slot id filled in — one round trip, atomic. Per-game `upsertRelic` / `upsertDisc` SHALL be config adapters over it.
+
+#### Scenario: Slot upserted with substats replaced
+
+- **WHEN** `upsertEquipmentSlot` is called for a slot with substat rows
+- **THEN** a single `upsert_equipment_slot` RPC carries the table, row, conflict columns, substat table, substat FK column, and substat rows; the slot row is created or updated and its substats replaced
+
+#### Scenario: Empty substat list
+
+- **WHEN** the substat list is empty
+- **THEN** the RPC still runs and the slot's existing substat rows are removed
+
+#### Scenario: RPC failure surfaces
+
+- **WHEN** the RPC returns a DB error
+- **THEN** the error is logged and rethrown, and the slot's prior substats are intact
+
+### Requirement: Party error semantics
+
+Party persistence errors SHALL be handled uniformly across all games: `loadParties` logs and throws (the shared party hook catches); `saveParty` never rejects and resolves to a `PartySaveResult` `{ partyId: string | null }` — `partyId` is `null` when the atomic `save_party` RPC fails or returns no id, and a non-null id means the party row and its members both persisted; `deleteParty` and `toggleFavoriteParty` log and return `false`. `saveParty` SHALL NOT throw — nothing in the save call chain catches, so a thrown save error would surface as an unhandled promise rejection.
+
+#### Scenario: Party save failure
+
+- **WHEN** the `save_party` RPC returns a DB error (including a rejected member insert, which rolls back the party row write)
+- **THEN** the error is logged and `saveParty` resolves to `{ partyId: null }` (no rejection)
+
+#### Scenario: Full success
+
+- **WHEN** the RPC returns the party id
+- **THEN** `saveParty` resolves to `{ partyId: <id> }`
+
+#### Scenario: Load failure propagates
+
+- **WHEN** the parties query returns a DB error
+- **THEN** the error is logged and thrown to the caller
+
+#### Scenario: HTTP 500 surfaces as a thrown error
+
+- **WHEN** the REST endpoint answers a roster or parties load with HTTP 500
+- **THEN** the factory's load function rejects with the DB error rather than resolving to an empty list

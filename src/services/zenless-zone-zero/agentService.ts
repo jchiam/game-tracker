@@ -4,6 +4,7 @@ import {
   createRosterPersistence,
   rowsToChain,
   savePreferenceRows,
+  upsertEquipmentSlot,
 } from '@/services/rosterPersistence';
 import type { ZzzAgentPatch, ZzzDiscBuildPreferences, ZzzTrackedAgent } from '@/types';
 import { ALL_ZZZ_AGENTS, type ZzzAgent } from '@/data/zenless-zone-zero/agents';
@@ -122,38 +123,21 @@ export async function upsertDisc(
   slot: ZzzDiscSlot,
   discData: ZzzEquippedDisc,
 ): Promise<void> {
-  if (!DB_ENABLED) return;
-  const { data: discRow, error: discErr } = await supabase
-    .from('zzz_equipped_discs')
-    .upsert(
-      {
-        tracked_agent_id: dbId,
-        slot,
-        suit_id: discData.suitId,
-        main_stat: discData.mainStat,
-      },
-      { onConflict: 'tracked_agent_id,slot' },
-    )
-    .select('id')
-    .single();
-
-  if (discErr) {
-    console.error('Disc Upsert Error:', discErr);
-    throw discErr;
-  }
-  await supabase.from('zzz_disc_substats').delete().eq('disc_id', discRow.id);
-  if (discData.subStats.length > 0) {
-    const { error: substatErr } = await supabase.from('zzz_disc_substats').insert(
-      discData.subStats.map((s) => ({
-        disc_id: discRow.id,
-        stat_type: s,
-      })),
-    );
-    if (substatErr) {
-      console.error('Disc Substat Insert Error:', substatErr);
-      throw substatErr;
-    }
-  }
+  await upsertEquipmentSlot({
+    table: 'zzz_equipped_discs',
+    row: {
+      tracked_agent_id: dbId,
+      slot,
+      suit_id: discData.suitId,
+      main_stat: discData.mainStat,
+    },
+    conflictColumns: ['tracked_agent_id', 'slot'],
+    substats: {
+      table: 'zzz_disc_substats',
+      fkColumn: 'disc_id',
+      rows: discData.subStats.map((s) => ({ stat_type: s })),
+    },
+  });
 }
 
 export async function deleteDisc(dbId: string, slot: ZzzDiscSlot): Promise<void> {

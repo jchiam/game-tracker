@@ -63,11 +63,10 @@ export function createRosterPersistence<
       .filter(Boolean) as TTracked[];
   }
 
+  // The user_profiles row the FK needs is provisioned by the on_auth_user_created
+  // trigger (migration 20260911000005), so this is a single insert.
   async function insert(userId: string, entityId: string): Promise<string | null> {
     if (!DB_ENABLED) return null;
-    await supabase
-      .from('user_profiles')
-      .upsert({ id: userId, updated_at: new Date().toISOString() });
     const { data, error } = await supabase
       .from(config.table)
       .insert({
@@ -136,12 +135,10 @@ export interface PartyPersistenceConfig<TParty, TMember> {
  * Error semantics are deliberately asymmetric: `loadParties` throws (the shared
  * party hook catches), but `saveParty` never rejects — nothing in the save call
  * chain catches, so a rejection would surface unhandled. It resolves to a
- * `PartySaveResult`: `partyId: null` when the party row failed, and
- * `membersSaved: false` when the row persisted but the member insert failed —
- * the id is still returned so the hook's reload shows the true DB state instead
- * of inviting a duplicate retry. Member replacement is delete-then-reinsert with
- * no transaction (see CLAUDE.md Known Limitations, same pattern as
- * savePreferenceRows).
+ * `PartySaveResult` whose `partyId` is null when the save failed. The save is
+ * one atomic `save_party` RPC (migration 20260911000004): party insert/update,
+ * member delete, and member reinsert commit or roll back together, so a
+ * non-null id means the members persisted too.
  */
 export function createPartyPersistence<
   TParty extends { id: string; name: string; notes: string | null },
@@ -182,7 +179,7 @@ export function createPartyPersistence<
     userId: string,
     party: Partial<TParty> & { members: TMember[] },
   ): Promise<PartySaveResult> {
-    if (!DB_ENABLED) return { partyId: null, membersSaved: false };
+    if (!DB_ENABLED) return { partyId: null };
 
     const partyRow = {
       name: party.name || config.defaultName,
@@ -190,40 +187,19 @@ export function createPartyPersistence<
       ...(config.extraToRow ? config.extraToRow(party) : {}),
     };
 
-    let partyId = party.id;
-
-    if (partyId) {
-      const { error } = await supabase.from(config.partiesTable).update(partyRow).eq('id', partyId);
-      if (error) {
-        console.error('Party Update Failed:', error);
-        return { partyId: null, membersSaved: false };
-      }
-      await supabase.from(config.membersTable).delete().eq('party_id', partyId);
-    } else {
-      const { data, error } = await supabase
-        .from(config.partiesTable)
-        .insert({ profile_id: userId, ...partyRow })
-        .select('id')
-        .single();
-      if (error || !data) {
-        console.error('Party Create Failed:', error);
-        return { partyId: null, membersSaved: false };
-      }
-      partyId = data.id;
+    const { data, error } = await supabase.rpc('save_party', {
+      p_parties_table: config.partiesTable,
+      p_members_table: config.membersTable,
+      p_profile_id: userId,
+      p_party_id: party.id ?? null,
+      p_party_row: partyRow,
+      p_members: party.members.map(config.memberToRow),
+    });
+    if (error || !data) {
+      console.error('Party Save Failed:', error);
+      return { partyId: null };
     }
-
-    let membersSaved = true;
-    if (party.members.length > 0) {
-      const { error } = await supabase
-        .from(config.membersTable)
-        .insert(party.members.map((m) => ({ party_id: partyId, ...config.memberToRow(m) })));
-      if (error) {
-        console.error('Party Members Save Failed:', error);
-        membersSaved = false;
-      }
-    }
-
-    return { partyId: partyId ?? null, membersSaved };
+    return { partyId: data as string };
   }
 
   async function deleteParty(partyId: string): Promise<boolean> {
@@ -254,13 +230,13 @@ export function createPartyPersistence<
 
 /**
  * Replaces a variable-length set of preference rows: delete existing rows by FK,
- * optionally update the parent row, then insert the new ordered rows. Every
- * step checks its error and throws before the next runs — a failed delete
- * followed by a successful insert would otherwise leave duplicate rows.
+ * optionally update the parent row, then insert the new ordered rows.
  *
- * NOT atomic — these are separate Supabase calls with no transaction (see
- * CLAUDE.md Known Limitations). This helper is intentionally the only
- * implementation of the pattern, so a future plpgsql RPC fix has one call site.
+ * One round trip, atomic: the steps run inside the `replace_preference_rows`
+ * plpgsql function (migration 20260911000002), so they commit or roll back
+ * together and RLS still applies (SECURITY INVOKER). Empty insert sets are
+ * dropped client-side so the payload only carries work. This helper is
+ * intentionally the only implementation of the pattern.
  */
 export async function savePreferenceRows(opts: {
   dbId: string;
@@ -270,32 +246,47 @@ export async function savePreferenceRows(opts: {
 }): Promise<void> {
   if (!DB_ENABLED) return;
 
-  for (const target of opts.deleteFrom) {
-    const { error } = await supabase.from(target.table).delete().eq(target.fkColumn, opts.dbId);
-    if (error) {
-      console.error('Preference Rows Delete Failed:', error);
-      throw error;
-    }
+  const { error } = await supabase.rpc('replace_preference_rows', {
+    p_parent_id: opts.dbId,
+    p_delete_from: opts.deleteFrom.map((t) => ({ table: t.table, fk_column: t.fkColumn })),
+    p_parent_update: opts.parentUpdate ?? null,
+    p_inserts: opts.inserts.filter((set) => set.rows.length > 0),
+  });
+  if (error) {
+    console.error('Preference Rows Save Failed:', error);
+    throw error;
   }
+}
 
-  if (opts.parentUpdate) {
-    const { error } = await supabase
-      .from(opts.parentUpdate.table)
-      .update(opts.parentUpdate.row)
-      .eq('id', opts.dbId);
-    if (error) {
-      console.error('Preference Rows Parent Update Failed:', error);
-      throw error;
-    }
-  }
+/**
+ * Upserts one equipped-slot row (relic, disc) and replaces its substat rows.
+ *
+ * One round trip, atomic: runs inside the `upsert_equipment_slot` plpgsql
+ * function (migration 20260911000003) — upsert on the slot's unique key,
+ * delete the old substat rows, insert the new ones with the slot id filled in.
+ * SECURITY INVOKER keeps RLS in force. This helper is intentionally the only
+ * client-side implementation of the pattern; game services pass their table
+ * and column names as config.
+ */
+export async function upsertEquipmentSlot(opts: {
+  table: string;
+  row: Record<string, unknown>;
+  conflictColumns: string[];
+  substats: { table: string; fkColumn: string; rows: Record<string, unknown>[] };
+}): Promise<void> {
+  if (!DB_ENABLED) return;
 
-  for (const insertSet of opts.inserts) {
-    if (insertSet.rows.length === 0) continue;
-    const { error } = await supabase.from(insertSet.table).insert(insertSet.rows);
-    if (error) {
-      console.error('Preference Rows Save Failed:', error);
-      throw error;
-    }
+  const { error } = await supabase.rpc('upsert_equipment_slot', {
+    p_table: opts.table,
+    p_row: opts.row,
+    p_conflict_columns: opts.conflictColumns,
+    p_substat_table: opts.substats.table,
+    p_substat_fk: opts.substats.fkColumn,
+    p_substats: opts.substats.rows,
+  });
+  if (error) {
+    console.error('Equipment Slot Save Failed:', error);
+    throw error;
   }
 }
 

@@ -170,6 +170,8 @@ export function GameCardShell({
           <img
             src={resolveImage(imageUrl)}
             alt={name}
+            loading="lazy"
+            decoding="async"
             className={`game-card-image ${imgLoading ? 'loading' : 'loaded'}`}
             onLoad={() => setImgLoading(false)}
             onError={(e) => {

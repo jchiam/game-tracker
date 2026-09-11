@@ -102,7 +102,7 @@ The system SHALL track an equipped cartridge per character with five fields: car
 
 ### Requirement: Cartridge preferences
 
-The system SHALL track cartridge build preferences per character with four fields: target cartridge ID (string or null, a single named set preference), main stats chain (ordered array of StatPreference), sub stats chain (ordered array of StatPreference), and comments (string or empty). Preferences are persisted via non-atomic delete-then-reinsert (see shared-save-behaviour spec known limitation).
+The system SHALL track cartridge build preferences per character with four fields: target cartridge ID (string or null, a single named set preference), main stats chain (ordered array of StatPreference), sub stats chain (ordered array of StatPreference), and comments (string or empty). Preferences are persisted atomically through the shared `savePreferenceRows` RPC (see shared-save-behaviour spec).
 
 #### Scenario: Target cartridge set preference saved
 
@@ -117,7 +117,7 @@ The system SHALL track cartridge build preferences per character with four field
 #### Scenario: Cartridge preferences saved
 
 - **WHEN** user saves cartridge preferences with main and/or sub stat chains
-- **THEN** all existing preference rows for the character are deleted, then new rows are inserted in order
+- **THEN** all existing preference rows for the character are deleted and the new rows inserted in order inside one `replace_preference_rows` RPC, so a failure leaves the previous rows in place
 
 #### Scenario: Empty preferences
 

@@ -21,10 +21,6 @@ export interface PartyConfig<TParty, TMember> {
   nouns: { party: string; parties: string };
 }
 
-function capitalize(word: string) {
-  return word.charAt(0).toUpperCase() + word.slice(1);
-}
-
 /**
  * Shared party-lineup lifecycle for the per-game party hooks. Concentrates the
  * load-on-session effect (with load-error state and retry, mirroring
@@ -105,17 +101,11 @@ export function useParties<TParty extends { id: string }, TMember>(
   const saveParty = async (
     party: Partial<TParty> & { members: TMember[] },
   ): Promise<PartySaveResult> => {
-    if (!session?.user) return { partyId: null, membersSaved: false };
+    if (!session?.user) return { partyId: null };
     const result = await apiSaveParty(session.user.id, party);
     if (!result.partyId) {
       addToast(`Couldn't save ${nouns.party}. Please try again.`, 'error');
       return result;
-    }
-    if (!result.membersSaved) {
-      addToast(
-        `${capitalize(nouns.party)} saved, but its members couldn't be saved. Please edit and try again.`,
-        'warning',
-      );
     }
     await reload(session.user.id, `Saved, but couldn't refresh your ${nouns.parties}.`);
     return result;

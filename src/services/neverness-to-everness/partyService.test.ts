@@ -6,6 +6,7 @@ import { createBuilder } from '@/test/mocks/supabase';
 
 describe('n2e partyService', () => {
   let mockFrom: ReturnType<typeof vi.fn>;
+  let mockRpc: ReturnType<typeof vi.fn>;
   let service: typeof import('@/services/neverness-to-everness/partyService');
 
   beforeEach(async () => {
@@ -14,8 +15,10 @@ describe('n2e partyService', () => {
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
     mockFrom = vi.fn().mockReturnValue(createBuilder());
+
+    mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
     vi.doMock('@/lib/supabase', () => ({
-      supabase: { from: mockFrom },
+      supabase: { from: mockFrom, rpc: mockRpc },
     }));
 
     service = await import('@/services/neverness-to-everness/partyService');
@@ -55,26 +58,23 @@ describe('n2e partyService', () => {
   });
 
   it('saveParty writes tier (but not is_favorited) with the N2E default name', async () => {
-    const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-    const memberBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'n2e_parties' ? partyBuilder : memberBuilder,
-    );
+    mockRpc.mockResolvedValue({ data: 'new-party-id', error: null });
 
-    await service.saveParty('user-1', {
+    const result = await service.saveParty('user-1', {
       tier: 'A',
       members: [{ entityId: 'baicang', slotIndex: 0 }],
     });
 
-    expect(partyBuilder.insert).toHaveBeenCalledWith({
-      profile_id: 'user-1',
-      name: 'New Party',
-      notes: null,
-      tier: 'A',
+    expect(mockRpc).toHaveBeenCalledWith('save_party', {
+      p_parties_table: 'n2e_parties',
+      p_members_table: 'n2e_party_members',
+      p_profile_id: 'user-1',
+      p_party_id: null,
+      p_party_row: { name: 'New Party', notes: null, tier: 'A' },
+      p_members: [{ character_id: 'baicang', slot_index: 0 }],
     });
-    expect(memberBuilder.insert).toHaveBeenCalledWith([
-      { party_id: 'new-party-id', character_id: 'baicang', slot_index: 0 },
-    ]);
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual({ partyId: 'new-party-id' });
   });
 
   it('toggleFavoriteParty updates is_favorited on n2e_parties', async () => {

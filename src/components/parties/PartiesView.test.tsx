@@ -58,7 +58,7 @@ function makeParty(overrides: Partial<Party> = {}): Party {
 const defaultProps = {
   entities,
   parties: [] as Party[],
-  onSaveParty: vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true }),
+  onSaveParty: vi.fn().mockResolvedValue({ partyId: 'party-1' }),
   onDeleteParty: vi.fn().mockResolvedValue(true),
 };
 
@@ -251,7 +251,7 @@ describe('PartiesView', () => {
   describe('editor modal', () => {
     it('opens the create editor and saves a named party', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1' });
       renderWithProviders(
         <PartiesView
           config={plainConfig}
@@ -275,7 +275,7 @@ describe('PartiesView', () => {
 
     it('keeps the editor open with entries intact when the save fails', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue({ partyId: null, membersSaved: false });
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: null });
       renderWithProviders(
         <PartiesView
           config={plainConfig}
@@ -317,7 +317,7 @@ describe('PartiesView', () => {
 
     it('saves typed notes in the payload', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1' });
       renderWithProviders(
         <PartiesView
           config={plainConfig}
@@ -352,7 +352,7 @@ describe('PartiesView', () => {
 
     it('includes tier in the save payload when the config supports it', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1' });
       renderWithProviders(
         <PartiesView
           config={fullConfig}
@@ -541,7 +541,7 @@ describe('PartiesView', () => {
 
     it('saves the picked members as entityId/slotIndex pairs', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1' });
       renderWithProviders(
         <PartiesView
           config={plainConfig}
@@ -781,7 +781,7 @@ describe('PartiesView', () => {
 
     it('picks a companion from the companion catalog, not the roster', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1' });
       renderWithProviders(
         <PartiesView
           config={companionConfig}
@@ -833,7 +833,7 @@ describe('PartiesView', () => {
 
     it('clears the companion and saves null', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1' });
       renderWithProviders(
         <PartiesView
           config={companionConfig}
@@ -893,7 +893,7 @@ describe('PartiesView', () => {
 
     it('games without companion config are unchanged — no tile, no payload field', async () => {
       const user = userEvent.setup();
-      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1', membersSaved: true });
+      const onSaveParty = vi.fn().mockResolvedValue({ partyId: 'party-1' });
       renderWithProviders(
         <PartiesView
           config={plainConfig}

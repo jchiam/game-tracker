@@ -12,9 +12,7 @@ import { createSupabaseRestErrorHandlers } from '@/test/mocks/handlers';
  * dynamic import of the service module.
  */
 
-const server = setupServer(
-  ...createSupabaseRestErrorHandlers(['test_tracked', 'test_parties', 'user_profiles']),
-);
+const server = setupServer(...createSupabaseRestErrorHandlers(['test_tracked', 'test_parties']));
 
 vi.stubEnv('VITE_SUPABASE_URL', 'http://localhost:54321');
 vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
@@ -111,7 +109,6 @@ describe('rosterPersistence against an HTTP 500 (real client, MSW)', () => {
 
     await expect(svc.saveParty('user-1', { name: 'Doomed', members: [] })).resolves.toEqual({
       partyId: null,
-      membersSaved: false,
     });
   });
 });

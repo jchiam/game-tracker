@@ -4,6 +4,7 @@ import {
   createRosterPersistence,
   rowsToChain,
   savePreferenceRows,
+  upsertEquipmentSlot,
 } from '@/services/rosterPersistence';
 import type { EquippedRelic } from '@/data/honkai-star-rail/relics';
 import type { HsrCharacterPatch, HsrTrackedCharacter } from '@/types';
@@ -107,38 +108,21 @@ export async function upsertRelic(
   slot: string,
   relicData: EquippedRelic,
 ): Promise<void> {
-  if (!DB_ENABLED) return;
-  const { data: relicRow, error: relicErr } = await supabase
-    .from('hsr_equipped_relics')
-    .upsert(
-      {
-        tracked_character_id: dbId,
-        slot,
-        set_id: relicData.setId,
-        main_stat: relicData.mainStat,
-      },
-      { onConflict: 'tracked_character_id,slot' },
-    )
-    .select('id')
-    .single();
-
-  if (relicErr) {
-    console.error('Relic Upsert Error:', relicErr);
-    throw relicErr;
-  }
-  await supabase.from('hsr_relic_substats').delete().eq('relic_id', relicRow.id);
-  if (relicData.subStats.length > 0) {
-    const { error: substatErr } = await supabase.from('hsr_relic_substats').insert(
-      relicData.subStats.map((s) => ({
-        relic_id: relicRow.id,
-        stat_type: s,
-      })),
-    );
-    if (substatErr) {
-      console.error('Relic Substat Insert Error:', substatErr);
-      throw substatErr;
-    }
-  }
+  await upsertEquipmentSlot({
+    table: 'hsr_equipped_relics',
+    row: {
+      tracked_character_id: dbId,
+      slot,
+      set_id: relicData.setId,
+      main_stat: relicData.mainStat,
+    },
+    conflictColumns: ['tracked_character_id', 'slot'],
+    substats: {
+      table: 'hsr_relic_substats',
+      fkColumn: 'relic_id',
+      rows: relicData.subStats.map((s) => ({ stat_type: s })),
+    },
+  });
 }
 
 export async function deleteRelic(dbId: string, slot: string): Promise<void> {

@@ -23,7 +23,7 @@ describe('useParties (p5x)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLoadParties.mockResolvedValue([]);
-    mockSaveParty.mockResolvedValue({ partyId: 'new-party-id', membersSaved: true });
+    mockSaveParty.mockResolvedValue({ partyId: 'new-party-id' });
     mockDeleteParty.mockResolvedValue(true);
     mockToggleFavoriteParty.mockResolvedValue(true);
   });
