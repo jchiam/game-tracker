@@ -52,4 +52,4 @@
 - [x] 9.2 `npm run lint && npm run format:check && npm run build`
 - [x] 9.3 `npm run build:storybook`
 - [x] 9.4 `npx openspec validate --all`
-- [ ] 9.5 Manual: with the dev server running, block `*/rest/v1/*` in DevTools (or return 500 via an override) and confirm roster and parties tabs show the danger-bordered alert with Retry, a party save keeps the modal open with an error toast, and unblocking + Retry recovers both tabs
+- [x] 9.5 Manual: with the dev server running, block `*/rest/v1/*` in DevTools (or return 500 via an override) and confirm roster and parties tabs show the danger-bordered alert with Retry, a party save keeps the modal open with an error toast, and unblocking + Retry recovers both tabs

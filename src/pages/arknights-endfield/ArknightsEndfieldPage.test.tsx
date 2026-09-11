@@ -412,3 +412,78 @@ describe('ArknightsEndfieldPage', () => {
     expect(toggleFavorite).toHaveBeenCalledWith('ember', true);
   });
 });
+
+describe('ArknightsEndfieldPage error surfaces and party load wiring', () => {
+  const partiesHook = defaultPartiesHook;
+
+  it('roster Retry retries both the roster and the parties load', () => {
+    const retryLoad = vi.fn();
+    const retryParties = vi.fn();
+    vi.mocked(useOperators).mockReturnValue({
+      ...defaultOperatorsHook,
+      isLoadError: true,
+      retryLoad,
+    });
+    vi.mocked(useParties).mockReturnValue({ ...partiesHook, retryLoad: retryParties });
+    renderWithProviders(
+      <ArknightsEndfieldPage
+        session={createMockSession()}
+        isAuthLoading={false}
+        onSignIn={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+    expect(retryLoad).toHaveBeenCalledTimes(1);
+    expect(retryParties).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the roster error in the error box, not the empty box', () => {
+    vi.mocked(useOperators).mockReturnValue({ ...defaultOperatorsHook, isLoadError: true });
+    renderWithProviders(
+      <ArknightsEndfieldPage
+        session={createMockSession()}
+        isAuthLoading={false}
+        onSignIn={vi.fn()}
+      />,
+    );
+    expect(screen.getByRole('alert')).toHaveClass('error-state');
+    expect(document.querySelector('.empty-state')).toBeNull();
+  });
+
+  it('parties tab reflects the party hook load state, not the roster load state', () => {
+    vi.mocked(useParties).mockReturnValue({ ...partiesHook, isInitialLoad: true });
+    renderWithProviders(
+      <ArknightsEndfieldPage
+        session={createMockSession()}
+        isAuthLoading={false}
+        onSignIn={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /squads/i }));
+    expect(screen.getByRole('status')).toHaveTextContent('Loading your squads…');
+    expect(screen.queryByText(/no squads configured yet/i)).not.toBeInTheDocument();
+  });
+
+  it('parties tab Retry retries only the parties load', () => {
+    const retryLoad = vi.fn();
+    const retryParties = vi.fn();
+    vi.mocked(useOperators).mockReturnValue({ ...defaultOperatorsHook, retryLoad });
+    vi.mocked(useParties).mockReturnValue({
+      ...partiesHook,
+      isLoadError: true,
+      retryLoad: retryParties,
+    });
+    renderWithProviders(
+      <ArknightsEndfieldPage
+        session={createMockSession()}
+        isAuthLoading={false}
+        onSignIn={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /squads/i }));
+    expect(screen.getByRole('alert')).toHaveTextContent("Couldn't load your squads.");
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(retryParties).toHaveBeenCalledTimes(1);
+    expect(retryLoad).not.toHaveBeenCalled();
+  });
+});
