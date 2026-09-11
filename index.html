@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Warm the connections the first data and image requests need (DNS + TCP +
+      TLS) while the JS bundle is still downloading. Vite substitutes the
+      %VAR% placeholders from import.meta.env at build time. Supabase is hit
+      via credentialed fetch, so it needs the crossorigin variant; ImageKit
+      serves plain <img> loads.
+    -->
+    <link rel="preconnect" href="%VITE_SUPABASE_URL%" crossorigin />
+    <link rel="preconnect" href="%VITE_IMAGEKIT_URL_ENDPOINT%" />
     <title>The JonZone Tracker</title>
   </head>
 
