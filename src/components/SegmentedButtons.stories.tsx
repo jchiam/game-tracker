@@ -101,7 +101,8 @@ function CumulativeRow({ fill }: { fill: 'exact' | 'cumulative' }) {
  * - **add** — hover a rung *above* the selection: dashed, preview-strength hue,
  *   the rungs the click would buy
  * - **drop** — hover a rung *below* it (or the selected rung itself, since
- *   `allowDeselect` clears the run): neutral, no hue, what the click gives up
+ *   `allowDeselect` clears the run): attained hue faded and dashed, what the
+ *   click gives up — the ramp colour never disappears
  * - **empty** — resting, unattained
  *
  * Keyboard-tab the row to see the identical preview on focus.

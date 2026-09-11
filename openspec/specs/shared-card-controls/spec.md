@@ -84,18 +84,19 @@ the chips within (P5X = `--color-p5x-element-fire`, R1999 = `--color-r1999-accen
 - **THEN** their computed hover and active styles are identical to the pre-consolidation page-local
   versions (accent unchanged per game)
 
-### Requirement: Canonical cumulative-rung state treatments
+### Requirement: Canonical cumulative-rung state treatments keep the ramp hue
 
 `src/styles/controls.css` SHALL define, exactly once, the state treatments a cumulative rung row
 uses beyond the base `.toggle-btn` on/off appearance: an **attained** treatment, an **added-preview**
 treatment for rungs a click would gain, and a **dropped-preview** treatment for rungs a click would
 give up. The added-preview treatment SHALL be visually weaker than attained and stronger than
 unattained, so a previewed range reads as a continuation of the attained run rather than as already
-owned. The dropped-preview treatment SHALL be neutral, carrying no investment-gradient hue, because
-the hue is what the click removes. Game stylesheets SHALL NOT re-declare these treatments. All
-colour values SHALL come from design tokens or from the shared investment gradient — never from
-hardcoded literals — and every `transition` SHALL enumerate the properties its state variants
-actually change.
+owned. The dropped-preview treatment SHALL keep the rung's own investment-gradient hue — the
+baseline ramp colour never disappears during a preview — and SHALL distinguish itself from attained
+structurally (reduced opacity and a dashed edge), so the range reads as fading away rather than
+being repainted neutral. Game stylesheets SHALL NOT re-declare these treatments. All colour values
+SHALL come from design tokens or from the shared investment gradient — never from hardcoded
+literals — and every `transition` SHALL enumerate the properties its state variants actually change.
 
 #### Scenario: Attained rung
 
@@ -109,10 +110,11 @@ actually change.
 - **THEN** its treatment is weaker than the attained treatment and stronger than the unattained
   resting treatment, and it carries the gradient hue for its own position
 
-#### Scenario: Dropped-preview rung carries no gradient hue
+#### Scenario: Dropped-preview rung keeps its gradient hue
 
 - **WHEN** a rung renders in the dropped-preview state
-- **THEN** its treatment uses neutral tokens only and carries no investment-gradient hue
+- **THEN** it still carries the gradient hue for its own position, dimmed and dashed by the
+  canonical structural treatment, and no rule repaints it with neutral colour overrides
 
 #### Scenario: Treatments defined once
 

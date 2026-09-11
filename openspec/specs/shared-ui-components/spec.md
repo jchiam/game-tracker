@@ -533,10 +533,12 @@ preview state distinct from both attained and unattained, showing what would be 
 below `s`, the rungs above `h` up to and including `s` SHALL render in a **dropped** preview state,
 showing what would be given up; when `h` is the selected rung and `allowDeselect` is set, the whole
 attained run SHALL render in the dropped preview state, because the click clears it. Moving the
-pointer off the row, or moving focus away, SHALL restore the resting state. Keyboard focus SHALL
-produce the same preview as pointer hover, so the affordance is not pointer-only. The resting
-cumulative ramp SHALL communicate the attained run on its own, so no information is lost on input
-devices without hover.
+pointer off the row, or moving focus away, SHALL restore the resting state. Clicking a rung SHALL
+clear the active hover/focus preview, so the click's result renders in its committed state
+immediately — the pointer resting on the just-clicked rung SHALL NOT re-trigger a preview until it
+leaves and re-enters. Keyboard focus SHALL produce the same preview as pointer hover, so the
+affordance is not pointer-only. The resting cumulative ramp SHALL communicate the attained run on
+its own, so no information is lost on input devices without hover.
 
 #### Scenario: Upgrade preview
 
@@ -558,6 +560,12 @@ devices without hover.
 
 - **WHEN** the pointer enters any rung of a cumulative row
 - **THEN** no rung renders a highlight that is independent of the range from the first rung
+
+#### Scenario: Clicking renders the committed result at once
+
+- **WHEN** the pointer hovers rung 5 of 6 and clicks it to select
+- **THEN** the preview clears with the click and rungs 1–5 render attained immediately, with no
+  dropped-preview flash on the run while the pointer still rests on rung 5
 
 #### Scenario: Leaving the row restores the resting state
 

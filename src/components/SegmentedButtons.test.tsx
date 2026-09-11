@@ -116,6 +116,15 @@ describe('SegmentedButtons — cumulative fill', () => {
     expect(rowStates()).toEqual(['attained', 'attained', 'drop', 'drop', 'drop', 'empty']);
   });
 
+  it('keeps the attained gradient hue on drop rungs — the ramp colour never disappears', () => {
+    renderRow({ value: '5' });
+    fireEvent.mouseEnter(screen.getByText('B'));
+    // C–E render drop but still carry their own inline ramp colour
+    for (const label of ['C', 'D', 'E']) {
+      expect(screen.getByText(label).getAttribute('style')).toContain('background');
+    }
+  });
+
   it('previews clearing the whole run when hovering the selected rung with allowDeselect', () => {
     renderRow({ value: '4', allowDeselect: true });
     fireEvent.mouseEnter(screen.getByText('D'));
@@ -126,6 +135,33 @@ describe('SegmentedButtons — cumulative fill', () => {
     renderRow({ value: '4' });
     fireEvent.mouseEnter(screen.getByText('D'));
     expect(rowStates()).toEqual(['attained', 'attained', 'attained', 'attained', 'empty', 'empty']);
+  });
+
+  it('clears the preview on click so the new selection renders committed at once', () => {
+    // Controlled rerender mimics the host applying the change: without the
+    // click clearing hover state, the pointer resting on the now-selected rung
+    // would preview its own deselection and gray the run right after selecting.
+    const { rerender } = renderRow({ allowDeselect: true });
+    fireEvent.mouseEnter(screen.getByText('E'));
+    fireEvent.click(screen.getByText('E'));
+    rerender(
+      <SegmentedButtons
+        options={rungs}
+        value="5"
+        fill="cumulative"
+        coloring="investment"
+        allowDeselect
+        onChange={vi.fn()}
+      />,
+    );
+    expect(rowStates()).toEqual([
+      'attained',
+      'attained',
+      'attained',
+      'attained',
+      'attained',
+      'empty',
+    ]);
   });
 
   it('restores the resting state when the pointer leaves the row', () => {

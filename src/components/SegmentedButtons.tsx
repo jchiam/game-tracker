@@ -109,10 +109,10 @@ export function SegmentedButtons({
         // mode, the single selection otherwise.
         const isAttained = rungState === 'attained';
 
-        // `drop` deliberately takes no inline hue: the gradient colour is exactly
-        // what the click would remove, so `.rung-drop`'s neutral tokens paint it.
+        // `drop` keeps the attained hue: the baseline ramp colour never
+        // disappears during a preview — `.rung-drop` dims and dashes it instead.
         const gradientStyle: CSSProperties | undefined =
-          coloring === 'investment' && (isAttained || rungState === 'add')
+          coloring === 'investment' && rungState !== 'empty'
             ? (() => {
                 const ps =
                   rungState === 'add'
@@ -151,6 +151,13 @@ export function SegmentedButtons({
             onFocus={cumulative ? () => setFocusIdx(idx) : undefined}
             onBlur={cumulative ? () => setFocusIdx(null) : undefined}
             onClick={() => {
+              // Clear the range preview so the click's result renders committed
+              // immediately — otherwise the pointer resting on the now-selected
+              // rung previews its own deselection right after selecting.
+              if (cumulative) {
+                setHoverIdx(null);
+                setFocusIdx(null);
+              }
               if (allowDeselect && isActive) onChange(null);
               else onChange(opt.value);
             }}
