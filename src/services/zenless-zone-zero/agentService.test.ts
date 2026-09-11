@@ -244,40 +244,33 @@ describe('agentService', () => {
     expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
   });
 
-  it('upsertDisc upserts the disc row then replaces its substats', async () => {
-    const discBuilder = createBuilder({ data: { id: 'disc-row-1' }, error: null });
-    const substatBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_equipped_discs' ? discBuilder : substatBuilder,
-    );
-
+  it('upsertDisc upserts the disc row and replaces its substats in one upsert_equipment_slot RPC', async () => {
     await service.upsertDisc('db-uuid-1', 4, {
       suitId: '31000',
       mainStat: 'CRIT Rate',
       subStats: ['ATK%', 'PEN'],
     });
 
-    expect(discBuilder.upsert).toHaveBeenCalledWith(
-      {
+    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockRpc).toHaveBeenCalledWith('upsert_equipment_slot', {
+      p_table: 'zzz_equipped_discs',
+      p_row: {
         tracked_agent_id: 'db-uuid-1',
         slot: 4,
         suit_id: '31000',
         main_stat: 'CRIT Rate',
       },
-      { onConflict: 'tracked_agent_id,slot' },
-    );
-    expect(substatBuilder.delete).toHaveBeenCalled();
-    expect(substatBuilder.eq).toHaveBeenCalledWith('disc_id', 'disc-row-1');
-    expect(substatBuilder.insert).toHaveBeenCalledWith([
-      { disc_id: 'disc-row-1', stat_type: 'ATK%' },
-      { disc_id: 'disc-row-1', stat_type: 'PEN' },
-    ]);
+      p_conflict_columns: ['tracked_agent_id', 'slot'],
+      p_substat_table: 'zzz_disc_substats',
+      p_substat_fk: 'disc_id',
+      p_substats: [{ stat_type: 'ATK%' }, { stat_type: 'PEN' }],
+    });
+    expect(mockFrom).not.toHaveBeenCalled();
   });
 
-  it('upsertDisc rethrows when the disc upsert fails', async () => {
+  it('upsertDisc rethrows when the RPC fails', async () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const discBuilder = createBuilder({ data: null, error: new Error('upsert down') });
-    mockFrom.mockReturnValue(discBuilder);
+    mockRpc.mockResolvedValue({ data: null, error: new Error('upsert down') });
 
     await expect(
       service.upsertDisc('db-uuid-1', 4, { suitId: '31000', mainStat: null, subStats: [] }),
@@ -285,31 +278,10 @@ describe('agentService', () => {
     spy.mockRestore();
   });
 
-  it('upsertDisc rethrows when the substat insert fails', async () => {
-    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const discBuilder = createBuilder({ data: { id: 'disc-row-1' }, error: null });
-    const substatBuilder = createBuilder({ data: null, error: new Error('insert down') });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_equipped_discs' ? discBuilder : substatBuilder,
-    );
-
-    await expect(
-      service.upsertDisc('db-uuid-1', 4, { suitId: '31000', mainStat: null, subStats: ['PEN'] }),
-    ).rejects.toThrow('insert down');
-    spy.mockRestore();
-  });
-
-  it('upsertDisc skips the substat insert when the list is empty', async () => {
-    const discBuilder = createBuilder({ data: { id: 'disc-row-1' }, error: null });
-    const substatBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_equipped_discs' ? discBuilder : substatBuilder,
-    );
-
+  it('upsertDisc sends an empty substat list when the list is empty', async () => {
     await service.upsertDisc('db-uuid-1', 1, { suitId: '31600', mainStat: 'HP', subStats: [] });
 
-    expect(substatBuilder.delete).toHaveBeenCalled();
-    expect(substatBuilder.insert).not.toHaveBeenCalled();
+    expect(mockRpc.mock.calls[0][1].p_substats).toEqual([]);
   });
 
   it('deleteDisc deletes by agent row id and slot', async () => {

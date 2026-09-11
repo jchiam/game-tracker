@@ -335,76 +335,47 @@ describe('characterService', () => {
     });
 
     describe('upsertRelic', () => {
-      it('upserts relic and manages substats', async () => {
-        const relicBuilder = createBuilder({ data: { id: 'relic-db-id' }, error: null });
-        const substatBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_equipped_relics' ? relicBuilder : substatBuilder,
-        );
-
+      it('upserts the relic row and replaces its substats in one upsert_equipment_slot RPC', async () => {
         await service.upsertRelic('db-uuid-1', 'head', {
           setId: '101',
           mainStat: 'HP',
-          subStats: ['CRIT Rate'],
+          subStats: ['CRIT Rate', 'SPD'],
         });
 
-        expect(mockFrom).toHaveBeenCalledWith('hsr_equipped_relics');
-        expect(mockFrom).toHaveBeenCalledWith('hsr_relic_substats');
-      });
-
-      it('deletes existing substats before inserting new ones', async () => {
-        const relicBuilder = createBuilder({ data: { id: 'relic-db-id' }, error: null });
-        const substatBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_equipped_relics' ? relicBuilder : substatBuilder,
-        );
-
-        await service.upsertRelic('db-uuid-1', 'head', {
-          setId: '101',
-          mainStat: 'HP',
-          subStats: ['CRIT Rate'],
+        expect(mockRpc).toHaveBeenCalledTimes(1);
+        expect(mockRpc).toHaveBeenCalledWith('upsert_equipment_slot', {
+          p_table: 'hsr_equipped_relics',
+          p_row: {
+            tracked_character_id: 'db-uuid-1',
+            slot: 'head',
+            set_id: '101',
+            main_stat: 'HP',
+          },
+          p_conflict_columns: ['tracked_character_id', 'slot'],
+          p_substat_table: 'hsr_relic_substats',
+          p_substat_fk: 'relic_id',
+          p_substats: [{ stat_type: 'CRIT Rate' }, { stat_type: 'SPD' }],
         });
-
-        expect(substatBuilder.delete).toHaveBeenCalled();
-        expect(substatBuilder.eq).toHaveBeenCalledWith('relic_id', 'relic-db-id');
-        expect(substatBuilder.insert).toHaveBeenCalledWith([
-          { relic_id: 'relic-db-id', stat_type: 'CRIT Rate' },
-        ]);
+        expect(mockFrom).not.toHaveBeenCalled();
       });
 
-      it('skips substat insert when subStats is empty', async () => {
-        const relicBuilder = createBuilder({ data: { id: 'relic-db-id' }, error: null });
-        const substatBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_equipped_relics' ? relicBuilder : substatBuilder,
-        );
-
+      it('sends an empty substat list when subStats is empty', async () => {
         await service.upsertRelic('db-uuid-1', 'head', {
           setId: '101',
           mainStat: 'HP',
           subStats: [],
         });
 
-        expect(substatBuilder.delete).toHaveBeenCalled();
-        expect(substatBuilder.insert).not.toHaveBeenCalled();
+        expect(mockRpc.mock.calls[0][1].p_substats).toEqual([]);
       });
 
-      it('throws and skips substats when relic upsert fails', async () => {
-        const relicBuilder = createBuilder({ data: null, error: { message: 'Upsert failed' } });
-        const substatBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) =>
-          table === 'hsr_equipped_relics' ? relicBuilder : substatBuilder,
-        );
+      it('throws when the RPC fails', async () => {
+        mockRpc.mockResolvedValue({ data: null, error: { message: 'Upsert failed' } });
 
         const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
         await expect(
           service.upsertRelic('db-uuid-1', 'head', { setId: '101', mainStat: 'HP', subStats: [] }),
         ).rejects.toEqual({ message: 'Upsert failed' });
-        expect(substatBuilder.delete).not.toHaveBeenCalled();
         spy.mockRestore();
       });
     });

@@ -283,6 +283,38 @@ export async function savePreferenceRows(opts: {
 }
 
 /**
+ * Upserts one equipped-slot row (relic, disc) and replaces its substat rows.
+ *
+ * One round trip, atomic: runs inside the `upsert_equipment_slot` plpgsql
+ * function (migration 20260911000003) — upsert on the slot's unique key,
+ * delete the old substat rows, insert the new ones with the slot id filled in.
+ * SECURITY INVOKER keeps RLS in force. This helper is intentionally the only
+ * client-side implementation of the pattern; game services pass their table
+ * and column names as config.
+ */
+export async function upsertEquipmentSlot(opts: {
+  table: string;
+  row: Record<string, unknown>;
+  conflictColumns: string[];
+  substats: { table: string; fkColumn: string; rows: Record<string, unknown>[] };
+}): Promise<void> {
+  if (!DB_ENABLED) return;
+
+  const { error } = await supabase.rpc('upsert_equipment_slot', {
+    p_table: opts.table,
+    p_row: opts.row,
+    p_conflict_columns: opts.conflictColumns,
+    p_substat_table: opts.substats.table,
+    p_substat_fk: opts.substats.fkColumn,
+    p_substats: opts.substats.rows,
+  });
+  if (error) {
+    console.error('Equipment Slot Save Failed:', error);
+    throw error;
+  }
+}
+
+/**
  * The chain↔rows codec for preference chains — intentionally the only
  * implementation of chain serialization/reconstruction, living beside
  * `savePreferenceRows` so the whole Preference Rows pattern has one home.
