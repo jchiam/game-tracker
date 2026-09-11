@@ -6,6 +6,7 @@ import { createBuilder } from '@/test/mocks/supabase';
 
 describe('r1999 partyService', () => {
   let mockFrom: ReturnType<typeof vi.fn>;
+  let mockRpc: ReturnType<typeof vi.fn>;
   let service: typeof import('@/services/reverse1999/partyService');
 
   beforeEach(async () => {
@@ -14,8 +15,10 @@ describe('r1999 partyService', () => {
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
     mockFrom = vi.fn().mockReturnValue(createBuilder());
+
+    mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
     vi.doMock('@/lib/supabase', () => ({
-      supabase: { from: mockFrom },
+      supabase: { from: mockFrom, rpc: mockRpc },
     }));
 
     service = await import('@/services/reverse1999/partyService');
@@ -55,26 +58,23 @@ describe('r1999 partyService', () => {
   });
 
   it('saveParty writes tier with the R1999 default name and never touches is_favorited', async () => {
-    const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-    const memberBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'r1999_parties' ? partyBuilder : memberBuilder,
-    );
+    mockRpc.mockResolvedValue({ data: 'new-party-id', error: null });
 
-    await service.saveParty('user-1', {
+    const result = await service.saveParty('user-1', {
       tier: 'A',
       members: [{ entityId: 'regulus', slotIndex: 0 }],
     });
 
-    expect(partyBuilder.insert).toHaveBeenCalledWith({
-      profile_id: 'user-1',
-      name: 'New Lineup',
-      notes: null,
-      tier: 'A',
+    expect(mockRpc).toHaveBeenCalledWith('save_party', {
+      p_parties_table: 'r1999_parties',
+      p_members_table: 'r1999_party_members',
+      p_profile_id: 'user-1',
+      p_party_id: null,
+      p_party_row: { name: 'New Lineup', notes: null, tier: 'A' },
+      p_members: [{ arcanist_id: 'regulus', slot_index: 0 }],
     });
-    expect(memberBuilder.insert).toHaveBeenCalledWith([
-      { party_id: 'new-party-id', arcanist_id: 'regulus', slot_index: 0 },
-    ]);
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual({ partyId: 'new-party-id' });
   });
 
   it('toggleFavoriteParty updates is_favorited on r1999_parties', async () => {

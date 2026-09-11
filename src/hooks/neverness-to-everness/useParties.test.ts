@@ -36,7 +36,7 @@ describe('useParties', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLoadParties.mockResolvedValue([]);
-    mockSaveParty.mockResolvedValue({ partyId: 'new-party-id', membersSaved: true });
+    mockSaveParty.mockResolvedValue({ partyId: 'new-party-id' });
     mockDeleteParty.mockResolvedValue(true);
     mockToggleFavoriteParty.mockResolvedValue(true);
   });
@@ -81,7 +81,7 @@ describe('useParties', () => {
       partyId = await result.current.saveParty({ name: 'Test', members: [] });
     });
 
-    expect(partyId).toEqual({ partyId: null, membersSaved: false });
+    expect(partyId).toEqual({ partyId: null });
   });
 
   it('deleteParty removes party from state', async () => {

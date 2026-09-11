@@ -136,12 +136,10 @@ export interface PartyPersistenceConfig<TParty, TMember> {
  * Error semantics are deliberately asymmetric: `loadParties` throws (the shared
  * party hook catches), but `saveParty` never rejects — nothing in the save call
  * chain catches, so a rejection would surface unhandled. It resolves to a
- * `PartySaveResult`: `partyId: null` when the party row failed, and
- * `membersSaved: false` when the row persisted but the member insert failed —
- * the id is still returned so the hook's reload shows the true DB state instead
- * of inviting a duplicate retry. Member replacement is delete-then-reinsert with
- * no transaction (see CLAUDE.md Known Limitations, same pattern as
- * savePreferenceRows).
+ * `PartySaveResult` whose `partyId` is null when the save failed. The save is
+ * one atomic `save_party` RPC (migration 20260911000004): party insert/update,
+ * member delete, and member reinsert commit or roll back together, so a
+ * non-null id means the members persisted too.
  */
 export function createPartyPersistence<
   TParty extends { id: string; name: string; notes: string | null },
@@ -182,7 +180,7 @@ export function createPartyPersistence<
     userId: string,
     party: Partial<TParty> & { members: TMember[] },
   ): Promise<PartySaveResult> {
-    if (!DB_ENABLED) return { partyId: null, membersSaved: false };
+    if (!DB_ENABLED) return { partyId: null };
 
     const partyRow = {
       name: party.name || config.defaultName,
@@ -190,40 +188,19 @@ export function createPartyPersistence<
       ...(config.extraToRow ? config.extraToRow(party) : {}),
     };
 
-    let partyId = party.id;
-
-    if (partyId) {
-      const { error } = await supabase.from(config.partiesTable).update(partyRow).eq('id', partyId);
-      if (error) {
-        console.error('Party Update Failed:', error);
-        return { partyId: null, membersSaved: false };
-      }
-      await supabase.from(config.membersTable).delete().eq('party_id', partyId);
-    } else {
-      const { data, error } = await supabase
-        .from(config.partiesTable)
-        .insert({ profile_id: userId, ...partyRow })
-        .select('id')
-        .single();
-      if (error || !data) {
-        console.error('Party Create Failed:', error);
-        return { partyId: null, membersSaved: false };
-      }
-      partyId = data.id;
+    const { data, error } = await supabase.rpc('save_party', {
+      p_parties_table: config.partiesTable,
+      p_members_table: config.membersTable,
+      p_profile_id: userId,
+      p_party_id: party.id ?? null,
+      p_party_row: partyRow,
+      p_members: party.members.map(config.memberToRow),
+    });
+    if (error || !data) {
+      console.error('Party Save Failed:', error);
+      return { partyId: null };
     }
-
-    let membersSaved = true;
-    if (party.members.length > 0) {
-      const { error } = await supabase
-        .from(config.membersTable)
-        .insert(party.members.map((m) => ({ party_id: partyId, ...config.memberToRow(m) })));
-      if (error) {
-        console.error('Party Members Save Failed:', error);
-        membersSaved = false;
-      }
-    }
-
-    return { partyId: partyId ?? null, membersSaved };
+    return { partyId: data as string };
   }
 
   async function deleteParty(partyId: string): Promise<boolean> {

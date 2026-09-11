@@ -57,7 +57,7 @@ describe('useParties (R1999)', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLoadParties.mockResolvedValue([]);
-    mockSaveParty.mockResolvedValue({ partyId: 'new-party-id', membersSaved: true });
+    mockSaveParty.mockResolvedValue({ partyId: 'new-party-id' });
     mockDeleteParty.mockResolvedValue(true);
     mockToggleFavoriteParty.mockResolvedValue(true);
   });
@@ -158,7 +158,7 @@ describe('useParties (R1999)', () => {
         partyId = await result.current.saveParty({ name: 'My Lineup', members: [] });
       });
 
-      expect(partyId).toEqual({ partyId: 'new-party-id', membersSaved: true });
+      expect(partyId).toEqual({ partyId: 'new-party-id' });
     });
 
     it('returns null and does not call DB when session is absent', async () => {
@@ -169,7 +169,7 @@ describe('useParties (R1999)', () => {
         returned = await result.current.saveParty({ name: 'Lineup', members: [] });
       });
 
-      expect(returned).toEqual({ partyId: null, membersSaved: false });
+      expect(returned).toEqual({ partyId: null });
       expect(mockSaveParty).not.toHaveBeenCalled();
     });
 

@@ -111,7 +111,6 @@ describe('rosterPersistence against an HTTP 500 (real client, MSW)', () => {
 
     await expect(svc.saveParty('user-1', { name: 'Doomed', members: [] })).resolves.toEqual({
       partyId: null,
-      membersSaved: false,
     });
   });
 });

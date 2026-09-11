@@ -127,7 +127,6 @@ describe('rosterPersistence', () => {
       expect(await svc.loadParties('user-1')).toEqual([]);
       expect(await svc.saveParty('user-1', { name: 'Team', members: [] })).toEqual({
         partyId: null,
-        membersSaved: false,
       });
       expect(await svc.deleteParty('party-1')).toBe(false);
       expect(await svc.toggleFavoriteParty('party-1', true)).toBe(false);
@@ -532,12 +531,8 @@ describe('rosterPersistence', () => {
         spy.mockRestore();
       });
 
-      it('saveParty creates a party then inserts mapped members and returns the id', async () => {
-        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-        const memberBuilder = createBuilder({ data: null, error: null });
-        mockFrom.mockImplementation((table: string) =>
-          table === 'test_parties' ? partyBuilder : memberBuilder,
-        );
+      it('saveParty creates a party through one save_party RPC and returns the id', async () => {
+        mockRpc.mockResolvedValue({ data: 'new-party-id', error: null });
 
         const result = await makePartyService().saveParty('user-1', {
           name: 'Team',
@@ -545,33 +540,30 @@ describe('rosterPersistence', () => {
           members: [{ entityId: 'alpha', slotIndex: 0 }],
         });
 
-        expect(partyBuilder.insert).toHaveBeenCalledWith({
-          profile_id: 'user-1',
-          name: 'Team',
-          notes: 'Notes',
+        expect(mockRpc).toHaveBeenCalledTimes(1);
+        expect(mockRpc).toHaveBeenCalledWith('save_party', {
+          p_parties_table: 'test_parties',
+          p_members_table: 'test_party_members',
+          p_profile_id: 'user-1',
+          p_party_id: null,
+          p_party_row: { name: 'Team', notes: 'Notes' },
+          p_members: [{ entity_id: 'alpha', slot_index: 0 }],
         });
-        expect(memberBuilder.insert).toHaveBeenCalledWith([
-          { party_id: 'new-party-id', entity_id: 'alpha', slot_index: 0 },
-        ]);
-        expect(result).toEqual({ partyId: 'new-party-id', membersSaved: true });
+        expect(mockFrom).not.toHaveBeenCalled();
+        expect(result).toEqual({ partyId: 'new-party-id' });
       });
 
       it('saveParty defaults name and notes on create', async () => {
-        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-        mockFrom.mockReturnValue(partyBuilder);
+        mockRpc.mockResolvedValue({ data: 'new-party-id', error: null });
 
         await makePartyService().saveParty('user-1', { members: [] });
 
-        expect(partyBuilder.insert).toHaveBeenCalledWith({
-          profile_id: 'user-1',
-          name: 'New Party',
-          notes: null,
-        });
+        expect(mockRpc.mock.calls[0][1].p_party_row).toEqual({ name: 'New Party', notes: null });
+        expect(mockRpc.mock.calls[0][1].p_members).toEqual([]);
       });
 
       it('saveParty spreads extraToRow into the party row', async () => {
-        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-        mockFrom.mockReturnValue(partyBuilder);
+        mockRpc.mockResolvedValue({ data: 'new-party-id', error: null });
 
         await makePartyService({
           extraSelect: 'tier, is_favorited',
@@ -579,15 +571,13 @@ describe('rosterPersistence', () => {
           extraToRow: (party) => ({ tier: party.tier ?? null }),
         }).saveParty('user-1', { name: 'Team', tier: 'S', members: [] });
 
-        expect(partyBuilder.insert).toHaveBeenCalledWith(expect.objectContaining({ tier: 'S' }));
+        expect(mockRpc.mock.calls[0][1].p_party_row).toEqual(
+          expect.objectContaining({ tier: 'S' }),
+        );
       });
 
-      it('saveParty updates the row, clears members, and reinserts on update', async () => {
-        const partyBuilder = createBuilder({ data: null, error: null });
-        const memberBuilder = createBuilder({ data: null, error: null });
-        mockFrom.mockImplementation((table: string) =>
-          table === 'test_parties' ? partyBuilder : memberBuilder,
-        );
+      it('saveParty passes the existing id and mapped members on update', async () => {
+        mockRpc.mockResolvedValue({ data: 'existing-id', error: null });
 
         const result = await makePartyService().saveParty('user-1', {
           id: 'existing-id',
@@ -596,66 +586,34 @@ describe('rosterPersistence', () => {
           members: [{ entityId: 'beta', slotIndex: 1 }],
         });
 
-        expect(partyBuilder.update).toHaveBeenCalledWith({ name: 'Renamed', notes: null });
-        expect(partyBuilder.eq).toHaveBeenCalledWith('id', 'existing-id');
-        expect(memberBuilder.delete).toHaveBeenCalled();
-        expect(memberBuilder.eq).toHaveBeenCalledWith('party_id', 'existing-id');
-        expect(memberBuilder.insert).toHaveBeenCalledWith([
-          { party_id: 'existing-id', entity_id: 'beta', slot_index: 1 },
-        ]);
-        expect(result).toEqual({ partyId: 'existing-id', membersSaved: true });
+        expect(mockRpc).toHaveBeenCalledWith('save_party', {
+          p_parties_table: 'test_parties',
+          p_members_table: 'test_party_members',
+          p_profile_id: 'user-1',
+          p_party_id: 'existing-id',
+          p_party_row: { name: 'Renamed', notes: null },
+          p_members: [{ entity_id: 'beta', slot_index: 1 }],
+        });
+        expect(result).toEqual({ partyId: 'existing-id' });
       });
 
-      it('saveParty skips the member insert when members is empty', async () => {
-        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-        const memberBuilder = createBuilder({ data: null, error: null });
-        mockFrom.mockImplementation((table: string) =>
-          table === 'test_parties' ? partyBuilder : memberBuilder,
-        );
-
-        await makePartyService().saveParty('user-1', { name: 'Team', members: [] });
-
-        expect(memberBuilder.insert).not.toHaveBeenCalled();
-      });
-
-      it('saveParty resolves a null partyId (no rejection) on create error', async () => {
-        mockFrom.mockReturnValue(
-          createBuilder({ data: null, error: { message: 'Insert failed' } }),
-        );
+      it('saveParty resolves a null partyId (no rejection) on RPC error', async () => {
+        mockRpc.mockResolvedValue({ data: null, error: { message: 'Save failed' } });
         const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
         const result = await makePartyService().saveParty('user-1', { name: 'T', members: [] });
-        expect(result).toEqual({ partyId: null, membersSaved: false });
+        expect(result).toEqual({ partyId: null });
         spy.mockRestore();
       });
 
-      it('saveParty resolves a null partyId (no rejection) on update error', async () => {
-        mockFrom.mockReturnValue(
-          createBuilder({ data: null, error: { message: 'Update failed' } }),
-        );
+      it('saveParty resolves a null partyId when the RPC returns no id', async () => {
+        mockRpc.mockResolvedValue({ data: null, error: null });
         const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
         const result = await makePartyService().saveParty('user-1', {
           id: 'existing-id',
           name: 'T',
           members: [],
         });
-        expect(result).toEqual({ partyId: null, membersSaved: false });
-        spy.mockRestore();
-      });
-
-      it('saveParty still returns the id with membersSaved false on member insert error', async () => {
-        const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-        const memberBuilder = createBuilder({ data: null, error: { message: 'Members failed' } });
-        mockFrom.mockImplementation((table: string) =>
-          table === 'test_parties' ? partyBuilder : memberBuilder,
-        );
-
-        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-        const result = await makePartyService().saveParty('user-1', {
-          name: 'Team',
-          members: [{ entityId: 'alpha', slotIndex: 0 }],
-        });
-        expect(result).toEqual({ partyId: 'new-party-id', membersSaved: false });
-        expect(spy).toHaveBeenCalled();
+        expect(result).toEqual({ partyId: null });
         spy.mockRestore();
       });
 

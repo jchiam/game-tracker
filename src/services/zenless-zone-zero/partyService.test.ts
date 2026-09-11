@@ -6,6 +6,7 @@ import { createBuilder } from '@/test/mocks/supabase';
 
 describe('zzz partyService', () => {
   let mockFrom: ReturnType<typeof vi.fn>;
+  let mockRpc: ReturnType<typeof vi.fn>;
   let service: typeof import('@/services/zenless-zone-zero/partyService');
 
   beforeEach(async () => {
@@ -14,8 +15,10 @@ describe('zzz partyService', () => {
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
     mockFrom = vi.fn().mockReturnValue(createBuilder());
+
+    mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
     vi.doMock('@/lib/supabase', () => ({
-      supabase: { from: mockFrom },
+      supabase: { from: mockFrom, rpc: mockRpc },
     }));
 
     service = await import('@/services/zenless-zone-zero/partyService');
@@ -80,40 +83,37 @@ describe('zzz partyService', () => {
   });
 
   it('saveParty writes tier and bangboo_id (but not is_favorited) with the ZZZ default name', async () => {
-    const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-    const memberBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_parties' ? partyBuilder : memberBuilder,
-    );
+    mockRpc.mockResolvedValue({ data: 'new-party-id', error: null });
 
-    await service.saveParty('user-1', {
+    const result = await service.saveParty('user-1', {
       tier: 'A',
       companionId: '912',
       members: [{ entityId: '1011', slotIndex: 0 }],
     });
 
-    expect(partyBuilder.insert).toHaveBeenCalledWith({
-      profile_id: 'user-1',
-      name: 'New Party',
-      notes: null,
-      tier: 'A',
-      bangboo_id: '912',
+    expect(mockRpc).toHaveBeenCalledWith('save_party', {
+      p_parties_table: 'zzz_parties',
+      p_members_table: 'zzz_party_members',
+      p_profile_id: 'user-1',
+      p_party_id: null,
+      p_party_row: { name: 'New Party', notes: null, tier: 'A', bangboo_id: '912' },
+      p_members: [{ agent_id: '1011', slot_index: 0 }],
     });
-    expect(memberBuilder.insert).toHaveBeenCalledWith([
-      { party_id: 'new-party-id', agent_id: '1011', slot_index: 0 },
-    ]);
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(result).toEqual({ partyId: 'new-party-id' });
   });
 
   it('saveParty writes bangboo_id null when the companion is unset', async () => {
-    const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
-    const memberBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_parties' ? partyBuilder : memberBuilder,
-    );
+    mockRpc.mockResolvedValue({ data: 'new-party-id', error: null });
 
-    await service.saveParty('user-1', { members: [] });
+    await service.saveParty('user-1', { tier: 'A', members: [] });
 
-    expect(partyBuilder.insert).toHaveBeenCalledWith(expect.objectContaining({ bangboo_id: null }));
+    expect(mockRpc.mock.calls[0][1].p_party_row).toEqual({
+      name: 'New Party',
+      notes: null,
+      tier: 'A',
+      bangboo_id: null,
+    });
   });
 
   it('toggleFavoriteParty updates is_favorited on zzz_parties', async () => {

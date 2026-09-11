@@ -44,7 +44,7 @@ describe('useParties', () => {
           party: Partial<TestParty> & { members: TestMember[] },
         ) => Promise<PartySaveResult>
       >()
-      .mockResolvedValue({ partyId: 'p1', membersSaved: true });
+      .mockResolvedValue({ partyId: 'p1' });
     deleteParty = vi.fn<(partyId: string) => Promise<boolean>>().mockResolvedValue(true);
     config = {
       loadParties,
@@ -107,7 +107,7 @@ describe('useParties', () => {
         outcome = await result.current.saveParty({ name: 'New', members: [] });
       });
 
-      expect(outcome).toEqual({ partyId: 'p1', membersSaved: true });
+      expect(outcome).toEqual({ partyId: 'p1' });
       expect(result.current.parties).toEqual([party('p1')]);
       expect(addToast).not.toHaveBeenCalled();
     });
@@ -119,12 +119,12 @@ describe('useParties', () => {
       await act(async () => {
         outcome = await result.current.saveParty({ name: 'New', members: [] });
       });
-      expect(outcome).toEqual({ partyId: null, membersSaved: false });
+      expect(outcome).toEqual({ partyId: null });
       expect(saveParty).not.toHaveBeenCalled();
     });
 
     it('toasts an error and skips the reload when the party row failed', async () => {
-      saveParty.mockResolvedValue({ partyId: null, membersSaved: false });
+      saveParty.mockResolvedValue({ partyId: null });
       const { result } = renderHook(() => useParties(session, config));
       await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
 
@@ -133,26 +133,9 @@ describe('useParties', () => {
         outcome = await result.current.saveParty({ name: 'New', members: [] });
       });
 
-      expect(outcome).toEqual({ partyId: null, membersSaved: false });
+      expect(outcome).toEqual({ partyId: null });
       expect(addToast).toHaveBeenCalledWith("Couldn't save lineup. Please try again.", 'error');
       expect(loadParties).toHaveBeenCalledTimes(1);
-    });
-
-    it('reloads and warns when the row saved but its members did not', async () => {
-      saveParty.mockResolvedValue({ partyId: 'p1', membersSaved: false });
-      loadParties.mockResolvedValueOnce([]).mockResolvedValueOnce([party('p1')]);
-      const { result } = renderHook(() => useParties(session, config));
-      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
-
-      await act(async () => {
-        await result.current.saveParty({ name: 'New', members: [{ entityId: 'a', slotIndex: 0 }] });
-      });
-
-      expect(addToast).toHaveBeenCalledWith(
-        "Lineup saved, but its members couldn't be saved. Please edit and try again.",
-        'warning',
-      );
-      expect(result.current.parties).toEqual([party('p1')]);
     });
 
     it('keeps the id, toasts, and flags a load error when the post-save reload fails', async () => {
@@ -165,7 +148,7 @@ describe('useParties', () => {
         outcome = await result.current.saveParty({ name: 'New', members: [] });
       });
 
-      expect(outcome).toEqual({ partyId: 'p1', membersSaved: true });
+      expect(outcome).toEqual({ partyId: 'p1' });
       expect(addToast).toHaveBeenCalledWith("Saved, but couldn't refresh your lineups.", 'error');
       expect(result.current.isLoadError).toBe(true);
       // Existing list is kept rather than wiped.

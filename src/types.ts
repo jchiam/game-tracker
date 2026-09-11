@@ -48,13 +48,11 @@ export interface Party {
 
 /**
  * Outcome of a party save. Never rejects — the save chain has no catch.
- * `partyId` is null when the party row insert/update failed; `membersSaved`
- * is false when the row persisted but the member insert failed (the row is
- * already in the DB, so the id is still returned to drive the reload).
+ * `partyId` is null when the save failed. The party row and its members are
+ * written in one atomic RPC, so a non-null id means both persisted.
  */
 export interface PartySaveResult {
   partyId: string | null;
-  membersSaved: boolean;
 }
 
 export interface HsrTrackedCharacter extends Character {

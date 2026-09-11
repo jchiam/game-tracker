@@ -123,17 +123,17 @@ A party can also carry a **Companion Slot** pick: one entity chosen from a separ
 
 ### Party Persistence Factory
 
-The config-driven factory `createPartyPersistence(config)` in `src/services/rosterPersistence.ts` — the single shared implementation of party CRUD. Config supplies: parties table, members table, default party name, member row mappers (`memberFromRow` / `memberToRow`), and optional extras (`extraSelect` / `extraFromRow` / `extraToRow`) for game-specific party columns such as `tier` and `is_favorited`. It produces `loadParties`, `saveParty`, `deleteParty`, and `toggleFavoriteParty`; each game's `partyService.ts` is a thin config adapter re-exporting them. Updating an existing party replaces its members via delete-then-reinsert across separate calls — the remaining non-atomic write, documented under Known Limitations in `CLAUDE.md`.
+The config-driven factory `createPartyPersistence(config)` in `src/services/rosterPersistence.ts` — the single shared implementation of party CRUD. Config supplies: parties table, members table, default party name, member row mappers (`memberFromRow` / `memberToRow`), and optional extras (`extraSelect` / `extraFromRow` / `extraToRow`) for game-specific party columns such as `tier` and `is_favorited`. It produces `loadParties`, `saveParty`, `deleteParty`, and `toggleFavoriteParty`; each game's `partyService.ts` is a thin config adapter re-exporting them. `saveParty` sends the party insert/update, member delete, and member reinsert as one call to the `save_party` plpgsql function (`SECURITY INVOKER`) — one round trip, atomic; its `PartySaveResult` therefore carries only `partyId`, null on failure.
 
 Party error semantics are deliberately **asymmetric**:
 
 - `loadParties` logs and **throws** — the shared party hook catches.
-- `saveParty` never rejects: it resolves a **`PartySaveResult`** `{ partyId, membersSaved }` — `partyId: null` when the party-row insert/update fails, and `membersSaved: false` (with the id still returned) when only the member insert fails (the row is already persisted; the returned id triggers the hook's reload so local state reflects true DB state). Nothing in the save call chain catches, so a thrown save error would surface as an unhandled promise rejection.
+- `saveParty` never rejects: it resolves a **`PartySaveResult`** `{ partyId }` — `partyId: null` when the atomic `save_party` RPC fails (party row and members roll back together, so there is no partial-save state to report). Nothing in the save call chain catches, so a thrown save error would surface as an unhandled promise rejection.
 - `deleteParty` and `toggleFavoriteParty` log and **return `false`**.
 
-These return values are signals for the shared party hook (`useParties`), which owns mutation feedback: every failed outcome reaches the user as a toast (save failed, saved without members, reload after save failed, delete failed, favorite reverted), and the Party View keeps the editor open when a save resolves without an id. The hook also mirrors the roster hook's load state — `isInitialLoad`, `isLoadError`, `retryLoad` — so the parties tab renders the shared `ErrorState` on a failed load instead of a false empty state.
+These return values are signals for the shared party hook (`useParties`), which owns mutation feedback: every failed outcome reaches the user as a toast (save failed, reload after save failed, delete failed, favorite reverted), and the Party View keeps the editor open when a save resolves without an id. The hook also mirrors the roster hook's load state — `isInitialLoad`, `isLoadError`, `retryLoad` — so the parties tab renders the shared `ErrorState` on a failed load instead of a false empty state.
 
-With the DB disabled: `loadParties` → `[]`, `saveParty` → `{ partyId: null, membersSaved: false }`, `deleteParty` / `toggleFavoriteParty` → `false`, without touching Supabase.
+With the DB disabled: `loadParties` → `[]`, `saveParty` → `{ partyId: null }`, `deleteParty` / `toggleFavoriteParty` → `false`, without touching Supabase.
 
 ### Party View
 
@@ -146,5 +146,5 @@ The build-time write side of the asset/data pipeline. Each game has a `scripts/u
 ## Cross-References
 
 - Operational conventions, directory layout, wiring checklist, testing patterns, guard rails: `CLAUDE.md`.
-- Known Limitations (non-atomic party-member replacement, RPC verification): `CLAUDE.md` → Known Limitations.
+- Known Limitations (RPC atomicity verification): `CLAUDE.md` → Known Limitations.
 - Capability specs elaborating these concepts: `openspec/specs/shared-roster-persistence/`, `openspec/specs/shared-parties/`, `openspec/specs/shared-data-pipeline/`, `openspec/specs/shared-roster/`.

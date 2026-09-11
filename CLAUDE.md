@@ -303,9 +303,7 @@ it('sets error on DB failure', async () => {
 
 ### Known Limitations
 
-- **Non-atomic party member replacement.** `createPartyPersistence`'s `saveParty` update path replaces a party's members by **deleting all existing member rows then re-inserting** — across separate Supabase calls with no transaction. A failure after the delete but before the insert leaves the party **empty in the DB**; the hook's post-save reload shows that true state. Preference-row saves had the same shape and are now atomic: `savePreferenceRows` calls the `replace_preference_rows` plpgsql function (`SECURITY INVOKER`, so RLS still applies) in one round trip. Party saves are the remaining instance of the pattern and should move onto the same RPC approach.
-
-- **RPC atomicity is verified outside the unit suite.** The mocked service tests only assert the RPC payload shape. The plpgsql functions themselves (rollback on failure, RLS enforcement, table allowlist) are exercised by applying the full migration history to a throwaway `postgres:16` container — there is no local-Supabase integration test in CI. Re-run that check whenever a migration touches an RPC.
+- **Multi-row writes are RPCs; their atomicity is verified outside the unit suite.** Every write that touches more than one row — preference-row replacement (`replace_preference_rows`), equipped-slot upsert (`upsert_equipment_slot`), party save (`save_party`) — runs inside a `SECURITY INVOKER` plpgsql function so it commits or rolls back as a unit under the caller's RLS, in one round trip. Never reintroduce a client-side call sequence for these. The mocked service tests only assert the RPC payload shape; the functions themselves (rollback on failure, RLS enforcement, the `assert_game_table` allowlist) are exercised by applying the full migration history to a throwaway `postgres:16` container — there is no local-Supabase integration test in CI. Re-run that check whenever a migration touches an RPC.
 
 ## Shared Components
 

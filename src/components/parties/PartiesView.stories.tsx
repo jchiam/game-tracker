@@ -75,7 +75,7 @@ const meta = {
       makeParty({ id: 'p1', name: 'Team Alpha', notes: 'Hypercarry core.' }),
       makeParty({ id: 'p2', name: 'Team Beta', members: [] }),
     ],
-    onSaveParty: fn(async () => ({ partyId: 'party-id', membersSaved: true })),
+    onSaveParty: fn(async () => ({ partyId: 'party-id' })),
     onDeleteParty: fn(async () => true),
     session: DEMO_SESSION,
   },

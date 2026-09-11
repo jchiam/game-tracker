@@ -88,7 +88,7 @@ const defaultPartiesHook = {
   isInitialLoad: false,
   isLoadError: false,
   retryLoad: vi.fn(),
-  saveParty: vi.fn().mockResolvedValue({ partyId: null, membersSaved: false }),
+  saveParty: vi.fn().mockResolvedValue({ partyId: null }),
   deleteParty: vi.fn().mockResolvedValue(true),
   toggleFavoriteParty: vi.fn(),
   refreshParties: vi.fn(),
