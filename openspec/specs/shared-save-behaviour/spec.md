@@ -79,11 +79,16 @@ The system SHALL warn the user before navigating away from the page when writes 
 - **WHEN** no writes are pending
 - **THEN** navigation proceeds without confirmation
 
-### Requirement: Known limitation — non-atomic preference saves
+### Requirement: Multi-row writes are atomic RPCs
 
-The system SHALL be understood to save build preference rows (HSR) and cartridge preference rows (N2E) non-atomically: existing rows are deleted then re-inserted in separate DB calls with no transaction.
+The system SHALL perform every write that touches more than one row — preference-row replacement, equipped-slot upsert with substats, party save with members — as a single `supabase.rpc` call to a `SECURITY INVOKER` plpgsql function, so the steps commit or roll back as a unit under the caller's RLS in one round trip. Client code SHALL NOT reintroduce a sequence of dependent table calls for these writes. Because the mocked unit tests only assert the RPC payload, the functions' atomicity, RLS enforcement, and table allowlist SHALL be verified by applying the full migration history to a throwaway Postgres whenever a migration touches an RPC.
 
-#### Scenario: Failure between delete and insert
+#### Scenario: Failure mid-write leaves prior state
 
-- **WHEN** the re-insert step fails after a successful delete
-- **THEN** preference rows are left empty in the DB; local optimistic state still shows previous values until next reload; error toast is shown
+- **WHEN** any step inside the RPC fails (bad column, unique violation, RLS rejection)
+- **THEN** no step's effect is visible in the DB, the client receives the error, the debounced queue shows the error toast, and local optimistic state is unchanged until the user retries
+
+#### Scenario: One round trip per save
+
+- **WHEN** a preference chain, equipped slot, or party is saved
+- **THEN** exactly one request reaches Supabase for the write (a party save additionally reloads the list)

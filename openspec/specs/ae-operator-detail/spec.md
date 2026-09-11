@@ -208,9 +208,9 @@ The system SHALL track an ordered list of preferred weapons per operator as
 `weaponPreferences`: an array of `ALL_WEAPONS` **ids** (string slugs), highest priority
 first. The list is a pure ranking — there are no comparison operators between entries —
 and SHALL NOT contain duplicate ids. It defaults to an empty array on add. The list is
-persisted via the operator field-update path as a single ordered array (see
-shared-save-behaviour; this field is NOT subject to the non-atomic delete-then-reinsert
-limitation). Order is significant: index 0 is the first choice.
+persisted via the operator field-update path as a single ordered array column (see
+shared-save-behaviour) — never as preference rows. Order is significant: index 0 is the
+first choice.
 
 #### Scenario: Preference added
 

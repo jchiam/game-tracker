@@ -39,12 +39,12 @@ The system SHALL track whether a character's traces (skill upgrades) have been f
 
 ### Requirement: Six relic slots
 
-The system SHALL track one equipped relic per slot across six named slots: head, hands, body, feet, sphere, rope. Each slot defaults to null (empty) on character add.
+The system SHALL track one equipped relic per slot across six named slots: head, hands, body, feet, sphere, rope. Each slot defaults to null (empty) on character add. A slot save SHALL persist through the shared `upsertEquipmentSlot` helper — one atomic `upsert_equipment_slot` RPC that upserts the relic row and replaces its substat rows.
 
 #### Scenario: Relic saved to slot
 
 - **WHEN** user saves relic data to a slot
-- **THEN** slot is updated optimistically in local state and a debounced upsert is queued for that slot
+- **THEN** slot is updated optimistically in local state and a debounced single-RPC upsert (relic row + replaced substats) is queued for that slot
 
 #### Scenario: Relic cleared from slot
 
@@ -63,7 +63,7 @@ The system SHALL track ordered stat preference chains for the four variable main
 #### Scenario: Main stat preference saved
 
 - **WHEN** user saves build preferences with main stat chains for body, feet, sphere, or rope
-- **THEN** each chain is an ordered array of `StatPreference` entries persisted via non-atomic delete-then-reinsert (see shared-save-behaviour spec)
+- **THEN** each chain is an ordered array of `StatPreference` entries persisted atomically through the shared `savePreferenceRows` RPC (see shared-save-behaviour spec)
 
 #### Scenario: Empty main stat chain
 
