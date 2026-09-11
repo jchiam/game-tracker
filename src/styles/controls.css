@@ -182,7 +182,8 @@
     color var(--transition-fast),
     background var(--transition-fast),
     border-color var(--transition-fast),
-    box-shadow var(--transition-fast);
+    box-shadow var(--transition-fast),
+    opacity var(--transition-fast);
   text-align: center;
 }
 
@@ -216,9 +217,9 @@
    (and opts it out of the per-button hover above). The gradient hue for the
    attained and added states is supplied inline by the component from
    `progressGradient`; these rules own only the structural treatment that ranks
-   the states against each other. `rung-drop` carries no hue on purpose — the
-   hue is exactly what the click would take away — so the component passes no
-   inline style for it and these neutral tokens paint it. */
+   the states against each other. Every non-empty state keeps its inline hue —
+   the baseline ramp colour never disappears during a preview; these rules only
+   rank attained / add / drop against each other structurally. */
 
 .toggle-btn.is-rung.rung-attained {
   box-shadow: var(--shadow-inset-glow);
@@ -231,10 +232,11 @@
   border-style: dashed;
 }
 
+/* The run a click would give up: same attained hue (inline), faded and dashed —
+   it reads as slipping away without ever losing its ramp colour. */
 .toggle-btn.is-rung.rung-drop {
-  background: color-mix(in srgb, var(--color-text-dim) 8%, transparent);
-  border-color: color-mix(in srgb, var(--color-text-dim) 35%, transparent);
-  color: var(--color-text-dim);
+  border-style: dashed;
+  opacity: 0.55;
 }
 
 /* Pill-button row container (SegmentedButtons) */
