@@ -61,6 +61,20 @@ describe('imagekit', () => {
       );
     });
 
+    it('getPersonaMugshotUrl returns the local path', async () => {
+      const { getPersonaMugshotUrl } = await import('@/lib/imagekit');
+      expect(getPersonaMugshotUrl('/assets/persona-5x/personas/arsene.webp')).toBe(
+        '/assets/persona-5x/personas/arsene.webp',
+      );
+    });
+
+    it('getPersonaAvatarUrl returns the local path', async () => {
+      const { getPersonaAvatarUrl } = await import('@/lib/imagekit');
+      expect(getPersonaAvatarUrl('/assets/persona-5x/personas/arsene.webp')).toBe(
+        '/assets/persona-5x/personas/arsene.webp',
+      );
+    });
+
     it('getLightConeUrl returns the local path', async () => {
       const { getLightConeUrl } = await import('@/lib/imagekit');
       expect(getLightConeUrl('/assets/honkai-star-rail/light-cones/23024.webp')).toBe(
@@ -130,6 +144,20 @@ describe('imagekit', () => {
       const { getAvatarUrl } = await import('@/lib/imagekit');
       expect(getAvatarUrl('/assets/reverse-1999/mugshot.png')).toBe(
         'https://ik.imagekit.io/test/tr:w-128,h-128,fo-face,c-at_max/reverse_1999/mugshot.png',
+      );
+    });
+
+    it('getPersonaMugshotUrl applies the same capped mugshot crop as thieves', async () => {
+      const { getPersonaMugshotUrl } = await import('@/lib/imagekit');
+      expect(getPersonaMugshotUrl('/assets/persona-5x/personas/arsene.webp')).toBe(
+        'https://ik.imagekit.io/test/tr:fo-top,ar-1-1:w-480,c-at_max/persona_5x/personas/arsene.webp',
+      );
+    });
+
+    it('getPersonaAvatarUrl returns a face-centered 128px crop URL', async () => {
+      const { getPersonaAvatarUrl } = await import('@/lib/imagekit');
+      expect(getPersonaAvatarUrl('/assets/persona-5x/personas/arsene.webp')).toBe(
+        'https://ik.imagekit.io/test/tr:w-128,h-128,fo-face,c-at_max/persona_5x/personas/arsene.webp',
       );
     });
 
