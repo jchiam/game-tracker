@@ -69,6 +69,7 @@ SECURITY INVOKER
 SET search_path = public
 AS $$
 DECLARE
+  affected integer;
   target jsonb;
   parent_table text;
   set_clause text;
@@ -90,7 +91,8 @@ BEGIN
         'UPDATE %I t SET %s FROM jsonb_populate_record(NULL::%I, $1) r WHERE t.id = $2',
         parent_table, set_clause, parent_table
       ) USING p_parent_update->'row', p_parent_id;
-      IF NOT FOUND THEN
+      GET DIAGNOSTICS affected = ROW_COUNT;
+      IF affected = 0 THEN
         RAISE EXCEPTION 'parent row % not found in %', p_parent_id, parent_table
           USING ERRCODE = 'P0002';
       END IF;
