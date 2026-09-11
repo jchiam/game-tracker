@@ -63,11 +63,10 @@ export function createRosterPersistence<
       .filter(Boolean) as TTracked[];
   }
 
+  // The user_profiles row the FK needs is provisioned by the on_auth_user_created
+  // trigger (migration 20260911000005), so this is a single insert.
   async function insert(userId: string, entityId: string): Promise<string | null> {
     if (!DB_ENABLED) return null;
-    await supabase
-      .from('user_profiles')
-      .upsert({ id: userId, updated_at: new Date().toISOString() });
     const { data, error } = await supabase
       .from(config.table)
       .insert({

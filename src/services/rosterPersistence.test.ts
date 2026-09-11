@@ -245,18 +245,15 @@ describe('rosterPersistence', () => {
       expect(result[0].level).toBe(6);
     });
 
-    it('insert upserts user_profiles then inserts defaults and returns the new id', async () => {
+    it('insert writes the defaults in a single call and returns the new id', async () => {
       const entityBuilder = createBuilder({ data: { id: 'new-db-id' }, error: null });
-      const profileBuilder = createBuilder({ data: null, error: null });
-
-      mockFrom.mockImplementation((table: string) =>
-        table === 'test_tracked_entities' ? entityBuilder : profileBuilder,
-      );
+      mockFrom.mockReturnValue(entityBuilder);
 
       const result = await makeService().insert('user-1', 'alpha');
 
-      expect(mockFrom).toHaveBeenCalledWith('user_profiles');
-      expect(profileBuilder.upsert).toHaveBeenCalledWith(expect.objectContaining({ id: 'user-1' }));
+      // The profile row is provisioned by the auth trigger, never touched here.
+      expect(mockFrom).toHaveBeenCalledTimes(1);
+      expect(mockFrom).not.toHaveBeenCalledWith('user_profiles');
       expect(entityBuilder.insert).toHaveBeenCalledWith({
         profile_id: 'user-1',
         entity_id: 'alpha',
