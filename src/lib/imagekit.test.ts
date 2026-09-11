@@ -119,10 +119,10 @@ describe('imagekit', () => {
       expect(isImageKitEnabled).toBe(true);
     });
 
-    it('getMugshotUrl returns a top-anchored square crop URL', async () => {
+    it('getMugshotUrl returns a top-anchored square crop capped at 480px without upscaling', async () => {
       const { getMugshotUrl } = await import('@/lib/imagekit');
       expect(getMugshotUrl('/assets/reverse-1999/mugshot.png')).toBe(
-        'https://ik.imagekit.io/test/tr:fo-top,ar-1-1/reverse_1999/mugshot.png',
+        'https://ik.imagekit.io/test/tr:fo-top,ar-1-1:w-480,c-at_max/reverse_1999/mugshot.png',
       );
     });
 
@@ -180,7 +180,7 @@ describe('imagekit', () => {
       vi.stubEnv('VITE_IMAGEKIT_URL_ENDPOINT', '  https://ik.imagekit.io/test  ');
       const { getMugshotUrl } = await import('@/lib/imagekit');
       expect(getMugshotUrl('/assets/reverse-1999/mugshot.png')).toBe(
-        'https://ik.imagekit.io/test/tr:fo-top,ar-1-1/reverse_1999/mugshot.png',
+        'https://ik.imagekit.io/test/tr:fo-top,ar-1-1:w-480,c-at_max/reverse_1999/mugshot.png',
       );
     });
   });

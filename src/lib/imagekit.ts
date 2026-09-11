@@ -15,15 +15,21 @@ export function toImageKitPath(localPath: string): string {
     .join('/');
 }
 
+// Card mugshot chain: top-anchored square crop, then cap the side at 480px
+// without upscaling. The roster card header is 250px tall in a 280px-min
+// column, so 480 covers 2x displays; `c-at_max` leaves sources already smaller
+// than that (HSR's 256px portraits) untouched instead of inflating them, while
+// the full-resolution CN headicons R1999 stores drop from ~150 KB to ~50 KB.
+const MUGSHOT_CROP = 'tr:fo-top,ar-1-1:w-480,c-at_max';
+
 // Returns a fully-formed ImageKit URL for an arcanist mugshot.
 // All mugshots live in /reverse_1999/arcanists_mugshots/ regardless of source.
-// Pipeline: top-anchored square crop only — mugshots use CN headicons (full-resolution)
+// Pipeline: `MUGSHOT_CROP` — mugshots use CN headicons (full-resolution)
 // as the primary source, with kornblume icon as fallback for unmatched characters.
 // Falls back to the raw local path when ImageKit is not configured.
 export function getMugshotUrl(localPath: string): string {
   if (!isImageKitEnabled) return localPath;
-  const tr = 'tr:fo-top,ar-1-1';
-  return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
+  return `${IMAGEKIT_URL_ENDPOINT}/${MUGSHOT_CROP}${toImageKitPath(localPath)}`;
 }
 
 // Returns a fully-formed ImageKit URL for a small arcanist avatar (e.g. modal list items).
@@ -36,12 +42,11 @@ export function getAvatarUrl(localPath: string): string {
 }
 
 // Returns a fully-formed ImageKit URL for a P5X persona mugshot.
-// Personas share the thief image treatment: top-anchored square crop.
+// Personas share the thief image treatment (`MUGSHOT_CROP`).
 // Falls back to the raw local path when ImageKit is not configured.
 export function getPersonaMugshotUrl(localPath: string): string {
   if (!isImageKitEnabled) return localPath;
-  const tr = 'tr:fo-top,ar-1-1';
-  return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
+  return `${IMAGEKIT_URL_ENDPOINT}/${MUGSHOT_CROP}${toImageKitPath(localPath)}`;
 }
 
 // Returns a fully-formed ImageKit URL for a small P5X persona avatar (picker list).
