@@ -12,9 +12,7 @@ import { createSupabaseRestErrorHandlers } from '@/test/mocks/handlers';
  * dynamic import of the service module.
  */
 
-const server = setupServer(
-  ...createSupabaseRestErrorHandlers(['test_tracked', 'test_parties']),
-);
+const server = setupServer(...createSupabaseRestErrorHandlers(['test_tracked', 'test_parties']));
 
 vi.stubEnv('VITE_SUPABASE_URL', 'http://localhost:54321');
 vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
