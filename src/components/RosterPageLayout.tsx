@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import { AuthGate } from '@/components/AuthGate';
-import { LoadErrorState } from '@/components/LoadErrorState';
+import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 import { SavingToast } from '@/components/SavingToast';
 import './RosterPageLayout.css';
@@ -153,7 +153,7 @@ export function RosterPageLayout({
           ) : isInitialLoad && session ? (
             <LoadingState label="Loading your roster…" />
           ) : isLoadError ? (
-            <LoadErrorState onRetry={onRetry} />
+            <ErrorState message="Couldn't load your roster." onRetry={onRetry} />
           ) : !session ? (
             <AuthGate onSignIn={onSignIn} />
           ) : !hasTracked ? (

@@ -1,5 +1,5 @@
 import { supabase } from '@/lib/supabase';
-import type { StatPreference } from '@/types';
+import type { PartySaveResult, StatPreference } from '@/types';
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
 
@@ -134,12 +134,14 @@ export interface PartyPersistenceConfig<TParty, TMember> {
 
 /**
  * Error semantics are deliberately asymmetric: `loadParties` throws (the shared
- * party hook catches), but `saveParty` resolves to null on failure — nothing in
- * the save call chain catches, so a rejection would surface unhandled. A member
- * insert failing after the party row is persisted still returns the id, so the
- * hook's reload shows the true DB state instead of inviting a duplicate retry.
- * Member replacement is delete-then-reinsert with no transaction (see CLAUDE.md
- * Known Limitations, same pattern as savePreferenceRows).
+ * party hook catches), but `saveParty` never rejects — nothing in the save call
+ * chain catches, so a rejection would surface unhandled. It resolves to a
+ * `PartySaveResult`: `partyId: null` when the party row failed, and
+ * `membersSaved: false` when the row persisted but the member insert failed —
+ * the id is still returned so the hook's reload shows the true DB state instead
+ * of inviting a duplicate retry. Member replacement is delete-then-reinsert with
+ * no transaction (see CLAUDE.md Known Limitations, same pattern as
+ * savePreferenceRows).
  */
 export function createPartyPersistence<
   TParty extends { id: string; name: string; notes: string | null },
@@ -179,8 +181,8 @@ export function createPartyPersistence<
   async function saveParty(
     userId: string,
     party: Partial<TParty> & { members: TMember[] },
-  ): Promise<string | null> {
-    if (!DB_ENABLED) return null;
+  ): Promise<PartySaveResult> {
+    if (!DB_ENABLED) return { partyId: null, membersSaved: false };
 
     const partyRow = {
       name: party.name || config.defaultName,
@@ -194,7 +196,7 @@ export function createPartyPersistence<
       const { error } = await supabase.from(config.partiesTable).update(partyRow).eq('id', partyId);
       if (error) {
         console.error('Party Update Failed:', error);
-        return null;
+        return { partyId: null, membersSaved: false };
       }
       await supabase.from(config.membersTable).delete().eq('party_id', partyId);
     } else {
@@ -205,19 +207,23 @@ export function createPartyPersistence<
         .single();
       if (error || !data) {
         console.error('Party Create Failed:', error);
-        return null;
+        return { partyId: null, membersSaved: false };
       }
       partyId = data.id;
     }
 
+    let membersSaved = true;
     if (party.members.length > 0) {
       const { error } = await supabase
         .from(config.membersTable)
         .insert(party.members.map((m) => ({ party_id: partyId, ...config.memberToRow(m) })));
-      if (error) console.error('Party Members Save Failed:', error);
+      if (error) {
+        console.error('Party Members Save Failed:', error);
+        membersSaved = false;
+      }
     }
 
-    return partyId ?? null;
+    return { partyId: partyId ?? null, membersSaved };
   }
 
   async function deleteParty(partyId: string): Promise<boolean> {
@@ -248,7 +254,9 @@ export function createPartyPersistence<
 
 /**
  * Replaces a variable-length set of preference rows: delete existing rows by FK,
- * optionally update the parent row, then insert the new ordered rows.
+ * optionally update the parent row, then insert the new ordered rows. Every
+ * step checks its error and throws before the next runs — a failed delete
+ * followed by a successful insert would otherwise leave duplicate rows.
  *
  * NOT atomic — these are separate Supabase calls with no transaction (see
  * CLAUDE.md Known Limitations). This helper is intentionally the only
@@ -263,11 +271,22 @@ export async function savePreferenceRows(opts: {
   if (!DB_ENABLED) return;
 
   for (const target of opts.deleteFrom) {
-    await supabase.from(target.table).delete().eq(target.fkColumn, opts.dbId);
+    const { error } = await supabase.from(target.table).delete().eq(target.fkColumn, opts.dbId);
+    if (error) {
+      console.error('Preference Rows Delete Failed:', error);
+      throw error;
+    }
   }
 
   if (opts.parentUpdate) {
-    await supabase.from(opts.parentUpdate.table).update(opts.parentUpdate.row).eq('id', opts.dbId);
+    const { error } = await supabase
+      .from(opts.parentUpdate.table)
+      .update(opts.parentUpdate.row)
+      .eq('id', opts.dbId);
+    if (error) {
+      console.error('Preference Rows Parent Update Failed:', error);
+      throw error;
+    }
   }
 
   for (const insertSet of opts.inserts) {

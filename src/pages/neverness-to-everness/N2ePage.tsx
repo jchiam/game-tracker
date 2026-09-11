@@ -33,7 +33,22 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
     getFilteredRoster,
   } = useCharacters(session, isAuthLoading);
 
-  const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
+  const {
+    parties,
+    isInitialLoad: isPartiesInitialLoad,
+    isLoadError: isPartiesLoadError,
+    retryLoad: retryParties,
+    saveParty,
+    deleteParty,
+    toggleFavoriteParty,
+  } = useParties(session);
+
+  // Roster Retry recovers both data sets after a shared outage; the parties
+  // tab's own Retry (passed below) touches only parties.
+  const retryAll = () => {
+    retryLoad();
+    retryParties();
+  };
 
   const {
     view,
@@ -69,7 +84,7 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
       isAuthLoading={isAuthLoading}
       isInitialLoad={isInitialLoad}
       isLoadError={isLoadError}
-      onRetry={retryLoad}
+      onRetry={retryAll}
       onSignIn={onSignIn}
       hasTracked={trackedCharacters.length > 0}
       hasMatches={filteredRoster.length > 0}
@@ -99,7 +114,9 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
       ))}
       partiesTab={
         <PartiesTab
-          isInitialLoad={isInitialLoad}
+          isInitialLoad={isPartiesInitialLoad}
+          isLoadError={isPartiesLoadError}
+          onRetry={retryParties}
           parties={parties}
           availableCharacters={availableCharacters}
           onSaveParty={saveParty}

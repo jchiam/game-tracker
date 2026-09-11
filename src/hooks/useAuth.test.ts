@@ -13,6 +13,9 @@ beforeAll(() => server.listen());
 afterEach(() => server.resetHandlers());
 afterAll(() => server.close());
 
+vi.mock('@/utils/toast', () => ({ addToast: vi.fn() }));
+import { addToast } from '@/utils/toast';
+
 // Mock the supabase module
 vi.mock('@/lib/supabase', () => ({
   supabase: {
@@ -106,6 +109,19 @@ describe('useAuth', () => {
       });
 
       expect(result.current.session).toBeNull();
+    });
+
+    it('settles as signed-out with an error toast when the session check rejects', async () => {
+      mockGetSession.mockRejectedValue(new Error('Auth server down'));
+
+      const { result } = renderHook(() => useAuth());
+
+      await waitFor(() => {
+        expect(result.current.isAuthLoading).toBe(false);
+      });
+
+      expect(result.current.session).toBeNull();
+      expect(addToast).toHaveBeenCalledWith("Couldn't check your sign-in. Please reload.", 'error');
     });
 
     it('subscribes to auth state changes on mount', async () => {

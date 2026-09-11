@@ -45,7 +45,22 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     getFilteredRoster,
   } = useAgents(session, isAuthLoading);
 
-  const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
+  const {
+    parties,
+    isInitialLoad: isPartiesInitialLoad,
+    isLoadError: isPartiesLoadError,
+    retryLoad: retryParties,
+    saveParty,
+    deleteParty,
+    toggleFavoriteParty,
+  } = useParties(session);
+
+  // Roster Retry recovers both data sets after a shared outage; the parties
+  // tab's own Retry (passed below) touches only parties.
+  const retryAll = () => {
+    retryLoad();
+    retryParties();
+  };
 
   const [passGateFilter, setPassGateFilter] = useState(false);
 
@@ -114,7 +129,7 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
       isAuthLoading={isAuthLoading}
       isInitialLoad={isInitialLoad}
       isLoadError={isLoadError}
-      onRetry={retryLoad}
+      onRetry={retryAll}
       onSignIn={onSignIn}
       hasTracked={trackedAgents.length > 0}
       hasMatches={filteredRoster.length > 0}
@@ -168,7 +183,9 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
       ))}
       partiesTab={
         <PartiesTab
-          isInitialLoad={isInitialLoad}
+          isInitialLoad={isPartiesInitialLoad}
+          isLoadError={isPartiesLoadError}
+          onRetry={retryParties}
           parties={parties}
           availableAgents={availableAgents}
           onSaveParty={saveParty}

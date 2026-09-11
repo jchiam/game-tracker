@@ -36,7 +36,22 @@ export function ArknightsEndfieldPage({
     getFilteredRoster,
   } = useOperators(session, isAuthLoading);
 
-  const { parties, saveParty, deleteParty, toggleFavoriteParty } = useParties(session);
+  const {
+    parties,
+    isInitialLoad: isPartiesInitialLoad,
+    isLoadError: isPartiesLoadError,
+    retryLoad: retryParties,
+    saveParty,
+    deleteParty,
+    toggleFavoriteParty,
+  } = useParties(session);
+
+  // Roster Retry recovers both data sets after a shared outage; the parties
+  // tab's own Retry (passed below) touches only parties.
+  const retryAll = () => {
+    retryLoad();
+    retryParties();
+  };
 
   const {
     view,
@@ -71,7 +86,7 @@ export function ArknightsEndfieldPage({
       isAuthLoading={isAuthLoading}
       isInitialLoad={isInitialLoad}
       isLoadError={isLoadError}
-      onRetry={retryLoad}
+      onRetry={retryAll}
       onSignIn={onSignIn}
       hasTracked={trackedOperators.length > 0}
       hasMatches={filteredRoster.length > 0}
@@ -100,7 +115,9 @@ export function ArknightsEndfieldPage({
       ))}
       partiesTab={
         <PartiesTab
-          isInitialLoad={isInitialLoad}
+          isInitialLoad={isPartiesInitialLoad}
+          isLoadError={isPartiesLoadError}
+          onRetry={retryParties}
           parties={parties}
           availableOperators={availableOperators}
           onSaveParty={saveParty}

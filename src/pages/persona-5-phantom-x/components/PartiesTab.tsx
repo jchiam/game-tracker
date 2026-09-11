@@ -1,5 +1,5 @@
 import type { Session } from '@supabase/supabase-js';
-import type { Party, PartyMember } from '@/types';
+import type { Party, PartyMember, PartySaveResult } from '@/types';
 import type { P5xThief } from '@/data/persona-5-phantom-x/thieves';
 import { ALL_PERSONAS } from '@/data/persona-5-phantom-x/personas';
 import { PartiesView } from '@/components/parties/PartiesView';
@@ -9,11 +9,13 @@ import './PartiesTab.css';
 interface PartiesTabProps {
   parties: Party[];
   availableThieves: P5xThief[];
-  onSaveParty: (party: Partial<Party> & { members: PartyMember[] }) => Promise<string | null>;
+  onSaveParty: (party: Partial<Party> & { members: PartyMember[] }) => Promise<PartySaveResult>;
   onDeleteParty: (id: string) => Promise<boolean>;
   onToggleFavorite: (partyId: string, value: boolean) => void;
   session: Session | null;
   isInitialLoad?: boolean;
+  isLoadError?: boolean;
+  onRetry?: () => void;
 }
 
 export function PartiesTab({
@@ -24,6 +26,8 @@ export function PartiesTab({
   onToggleFavorite,
   session,
   isInitialLoad,
+  isLoadError,
+  onRetry,
 }: PartiesTabProps) {
   // Thieves come from the user's tracked roster; personas from the full static
   // catalog (personas are equipment, never individually "owned").
@@ -42,6 +46,8 @@ export function PartiesTab({
       onToggleFavorite={onToggleFavorite}
       session={session}
       isInitialLoad={isInitialLoad}
+      isLoadError={isLoadError}
+      onRetry={onRetry}
     />
   );
 }

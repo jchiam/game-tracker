@@ -85,8 +85,10 @@ const defaultAgentsHook = {
 
 const defaultPartiesHook = {
   parties: [] as Party[],
-  isLoading: false,
-  saveParty: vi.fn().mockResolvedValue(null),
+  isInitialLoad: false,
+  isLoadError: false,
+  retryLoad: vi.fn(),
+  saveParty: vi.fn().mockResolvedValue({ partyId: null, membersSaved: false }),
   deleteParty: vi.fn().mockResolvedValue(true),
   toggleFavoriteParty: vi.fn(),
   refreshParties: vi.fn(),
@@ -127,7 +129,7 @@ describe('ZzzPage', () => {
     });
     const session = createMockSession();
     renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
-    expect(screen.getByText(/failed to load data/i)).toBeInTheDocument();
+    expect(screen.getByText(/couldn.t load your roster/i)).toBeInTheDocument();
     expect(screen.getByTitle('Add Agent')).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: /retry/i }));
     expect(retryLoad).toHaveBeenCalledTimes(1);
@@ -563,5 +565,60 @@ describe('ZzzPage', () => {
     renderWithProviders(<ZzzPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByTitle('Favorite Agent'));
     expect(toggleFavorite).toHaveBeenCalledWith('ellen', true);
+  });
+});
+
+describe('ZzzPage error surfaces and party load wiring', () => {
+  const partiesHook = defaultPartiesHook;
+
+  it('roster Retry retries both the roster and the parties load', () => {
+    const retryLoad = vi.fn();
+    const retryParties = vi.fn();
+    vi.mocked(useAgents).mockReturnValue({ ...defaultAgentsHook, isLoadError: true, retryLoad });
+    vi.mocked(useParties).mockReturnValue({ ...partiesHook, retryLoad: retryParties });
+    renderWithProviders(
+      <ZzzPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /retry/i }));
+    expect(retryLoad).toHaveBeenCalledTimes(1);
+    expect(retryParties).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders the roster error in the error box, not the empty box', () => {
+    vi.mocked(useAgents).mockReturnValue({ ...defaultAgentsHook, isLoadError: true });
+    renderWithProviders(
+      <ZzzPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(screen.getByRole('alert')).toHaveClass('error-state');
+    expect(document.querySelector('.empty-state')).toBeNull();
+  });
+
+  it('parties tab reflects the party hook load state, not the roster load state', () => {
+    vi.mocked(useParties).mockReturnValue({ ...partiesHook, isInitialLoad: true });
+    renderWithProviders(
+      <ZzzPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /parties/i }));
+    expect(screen.getByRole('status')).toHaveTextContent('Loading your parties…');
+    expect(screen.queryByText(/no parties configured yet/i)).not.toBeInTheDocument();
+  });
+
+  it('parties tab Retry retries only the parties load', () => {
+    const retryLoad = vi.fn();
+    const retryParties = vi.fn();
+    vi.mocked(useAgents).mockReturnValue({ ...defaultAgentsHook, retryLoad });
+    vi.mocked(useParties).mockReturnValue({
+      ...partiesHook,
+      isLoadError: true,
+      retryLoad: retryParties,
+    });
+    renderWithProviders(
+      <ZzzPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /parties/i }));
+    expect(screen.getByRole('alert')).toHaveTextContent("Couldn't load your parties.");
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(retryParties).toHaveBeenCalledTimes(1);
+    expect(retryLoad).not.toHaveBeenCalled();
   });
 });

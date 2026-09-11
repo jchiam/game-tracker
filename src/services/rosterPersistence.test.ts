@@ -125,7 +125,10 @@ describe('rosterPersistence', () => {
       const { createPartyPersistence } = await import('@/services/rosterPersistence');
       const svc = createPartyPersistence<TestParty, TestMember>(partyConfig());
       expect(await svc.loadParties('user-1')).toEqual([]);
-      expect(await svc.saveParty('user-1', { name: 'Team', members: [] })).toBeNull();
+      expect(await svc.saveParty('user-1', { name: 'Team', members: [] })).toEqual({
+        partyId: null,
+        membersSaved: false,
+      });
       expect(await svc.deleteParty('party-1')).toBe(false);
       expect(await svc.toggleFavoriteParty('party-1', true)).toBe(false);
     });
@@ -343,6 +346,48 @@ describe('rosterPersistence', () => {
         expect(subBuilder.insert).not.toHaveBeenCalled();
       });
 
+      it('throws on delete failure before any parent update or insert runs', async () => {
+        const failDelete = createBuilder({ data: null, error: { message: 'Delete failed' } });
+        const parentBuilder = createBuilder({ data: null, error: null });
+        mockFrom.mockImplementation((table: string) =>
+          table === 'test_pref_main' ? failDelete : parentBuilder,
+        );
+
+        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        await expect(
+          mod.savePreferenceRows({
+            dbId: 'db-uuid-1',
+            deleteFrom: [{ table: 'test_pref_main', fkColumn: 'tracked_id' }],
+            parentUpdate: { table: 'test_parent', row: { comments: 'note' } },
+            inserts: [{ table: 'test_pref_main', rows: [{ stat: 'ATK' }] }],
+          }),
+        ).rejects.toEqual({ message: 'Delete failed' });
+        expect(parentBuilder.update).not.toHaveBeenCalled();
+        expect(failDelete.insert).not.toHaveBeenCalled();
+        spy.mockRestore();
+      });
+
+      it('throws on parent update failure before any insert runs', async () => {
+        const mainBuilder = createBuilder({ data: null, error: null });
+        const failParent = createBuilder({ data: null, error: { message: 'Parent failed' } });
+        mockFrom.mockImplementation((table: string) =>
+          table === 'test_pref_main' ? mainBuilder : failParent,
+        );
+
+        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+        await expect(
+          mod.savePreferenceRows({
+            dbId: 'db-uuid-1',
+            deleteFrom: [{ table: 'test_pref_main', fkColumn: 'tracked_id' }],
+            parentUpdate: { table: 'test_parent', row: { comments: 'note' } },
+            inserts: [{ table: 'test_pref_main', rows: [{ stat: 'ATK' }] }],
+          }),
+        ).rejects.toEqual({ message: 'Parent failed' });
+        expect(mainBuilder.delete).toHaveBeenCalled();
+        expect(mainBuilder.insert).not.toHaveBeenCalled();
+        spy.mockRestore();
+      });
+
       it('throws on insert failure', async () => {
         const failBuilder = createBuilder({ data: null, error: { message: 'Insert failed' } });
         mockFrom.mockReturnValue(failBuilder);
@@ -540,7 +585,7 @@ describe('rosterPersistence', () => {
         expect(memberBuilder.insert).toHaveBeenCalledWith([
           { party_id: 'new-party-id', entity_id: 'alpha', slot_index: 0 },
         ]);
-        expect(result).toBe('new-party-id');
+        expect(result).toEqual({ partyId: 'new-party-id', membersSaved: true });
       });
 
       it('saveParty defaults name and notes on create', async () => {
@@ -590,7 +635,7 @@ describe('rosterPersistence', () => {
         expect(memberBuilder.insert).toHaveBeenCalledWith([
           { party_id: 'existing-id', entity_id: 'beta', slot_index: 1 },
         ]);
-        expect(result).toBe('existing-id');
+        expect(result).toEqual({ partyId: 'existing-id', membersSaved: true });
       });
 
       it('saveParty skips the member insert when members is empty', async () => {
@@ -605,17 +650,17 @@ describe('rosterPersistence', () => {
         expect(memberBuilder.insert).not.toHaveBeenCalled();
       });
 
-      it('saveParty returns null (no rejection) on create error', async () => {
+      it('saveParty resolves a null partyId (no rejection) on create error', async () => {
         mockFrom.mockReturnValue(
           createBuilder({ data: null, error: { message: 'Insert failed' } }),
         );
         const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
         const result = await makePartyService().saveParty('user-1', { name: 'T', members: [] });
-        expect(result).toBeNull();
+        expect(result).toEqual({ partyId: null, membersSaved: false });
         spy.mockRestore();
       });
 
-      it('saveParty returns null (no rejection) on update error', async () => {
+      it('saveParty resolves a null partyId (no rejection) on update error', async () => {
         mockFrom.mockReturnValue(
           createBuilder({ data: null, error: { message: 'Update failed' } }),
         );
@@ -625,11 +670,11 @@ describe('rosterPersistence', () => {
           name: 'T',
           members: [],
         });
-        expect(result).toBeNull();
+        expect(result).toEqual({ partyId: null, membersSaved: false });
         spy.mockRestore();
       });
 
-      it('saveParty logs but still returns the id on member insert error', async () => {
+      it('saveParty still returns the id with membersSaved false on member insert error', async () => {
         const partyBuilder = createBuilder({ data: { id: 'new-party-id' }, error: null });
         const memberBuilder = createBuilder({ data: null, error: { message: 'Members failed' } });
         mockFrom.mockImplementation((table: string) =>
@@ -641,7 +686,7 @@ describe('rosterPersistence', () => {
           name: 'Team',
           members: [{ entityId: 'alpha', slotIndex: 0 }],
         });
-        expect(result).toBe('new-party-id');
+        expect(result).toEqual({ partyId: 'new-party-id', membersSaved: false });
         expect(spy).toHaveBeenCalled();
         spy.mockRestore();
       });

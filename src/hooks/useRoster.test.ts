@@ -17,7 +17,9 @@ vi.mock('@/hooks/usePendingSaves', () => ({
         _key: string,
         updates: Record<string, any>,
         flushFn: (p: Record<string, any>) => Promise<void>,
-      ) => flushFn(updates),
+        // The real queue catches flush rejections (and toasts); swallow here so
+        // a deliberate write failure in a test never becomes an unhandled rejection.
+      ) => flushFn(updates).catch(() => {}),
     ),
     queueAction: vi.fn((_key: string, action: () => Promise<void>) => action()),
   }),
@@ -360,6 +362,67 @@ describe('useRoster', () => {
       expect(mockUpdateEntity).toHaveBeenCalledWith('db-id-1', {
         extraValue: 42,
         isFavorited: true,
+      });
+    });
+
+    it('rolls back the failed payload fields to their pre-edit values on write failure', async () => {
+      mockUpdateEntity.mockRejectedValue(new Error('Update failed'));
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      act(() => {
+        result.current.applyPatch('char-1', { extraValue: 42, isFavorited: true });
+      });
+
+      await waitFor(() => {
+        expect(result.current.trackedEntities[0]).toMatchObject({
+          extraValue: 0,
+          isFavorited: false,
+        });
+      });
+      expect(mockUpdateEntity).toHaveBeenCalledWith('db-id-1', {
+        extraValue: 42,
+        isFavorited: true,
+      });
+    });
+
+    it('keeps a later patch to an unrelated field when an earlier write fails', async () => {
+      // First flush rejects, second succeeds — with the synchronous queue mock
+      // each applyPatch flushes its own payload immediately.
+      mockUpdateEntity
+        .mockRejectedValueOnce(new Error('Update failed'))
+        .mockResolvedValueOnce(undefined);
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      act(() => {
+        result.current.applyPatch('char-1', { extraValue: 42 });
+        result.current.applyPatch('char-1', { isFavorited: true });
+      });
+
+      await waitFor(() => {
+        expect(result.current.trackedEntities[0]).toMatchObject({ extraValue: 0 });
+      });
+      expect(result.current.trackedEntities[0]).toMatchObject({ isFavorited: true });
+    });
+
+    it('releases the snapshot on a successful write so a later failure restores the saved value', async () => {
+      mockUpdateEntity
+        .mockResolvedValueOnce(undefined)
+        .mockRejectedValueOnce(new Error('Update failed'));
+      const { result } = renderHook(() => useRoster(mockSession, false, config));
+      await waitFor(() => expect(result.current.isInitialLoad).toBe(false));
+
+      act(() => {
+        result.current.applyPatch('char-1', { extraValue: 10 });
+      });
+      await waitFor(() => expect(mockUpdateEntity).toHaveBeenCalledTimes(1));
+      act(() => {
+        result.current.applyPatch('char-1', { extraValue: 20 });
+      });
+
+      await waitFor(() => {
+        expect(result.current.trackedEntities[0]).toMatchObject({ extraValue: 10 });
       });
     });
 

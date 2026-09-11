@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import type { Session } from '@supabase/supabase-js';
+import type { PartySaveResult } from '@/types';
 import { createMockSession } from '@/test/mocks/supabase';
 
 vi.mock('@/services/neverness-to-everness/partyService', () => ({
@@ -35,7 +36,7 @@ describe('useParties', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockLoadParties.mockResolvedValue([]);
-    mockSaveParty.mockResolvedValue('new-party-id');
+    mockSaveParty.mockResolvedValue({ partyId: 'new-party-id', membersSaved: true });
     mockDeleteParty.mockResolvedValue(true);
     mockToggleFavoriteParty.mockResolvedValue(true);
   });
@@ -43,7 +44,7 @@ describe('useParties', () => {
   async function setup(session: Session | null = mockSession) {
     const hook = renderHook(() => useParties(session));
     await waitFor(() => {
-      expect(hook.result.current.isLoading).toBe(false);
+      expect(hook.result.current.isInitialLoad).toBe(false);
     });
     return hook;
   }
@@ -75,12 +76,12 @@ describe('useParties', () => {
   it('saveParty returns null when no session', async () => {
     const { result } = await setup(null);
 
-    let partyId: string | null = null;
+    let partyId: PartySaveResult | null = null;
     await act(async () => {
       partyId = await result.current.saveParty({ name: 'Test', members: [] });
     });
 
-    expect(partyId).toBeNull();
+    expect(partyId).toEqual({ partyId: null, membersSaved: false });
   });
 
   it('deleteParty removes party from state', async () => {

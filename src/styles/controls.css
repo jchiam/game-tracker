@@ -146,6 +146,40 @@
   gap: var(--spacing-2);
 }
 
+/* ─── Error state ────────────────────────────────────────────────── */
+/* Shared ErrorState component: warning glyph + message + optional retry.
+   Solid danger-hued border and tinted fill — deliberately unlike both the
+   dashed `.empty-state` ("nothing here") and the borderless `.loading-state`
+   ("working") so a failure never reads as empty content. Lives here rather
+   than in a route-split stylesheet because the route-level error boundary
+   renders it above the routes. */
+
+.error-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-3xl) var(--spacing-xl);
+  text-align: center;
+  color: var(--color-text-primary);
+  font-size: var(--typography-font-size-lg);
+  background: var(--color-ui-danger-bg);
+  border: 1px solid color-mix(in srgb, var(--color-ui-danger) 60%, transparent);
+  border-radius: var(--border-radius-lg);
+}
+
+.error-state-glyph {
+  font-size: var(--typography-font-size-2xl);
+  color: var(--color-ui-danger);
+  line-height: 1;
+}
+
+.error-state-message {
+  margin: 0;
+}
+
 /* ─── Stat chip ──────────────────────────────────────────────────── */
 
 .stat-chip {

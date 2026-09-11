@@ -9,14 +9,33 @@ import {
 import { useParties as usePartiesBase, makeFavoriteToggle } from '@/hooks/useParties';
 
 export function useParties(session: Session | null) {
-  const { parties, setParties, partiesRef, isLoading, saveParty, deleteParty, refreshParties } =
-    usePartiesBase<Party, PartyMember>(session, {
-      loadParties,
-      saveParty: apiSaveParty,
-      deleteParty: apiDeleteParty,
-    });
+  const {
+    parties,
+    setParties,
+    partiesRef,
+    isInitialLoad,
+    isLoadError,
+    retryLoad,
+    saveParty,
+    deleteParty,
+    refreshParties,
+  } = usePartiesBase<Party, PartyMember>(session, {
+    loadParties,
+    saveParty: apiSaveParty,
+    deleteParty: apiDeleteParty,
+    nouns: { party: 'lineup', parties: 'lineups' },
+  });
 
   const toggleFavoriteParty = makeFavoriteToggle(setParties, partiesRef, apiToggleFavorite);
 
-  return { parties, isLoading, saveParty, deleteParty, toggleFavoriteParty, refreshParties };
+  return {
+    parties,
+    isInitialLoad,
+    isLoadError,
+    retryLoad,
+    saveParty,
+    deleteParty,
+    toggleFavoriteParty,
+    refreshParties,
+  };
 }
