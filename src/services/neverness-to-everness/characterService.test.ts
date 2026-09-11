@@ -5,6 +5,7 @@ import { createBuilder } from '@/test/mocks/supabase';
 // savePreferenceRows failure/DB-disabled paths are covered by rosterPersistence.test.ts.
 describe('characterService', () => {
   let mockFrom: ReturnType<typeof vi.fn>;
+  let mockRpc: ReturnType<typeof vi.fn>;
   let service: typeof import('@/services/neverness-to-everness/characterService');
 
   beforeEach(async () => {
@@ -13,9 +14,10 @@ describe('characterService', () => {
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
     mockFrom = vi.fn().mockReturnValue(createBuilder());
+    mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
     vi.doMock('@/lib/supabase', () => ({
-      supabase: { from: mockFrom },
+      supabase: { from: mockFrom, rpc: mockRpc },
     }));
 
     service = await import('@/services/neverness-to-everness/characterService');
@@ -183,10 +185,9 @@ describe('characterService', () => {
   });
 
   describe('saveCartridgePreferences', () => {
-    it('deletes old preferences and updates comments', async () => {
-      const builder = createBuilder({ data: null, error: null });
-      mockFrom.mockReturnValue(builder);
+    const rpcPayload = () => mockRpc.mock.calls[0][1];
 
+    it('replaces both preference tables and the parent columns in one replace_preference_rows RPC', async () => {
       await service.saveCartridgePreferences('db-uuid-1', {
         cartridgeId: null,
         mainStats: [],
@@ -194,24 +195,23 @@ describe('characterService', () => {
         comments: 'New comments',
       });
 
-      expect(mockFrom).toHaveBeenCalledWith('n2e_cartridge_preference_main_stats');
-      expect(mockFrom).toHaveBeenCalledWith('n2e_cartridge_preference_sub_stats');
-      expect(mockFrom).toHaveBeenCalledWith('n2e_tracked_characters');
-      expect(builder.delete).toHaveBeenCalled();
-      expect(builder.update).toHaveBeenCalledWith({
-        cartridge_comments: 'New comments',
-        cartridge_preference_id: null,
+      expect(mockRpc).toHaveBeenCalledTimes(1);
+      expect(mockRpc).toHaveBeenCalledWith('replace_preference_rows', {
+        p_parent_id: 'db-uuid-1',
+        p_delete_from: [
+          { table: 'n2e_cartridge_preference_main_stats', fk_column: 'tracked_character_id' },
+          { table: 'n2e_cartridge_preference_sub_stats', fk_column: 'tracked_character_id' },
+        ],
+        p_parent_update: {
+          table: 'n2e_tracked_characters',
+          row: { cartridge_comments: 'New comments', cartridge_preference_id: null },
+        },
+        p_inserts: [],
       });
+      expect(mockFrom).not.toHaveBeenCalled();
     });
 
     it('inserts main stat preferences when present', async () => {
-      const mainBuilder = createBuilder({ data: null, error: null });
-      const otherBuilder = createBuilder({ data: null, error: null });
-
-      mockFrom.mockImplementation((table: string) =>
-        table === 'n2e_cartridge_preference_main_stats' ? mainBuilder : otherBuilder,
-      );
-
       await service.saveCartridgePreferences('db-uuid-1', {
         cartridgeId: null,
         mainStats: [{ stat: 'ATK', operator: '>', orderIndex: 0 }],
@@ -219,24 +219,22 @@ describe('characterService', () => {
         comments: '',
       });
 
-      expect(mainBuilder.insert).toHaveBeenCalledWith([
+      expect(rpcPayload().p_inserts).toEqual([
         {
-          tracked_character_id: 'db-uuid-1',
-          stat: 'ATK',
-          operator_to_next: '>',
-          order_index: 0,
+          table: 'n2e_cartridge_preference_main_stats',
+          rows: [
+            {
+              tracked_character_id: 'db-uuid-1',
+              stat: 'ATK',
+              operator_to_next: '>',
+              order_index: 0,
+            },
+          ],
         },
       ]);
     });
 
     it('inserts sub stat preferences when present', async () => {
-      const subBuilder = createBuilder({ data: null, error: null });
-      const otherBuilder = createBuilder({ data: null, error: null });
-
-      mockFrom.mockImplementation((table: string) =>
-        table === 'n2e_cartridge_preference_sub_stats' ? subBuilder : otherBuilder,
-      );
-
       await service.saveCartridgePreferences('db-uuid-1', {
         cartridgeId: null,
         mainStats: [],
@@ -244,12 +242,17 @@ describe('characterService', () => {
         comments: '',
       });
 
-      expect(subBuilder.insert).toHaveBeenCalledWith([
+      expect(rpcPayload().p_inserts).toEqual([
         {
-          tracked_character_id: 'db-uuid-1',
-          stat: 'CRIT DMG',
-          operator_to_next: '>',
-          order_index: 0,
+          table: 'n2e_cartridge_preference_sub_stats',
+          rows: [
+            {
+              tracked_character_id: 'db-uuid-1',
+              stat: 'CRIT DMG',
+              operator_to_next: '>',
+              order_index: 0,
+            },
+          ],
         },
       ]);
     });

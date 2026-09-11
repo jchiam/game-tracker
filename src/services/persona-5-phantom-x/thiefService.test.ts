@@ -5,6 +5,7 @@ import { createBuilder } from '@/test/mocks/supabase';
 // error rethrow, catalog merge, profile upsert) is covered by rosterPersistence.test.ts.
 describe('thiefService', () => {
   let mockFrom: ReturnType<typeof vi.fn>;
+  let mockRpc: ReturnType<typeof vi.fn>;
   let service: typeof import('@/services/persona-5-phantom-x/thiefService');
 
   beforeEach(async () => {
@@ -13,9 +14,10 @@ describe('thiefService', () => {
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
     mockFrom = vi.fn().mockReturnValue(createBuilder());
+    mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
     vi.doMock('@/lib/supabase', () => ({
-      supabase: { from: mockFrom },
+      supabase: { from: mockFrom, rpc: mockRpc },
     }));
 
     service = await import('@/services/persona-5-phantom-x/thiefService');
@@ -272,10 +274,7 @@ describe('thiefService', () => {
   });
 
   describe('saveRevelationPreferences', () => {
-    it('deletes existing rows then inserts new preference rows', async () => {
-      const builder = createBuilder({ data: null, error: null });
-      mockFrom.mockReturnValue(builder);
-
+    it('replaces the preference rows and the parent comment in one replace_preference_rows RPC', async () => {
       await service.saveRevelationPreferences('db-uuid-1', {
         heavensSetId: 'strife',
         spaceSetId: 'meditation',
@@ -293,17 +292,25 @@ describe('thiefService', () => {
         comments: 'Focus crit',
       });
 
-      expect(mockFrom).toHaveBeenCalledWith('p5x_revelation_preferences');
-      expect(builder.delete).toHaveBeenCalled();
-      expect(builder.insert).toHaveBeenCalled();
+      expect(mockRpc).toHaveBeenCalledTimes(1);
+      expect(mockFrom).not.toHaveBeenCalled();
+      const [name, payload] = mockRpc.mock.calls[0];
+      expect(name).toBe('replace_preference_rows');
+      expect(payload.p_parent_id).toBe('db-uuid-1');
+      expect(payload.p_delete_from).toEqual([
+        { table: 'p5x_revelation_preferences', fk_column: 'thief_row_id' },
+      ]);
 
       // Comments persist on the parent row, not as a preference row.
-      expect(mockFrom).toHaveBeenCalledWith('p5x_tracked_thieves');
-      expect(builder.update).toHaveBeenCalledWith({ build_comments: 'Focus crit' });
-      const rows = builder.insert.mock.calls[0][0] as { stat: string }[];
-      expect(rows.some((r) => r.stat === 'Focus crit')).toBe(false);
+      expect(payload.p_parent_update).toEqual({
+        table: 'p5x_tracked_thieves',
+        row: { build_comments: 'Focus crit' },
+      });
+      expect(payload.p_inserts).toHaveLength(1);
+      expect(payload.p_inserts[0].table).toBe('p5x_revelation_preferences');
+      const insertedRows = payload.p_inserts[0].rows as { stat: string }[];
+      expect(insertedRows.some((r) => r.stat === 'Focus crit')).toBe(false);
 
-      const insertedRows = builder.insert.mock.calls[0][0];
       expect(insertedRows).toContainEqual(
         expect.objectContaining({ category: 'heavens_set', stat: 'strife' }),
       );

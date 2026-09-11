@@ -136,6 +136,7 @@ describe('rosterPersistence', () => {
 
   describe('DB enabled (VITE_SUPABASE_URL set)', () => {
     let mockFrom: ReturnType<typeof vi.fn>;
+    let mockRpc: ReturnType<typeof vi.fn>;
     let mod: typeof import('@/services/rosterPersistence');
 
     beforeEach(async () => {
@@ -144,9 +145,10 @@ describe('rosterPersistence', () => {
       vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
       mockFrom = vi.fn().mockReturnValue(createBuilder());
+      mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
       vi.doMock('@/lib/supabase', () => ({
-        supabase: { from: mockFrom },
+        supabase: { from: mockFrom, rpc: mockRpc },
       }));
 
       mod = await import('@/services/rosterPersistence');
@@ -313,17 +315,7 @@ describe('rosterPersistence', () => {
     });
 
     describe('savePreferenceRows', () => {
-      it('deletes by FK, updates parent, and inserts non-empty sets', async () => {
-        const mainBuilder = createBuilder({ data: null, error: null });
-        const subBuilder = createBuilder({ data: null, error: null });
-        const parentBuilder = createBuilder({ data: null, error: null });
-
-        mockFrom.mockImplementation((table: string) => {
-          if (table === 'test_pref_main') return mainBuilder;
-          if (table === 'test_pref_sub') return subBuilder;
-          return parentBuilder;
-        });
-
+      it('sends deletes, parent update, and non-empty inserts as one replace_preference_rows RPC', async () => {
         await mod.savePreferenceRows({
           dbId: 'db-uuid-1',
           deleteFrom: [
@@ -337,60 +329,36 @@ describe('rosterPersistence', () => {
           ],
         });
 
-        expect(mainBuilder.delete).toHaveBeenCalled();
-        expect(mainBuilder.eq).toHaveBeenCalledWith('tracked_id', 'db-uuid-1');
-        expect(subBuilder.delete).toHaveBeenCalled();
-        expect(parentBuilder.update).toHaveBeenCalledWith({ comments: 'note' });
-        expect(parentBuilder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');
-        expect(mainBuilder.insert).toHaveBeenCalledWith([{ stat: 'ATK', order_index: 0 }]);
-        expect(subBuilder.insert).not.toHaveBeenCalled();
+        expect(mockRpc).toHaveBeenCalledTimes(1);
+        expect(mockRpc).toHaveBeenCalledWith('replace_preference_rows', {
+          p_parent_id: 'db-uuid-1',
+          p_delete_from: [
+            { table: 'test_pref_main', fk_column: 'tracked_id' },
+            { table: 'test_pref_sub', fk_column: 'tracked_id' },
+          ],
+          p_parent_update: { table: 'test_parent', row: { comments: 'note' } },
+          p_inserts: [{ table: 'test_pref_main', rows: [{ stat: 'ATK', order_index: 0 }] }],
+        });
+        expect(mockFrom).not.toHaveBeenCalled();
       });
 
-      it('throws on delete failure before any parent update or insert runs', async () => {
-        const failDelete = createBuilder({ data: null, error: { message: 'Delete failed' } });
-        const parentBuilder = createBuilder({ data: null, error: null });
-        mockFrom.mockImplementation((table: string) =>
-          table === 'test_pref_main' ? failDelete : parentBuilder,
-        );
+      it('sends a null parent update and no inserts when none are given', async () => {
+        await mod.savePreferenceRows({
+          dbId: 'db-uuid-1',
+          deleteFrom: [{ table: 'test_pref_main', fkColumn: 'tracked_id' }],
+          inserts: [{ table: 'test_pref_main', rows: [] }],
+        });
 
-        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-        await expect(
-          mod.savePreferenceRows({
-            dbId: 'db-uuid-1',
-            deleteFrom: [{ table: 'test_pref_main', fkColumn: 'tracked_id' }],
-            parentUpdate: { table: 'test_parent', row: { comments: 'note' } },
-            inserts: [{ table: 'test_pref_main', rows: [{ stat: 'ATK' }] }],
-          }),
-        ).rejects.toEqual({ message: 'Delete failed' });
-        expect(parentBuilder.update).not.toHaveBeenCalled();
-        expect(failDelete.insert).not.toHaveBeenCalled();
-        spy.mockRestore();
+        expect(mockRpc).toHaveBeenCalledWith('replace_preference_rows', {
+          p_parent_id: 'db-uuid-1',
+          p_delete_from: [{ table: 'test_pref_main', fk_column: 'tracked_id' }],
+          p_parent_update: null,
+          p_inserts: [],
+        });
       });
 
-      it('throws on parent update failure before any insert runs', async () => {
-        const mainBuilder = createBuilder({ data: null, error: null });
-        const failParent = createBuilder({ data: null, error: { message: 'Parent failed' } });
-        mockFrom.mockImplementation((table: string) =>
-          table === 'test_pref_main' ? mainBuilder : failParent,
-        );
-
-        const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-        await expect(
-          mod.savePreferenceRows({
-            dbId: 'db-uuid-1',
-            deleteFrom: [{ table: 'test_pref_main', fkColumn: 'tracked_id' }],
-            parentUpdate: { table: 'test_parent', row: { comments: 'note' } },
-            inserts: [{ table: 'test_pref_main', rows: [{ stat: 'ATK' }] }],
-          }),
-        ).rejects.toEqual({ message: 'Parent failed' });
-        expect(mainBuilder.delete).toHaveBeenCalled();
-        expect(mainBuilder.insert).not.toHaveBeenCalled();
-        spy.mockRestore();
-      });
-
-      it('throws on insert failure', async () => {
-        const failBuilder = createBuilder({ data: null, error: { message: 'Insert failed' } });
-        mockFrom.mockReturnValue(failBuilder);
+      it('throws on RPC error', async () => {
+        mockRpc.mockResolvedValue({ data: null, error: { message: 'RPC failed' } });
 
         const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
         await expect(
@@ -399,7 +367,7 @@ describe('rosterPersistence', () => {
             deleteFrom: [],
             inserts: [{ table: 'test_pref_main', rows: [{ stat: 'ATK' }] }],
           }),
-        ).rejects.toEqual({ message: 'Insert failed' });
+        ).rejects.toEqual({ message: 'RPC failed' });
         spy.mockRestore();
       });
     });

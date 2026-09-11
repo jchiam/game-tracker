@@ -254,13 +254,13 @@ export function createPartyPersistence<
 
 /**
  * Replaces a variable-length set of preference rows: delete existing rows by FK,
- * optionally update the parent row, then insert the new ordered rows. Every
- * step checks its error and throws before the next runs — a failed delete
- * followed by a successful insert would otherwise leave duplicate rows.
+ * optionally update the parent row, then insert the new ordered rows.
  *
- * NOT atomic — these are separate Supabase calls with no transaction (see
- * CLAUDE.md Known Limitations). This helper is intentionally the only
- * implementation of the pattern, so a future plpgsql RPC fix has one call site.
+ * One round trip, atomic: the steps run inside the `replace_preference_rows`
+ * plpgsql function (migration 20260911000002), so they commit or roll back
+ * together and RLS still applies (SECURITY INVOKER). Empty insert sets are
+ * dropped client-side so the payload only carries work. This helper is
+ * intentionally the only implementation of the pattern.
  */
 export async function savePreferenceRows(opts: {
   dbId: string;
@@ -270,32 +270,15 @@ export async function savePreferenceRows(opts: {
 }): Promise<void> {
   if (!DB_ENABLED) return;
 
-  for (const target of opts.deleteFrom) {
-    const { error } = await supabase.from(target.table).delete().eq(target.fkColumn, opts.dbId);
-    if (error) {
-      console.error('Preference Rows Delete Failed:', error);
-      throw error;
-    }
-  }
-
-  if (opts.parentUpdate) {
-    const { error } = await supabase
-      .from(opts.parentUpdate.table)
-      .update(opts.parentUpdate.row)
-      .eq('id', opts.dbId);
-    if (error) {
-      console.error('Preference Rows Parent Update Failed:', error);
-      throw error;
-    }
-  }
-
-  for (const insertSet of opts.inserts) {
-    if (insertSet.rows.length === 0) continue;
-    const { error } = await supabase.from(insertSet.table).insert(insertSet.rows);
-    if (error) {
-      console.error('Preference Rows Save Failed:', error);
-      throw error;
-    }
+  const { error } = await supabase.rpc('replace_preference_rows', {
+    p_parent_id: opts.dbId,
+    p_delete_from: opts.deleteFrom.map((t) => ({ table: t.table, fk_column: t.fkColumn })),
+    p_parent_update: opts.parentUpdate ?? null,
+    p_inserts: opts.inserts.filter((set) => set.rows.length > 0),
+  });
+  if (error) {
+    console.error('Preference Rows Save Failed:', error);
+    throw error;
   }
 }
 

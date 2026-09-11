@@ -5,6 +5,7 @@ import { createBuilder } from '@/test/mocks/supabase';
 // error rethrow, catalog merge, profile upsert) is covered by rosterPersistence.test.ts.
 describe('agentService', () => {
   let mockFrom: ReturnType<typeof vi.fn>;
+  let mockRpc: ReturnType<typeof vi.fn>;
   let service: typeof import('@/services/zenless-zone-zero/agentService');
 
   beforeEach(async () => {
@@ -13,9 +14,10 @@ describe('agentService', () => {
     vi.stubEnv('VITE_SUPABASE_ANON_KEY', 'test-anon-key');
 
     mockFrom = vi.fn().mockReturnValue(createBuilder());
+    mockRpc = vi.fn().mockResolvedValue({ data: null, error: null });
 
     vi.doMock('@/lib/supabase', () => ({
-      supabase: { from: mockFrom },
+      supabase: { from: mockFrom, rpc: mockRpc },
     }));
 
     service = await import('@/services/zenless-zone-zero/agentService');
@@ -321,13 +323,7 @@ describe('agentService', () => {
     expect(builder.match).toHaveBeenCalledWith({ tracked_agent_id: 'db-uuid-1', slot: 5 });
   });
 
-  it('saveDiscPreferences replaces category rows and updates parent columns', async () => {
-    const prefBuilder = createBuilder({ data: null, error: null });
-    const parentBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_disc_preferences' ? prefBuilder : parentBuilder,
-    );
-
+  it('saveDiscPreferences replaces category rows and updates parent columns in one RPC', async () => {
     await service.saveDiscPreferences('db-uuid-1', {
       mainStats: {
         4: [
@@ -343,53 +339,59 @@ describe('agentService', () => {
       comments: 'stun build',
     });
 
-    expect(prefBuilder.delete).toHaveBeenCalled();
-    expect(prefBuilder.eq).toHaveBeenCalledWith('tracked_agent_id', 'db-uuid-1');
-    expect(parentBuilder.update).toHaveBeenCalledWith({
-      disc_suit_4_id: '31000',
-      disc_suit_2_id: '31600',
-      disc_comments: 'stun build',
+    expect(mockRpc).toHaveBeenCalledTimes(1);
+    expect(mockFrom).not.toHaveBeenCalled();
+    expect(mockRpc).toHaveBeenCalledWith('replace_preference_rows', {
+      p_parent_id: 'db-uuid-1',
+      p_delete_from: [{ table: 'zzz_disc_preferences', fk_column: 'tracked_agent_id' }],
+      p_parent_update: {
+        table: 'zzz_tracked_agents',
+        row: {
+          disc_suit_4_id: '31000',
+          disc_suit_2_id: '31600',
+          disc_comments: 'stun build',
+        },
+      },
+      // order_index re-derived from array position, not the stale orderIndex values.
+      p_inserts: [
+        {
+          table: 'zzz_disc_preferences',
+          rows: [
+            {
+              tracked_agent_id: 'db-uuid-1',
+              category: 'slot4_main',
+              stat: 'CRIT Rate',
+              operator_to_next: 'OR',
+              order_index: 0,
+            },
+            {
+              tracked_agent_id: 'db-uuid-1',
+              category: 'slot4_main',
+              stat: 'CRIT DMG',
+              operator_to_next: null,
+              order_index: 1,
+            },
+            {
+              tracked_agent_id: 'db-uuid-1',
+              category: 'slot6_main',
+              stat: 'Impact',
+              operator_to_next: null,
+              order_index: 0,
+            },
+            {
+              tracked_agent_id: 'db-uuid-1',
+              category: 'sub_stats',
+              stat: 'ATK%',
+              operator_to_next: null,
+              order_index: 0,
+            },
+          ],
+        },
+      ],
     });
-    // order_index re-derived from array position, not the stale orderIndex values.
-    expect(prefBuilder.insert).toHaveBeenCalledWith([
-      {
-        tracked_agent_id: 'db-uuid-1',
-        category: 'slot4_main',
-        stat: 'CRIT Rate',
-        operator_to_next: 'OR',
-        order_index: 0,
-      },
-      {
-        tracked_agent_id: 'db-uuid-1',
-        category: 'slot4_main',
-        stat: 'CRIT DMG',
-        operator_to_next: null,
-        order_index: 1,
-      },
-      {
-        tracked_agent_id: 'db-uuid-1',
-        category: 'slot6_main',
-        stat: 'Impact',
-        operator_to_next: null,
-        order_index: 0,
-      },
-      {
-        tracked_agent_id: 'db-uuid-1',
-        category: 'sub_stats',
-        stat: 'ATK%',
-        operator_to_next: null,
-        order_index: 0,
-      },
-    ]);
   });
 
   it('saveDiscPreferences with empty chains still clears rows and saves parent columns', async () => {
-    const prefBuilder = createBuilder({ data: null, error: null });
-    const parentBuilder = createBuilder({ data: null, error: null });
-    mockFrom.mockImplementation((table: string) =>
-      table === 'zzz_disc_preferences' ? prefBuilder : parentBuilder,
-    );
-
     await service.saveDiscPreferences('db-uuid-1', {
       mainStats: { 4: [], 5: [], 6: [] },
       subStats: [],
@@ -398,12 +400,14 @@ describe('agentService', () => {
       comments: '',
     });
 
-    expect(prefBuilder.delete).toHaveBeenCalled();
-    expect(parentBuilder.update).toHaveBeenCalledWith({
-      disc_suit_4_id: null,
-      disc_suit_2_id: null,
-      disc_comments: '',
+    expect(mockRpc).toHaveBeenCalledWith('replace_preference_rows', {
+      p_parent_id: 'db-uuid-1',
+      p_delete_from: [{ table: 'zzz_disc_preferences', fk_column: 'tracked_agent_id' }],
+      p_parent_update: {
+        table: 'zzz_tracked_agents',
+        row: { disc_suit_4_id: null, disc_suit_2_id: null, disc_comments: '' },
+      },
+      p_inserts: [],
     });
-    expect(prefBuilder.insert).not.toHaveBeenCalled();
   });
 });
