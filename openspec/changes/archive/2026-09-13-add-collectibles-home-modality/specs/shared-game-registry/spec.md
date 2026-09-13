@@ -1,11 +1,4 @@
-## Purpose
-
-Single source of truth for the game roster. `src/lib/games.ts` declares every trackable
-game once — route path, display metadata for the GameSwitcher dropdown and SelectionPage
-grid, and the lazy page component — so the router and both game-list UIs can never
-drift apart.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Single game registry drives routes, switcher, and selection page
 

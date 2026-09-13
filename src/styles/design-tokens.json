@@ -181,6 +181,24 @@
       "rarityS": { "$value": "#ffd700", "$type": "color" },
       "rarityA": { "$value": "#c9a8f8", "$type": "color" }
     },
+    "dgm": {
+      "selStart": { "$value": "#0f1e2a", "$type": "color" },
+      "selMid": { "$value": "#1d3a52", "$type": "color" },
+      "lineDigitalMonster": { "$value": "#f0a860", "$type": "color" },
+      "linePendulum": { "$value": "#7fd1a8", "$type": "color" },
+      "lineVitalBracelet": { "$value": "#40c8a0", "$type": "color" },
+      "lineDigivice": { "$value": "#ffb070", "$type": "color" },
+      "lineD3": { "$value": "#8ab8f5", "$type": "color" },
+      "lineDArk": { "$value": "#f08c8c", "$type": "color" },
+      "lineXrosLoader": { "$value": "#5bc8d8", "$type": "color" },
+      "lineOther": { "$value": "#b3ad9e", "$type": "color" },
+      "regionJp": { "$value": "#f08c8c", "$type": "color" },
+      "regionNa": { "$value": "#8ab8f5", "$type": "color" },
+      "regionEu": { "$value": "#f5d68a", "$type": "color" },
+      "regionAsia": { "$value": "#7fd1a8", "$type": "color" },
+      "statusOwned": { "$value": "#40c8a0", "$type": "color" },
+      "statusWishlist": { "$value": "#c88040", "$type": "color" }
+    },
     "tier": {
       "splus": { "$value": "#ff6b35", "$type": "color" },
       "s": { "$value": "#ffd700", "$type": "color" },

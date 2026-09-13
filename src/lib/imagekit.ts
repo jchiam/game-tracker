@@ -136,3 +136,13 @@ export function getLightConeUrl(localPath: string): string {
   if (!isImageKitEnabled) return localPath;
   return `${IMAGEKIT_URL_ENDPOINT}${toImageKitPath(localPath)}`;
 }
+
+// Returns a fully-formed ImageKit URL for a Digimon device product shot.
+// Devices are not portraits: keep the whole object visible (contain-fit inside
+// a 480px box, no upscale) instead of the top-anchored mugshot crop.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getDeviceImageUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  const tr = 'tr:w-480,h-480,c-at_max';
+  return `${IMAGEKIT_URL_ENDPOINT}/${tr}${toImageKitPath(localPath)}`;
+}

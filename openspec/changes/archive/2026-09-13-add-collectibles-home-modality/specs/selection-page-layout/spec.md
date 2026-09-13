@@ -1,11 +1,4 @@
-# selection-page-layout
-
-## Purpose
-
-Responsive column behaviour of the game selection grid: desktop column cap, card
-minimum width, and graceful degradation on narrow viewports.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Selection grid renders up to three columns on desktop
 

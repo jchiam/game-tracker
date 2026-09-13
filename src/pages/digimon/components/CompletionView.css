@@ -1,0 +1,71 @@
+/* Completion view — the collection modality's second view. Rows list owned /
+   total per product line; the fill paints the shared temper ramp so a line
+   reads rust when empty and verdigris when complete. */
+
+.completion-view {
+  padding: var(--spacing-lg) 0;
+}
+
+.completion-list {
+  list-style: none;
+  margin: 0 auto;
+  padding: 0;
+  max-width: 720px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.completion-row {
+  padding: var(--spacing-md);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-ui-border);
+  border-radius: var(--border-radius-md);
+}
+
+.completion-row-overall {
+  border-color: color-mix(in srgb, var(--color-brand-primary) 40%, transparent);
+}
+
+.completion-row-header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
+}
+
+.completion-row-label {
+  flex: 1;
+  font-weight: var(--typography-font-weight-semibold);
+  color: var(--color-text-primary);
+}
+
+.completion-row-overall .completion-row-label {
+  font-size: var(--typography-font-size-lg);
+}
+
+.completion-row-count {
+  font-size: var(--typography-font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.completion-row-percent {
+  min-width: 3.5em;
+  text-align: right;
+  font-weight: var(--typography-font-weight-bold);
+  font-variant-numeric: tabular-nums;
+}
+
+.completion-bar {
+  height: 8px;
+  border-radius: var(--border-radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.completion-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gradient-temper-ramp);
+  transition: width var(--transition-normal);
+}

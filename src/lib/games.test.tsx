@@ -11,8 +11,8 @@ import { createSupabaseMockFactory } from '@/test/mocks/supabase';
 vi.mock('@/lib/supabase', () => createSupabaseMockFactory());
 
 describe('GAMES registry', () => {
-  it('contains the six tracked games', () => {
-    expect(GAMES.map((g) => g.id)).toEqual(['hsr', 'r1999', 'n2e', 'ae', 'p5x', 'zzz']);
+  it('contains the seven trackers', () => {
+    expect(GAMES.map((g) => g.id)).toEqual(['hsr', 'r1999', 'n2e', 'ae', 'p5x', 'zzz', 'dgm']);
   });
 
   it('has unique ids and paths', () => {

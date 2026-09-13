@@ -7,6 +7,7 @@ import { type P5xThief } from '@/data/persona-5-phantom-x/thieves';
 import { type ZzzAgent } from '@/data/zenless-zone-zero/agents';
 import { type ZzzDiscSlot, type ZzzEquippedDisc } from '@/data/zenless-zone-zero/discs';
 import { type EquippedRevelation } from '@/data/persona-5-phantom-x/revelations';
+import { type DgmDevice } from '@/data/digimon/devices';
 
 /** One entry in a build/cartridge stat-preference priority chain. */
 export interface StatPreference {
@@ -285,4 +286,27 @@ export interface P5xThiefPatch {
   weaponRarity?: number;
   weaponLevel?: number;
   weaponForge?: number;
+}
+
+// ── Digimon (dgm) — collection modality ──────────────────────────────────
+
+export type DgmDeviceStatus = 'owned' | 'wishlist';
+export type DgmDeviceCondition = 'sealed' | 'boxed' | 'loose';
+
+export interface DgmTrackedDevice extends DgmDevice {
+  dbId?: string;
+  isFavorited: boolean;
+  status: DgmDeviceStatus;
+  condition: DgmDeviceCondition | null;
+  /** ISO date (YYYY-MM-DD), no time. */
+  acquiredOn: string | null;
+  notes: string;
+}
+
+export interface DgmDevicePatch {
+  status?: DgmDeviceStatus;
+  condition?: DgmDeviceCondition | null;
+  acquiredOn?: string | null;
+  notes?: string;
+  isFavorited?: boolean;
 }
