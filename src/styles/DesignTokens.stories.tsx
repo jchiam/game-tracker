@@ -247,6 +247,26 @@ function ColorsSection() {
       />
 
       <ColorGroup
+        label="Digimon (dgm) — product line, region, and status badges"
+        variables={[
+          '--color-dgm-line-digital-monster',
+          '--color-dgm-line-pendulum',
+          '--color-dgm-line-vital-bracelet',
+          '--color-dgm-line-digivice',
+          '--color-dgm-line-d3',
+          '--color-dgm-line-d-ark',
+          '--color-dgm-line-xros-loader',
+          '--color-dgm-line-other',
+          '--color-dgm-region-jp',
+          '--color-dgm-region-na',
+          '--color-dgm-region-eu',
+          '--color-dgm-region-asia',
+          '--color-dgm-status-owned',
+          '--color-dgm-status-wishlist',
+        ]}
+      />
+
+      <ColorGroup
         label="Selection Scenes (per-game header gradients + shared fade)"
         variables={[
           '--color-hsr-sel-start',
@@ -261,6 +281,8 @@ function ColorsSection() {
           '--color-p5x-sel-mid',
           '--color-zzz-sel-start',
           '--color-zzz-sel-mid',
+          '--color-dgm-sel-start',
+          '--color-dgm-sel-mid',
           '--color-bg-selection-fade',
         ]}
       />
