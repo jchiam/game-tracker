@@ -116,7 +116,7 @@ const baseArgs = {
       </div>
     </div>
   ),
-  partiesTab: (
+  secondView: (
     <div
       style={{
         padding: '32px',

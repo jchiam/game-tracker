@@ -161,7 +161,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
           onEditCommit={() => projection.refreshBasis(char.id)}
         />
       ))}
-      partiesTab={
+      secondView={
         <PartiesTab
           isInitialLoad={isPartiesInitialLoad}
           isLoadError={isPartiesLoadError}

@@ -3,6 +3,7 @@ import { screen, fireEvent } from '@testing-library/react';
 import { SelectionPage } from '@/pages/SelectionPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import { GAMES } from '@/lib/games';
+import { MODALITIES, gamesByModality } from '@/lib/modalities';
 
 describe('SelectionPage', () => {
   it('shows loading state when isAuthLoading is true', () => {
@@ -61,6 +62,48 @@ describe('SelectionPage', () => {
     );
     await user.click(screen.getAllByRole('button')[0]);
     expect(signInWithGoogle).not.toHaveBeenCalled();
+  });
+
+  it('renders the tracker-neutral hero', () => {
+    renderWithProviders(
+      <SelectionPage session={null} isAuthLoading={false} signInWithGoogle={vi.fn()} />,
+    );
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Your Trackers');
+    expect(screen.getByText('Pick something to track.')).toBeInTheDocument();
+  });
+
+  it('renders one section per populated modality, in modality order', () => {
+    const { container } = renderWithProviders(
+      <SelectionPage
+        session={createMockSession()}
+        isAuthLoading={false}
+        signInWithGoogle={vi.fn()}
+      />,
+    );
+    const groups = gamesByModality();
+    const sections = container.querySelectorAll('.selection-section');
+    expect(sections.length).toBe(groups.length);
+    groups.forEach((group, i) => {
+      const section = sections[i];
+      expect(section.querySelector('.selection-section-title')).toHaveTextContent(
+        group.modality.title,
+      );
+      expect(section.querySelector('.selection-section-subtitle')).toHaveTextContent(
+        group.modality.subtitle,
+      );
+      const names = Array.from(section.querySelectorAll('.game-name')).map((n) => n.textContent);
+      expect(names).toEqual(group.games.map((g) => g.name));
+    });
+  });
+
+  it('uses one h2 per section and none for the cards', () => {
+    renderWithProviders(
+      <SelectionPage session={null} isAuthLoading={false} signInWithGoogle={vi.fn()} />,
+    );
+    const h2s = screen.getAllByRole('heading', { level: 2 });
+    expect(h2s.map((h) => h.textContent)).toEqual(gamesByModality().map((g) => g.modality.title));
+    expect(h2s.length).toBeLessThanOrEqual(MODALITIES.length);
+    expect(screen.getAllByRole('heading', { level: 3 }).length).toBe(GAMES.length);
   });
 
   it('renders game descriptions', () => {

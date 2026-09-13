@@ -36,8 +36,8 @@ interface RosterPageLayoutProps {
   filterRow?: ReactNode;
   /** The mapped roster cards (rendered only when there are matches). */
   cards: ReactNode;
-  /** The parties/lineups tab content. */
-  partiesTab: ReactNode;
+  /** The second-view content — parties/lineups for roster games, completion for collections. */
+  secondView: ReactNode;
   pendingSaveCount: number;
   /** Extra overlays the page owns — add modal, equipment editor modal, etc. */
   children?: ReactNode;
@@ -71,7 +71,7 @@ export function RosterPageLayout({
   add,
   filterRow,
   cards,
-  partiesTab,
+  secondView,
   pendingSaveCount,
   children,
 }: RosterPageLayoutProps) {
@@ -169,7 +169,7 @@ export function RosterPageLayout({
           )}
         </section>
       ) : (
-        partiesTab
+        secondView
       )}
 
       <SavingToast visible={pendingSaveCount > 0} />

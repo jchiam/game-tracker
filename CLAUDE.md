@@ -38,7 +38,7 @@ Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`, `test:e2e`.
 
 - Always use `git -c commit.gpgsign=false` — GPG signing is not configured in this environment.
 - Conventional Commits style: `feat(r1999):`, `fix(hsr):`, `chore(n2e):`, `test:`, `refactor:`, `style:`.
-- Game-scoped commits use the short game ID: `hsr`, `r1999`, `n2e`.
+- Game-scoped commits use the short game ID: `hsr`, `r1999`, `n2e`, `ae`, `p5x`, `zzz`, `dgm`.
 - **Always run `npx openspec validate --all` before committing** when openspec specs or changes were modified. The pre-commit hook enforces this, but verify manually if unsure.
 
 ## Code Conventions
@@ -208,7 +208,7 @@ supabase/migrations/
 
 3. **Hook layer** (`src/hooks/{game}/`): React state management over the shared `useRoster` skeleton. Loads from DB on session change. Optimistic updates with rollback on error. Uses `usePendingSaves` for debounced saves. Plain field/patch updaters are declared as data via the shared `makeFieldUpdater` / `applyPatch` (Field Updater in `CONTEXT.md`) — never hand-write the optimistic set / ref lookup / dbId-guard / queue mechanics for them; only updaters that read current state (N2E awakening) or write through `queueAction` (relics, preference chains) get custom bodies. Exposes `getFilteredRoster` (Fuse.js search).
 
-4. **Page layer** (`src/pages/{game}/`): Composes hooks + components. Two views: "Roster" (entity cards grid) and "Lineups" (party tab). View state (view switch, search, sort toggle, add-modal, filtered roster) comes from the shared `useRosterView` hook (Roster View in `CONTEXT.md`) — pages pass sort modes, placeholder, add title, the roster hook's `getFilteredRoster`, and the live tracked array as config; never hand-write the state quartet or sort-descriptor objects. The filtered roster is basis-aware (Projection Stability in `CONTEXT.md`): entity edits never evict or reorder a card mid-gesture; pages wire the hook's `projection.refreshBasis(id)` to edit commits, equipment-modal closes, and favorite toggles, and keep their filter wrappers referentially stable across edits. Auth gating, loading/error states, and layout live in `RosterPageLayout`.
+4. **Page layer** (`src/pages/{game}/`): Composes hooks + components. Two views: "Roster" (entity cards grid) and a second view passed as `RosterPageLayout.secondView` — "Lineups" (party tab) for roster-modality games, "Completion" for collection-modality trackers. View state (view switch, search, sort toggle, add-modal, filtered roster) comes from the shared `useRosterView` hook (Roster View in `CONTEXT.md`) — pages pass sort modes, placeholder, add title, the roster hook's `getFilteredRoster`, and the live tracked array as config; never hand-write the state quartet or sort-descriptor objects. The filtered roster is basis-aware (Projection Stability in `CONTEXT.md`): entity edits never evict or reorder a card mid-gesture; pages wire the hook's `projection.refreshBasis(id)` to edit commits, equipment-modal closes, and favorite toggles, and keep their filter wrappers referentially stable across edits. Auth gating, loading/error states, and layout live in `RosterPageLayout`.
 
 5. **Update script** (`scripts/update-{game}-data.mjs`): Fetches from external APIs (wikis, GitHub repos), downloads images, uploads to ImageKit, regenerates `src/data/{game}/*.ts` files. Idempotent — skips already-uploaded assets unless `--reupload-*` flags passed. Has a matching `.github/workflows/update-{game}-data.yml` that runs weekly + manual dispatch, auto-creates a PR with changes. Pipeline plumbing (env loading, ImageKit init/exists/upload, the per-asset `ensureAsset` skip-or-upload skeleton, `--reupload-*` parsing, `fetchJSON`/`downloadImage`, `slugify`/`esc`, catalog diffing, generated-file banner) lives once in `scripts/lib/pipeline.mjs` — scripts import it, never copy it; game-specific fetching, mapping, and codegen bodies stay in each script. Per-asset loops call `ensureAsset` with a source-specific fetch closure and drive counters/missing lists off its `'skipped' | 'uploaded' | 'failed'` result — never hand-write the exists-check/reason-log/try-catch/upload skeleton.
 
@@ -217,7 +217,7 @@ supabase/migrations/
 After creating the per-game module, connect it in these files:
 
 1. **`src/types.ts`** — Add `{Game}Tracked{Entity}` and `{Game}Party`/`{Game}PartyMember` interfaces.
-2. **`src/lib/games.ts`** — Add one `GAMES` registry entry (id, name, path, developer, description, icon, color, coverImage, bgClass, lazy `Page`). This alone wires the route, the GameSwitcher dropdown, and the SelectionPage card.
+2. **`src/lib/games.ts`** — Add one `GAMES` registry entry (id, name, path, developer, description, icon, color, coverImage, bgClass, `modality`, lazy `Page`). This alone wires the route, the GameSwitcher group, and the SelectionPage section (`modality` — `roster` or `collection` from `src/lib/modalities.ts` — picks which).
 3. **`src/index.css`** — Add `.game-card-header.bg-{game}-sel` background style.
 4. **`vercel.json`** — If new external image domain needed, add to CSP `img-src`.
 5. **`.env.template`** — Add any new env vars.
