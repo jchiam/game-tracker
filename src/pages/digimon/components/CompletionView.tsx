@@ -1,14 +1,15 @@
 import type { Session } from '@supabase/supabase-js';
-import type { DgmTrackedDevice } from '@/types';
+import type { DgmTrackedProduct } from '@/types';
 import { computeCompletion, type CompletionRow } from '@/pages/digimon/completion';
 import { AuthGate } from '@/components/AuthGate';
 import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 import { getProgressStyle } from '@/utils/progressGradient';
+import '@/pages/digimon/completion.css';
 import './CompletionView.css';
 
 interface CompletionViewProps {
-  trackedDevices: DgmTrackedDevice[];
+  trackedProducts: DgmTrackedProduct[];
   session: Session | null;
   isAuthLoading: boolean;
   isInitialLoad: boolean;
@@ -19,11 +20,12 @@ interface CompletionViewProps {
 
 /**
  * The collection modality's second view: owned-vs-catalog progress per product
- * line. A pure projection of the roster — nothing is fetched or persisted — so
- * it follows the roster's own load ladder.
+ * line — products as the bar, variants as the secondary readout. A pure
+ * projection of the roster — nothing is fetched or persisted — so it follows
+ * the roster's own load ladder.
  */
 export function CompletionView({
-  trackedDevices,
+  trackedProducts,
   session,
   isAuthLoading,
   isInitialLoad,
@@ -36,16 +38,16 @@ export function CompletionView({
   if (isInitialLoad) return <LoadingState label="Loading your collection…" />;
   if (isLoadError) return <ErrorState message="Couldn't load your collection." onRetry={onRetry} />;
 
-  const [overall, ...lines] = computeCompletion(trackedDevices);
+  const [overall, ...lines] = computeCompletion(trackedProducts);
 
   const renderRow = (row: CompletionRow, className = '') => {
-    const ps = getProgressStyle(row.owned, 0, row.total);
+    const ps = getProgressStyle(row.productsOwned, 0, row.productsTotal);
     return (
       <li key={row.label} className={`completion-row ${className}`.trim()}>
         <div className="completion-row-header">
           <span className="completion-row-label">{row.label}</span>
           <span className="completion-row-count" style={{ color: ps.color }}>
-            {row.owned} / {row.total}
+            {row.productsOwned} / {row.productsTotal}
           </span>
           <span className="completion-row-percent" style={{ color: ps.color }}>
             {row.percent}%
@@ -60,6 +62,9 @@ export function CompletionView({
           aria-valuenow={row.percent}
         >
           <div className="completion-bar-fill" style={{ width: `${row.percent}%` }} />
+        </div>
+        <div className="completion-row-variants">
+          {row.variantsOwned} / {row.variantsTotal} variants
         </div>
       </li>
     );

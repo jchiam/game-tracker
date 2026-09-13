@@ -1,10 +1,4 @@
-# dgm-completion-view Specification
-
-## Purpose
-
-The Digimon Completion view — owned-vs-catalog progress per product line, products as the bar and variants as the secondary readout, derived purely from the tracked products.
-
-## Requirements
+## MODIFIED Requirements
 
 ### Requirement: Completion view derives per-line progress from the collection
 
@@ -24,17 +18,3 @@ The Digimon Completion view — owned-vs-catalog progress per product line, prod
 
 - **WHEN** the user owns nothing in a line
 - **THEN** that row still renders with `0 / total`, `0%`, and an empty fill
-
-### Requirement: Completion view follows the shared load ladder
-
-`CompletionView` SHALL receive the device roster's `session`, `isAuthLoading`, `isInitialLoad`, `isLoadError`, and `onRetry`, and SHALL render `LoadingState` while auth or the initial load is in flight, `ErrorState` with retry on load error, `AuthGate` when signed out, and the completion rows otherwise — never loading or error text inside `.empty-state`.
-
-#### Scenario: Load error
-
-- **WHEN** the roster load failed
-- **THEN** the view renders an `ErrorState` (`role="alert"`) whose Retry calls `onRetry`
-
-#### Scenario: Signed out
-
-- **WHEN** there is no session
-- **THEN** the view renders `AuthGate`

@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Modal } from '@/components/Modal';
+import { type ReactNode } from 'react';
+import { TabbedEditorShell } from '@/components/TabbedEditorShell';
 
 interface EquipmentEditorShellProps {
   title: string;
@@ -17,9 +17,9 @@ interface EquipmentEditorShellProps {
 
 /**
  * Structural shell of every equipment editor modal — sibling of GameCardShell
- * (Equipment Editor Shell in CONTEXT.md). Owns the modal chrome, the two-tab
- * scaffold, the active-tab state (only the active tab's content is rendered),
- * the body wrapper, and the Done footer; games fill the tab bodies.
+ * (Equipment Editor Shell in CONTEXT.md). A two-tab adapter over
+ * `TabbedEditorShell`: the game's equip tab plus the constant "Build
+ * Preferences" tab; games fill the tab bodies.
  */
 export function EquipmentEditorShell({
   title,
@@ -31,56 +31,16 @@ export function EquipmentEditorShell({
   equipFooterExtra,
   onClose,
 }: EquipmentEditorShellProps) {
-  const [activeTab, setActiveTab] = useState<'equip' | 'preferences'>('equip');
-
-  // Navigating onto a tab always lands at the top. Skipped on initial mount so an
-  // anchor-slot scroll on modal open is preserved; on tab-return the equip tab's
-  // anchor effect (child) flushes before this one (parent), so top wins.
-  const bodyRef = useRef<HTMLDivElement | null>(null);
-  const isFirstTab = useRef(true);
-  useEffect(() => {
-    if (isFirstTab.current) {
-      isFirstTab.current = false;
-      return;
-    }
-    bodyRef.current?.scrollTo?.({ top: 0 });
-  }, [activeTab]);
-
   return (
-    <Modal
+    <TabbedEditorShell
       title={title}
-      onClose={onClose}
       className={className}
-      footer={
-        <>
-          {activeTab === 'equip' && equipFooterExtra}
-          <button className="btn primary-action" onClick={onClose}>
-            Done
-          </button>
-        </>
-      }
-    >
-      <div className="modal-tabs">
-        <button
-          className={`tab-btn ${activeTab === 'equip' ? 'active' : ''}`}
-          onClick={() => setActiveTab('equip')}
-        >
-          {equipTabLabel}
-        </button>
-        <button
-          className={`tab-btn ${activeTab === 'preferences' ? 'active' : ''}`}
-          onClick={() => setActiveTab('preferences')}
-        >
-          Build Preferences
-        </button>
-      </div>
-
-      {/* The tab bar must stay outside the scroll region, so the shell keeps its
-          own body div (reusing the canonical .modal-body rule) instead of the
-          Modal bodyClassName slot, which wraps all children. */}
-      <div ref={bodyRef} className={`modal-body ${bodyClassName}`}>
-        {activeTab === 'equip' ? equipContent : preferencesContent}
-      </div>
-    </Modal>
+      bodyClassName={bodyClassName}
+      onClose={onClose}
+      tabs={[
+        { id: 'equip', label: equipTabLabel, content: equipContent, footerExtra: equipFooterExtra },
+        { id: 'preferences', label: 'Build Preferences', content: preferencesContent },
+      ]}
+    />
   );
 }

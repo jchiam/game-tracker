@@ -7,7 +7,7 @@ import { type P5xThief } from '@/data/persona-5-phantom-x/thieves';
 import { type ZzzAgent } from '@/data/zenless-zone-zero/agents';
 import { type ZzzDiscSlot, type ZzzEquippedDisc } from '@/data/zenless-zone-zero/discs';
 import { type EquippedRevelation } from '@/data/persona-5-phantom-x/revelations';
-import { type DgmDevice } from '@/data/digimon/devices';
+import { type DgmProduct } from '@/data/digimon/products';
 
 /** One entry in a build/cartridge stat-preference priority chain. */
 export interface StatPreference {
@@ -290,23 +290,32 @@ export interface P5xThiefPatch {
 
 // ── Digimon (dgm) — collection modality ──────────────────────────────────
 
-export type DgmDeviceStatus = 'owned' | 'wishlist';
-export type DgmDeviceCondition = 'sealed' | 'boxed' | 'loose';
+export type DgmVariantStatus = 'owned' | 'wishlist';
+export type DgmCondition = 'sealed' | 'boxed' | 'loose';
+/** Derived, never stored: owned > wishlist > interested (tracked, no variant set). */
+export type DgmOwnership = 'owned' | 'wishlist' | 'interested';
 
-export interface DgmTrackedDevice extends DgmDevice {
-  dbId?: string;
-  isFavorited: boolean;
-  status: DgmDeviceStatus;
-  condition: DgmDeviceCondition | null;
-  /** ISO date (YYYY-MM-DD), no time. */
-  acquiredOn: string | null;
-  notes: string;
+export interface DgmTrackedVariant {
+  status: DgmVariantStatus;
+  condition: DgmCondition | null;
 }
 
-export interface DgmDevicePatch {
-  status?: DgmDeviceStatus;
-  condition?: DgmDeviceCondition | null;
-  acquiredOn?: string | null;
+/**
+ * A tracked product: the collector's record for one release and all of its
+ * colourway / regional variants. `variantState` is keyed by variant id; a
+ * missing key means the variant is neither owned nor wishlisted. `progress`
+ * holds the checked progress-guide item ids (Game Progress in CONTEXT.md).
+ */
+export interface DgmTrackedProduct extends DgmProduct {
+  dbId?: string;
+  isFavorited: boolean;
+  notes: string;
+  progress: string[];
+  variantState: Record<string, DgmTrackedVariant>;
+}
+
+export interface DgmProductPatch {
   notes?: string;
   isFavorited?: boolean;
+  progress?: string[];
 }

@@ -1,7 +1,8 @@
-import { useDevices } from '@/hooks/digimon/useDevices';
+import { useProducts } from '@/hooks/digimon/useProducts';
 import { useRosterView } from '@/hooks/useRosterView';
-import { DeviceCard } from './components/DeviceCard';
-import { AddDeviceModal } from './components/AddDeviceModal';
+import { toggleProgressItem } from '@/pages/digimon/gameProgress';
+import { ProductCard } from './components/ProductCard';
+import { AddProductModal } from './components/AddProductModal';
 import { CompletionView } from './components/CompletionView';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { Session } from '@supabase/supabase-js';
@@ -15,21 +16,21 @@ interface DigimonPageProps {
 
 export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPageProps) {
   const {
-    availableDevices,
-    trackedDevices,
+    availableProducts,
+    trackedProducts,
     isInitialLoad,
     isLoadError,
     retryLoad,
     pendingSaveCount,
-    addDevice,
-    removeDevice,
-    updateStatus,
-    updateCondition,
-    updateAcquiredOn,
+    addProduct,
+    removeProduct,
     updateNotes,
     toggleFavorite,
+    updateProgress,
+    setVariantStatus,
+    setVariantCondition,
     getFilteredRoster,
-  } = useDevices(session, isAuthLoading);
+  } = useProducts(session, isAuthLoading);
 
   const {
     view,
@@ -47,11 +48,18 @@ export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPagePro
       { key: 'YEAR', label: 'Yr', described: 'by release year' },
     ],
     searchPlaceholder: 'Search by name, line, series, or colour…',
-    addTitle: 'Add Device',
+    addTitle: 'Add Product',
     addDisabled: isLoadError,
     filterRoster: getFilteredRoster,
-    trackedEntities: trackedDevices,
+    trackedEntities: trackedProducts,
   });
+
+  // Progress toggles merge through the pure module from the latest tracked entry.
+  const toggleItem = (productId: string, itemId: string) => {
+    const current = trackedProducts.find((p) => p.id === productId);
+    if (!current?.guide) return;
+    updateProgress(productId, toggleProgressItem(current.guide, current.progress, itemId));
+  };
 
   return (
     <RosterPageLayout
@@ -66,33 +74,33 @@ export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPagePro
       isLoadError={isLoadError}
       onRetry={retryLoad}
       onSignIn={onSignIn}
-      hasTracked={trackedDevices.length > 0}
+      hasTracked={trackedProducts.length > 0}
       hasMatches={filteredRoster.length > 0}
-      emptyMessage="No devices in your collection yet. Use the + button to begin!"
-      noMatchMessage="No devices match your search."
+      emptyMessage="No products in your collection yet. Use the + button to begin!"
+      noMatchMessage="No products match your search."
       search={search}
       sort={sort}
       add={add}
-      cards={filteredRoster.map((device) => (
-        <DeviceCard
-          key={device.id}
-          device={device}
-          onRemove={removeDevice}
-          onUpdateStatus={updateStatus}
-          onUpdateCondition={updateCondition}
-          onUpdateAcquiredOn={updateAcquiredOn}
+      cards={filteredRoster.map((product) => (
+        <ProductCard
+          key={product.id}
+          product={product}
+          onRemove={removeProduct}
           onUpdateNotes={updateNotes}
+          onSetVariantStatus={setVariantStatus}
+          onSetVariantCondition={setVariantCondition}
+          onToggleItem={toggleItem}
           onToggleFavorite={(id, value) => {
             // Favorite is a completed intent — release in the same handler
             toggleFavorite(id, value);
             projection.refreshBasis(id);
           }}
-          onEditCommit={() => projection.refreshBasis(device.id)}
+          onEditCommit={() => projection.refreshBasis(product.id)}
         />
       ))}
       secondView={
         <CompletionView
-          trackedDevices={trackedDevices}
+          trackedProducts={trackedProducts}
           session={session}
           isAuthLoading={isAuthLoading}
           isInitialLoad={isInitialLoad}
@@ -104,10 +112,10 @@ export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPagePro
       pendingSaveCount={pendingSaveCount}
     >
       {isAddModalOpen && (
-        <AddDeviceModal
-          availableDevices={availableDevices}
-          trackedDevices={trackedDevices}
-          onAddDevice={addDevice}
+        <AddProductModal
+          availableProducts={availableProducts}
+          trackedProducts={trackedProducts}
+          onAddProduct={addProduct}
           onClose={closeAddModal}
         />
       )}
