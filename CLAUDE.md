@@ -38,7 +38,7 @@ Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`, `test:e2e`.
 
 - Always use `git -c commit.gpgsign=false` — GPG signing is not configured in this environment.
 - Conventional Commits style: `feat(r1999):`, `fix(hsr):`, `chore(n2e):`, `test:`, `refactor:`, `style:`.
-- Game-scoped commits use the short game ID: `hsr`, `r1999`, `n2e`.
+- Game-scoped commits use the short game ID: `hsr`, `r1999`, `n2e`, `ae`, `p5x`, `zzz`, `dgm`.
 - **Always run `npx openspec validate --all` before committing** when openspec specs or changes were modified. The pre-commit hook enforces this, but verify manually if unsure.
 
 ## Code Conventions
@@ -217,7 +217,7 @@ supabase/migrations/
 After creating the per-game module, connect it in these files:
 
 1. **`src/types.ts`** — Add `{Game}Tracked{Entity}` and `{Game}Party`/`{Game}PartyMember` interfaces.
-2. **`src/lib/games.ts`** — Add one `GAMES` registry entry (id, name, path, developer, description, icon, color, coverImage, bgClass, lazy `Page`). This alone wires the route, the GameSwitcher dropdown, and the SelectionPage card.
+2. **`src/lib/games.ts`** — Add one `GAMES` registry entry (id, name, path, developer, description, icon, color, coverImage, bgClass, `modality`, lazy `Page`). This alone wires the route, the GameSwitcher group, and the SelectionPage section (`modality` — `roster` or `collection` from `src/lib/modalities.ts` — picks which).
 3. **`src/index.css`** — Add `.game-card-header.bg-{game}-sel` background style.
 4. **`vercel.json`** — If new external image domain needed, add to CSP `img-src`.
 5. **`.env.template`** — Add any new env vars.

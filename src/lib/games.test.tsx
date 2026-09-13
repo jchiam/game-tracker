@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest';
 import { Suspense } from 'react';
 import { screen, cleanup } from '@testing-library/react';
 import { GAMES } from '@/lib/games';
+import { MODALITIES } from '@/lib/modalities';
 import { renderWithProviders } from '@/test/utils';
 import { createSupabaseMockFactory } from '@/test/mocks/supabase';
 
@@ -35,6 +36,13 @@ describe('GAMES registry', () => {
       expect(game.color).toMatch(/^#[0-9a-f]{6}$/i);
       expect(game.bgClass).toMatch(/^bg-.+-sel$/);
       expect(game.Page).toBeDefined();
+    }
+  });
+
+  it('every entry references a registered modality', () => {
+    const ids = new Set(MODALITIES.map((m) => m.id));
+    for (const game of GAMES) {
+      expect(ids.has(game.modality)).toBe(true);
     }
   });
 

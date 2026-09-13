@@ -19,7 +19,7 @@ test.describe('Navigation', () => {
     // Verify we are back on the selection page
     await expect(page).toHaveURL(/\/$/);
     const selectionTitle = page.locator('h1');
-    await expect(selectionTitle).toContainText('Select Game');
+    await expect(selectionTitle).toContainText('Your Trackers');
   });
 
   test('brand title in navbar should navigate back to selection page from Reverse 1999 page', async ({

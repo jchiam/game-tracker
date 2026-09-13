@@ -1,6 +1,7 @@
 import { lazy } from 'react';
 import type { ComponentType, LazyExoticComponent } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import type { TrackerModality } from '@/lib/modalities';
 
 /** Props every game page accepts; App passes the same trio to each route. */
 export interface GamePageProps {
@@ -25,6 +26,8 @@ export interface Game {
   coverImage: string;
   /** SelectionPage card header background class from index.css. */
   bgClass: string;
+  /** Tracker Modality — picks the home-page section and switcher group (see src/lib/modalities.ts). */
+  modality: TrackerModality;
   Page: LazyExoticComponent<ComponentType<GamePageProps>>;
 }
 
@@ -44,6 +47,7 @@ export const GAMES: Game[] = [
     color: '#00ccff',
     coverImage: '/assets/honkai-star-rail/selection-cover.webp',
     bgClass: 'bg-honkai-star-rail-sel',
+    modality: 'roster',
     Page: lazy(() =>
       import('@/pages/honkai-star-rail/HsrPage').then((m) => ({ default: m.HsrPage })),
     ),
@@ -58,6 +62,7 @@ export const GAMES: Game[] = [
     color: '#deb887',
     coverImage: '/assets/reverse-1999/selection-cover.webp',
     bgClass: 'bg-r1999-sel',
+    modality: 'roster',
     Page: lazy(() =>
       import('@/pages/reverse1999/Reverse1999Page').then((m) => ({ default: m.Reverse1999Page })),
     ),
@@ -72,6 +77,7 @@ export const GAMES: Game[] = [
     color: '#7b2dff',
     coverImage: '/assets/neverness-to-everness/selection-cover.webp',
     bgClass: 'bg-n2e-sel',
+    modality: 'roster',
     Page: lazy(() =>
       import('@/pages/neverness-to-everness/N2ePage').then((m) => ({ default: m.N2ePage })),
     ),
@@ -86,6 +92,7 @@ export const GAMES: Game[] = [
     color: '#47c7fd',
     coverImage: '/assets/arknights-endfield/selection-cover.webp',
     bgClass: 'bg-ae-sel',
+    modality: 'roster',
     Page: lazy(() =>
       import('@/pages/arknights-endfield/ArknightsEndfieldPage').then((m) => ({
         default: m.ArknightsEndfieldPage,
@@ -102,6 +109,7 @@ export const GAMES: Game[] = [
     color: '#f84f36',
     coverImage: '/assets/persona-5-phantom-x/selection-cover.webp',
     bgClass: 'bg-p5x-sel',
+    modality: 'roster',
     Page: lazy(() =>
       import('@/pages/persona-5-phantom-x/P5xPage').then((m) => ({ default: m.P5xPage })),
     ),
@@ -116,6 +124,7 @@ export const GAMES: Game[] = [
     color: '#f5c04a',
     coverImage: '/assets/zenless-zone-zero/selection-cover.webp',
     bgClass: 'bg-zzz-sel',
+    modality: 'roster',
     Page: lazy(() =>
       import('@/pages/zenless-zone-zero/ZzzPage').then((m) => ({ default: m.ZzzPage })),
     ),
