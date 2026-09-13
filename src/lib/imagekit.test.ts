@@ -116,6 +116,13 @@ describe('imagekit', () => {
         '/assets/zenless-zone-zero/bangboos/912.png',
       );
     });
+
+    it('getDeviceImageUrl returns the local path', async () => {
+      const { getDeviceImageUrl } = await import('@/lib/imagekit');
+      expect(getDeviceImageUrl('/assets/digimon/devices/vital-bracelet-white.webp')).toBe(
+        '/assets/digimon/devices/vital-bracelet-white.webp',
+      );
+    });
   });
 
   describe('when ImageKit is configured', () => {
@@ -200,6 +207,13 @@ describe('imagekit', () => {
       const { getZzzBangbooIconUrl } = await import('@/lib/imagekit');
       expect(getZzzBangbooIconUrl('/assets/zenless-zone-zero/bangboos/912.png')).toBe(
         'https://ik.imagekit.io/test/tr:w-128/zenless_zone_zero/bangboos/912.png',
+      );
+    });
+
+    it('getDeviceImageUrl contain-fits inside a 480px box without cropping or upscaling', async () => {
+      const { getDeviceImageUrl } = await import('@/lib/imagekit');
+      expect(getDeviceImageUrl('/assets/digimon/devices/vital-bracelet-white.webp')).toBe(
+        'https://ik.imagekit.io/test/tr:w-480,h-480,c-at_max/digimon/devices/vital-bracelet-white.webp',
       );
     });
 

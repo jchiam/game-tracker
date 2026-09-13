@@ -133,6 +133,66 @@ describe('DigimonPage', () => {
     expect(screen.getByRole('status')).toBeInTheDocument();
   });
 
+  it('favorite toggle releases immediately (completed intent)', () => {
+    const toggleFavorite = vi.fn();
+    const devices = [makeDevice('a', 'Alpha Device')];
+    vi.mocked(useDevices).mockReturnValue({
+      ...defaultHook,
+      trackedDevices: devices,
+      getFilteredRoster: vi.fn().mockReturnValue(devices),
+      toggleFavorite,
+    });
+    renderWithProviders(<DigimonPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    fireEvent.click(screen.getByTitle('Favorite Device'));
+    expect(toggleFavorite).toHaveBeenCalledWith('a', true);
+  });
+
+  // --- Projection stability: order holds mid-edit, re-sorts on ✓ commit ---
+  it('YEAR sort does not reorder mid-edit, reorders on commit', () => {
+    const live = {
+      current: [
+        { ...makeDevice('a', 'Alpha Device'), releaseYear: 2020 },
+        { ...makeDevice('b', 'Beta Device'), releaseYear: 2010 },
+      ],
+    };
+    // Identity must stay stable across rerenders (new identity = refresh-all)
+    const filter = vi.fn((term: string, sortBy: string, entities?: DgmTrackedDevice[]) => {
+      let list = entities ?? live.current;
+      if (term.trim()) list = list.filter((d) => d.name.includes(term));
+      return [...list].sort(
+        sortBy === 'YEAR'
+          ? (a, b) => a.releaseYear - b.releaseYear
+          : (a, b) => a.name.localeCompare(b.name),
+      );
+    });
+    const mock = () =>
+      vi.mocked(useDevices).mockReturnValue({
+        ...defaultHook,
+        trackedDevices: live.current,
+        getFilteredRoster: filter,
+      });
+    mock();
+    const { rerender, container } = renderWithProviders(
+      <DigimonPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle(/sorted alphabetically/i)); // YEAR sort
+    const names = () =>
+      [...container.querySelectorAll('.game-card-name')].map((n) => n.textContent);
+    expect(names()).toEqual(['Beta Device', 'Alpha Device']);
+
+    fireEvent.click(screen.getAllByTitle('Edit')[1]); // Alpha's card
+    live.current = [
+      { ...makeDevice('a', 'Alpha Device'), releaseYear: 2005 },
+      { ...makeDevice('b', 'Beta Device'), releaseYear: 2010 },
+    ];
+    mock();
+    rerender(<DigimonPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(names()).toEqual(['Beta Device', 'Alpha Device']); // order held mid-edit
+
+    fireEvent.click(screen.getByTitle('Done editing'));
+    expect(names()).toEqual(['Alpha Device', 'Beta Device']); // released: re-sorted
+  });
+
   it('renders the page title', () => {
     renderWithProviders(<DigimonPage session={null} isAuthLoading={false} onSignIn={vi.fn()} />);
     expect(screen.getByRole('heading', { name: /digimon virtual pets/i })).toBeInTheDocument();
