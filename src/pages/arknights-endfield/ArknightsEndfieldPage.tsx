@@ -113,7 +113,7 @@ export function ArknightsEndfieldPage({
           onEditCommit={() => projection.refreshBasis(operator.id)}
         />
       ))}
-      partiesTab={
+      secondView={
         <PartiesTab
           isInitialLoad={isPartiesInitialLoad}
           isLoadError={isPartiesLoadError}

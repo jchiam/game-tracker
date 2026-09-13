@@ -112,7 +112,7 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
           onEditCommit={() => projection.refreshBasis(character.id!)}
         />
       ))}
-      partiesTab={
+      secondView={
         <PartiesTab
           isInitialLoad={isPartiesInitialLoad}
           isLoadError={isPartiesLoadError}

@@ -188,7 +188,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
           onExitEnd={() => projection.completeExit(arcanist.id!)}
         />
       ))}
-      partiesTab={
+      secondView={
         <PartiesTab
           isInitialLoad={isPartiesInitialLoad}
           isLoadError={isPartiesLoadError}

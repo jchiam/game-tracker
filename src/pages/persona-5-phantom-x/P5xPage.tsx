@@ -194,7 +194,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
           onExitEnd={() => projection.completeExit(thief.id)}
         />
       ))}
-      partiesTab={
+      secondView={
         <PartiesTab
           isInitialLoad={isPartiesInitialLoad}
           isLoadError={isPartiesLoadError}

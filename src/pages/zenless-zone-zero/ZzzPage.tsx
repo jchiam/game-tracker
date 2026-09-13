@@ -181,7 +181,7 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
           onExitEnd={() => projection.completeExit(agent.id)}
         />
       ))}
-      partiesTab={
+      secondView={
         <PartiesTab
           isInitialLoad={isPartiesInitialLoad}
           isLoadError={isPartiesLoadError}
