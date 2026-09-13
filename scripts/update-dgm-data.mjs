@@ -169,12 +169,25 @@ async function fetchWikimonPages(titles) {
   return texts;
 }
 
+/**
+ * Remove every match of `pattern` until nothing changes. A single pass can
+ * leave a fresh match behind when removals join fragments (`<!-<!-- -->-`).
+ */
+function stripToFixpoint(value, pattern) {
+  let prev;
+  do {
+    prev = value;
+    value = value.replace(pattern, '');
+  } while (value !== prev);
+  return value;
+}
+
 /** Strip the wiki markup that shows up inside infobox values. */
 function cleanWikitext(value) {
+  value = stripToFixpoint(value, /<ref[^>]*>[\s\S]*?<\/ref>/g);
+  value = stripToFixpoint(value, /<ref[^>]*\/>/g);
+  value = stripToFixpoint(value, /<!--[\s\S]*?-->/g);
   return value
-    .replace(/<ref[^>]*>[\s\S]*?<\/ref>/g, '')
-    .replace(/<ref[^>]*\/>/g, '')
-    .replace(/<!--[\s\S]*?-->/g, '')
     .replace(/\{\{--\}\}/g, '')
     .replace(/\{\{[^}|]*\}\}/g, '')
     .replace(/\[\[([^\]|]*)\|([^\]]*)\]\]/g, '$2')
