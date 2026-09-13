@@ -147,6 +147,22 @@ describe('productService', () => {
     spy.mockRestore();
   });
 
+  it('variant writes are no-ops when the DB is not configured', async () => {
+    vi.resetModules();
+    vi.stubEnv('VITE_SUPABASE_URL', '');
+    const offline = await import('@/services/digimon/productService');
+    await offline.upsertVariant('db-uuid-1', 'x', { status: 'owned', condition: null });
+    await offline.deleteVariant('db-uuid-1', 'x');
+    expect(mockFrom).not.toHaveBeenCalled();
+  });
+
+  it('deleteVariant rethrows a DB error', async () => {
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    mockFrom.mockReturnValue(createBuilder({ data: null, error: { message: 'boom' } }));
+    await expect(service.deleteVariant('db-uuid-1', 'x')).rejects.toEqual({ message: 'boom' });
+    spy.mockRestore();
+  });
+
   it('deleteVariant deletes by the product + variant key', async () => {
     const builder = createBuilder({ data: null, error: null });
     mockFrom.mockReturnValue(builder);

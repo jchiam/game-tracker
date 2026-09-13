@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { ProductCard } from './ProductCard';
 import { lineModifier } from '@/pages/digimon/lineModifier';
 import type { DgmTrackedProduct } from '@/types';
@@ -166,6 +166,24 @@ describe('ProductCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(onEditCommit).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('button', { name: 'Variants' })).not.toBeInTheDocument();
+  });
+
+  it('forwards a condition change from the editor with the product id', () => {
+    render(
+      <ProductCard
+        product={makeProduct({ variantState: { taichi: { status: 'owned', condition: null } } })}
+        {...props}
+      />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(screen.getByRole('button', { name: 'Manage' }));
+    const row = screen.getByRole('listitem', { name: 'Taichi' });
+    fireEvent.click(within(row).getByRole('button', { name: 'Boxed' }));
+    expect(props.onSetVariantCondition).toHaveBeenCalledWith(
+      'dv-25th-color-evolution',
+      'taichi',
+      'boxed',
+    );
   });
 
   it('reaches a track through the editor tabs for an owned product and forwards toggles', () => {
