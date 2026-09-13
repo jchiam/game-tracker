@@ -1,0 +1,113 @@
+/* Card body layout is the canonical default in card.css; the device card
+   contributes only its badge tints, status chip colours, and the summary line. */
+
+.dgm-summary-sep {
+  color: var(--color-text-dim);
+}
+
+/* Status chip — owned reads complete (verdigris), wishlist reads kindling (amber). */
+.dgm-status-chip-owned {
+  color: var(--color-dgm-status-owned);
+  border-color: color-mix(in srgb, var(--color-dgm-status-owned) 50%, transparent);
+}
+
+.dgm-status-chip-wishlist {
+  color: var(--color-dgm-status-wishlist);
+  border-color: color-mix(in srgb, var(--color-dgm-status-wishlist) 50%, transparent);
+}
+
+/* Static segmented rows: the active status button takes its status hue;
+   condition buttons share the brand accent. */
+.toggle-btn.dgm-status-owned.active {
+  color: var(--color-dgm-status-owned);
+  border-color: color-mix(in srgb, var(--color-dgm-status-owned) 60%, transparent);
+  background: color-mix(in srgb, var(--color-dgm-status-owned) 25%, transparent);
+}
+
+.toggle-btn.dgm-status-wishlist.active {
+  color: var(--color-dgm-status-wishlist);
+  border-color: color-mix(in srgb, var(--color-dgm-status-wishlist) 60%, transparent);
+  background: color-mix(in srgb, var(--color-dgm-status-wishlist) 25%, transparent);
+}
+
+.toggle-btn.dgm-condition.active {
+  color: var(--color-brand-primary);
+  border-color: color-mix(in srgb, var(--color-brand-primary) 60%, transparent);
+  background: color-mix(in srgb, var(--color-brand-primary) 25%, transparent);
+}
+
+/* Badge colours. Base appearance comes from the canonical `.game-badge` pill
+   (card.css); per-variant tint at the canonical 25% fill / 60% border. Lines
+   not listed fall back to the neutral `other` hue via the base rule. */
+.dgm-line-badge {
+  color: var(--color-dgm-line-other);
+  background: color-mix(in srgb, var(--color-dgm-line-other) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-line-other) 60%, transparent);
+}
+
+.dgm-line-digital-monster {
+  color: var(--color-dgm-line-digital-monster);
+  background: color-mix(in srgb, var(--color-dgm-line-digital-monster) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-line-digital-monster) 60%, transparent);
+}
+
+.dgm-line-pendulum {
+  color: var(--color-dgm-line-pendulum);
+  background: color-mix(in srgb, var(--color-dgm-line-pendulum) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-line-pendulum) 60%, transparent);
+}
+
+.dgm-line-vital-bracelet {
+  color: var(--color-dgm-line-vital-bracelet);
+  background: color-mix(in srgb, var(--color-dgm-line-vital-bracelet) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-line-vital-bracelet) 60%, transparent);
+}
+
+.dgm-line-digivice {
+  color: var(--color-dgm-line-digivice);
+  background: color-mix(in srgb, var(--color-dgm-line-digivice) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-line-digivice) 60%, transparent);
+}
+
+.dgm-line-d-3 {
+  color: var(--color-dgm-line-d3);
+  background: color-mix(in srgb, var(--color-dgm-line-d3) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-line-d3) 60%, transparent);
+}
+
+.dgm-line-d-ark {
+  color: var(--color-dgm-line-d-ark);
+  background: color-mix(in srgb, var(--color-dgm-line-d-ark) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-line-d-ark) 60%, transparent);
+}
+
+.dgm-line-xros-loader {
+  color: var(--color-dgm-line-xros-loader);
+  background: color-mix(in srgb, var(--color-dgm-line-xros-loader) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-line-xros-loader) 60%, transparent);
+}
+
+/* Region */
+.dgm-region-jp {
+  color: var(--color-dgm-region-jp);
+  background: color-mix(in srgb, var(--color-dgm-region-jp) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-region-jp) 60%, transparent);
+}
+
+.dgm-region-na {
+  color: var(--color-dgm-region-na);
+  background: color-mix(in srgb, var(--color-dgm-region-na) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-region-na) 60%, transparent);
+}
+
+.dgm-region-eu {
+  color: var(--color-dgm-region-eu);
+  background: color-mix(in srgb, var(--color-dgm-region-eu) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-region-eu) 60%, transparent);
+}
+
+.dgm-region-asia {
+  color: var(--color-dgm-region-asia);
+  background: color-mix(in srgb, var(--color-dgm-region-asia) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-dgm-region-asia) 60%, transparent);
+}

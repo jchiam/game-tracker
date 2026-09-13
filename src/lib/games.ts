@@ -129,4 +129,19 @@ export const GAMES: Game[] = [
       import('@/pages/zenless-zone-zero/ZzzPage').then((m) => ({ default: m.ZzzPage })),
     ),
   },
+  {
+    id: 'dgm',
+    name: 'Digimon Virtual Pets',
+    path: '/digimon',
+    developer: 'Bandai',
+    description: 'Track your digivice and virtual-pet collection.',
+    icon: '/assets/icons/dgm-icon.webp',
+    color: '#f0a860',
+    coverImage: '/assets/digimon/selection-cover.webp',
+    bgClass: 'bg-dgm-sel',
+    modality: 'collection',
+    Page: lazy(() =>
+      import('@/pages/digimon/DigimonPage').then((m) => ({ default: m.DigimonPage })),
+    ),
+  },
 ];
