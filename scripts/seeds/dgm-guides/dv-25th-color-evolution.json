@@ -1,0 +1,626 @@
+{
+  "overall": "track-mean",
+  "tracks": [
+    {
+      "id": "partners",
+      "label": "Partners",
+      "groups": [
+        {
+          "id": "taichi",
+          "label": "Taichi Yagami · Agumon line",
+          "items": [
+            {
+              "id": "partners:taichi-greymon",
+              "label": "Greymon",
+              "hint": "Wins: 5"
+            },
+            {
+              "id": "partners:taichi-metal-greymon",
+              "label": "Metal Greymon",
+              "hint": "Wins: 15",
+              "requires": ["partners:taichi-greymon"]
+            },
+            {
+              "id": "partners:taichi-skull-greymon",
+              "label": "Skull Greymon",
+              "hint": "Wins: 25",
+              "requires": ["partners:taichi-greymon"]
+            },
+            {
+              "id": "partners:taichi-war-greymon",
+              "label": "War Greymon",
+              "hint": "Wins: 45",
+              "requires": ["partners:taichi-metal-greymon"]
+            }
+          ]
+        },
+        {
+          "id": "yamato",
+          "label": "Yamato Ishida · Gabumon line",
+          "items": [
+            {
+              "id": "partners:yamato-garurumon",
+              "label": "Garurumon",
+              "hint": "Wins: 5"
+            },
+            {
+              "id": "partners:yamato-were-garurumon",
+              "label": "Were Garurumon",
+              "hint": "Wins: 15",
+              "requires": ["partners:yamato-garurumon"]
+            },
+            {
+              "id": "partners:yamato-metal-garurumon",
+              "label": "Metal Garurumon",
+              "hint": "Wins: 35",
+              "requires": ["partners:yamato-were-garurumon"]
+            }
+          ]
+        },
+        {
+          "id": "sora",
+          "label": "Sora Takenouchi · Piyomon line",
+          "items": [
+            {
+              "id": "partners:sora-birdramon",
+              "label": "Birdramon",
+              "hint": "Wins: 5"
+            },
+            {
+              "id": "partners:sora-garudamon",
+              "label": "Garudamon",
+              "hint": "Wins: 15",
+              "requires": ["partners:sora-birdramon"]
+            }
+          ]
+        },
+        {
+          "id": "koushiro",
+          "label": "Koushiro Izumi · Tentomon line",
+          "items": [
+            {
+              "id": "partners:koushiro-kabuterimon",
+              "label": "Kabuterimon",
+              "hint": "Wins: 5"
+            },
+            {
+              "id": "partners:koushiro-atlur-kabuterimon",
+              "label": "Atlur Kabuterimon",
+              "hint": "Wins: 15",
+              "requires": ["partners:koushiro-kabuterimon"]
+            }
+          ]
+        },
+        {
+          "id": "mimi",
+          "label": "Mimi Tachikawa · Palmon line",
+          "items": [
+            {
+              "id": "partners:mimi-togemon",
+              "label": "Togemon",
+              "hint": "Wins: 5"
+            },
+            {
+              "id": "partners:mimi-lilimon",
+              "label": "Lilimon",
+              "hint": "Wins: 15",
+              "requires": ["partners:mimi-togemon"]
+            }
+          ]
+        },
+        {
+          "id": "joe",
+          "label": "Joe Kido · Gomamon line",
+          "items": [
+            {
+              "id": "partners:joe-ikkakumon",
+              "label": "Ikkakumon",
+              "hint": "Wins: 5"
+            },
+            {
+              "id": "partners:joe-zudomon",
+              "label": "Zudomon",
+              "hint": "Wins: 15",
+              "requires": ["partners:joe-ikkakumon"]
+            }
+          ]
+        },
+        {
+          "id": "takeru",
+          "label": "Takeru Takaishi · Patamon line",
+          "items": [
+            {
+              "id": "partners:takeru-angemon",
+              "label": "Angemon",
+              "hint": "Wins: 5"
+            },
+            {
+              "id": "partners:takeru-holy-angemon",
+              "label": "Holy Angemon",
+              "hint": "Wins: 15",
+              "requires": ["partners:takeru-angemon"]
+            }
+          ]
+        },
+        {
+          "id": "hikari",
+          "label": "Hikari Yagami · Tailmon line",
+          "items": [
+            {
+              "id": "partners:hikari-tailmon",
+              "label": "Tailmon",
+              "hint": "Met in Shibuya area 3 (Tokyo)"
+            },
+            {
+              "id": "partners:hikari-angewomon",
+              "label": "Angewomon",
+              "hint": "Wins: 20",
+              "requires": ["partners:hikari-tailmon"]
+            }
+          ]
+        },
+        {
+          "id": "jogress",
+          "label": "Omegamon · Taichi + Yamato",
+          "items": [
+            {
+              "id": "partners:omegamon",
+              "label": "Omegamon",
+              "hint": "Unlock War Greymon + Metal Garurumon, then clear Subspace",
+              "requires": [
+                "partners:taichi-war-greymon",
+                "partners:yamato-metal-garurumon",
+                "map:subspace"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "guests",
+          "label": "Guest partners",
+          "items": [
+            {
+              "id": "partners:wizarmon",
+              "label": "Wizarmon",
+              "hint": "Met after clearing the Network map · cannot evolve",
+              "requires": ["map:network"]
+            },
+            {
+              "id": "partners:v-dramon",
+              "label": "V-dramon",
+              "hint": "Met after every secret area and every evolution · cannot evolve"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "map",
+      "label": "Map",
+      "groups": [
+        {
+          "id": "file-island",
+          "label": "File Island",
+          "items": [
+            {
+              "id": "map:file-island-tropical-jungle",
+              "label": "Tropical Jungle",
+              "hint": "Boss: Shellmon · Ep. 1–2"
+            },
+            {
+              "id": "map:file-island-tropical-jungle-secret",
+              "label": "Tropical Jungle · secret area",
+              "hint": "Secret · Meramon"
+            },
+            {
+              "id": "map:file-island-lake",
+              "label": "Lake",
+              "hint": "Boss: Seadramon · Ep. 3",
+              "requires": ["map:file-island-tropical-jungle"]
+            },
+            {
+              "id": "map:file-island-lake-secret",
+              "label": "Lake · secret area",
+              "hint": "Secret · Andromon"
+            },
+            {
+              "id": "map:file-island-gear-savannah",
+              "label": "Gear Savannah",
+              "hint": "Boss: Meramon · Ep. 4",
+              "requires": ["map:file-island-lake"]
+            },
+            {
+              "id": "map:file-island-gear-savannah-secret",
+              "label": "Gear Savannah · secret area",
+              "hint": "Secret · Seadramon"
+            },
+            {
+              "id": "map:file-island-factorial-town",
+              "label": "Factorial Town",
+              "hint": "Boss: Andromon · Ep. 5",
+              "requires": ["map:file-island-gear-savannah"]
+            },
+            {
+              "id": "map:file-island-factorial-town-secret",
+              "label": "Factorial Town · secret area",
+              "hint": "Secret · Monzaemon"
+            },
+            {
+              "id": "map:file-island-toy-town",
+              "label": "Toy-Town",
+              "hint": "Boss: Monzaemon · Ep. 6",
+              "requires": ["map:file-island-factorial-town"]
+            },
+            {
+              "id": "map:file-island-toy-town-secret",
+              "label": "Toy-Town · secret area",
+              "hint": "Secret · Meramon"
+            },
+            {
+              "id": "map:file-island-infinity-mountain",
+              "label": "Infinity Mountain",
+              "hint": "Boss: Devimon · Ep. 7–8",
+              "requires": ["map:file-island-toy-town"]
+            },
+            {
+              "id": "map:file-island-infinity-mountain-secret",
+              "label": "Infinity Mountain · secret area",
+              "hint": "Secret · Shellmon"
+            }
+          ]
+        },
+        {
+          "id": "file-island-broken",
+          "label": "File Island (Broken)",
+          "items": [
+            {
+              "id": "map:file-island-broken-freeze-land",
+              "label": "Freeze Land",
+              "hint": "Boss: Mojyamon · Ep. 9",
+              "requires": ["map:file-island-infinity-mountain"]
+            },
+            {
+              "id": "map:file-island-broken-freeze-land-secret",
+              "label": "Freeze Land · secret area",
+              "hint": "Secret · Bakemon"
+            },
+            {
+              "id": "map:file-island-broken-ancient-dino-region",
+              "label": "Ancient Dino Region",
+              "hint": "Boss: Centaurmon · Ep. 10",
+              "requires": ["map:file-island-broken-freeze-land"]
+            },
+            {
+              "id": "map:file-island-broken-ancient-dino-region-secret",
+              "label": "Ancient Dino Region · secret area",
+              "hint": "Secret · Leomon"
+            },
+            {
+              "id": "map:file-island-broken-overdell-cemetery",
+              "label": "Overdell Cemetery",
+              "hint": "Boss: Bakemon · Ep. 11",
+              "requires": ["map:file-island-broken-ancient-dino-region"]
+            },
+            {
+              "id": "map:file-island-broken-overdell-cemetery-secret",
+              "label": "Overdell Cemetery · secret area",
+              "hint": "Secret · Mojyamon"
+            },
+            {
+              "id": "map:file-island-broken-the-town-of-beginnings",
+              "label": "The Town of Beginnings",
+              "hint": "Boss: Leomon · Ep. 12",
+              "requires": ["map:file-island-broken-overdell-cemetery"]
+            },
+            {
+              "id": "map:file-island-broken-the-town-of-beginnings-secret",
+              "label": "The Town of Beginnings · secret area",
+              "hint": "Secret · Drimogemon"
+            },
+            {
+              "id": "map:file-island-broken-infinity-mountain",
+              "label": "Infinity Mountain",
+              "hint": "Boss: Devimon · Ep. 13",
+              "requires": ["map:file-island-broken-the-town-of-beginnings"]
+            },
+            {
+              "id": "map:file-island-broken-infinity-mountain-secret",
+              "label": "Infinity Mountain · secret area",
+              "hint": "Secret · Centaurmon"
+            },
+            {
+              "id": "map:file-island-broken-open-sea",
+              "label": "Open Sea",
+              "hint": "Boss: Drimogemon · Ep. 14",
+              "requires": ["map:file-island-broken-infinity-mountain"]
+            },
+            {
+              "id": "map:file-island-broken-open-sea-secret",
+              "label": "Open Sea · secret area",
+              "hint": "Secret · Leomon"
+            }
+          ]
+        },
+        {
+          "id": "server-continent",
+          "label": "Server Continent",
+          "items": [
+            {
+              "id": "map:server-continent-koromons-village",
+              "label": "Koromon's Village",
+              "hint": "Boss: Etemon · Ep. 15",
+              "requires": ["map:file-island-broken-open-sea"]
+            },
+            {
+              "id": "map:server-continent-koromons-village-secret",
+              "label": "Koromon's Village · secret area",
+              "hint": "Secret · Cockatrimon"
+            },
+            {
+              "id": "map:server-continent-colosseum",
+              "label": "Colosseum",
+              "hint": "Boss: Greymon · Ep. 16",
+              "requires": ["map:server-continent-koromons-village"]
+            },
+            {
+              "id": "map:server-continent-colosseum-secret",
+              "label": "Colosseum · secret area",
+              "hint": "Secret · Tyranomon"
+            },
+            {
+              "id": "map:server-continent-desert",
+              "label": "Desert",
+              "hint": "Boss: Cockatrimon · Ep. 17",
+              "requires": ["map:server-continent-colosseum"]
+            },
+            {
+              "id": "map:server-continent-desert-secret",
+              "label": "Desert · secret area",
+              "hint": "Secret · Etemon"
+            },
+            {
+              "id": "map:server-continent-piccolomons-forest",
+              "label": "Piccolomon's Forest",
+              "hint": "Boss: Tyranomon · Ep. 18",
+              "requires": ["map:server-continent-desert"]
+            },
+            {
+              "id": "map:server-continent-piccolomons-forest-secret",
+              "label": "Piccolomon's Forest · secret area",
+              "hint": "Secret · Pico Devimon"
+            },
+            {
+              "id": "map:server-continent-reverse-pyramid",
+              "label": "Reverse Pyramid",
+              "hint": "Boss: Etemon · Ep. 19–20",
+              "requires": ["map:server-continent-piccolomons-forest"]
+            },
+            {
+              "id": "map:server-continent-reverse-pyramid-secret",
+              "label": "Reverse Pyramid · secret area",
+              "hint": "Secret · Vegimon"
+            },
+            {
+              "id": "map:server-continent-amusement-park",
+              "label": "Amusement Park",
+              "hint": "Boss: Pico Devimon · Ep. 22",
+              "requires": ["map:server-continent-reverse-pyramid"]
+            },
+            {
+              "id": "map:server-continent-amusement-park-secret",
+              "label": "Amusement Park · secret area",
+              "hint": "Secret · Vademon"
+            },
+            {
+              "id": "map:server-continent-restaurant",
+              "label": "Restaurant",
+              "hint": "Boss: Vegimon · Ep. 23",
+              "requires": ["map:server-continent-amusement-park"]
+            },
+            {
+              "id": "map:server-continent-restaurant-secret",
+              "label": "Restaurant · secret area",
+              "hint": "Secret · Tonosama Gekomon"
+            },
+            {
+              "id": "map:server-continent-different-space",
+              "label": "Different Space",
+              "hint": "Boss: Vademon · Ep. 24",
+              "requires": ["map:server-continent-restaurant"]
+            },
+            {
+              "id": "map:server-continent-different-space-secret",
+              "label": "Different Space · secret area",
+              "hint": "Secret · Etemon"
+            },
+            {
+              "id": "map:server-continent-tonosama-gekomons-castle",
+              "label": "Tonosama Gekomon's Castle",
+              "hint": "Boss: Tonosama Gekomon · Ep. 25",
+              "requires": ["map:server-continent-different-space"]
+            },
+            {
+              "id": "map:server-continent-tonosama-gekomons-castle-secret",
+              "label": "Tonosama Gekomon's Castle · secret area",
+              "hint": "Secret · Cockatrimon"
+            },
+            {
+              "id": "map:server-continent-vamdemons-castle",
+              "label": "Vamdemon's Castle",
+              "hint": "Boss: Vamdemon · Ep. 26–28",
+              "requires": ["map:server-continent-tonosama-gekomons-castle"]
+            },
+            {
+              "id": "map:server-continent-vamdemons-castle-secret",
+              "label": "Vamdemon's Castle · secret area",
+              "hint": "Secret · Greymon"
+            }
+          ]
+        },
+        {
+          "id": "tokyo",
+          "label": "Tokyo",
+          "items": [
+            {
+              "id": "map:tokyo-hikarigaoka",
+              "label": "Hikarigaoka",
+              "hint": "Boss: Mammon · Ep. 29",
+              "requires": ["map:server-continent-vamdemons-castle"]
+            },
+            {
+              "id": "map:tokyo-hikarigaoka-secret",
+              "label": "Hikarigaoka · secret area",
+              "hint": "Secret · Raremon"
+            },
+            {
+              "id": "map:tokyo-harumi",
+              "label": "Harumi",
+              "hint": "Boss: Gesomon · Ep. 30",
+              "requires": ["map:tokyo-hikarigaoka"]
+            },
+            {
+              "id": "map:tokyo-harumi-secret",
+              "label": "Harumi · secret area",
+              "hint": "Secret · Death Meramon"
+            },
+            {
+              "id": "map:tokyo-pier",
+              "label": "Pier",
+              "hint": "Boss: Raremon · Ep. 31",
+              "requires": ["map:tokyo-harumi"]
+            },
+            {
+              "id": "map:tokyo-pier-secret",
+              "label": "Pier · secret area",
+              "hint": "Secret · Mammon"
+            },
+            {
+              "id": "map:tokyo-tower",
+              "label": "Tower",
+              "hint": "Boss: Death Meramon · Ep. 32",
+              "requires": ["map:tokyo-pier"]
+            },
+            {
+              "id": "map:tokyo-tower-secret",
+              "label": "Tower · secret area",
+              "hint": "Secret · Gesomon"
+            },
+            {
+              "id": "map:tokyo-shibuya",
+              "label": "Shibuya",
+              "hint": "Boss: Vamdemon · Ep. 33–34",
+              "requires": ["map:tokyo-tower"]
+            },
+            {
+              "id": "map:tokyo-shibuya-secret",
+              "label": "Shibuya · secret area",
+              "hint": "Secret · Mammon"
+            },
+            {
+              "id": "map:tokyo-exhibition-center",
+              "label": "Exhibition Center",
+              "hint": "Boss: Venom Vamdemon · Ep. 35–39",
+              "requires": ["map:tokyo-shibuya"]
+            },
+            {
+              "id": "map:tokyo-exhibition-center-secret",
+              "label": "Exhibition Center · secret area",
+              "hint": "Secret · Death Meramon"
+            }
+          ]
+        },
+        {
+          "id": "spiral-mountain",
+          "label": "Spiral Mountain",
+          "items": [
+            {
+              "id": "map:spiral-mountain-jungle",
+              "label": "Jungle",
+              "hint": "Boss: Mugendramon · Ep. 40",
+              "requires": ["map:tokyo-exhibition-center"]
+            },
+            {
+              "id": "map:spiral-mountain-jungle-secret",
+              "label": "Jungle · secret area",
+              "hint": "Secret · Pinochimon"
+            },
+            {
+              "id": "map:spiral-mountain-colosseum",
+              "label": "Colosseum",
+              "hint": "Boss: Piemon · Ep. 40",
+              "requires": ["map:spiral-mountain-jungle"]
+            },
+            {
+              "id": "map:spiral-mountain-colosseum-secret",
+              "label": "Colosseum · secret area",
+              "hint": "Secret · Metal Etemon"
+            },
+            {
+              "id": "map:spiral-mountain-digital-sea",
+              "label": "Digital Sea",
+              "hint": "Boss: Metal Seadramon · Ep. 41–42",
+              "requires": ["map:spiral-mountain-colosseum"]
+            },
+            {
+              "id": "map:spiral-mountain-digital-sea-secret",
+              "label": "Digital Sea · secret area",
+              "hint": "Secret · Pinochimon"
+            },
+            {
+              "id": "map:spiral-mountain-digital-forest",
+              "label": "Digital Forest",
+              "hint": "Boss: Pinochimon · Ep. 43–47",
+              "requires": ["map:spiral-mountain-digital-sea"]
+            },
+            {
+              "id": "map:spiral-mountain-digital-city",
+              "label": "Digital City",
+              "hint": "Boss: Mugendramon · Ep. 48–49",
+              "requires": ["map:spiral-mountain-digital-forest"]
+            },
+            {
+              "id": "map:spiral-mountain-digital-city-secret",
+              "label": "Digital City · secret area",
+              "hint": "Secret · Metal Etemon"
+            },
+            {
+              "id": "map:spiral-mountain-wasteland",
+              "label": "Wasteland",
+              "hint": "Boss: Piemon · Ep. 50–52",
+              "requires": ["map:spiral-mountain-digital-city"]
+            },
+            {
+              "id": "map:spiral-mountain-wasteland-secret",
+              "label": "Wasteland · secret area",
+              "hint": "Secret · Mugendramon"
+            }
+          ]
+        },
+        {
+          "id": "subspace",
+          "label": "Subspace",
+          "items": [
+            {
+              "id": "map:subspace",
+              "label": "Subspace",
+              "hint": "Boss: Apocalymon · Ep. 53–54",
+              "requires": ["map:spiral-mountain-wasteland"]
+            }
+          ]
+        },
+        {
+          "id": "network",
+          "label": "Network",
+          "items": [
+            {
+              "id": "map:network",
+              "label": "Network",
+              "hint": "Boss: Diablomon · Ep. Movie",
+              "requires": ["map:subspace"]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

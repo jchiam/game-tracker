@@ -1,0 +1,17 @@
+/* Completion bar — shared by the Completion view's line rows and the software
+   card's per-track lines. The fill paints the shared temper ramp so a bar reads
+   rust when empty and verdigris when complete. */
+
+.completion-bar {
+  height: 8px;
+  border-radius: var(--border-radius-sm);
+  background: rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+}
+
+.completion-bar-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--gradient-temper-ramp);
+  transition: width var(--transition-normal);
+}

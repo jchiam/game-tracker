@@ -56,16 +56,9 @@
   font-variant-numeric: tabular-nums;
 }
 
-.completion-bar {
-  height: 8px;
-  border-radius: var(--border-radius-sm);
-  background: rgba(255, 255, 255, 0.06);
-  overflow: hidden;
-}
-
-.completion-bar-fill {
-  height: 100%;
-  border-radius: inherit;
-  background: var(--gradient-temper-ramp);
-  transition: width var(--transition-normal);
+.completion-row-variants {
+  margin-top: var(--spacing-xs);
+  font-size: var(--typography-font-size-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-dim);
 }

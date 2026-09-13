@@ -1,6 +1,6 @@
 # Game Tracker
 
-Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Currently tracks **Honkai Star Rail**, **Reverse: 1999**, **Neverness to Everness**, **Arknights: Endfield**, **Persona 5: The Phantom X**, **Zenless Zone Zero**, and the **Digimon Virtual Pets** collection (the first collection-modality tracker — see Tracker Modality in `CONTEXT.md`).
+Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Currently tracks **Honkai Star Rail**, **Reverse: 1999**, **Neverness to Everness**, **Arknights: Endfield**, **Persona 5: The Phantom X**, **Zenless Zone Zero**, and the **Digimon Virtual Pets** collection (the first collection-modality tracker — see Tracker Modality in `CONTEXT.md`) tracked per product with its variants and game progress (Product / Variant / Ownership / Game Progress in `CONTEXT.md`).
 
 ## Domain Language
 
@@ -96,7 +96,8 @@ Tokens live in `src/styles/design-tokens.json` and are compiled to `src/styles/t
 | `Modal`                  | `Modal.css`           | Base modal + tabs + form-group input/textarea surfaces                                                                                                                                |
 | `AddEntityModal`         | `AddEntityModal.css`  | Generic add-entity picker (Fuse search, exclusion, GameBadge rows)                                                                                                                    |
 | `GameCardShell`          | uses `card.css`       | Structural shell of every roster card — header image/spinner/fallback, favorite/remove/edit controls, summary ⇄ edit collapse with measured height budgets; game cards fill its slots |
-| `EquipmentEditorShell`   | uses `Modal.css`      | Structural shell of every equipment editor modal — two-tab scaffold, Done footer, equip-only footer extra; games fill the tab bodies (Equipment Editor Shell in `CONTEXT.md`)         |
+| `TabbedEditorShell`      | uses `Modal.css`      | N-tab editor modal scaffold — tab bar, active-tab state, scroll region, Done footer with per-tab footer extra; `EquipmentEditorShell` and the Digimon progress editor compose it      |
+| `EquipmentEditorShell`   | uses `Modal.css`      | Two-tab adapter over `TabbedEditorShell` for every equipment editor modal — equip tab + Build Preferences, equip-only footer extra; games fill the tab bodies (`CONTEXT.md`)          |
 | `PartiesView`            | uses `party.css`      | Shared Party/Lineup view (`src/components/parties/`) — grid, card, editor; per-game `PartiesTab` files are config adapters over it                                                    |
 | `ProgressSection`        | uses `card.css`       | `.progress-section` + `.section-header` + `.section-value` wrapper                                                                                                                    |
 | `GameBadge`              | uses game CSS         | Badge with `{variant}-badge {variant}-{modifier}` classes                                                                                                                             |
@@ -245,13 +246,14 @@ Reference implementation: Reverse: 1999 (`src/hooks/reverse1999/useArcanists.ts`
 
 ### Catalog Data Sources (`dgm`)
 
-The Digimon device catalog is **curated, not fetched** — `scripts/seeds/dgm-devices.json` is the source of truth and external sources only inform it. When touching the seed or its script:
+The Digimon product catalog is **curated, not fetched** — `scripts/seeds/dgm-products.json` (products with their variants) is the source of truth and external sources only inform it. When touching the seed or its script:
 
-- **Wikimon** (`wikimon.net`) is the fact source for release dates, version lists, shell colourways, and product images. It is a MediaWiki with an open `api.php`; content is CC BY-SA 3.0 (attributed in the generated-file banner). Each seed row names its Wikimon page in `wikimon`, and `imageSource` is written as `wikimon:<File name>` — the script resolves it to a URL at run time.
-- `node scripts/update-dgm-data.mjs --sync-wikimon` prints a drift report (colourways / versions the seed lacks, years the page does not list, image candidates, unreferenced list pages) and writes nothing. Run it while editing the seed; fold what matters in by hand. Never make it write.
+- **Wikimon** (`wikimon.net`) is the fact source for release dates, version lists, shell colourways, and product images. It is a MediaWiki with an open `api.php`; content is CC BY-SA 3.0 (attributed in the generated-file banner). Each product names its Wikimon page in `wikimon` (a variant may override it), and a variant's `imageSource` is written as `wikimon:<File name>` — the script resolves it to a URL at run time. Variant ids are the ImageKit asset names (`/assets/digimon/devices/{variantId}.webp`); never rename one.
+- `node scripts/update-dgm-data.mjs --sync-wikimon` prints a drift report per product (colourways / versions with no variant, variant years the page does not list, image candidates, unreferenced list pages) and writes nothing. Run it while editing the seed; fold what matters in by hand. Never make it write.
 - **Bandai / Premium Bandai** product pages are the primary source for verification only — they expire after sale.
-- **Humulos / Digitama Hatchery** (`humulos.com/digimon`) is **not** a catalog source (no dates, colourways on three pages only) and its scripts and layout are reserved by the author. It is earmarked for a future evolution-guide tracker; do not scrape it for the seed, and ask the author before reusing anything.
-- Scope is the modern era (2010 onward); the 1997–2000s originals are out. Fix rows in the seed, then regenerate — never in `src/data/digimon/`.
+- **Humulos / Digitama Hatchery** (`humulos.com/digimon`) is **not** a catalog source (no dates, colourways on three pages only) and its scripts and layout are reserved by the author. Its partner / friend / map guides may **inform** a hand-written progress guide (below) as a cross-check against the device and its manual, but no script ever fetches Humulos.
+- **Progress guides** (`scripts/seeds/dgm-guides/<productId>.json`) describe a product's in-game checklist: the `overall` formula and tracks → groups → items with `hint` / `requires`. Written once — the software never updates — and attached to the product by the same script, which rejects a guide whose file name matches no product. Item ids are `{trackId}:{slug}`; keep `requires` acyclic.
+- Scope is the modern era (2010 onward); the 1997–2000s originals are out. Fix products in the seed, then regenerate — never in `src/data/digimon/`.
 
 ### Testing Conventions
 

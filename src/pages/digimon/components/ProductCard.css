@@ -1,11 +1,9 @@
-/* Card body layout is the canonical default in card.css; the device card
-   contributes only its badge tints, status chip colours, and the summary line. */
+/* Card body layout is the canonical default in card.css; the product card
+   contributes only its badge tints, ownership chip colours, the variant dot
+   line, the per-track progress lines, and the edit-body action row. */
 
-.dgm-summary-sep {
-  color: var(--color-text-dim);
-}
-
-/* Status chip — owned reads complete (verdigris), wishlist reads kindling (amber). */
+/* Ownership chip — owned reads complete (verdigris), wishlist reads kindling
+   (amber), interested stays neutral. */
 .dgm-status-chip-owned {
   color: var(--color-dgm-status-owned);
   border-color: color-mix(in srgb, var(--color-dgm-status-owned) 50%, transparent);
@@ -16,24 +14,51 @@
   border-color: color-mix(in srgb, var(--color-dgm-status-wishlist) 50%, transparent);
 }
 
-/* Static segmented rows: the active status button takes its status hue;
-   condition buttons share the brand accent. */
-.toggle-btn.dgm-status-owned.active {
+.dgm-status-chip-interested {
+  color: var(--color-text-secondary);
+}
+
+/* Variant dot line — one glyph per catalog variant. */
+.variant-dots {
+  display: inline-flex;
+  gap: var(--spacing-1);
+  letter-spacing: 0.05em;
+}
+
+.variant-dot-owned {
   color: var(--color-dgm-status-owned);
-  border-color: color-mix(in srgb, var(--color-dgm-status-owned) 60%, transparent);
-  background: color-mix(in srgb, var(--color-dgm-status-owned) 25%, transparent);
 }
 
-.toggle-btn.dgm-status-wishlist.active {
+.variant-dot-wishlist {
   color: var(--color-dgm-status-wishlist);
-  border-color: color-mix(in srgb, var(--color-dgm-status-wishlist) 60%, transparent);
-  background: color-mix(in srgb, var(--color-dgm-status-wishlist) 25%, transparent);
 }
 
-.toggle-btn.dgm-condition.active {
-  color: var(--color-brand-primary);
-  border-color: color-mix(in srgb, var(--color-brand-primary) 60%, transparent);
-  background: color-mix(in srgb, var(--color-brand-primary) 25%, transparent);
+.variant-dot-none {
+  color: var(--color-text-dim);
+}
+
+/* One summary line per track: label then bar. Inline spans keep the canonical
+   `.game-card-static-line` nowrap/ellipsis contract intact. */
+.product-track-line {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.product-track-label {
+  flex: 0 0 5em;
+  font-size: var(--typography-font-size-xs);
+  color: var(--color-text-secondary);
+}
+
+.product-track-line .completion-bar {
+  display: block;
+  flex: 1;
+  min-width: 0;
+}
+
+.product-track-line .completion-bar-fill {
+  display: block;
 }
 
 /* Badge colours. Base appearance comes from the canonical `.game-badge` pill
@@ -85,29 +110,4 @@
   color: var(--color-dgm-line-xros-loader);
   background: color-mix(in srgb, var(--color-dgm-line-xros-loader) 25%, transparent);
   border-color: color-mix(in srgb, var(--color-dgm-line-xros-loader) 60%, transparent);
-}
-
-/* Region */
-.dgm-region-jp {
-  color: var(--color-dgm-region-jp);
-  background: color-mix(in srgb, var(--color-dgm-region-jp) 25%, transparent);
-  border-color: color-mix(in srgb, var(--color-dgm-region-jp) 60%, transparent);
-}
-
-.dgm-region-na {
-  color: var(--color-dgm-region-na);
-  background: color-mix(in srgb, var(--color-dgm-region-na) 25%, transparent);
-  border-color: color-mix(in srgb, var(--color-dgm-region-na) 60%, transparent);
-}
-
-.dgm-region-eu {
-  color: var(--color-dgm-region-eu);
-  background: color-mix(in srgb, var(--color-dgm-region-eu) 25%, transparent);
-  border-color: color-mix(in srgb, var(--color-dgm-region-eu) 60%, transparent);
-}
-
-.dgm-region-asia {
-  color: var(--color-dgm-region-asia);
-  background: color-mix(in srgb, var(--color-dgm-region-asia) 25%, transparent);
-  border-color: color-mix(in srgb, var(--color-dgm-region-asia) 60%, transparent);
 }

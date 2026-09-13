@@ -1,32 +1,53 @@
-import { ALL_DEVICES, DGM_LINES } from '@/data/digimon/devices';
-import type { DgmTrackedDevice } from '@/types';
+import { ALL_PRODUCTS, DGM_LINES, type DgmProduct } from '@/data/digimon/products';
+import type { DgmTrackedProduct } from '@/types';
+import { deriveOwnership } from '@/pages/digimon/ownership';
 
 export interface CompletionRow {
   label: string;
-  owned: number;
-  total: number;
-  /** Integer percentage, 0–100. */
+  productsOwned: number;
+  productsTotal: number;
+  variantsOwned: number;
+  variantsTotal: number;
+  /** Integer product percentage, 0–100. */
   percent: number;
 }
 
 /**
- * Per-line completion derived purely from the collection and the catalog.
- * **Owned** means `status === 'owned'`; wishlist rows do not count. Returns the
- * overall row first, then one row per `DGM_LINES` entry in catalog order.
+ * Per-line completion derived purely from the collection and the catalog. A
+ * product counts as owned when its derived ownership is `owned`; a variant
+ * counts when its state is `owned`. Wishlist and interested never count.
+ * Returns the overall row first, then one row per `DGM_LINES` entry in
+ * catalog order.
  */
-export function computeCompletion(tracked: DgmTrackedDevice[]): CompletionRow[] {
-  const ownedIds = new Set(tracked.filter((d) => d.status === 'owned').map((d) => d.id));
-  const row = (label: string, devices: { id: string }[]): CompletionRow => {
-    const total = devices.length;
-    const owned = devices.filter((d) => ownedIds.has(d.id)).length;
-    return { label, owned, total, percent: total === 0 ? 0 : Math.round((owned / total) * 100) };
+export function computeCompletion(tracked: DgmTrackedProduct[]): CompletionRow[] {
+  const byId = new Map(tracked.map((t) => [t.id, t]));
+  const row = (label: string, products: DgmProduct[]): CompletionRow => {
+    let productsOwned = 0;
+    let variantsOwned = 0;
+    let variantsTotal = 0;
+    for (const p of products) {
+      variantsTotal += p.variants.length;
+      const t = byId.get(p.id);
+      if (!t) continue;
+      if (deriveOwnership(t) === 'owned') productsOwned++;
+      variantsOwned += p.variants.filter((v) => t.variantState[v.id]?.status === 'owned').length;
+    }
+    const productsTotal = products.length;
+    return {
+      label,
+      productsOwned,
+      productsTotal,
+      variantsOwned,
+      variantsTotal,
+      percent: productsTotal === 0 ? 0 : Math.round((productsOwned / productsTotal) * 100),
+    };
   };
   return [
-    row('All devices', ALL_DEVICES),
+    row('All products', ALL_PRODUCTS),
     ...DGM_LINES.map((line) =>
       row(
         line,
-        ALL_DEVICES.filter((d) => d.line === line),
+        ALL_PRODUCTS.filter((p) => p.line === line),
       ),
     ),
   ];

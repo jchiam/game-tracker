@@ -1,0 +1,1012 @@
+[
+  {
+    "id": "dm-ver-20th",
+    "name": "Digital Monster Ver.20th",
+    "line": "Digital Monster",
+    "series": "Ver.20th",
+    "wikimon": "Digital Monster Ver.20th",
+    "variants": [
+      {
+        "id": "dm-ver20th-original-brown",
+        "colorway": "Original Brown",
+        "releaseYear": 2017,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonster ver20 brown.jpg"
+      },
+      {
+        "id": "dm-ver20th-original-gray",
+        "colorway": "Original Gray",
+        "releaseYear": 2017,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonster ver20 gray.jpg"
+      },
+      {
+        "id": "dm-ver20th-original-navy-blue",
+        "colorway": "Original Navy Blue",
+        "releaseYear": 2017,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonnavy.jpg"
+      },
+      {
+        "id": "dm-ver20th-original-yellow",
+        "colorway": "Original Yellow",
+        "releaseYear": 2017,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonyellow.jpg"
+      },
+      {
+        "id": "dm-ver20th-omegamon-color",
+        "colorway": "Omegamon Color",
+        "releaseYear": 2017,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonster ver20 omega.jpg"
+      },
+      {
+        "id": "dm-ver20th-alphamon-color",
+        "colorway": "Alphamon Color",
+        "releaseYear": 2017,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonster ver20 alpha.jpg"
+      },
+      {
+        "id": "dm-ver20th-english-brick",
+        "colorway": "English Brick",
+        "releaseYear": 2019,
+        "region": "NA",
+        "imageSource": null
+      },
+      {
+        "id": "dm-ver20th-english-gray",
+        "colorway": "English Gray",
+        "releaseYear": 2019,
+        "region": "NA",
+        "imageSource": null
+      }
+    ]
+  },
+  {
+    "id": "dm-x-ver-1",
+    "name": "Digital Monster X Ver.1",
+    "line": "Digital Monster",
+    "series": "X Ver.1",
+    "wikimon": "Digital Monster X",
+    "variants": [
+      {
+        "id": "dm-x-ver1-black",
+        "colorway": "Black",
+        "releaseYear": 2019,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonsterx black.jpg"
+      },
+      {
+        "id": "dm-x-ver1-white",
+        "colorway": "White",
+        "releaseYear": 2019,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonsterx white.jpg"
+      },
+      {
+        "id": "dm-x-ver1-black-and-red",
+        "colorway": "Black and Red",
+        "releaseYear": 2021,
+        "region": "NA",
+        "imageSource": null
+      },
+      {
+        "id": "dm-x-ver1-white-and-blue",
+        "colorway": "White and Blue",
+        "releaseYear": 2021,
+        "region": "NA",
+        "imageSource": null
+      },
+      {
+        "id": "dm-x-ver1-purple-and-red",
+        "colorway": "Purple and Red",
+        "releaseYear": 2021,
+        "region": "NA",
+        "imageSource": "wikimon:Digitalmonsterx purple english.jpg"
+      },
+      {
+        "id": "dm-x-ver1-green-and-blue",
+        "colorway": "Green and Blue",
+        "releaseYear": 2021,
+        "region": "NA",
+        "imageSource": "wikimon:Digitalmonsterx green english.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-x-ver-2",
+    "name": "Digital Monster X Ver.2",
+    "line": "Digital Monster",
+    "series": "X Ver.2",
+    "wikimon": "Digital Monster X Ver.2",
+    "variants": [
+      {
+        "id": "dm-x-ver2-red",
+        "colorway": "Red",
+        "releaseYear": 2019,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonsterx red.jpg"
+      },
+      {
+        "id": "dm-x-ver2-purple",
+        "colorway": "Purple",
+        "releaseYear": 2019,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonsterx purple.jpg"
+      },
+      {
+        "id": "dm-x-ver2-translucent-red-and-gold",
+        "colorway": "Translucent Red and Gold",
+        "releaseYear": 2022,
+        "region": "NA",
+        "imageSource": null
+      },
+      {
+        "id": "dm-x-ver2-translucent-purple-and-silver",
+        "colorway": "Translucent Purple and Silver",
+        "releaseYear": 2022,
+        "region": "NA",
+        "imageSource": null
+      },
+      {
+        "id": "dm-x-ver2-metallic-navy-and-silver",
+        "colorway": "Metallic Navy and Silver",
+        "releaseYear": 2022,
+        "region": "NA",
+        "imageSource": "wikimon:Digitalmonsterx navy english.jpg"
+      },
+      {
+        "id": "dm-x-ver2-metallic-grey-and-gold",
+        "colorway": "Metallic Grey and Gold",
+        "releaseYear": 2022,
+        "region": "NA",
+        "imageSource": "wikimon:Digitalmonsterx grey english.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-x-ver-3",
+    "name": "Digital Monster X Ver.3",
+    "line": "Digital Monster",
+    "series": "X Ver.3",
+    "wikimon": "Digital Monster X Ver.3",
+    "variants": [
+      {
+        "id": "dm-x-ver3-yellow",
+        "colorway": "Yellow",
+        "releaseYear": 2020,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonsterx yellow.jpg"
+      },
+      {
+        "id": "dm-x-ver3-blue",
+        "colorway": "Blue",
+        "releaseYear": 2020,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonsterx blue.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-color-ver-1",
+    "name": "Digital Monster COLOR Ver.1",
+    "line": "Digital Monster",
+    "series": "COLOR Ver.1",
+    "wikimon": "Digital Monster COLOR",
+    "variants": [
+      {
+        "id": "dm-color-ver1-original-brown",
+        "colorway": "Original Brown",
+        "releaseYear": 2023,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorver1 brown.jpg"
+      },
+      {
+        "id": "dm-color-ver1-original-gray",
+        "colorway": "Original Gray",
+        "releaseYear": 2023,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorver1 gray.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-color-ver-2",
+    "name": "Digital Monster COLOR Ver.2",
+    "line": "Digital Monster",
+    "series": "COLOR Ver.2",
+    "wikimon": "Digital Monster COLOR",
+    "variants": [
+      {
+        "id": "dm-color-ver2-original-white",
+        "colorway": "Original White",
+        "releaseYear": 2023,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorver2 white.jpg"
+      },
+      {
+        "id": "dm-color-ver2-original-black",
+        "colorway": "Original Black",
+        "releaseYear": 2023,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorver2 black.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-color-ver-3",
+    "name": "Digital Monster COLOR Ver.3",
+    "line": "Digital Monster",
+    "series": "COLOR Ver.3",
+    "wikimon": "Digital Monster COLOR",
+    "variants": [
+      {
+        "id": "dm-color-ver3-original-purple",
+        "colorway": "Original Purple",
+        "releaseYear": 2023,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorver3 purple.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-color-ver-4",
+    "name": "Digital Monster COLOR Ver.4",
+    "line": "Digital Monster",
+    "series": "COLOR Ver.4",
+    "wikimon": "Digital Monster COLOR",
+    "variants": [
+      {
+        "id": "dm-color-ver4-original-clear-red",
+        "colorway": "Original Clear Red",
+        "releaseYear": 2023,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorver4 clearred.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-color-ver-5",
+    "name": "Digital Monster COLOR Ver.5",
+    "line": "Digital Monster",
+    "series": "COLOR Ver.5",
+    "wikimon": "Digital Monster COLOR",
+    "variants": [
+      {
+        "id": "dm-color-ver5-original-clear-green",
+        "colorway": "Original Clear Green",
+        "releaseYear": 2023,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorver5 cleargreen.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-color-monster-hunter-20th-edition",
+    "name": "Digital Monster COLOR Monster Hunter 20th Edition",
+    "line": "Digital Monster",
+    "series": "COLOR Monster Hunter 20th Edition",
+    "wikimon": "Digital Monster COLOR",
+    "variants": [
+      {
+        "id": "dm-color-monster-hunter-liolaeus",
+        "colorway": "Liolaeus Color",
+        "releaseYear": 2025,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolormh liolaeus.jpg"
+      },
+      {
+        "id": "dm-color-monster-hunter-zinogre",
+        "colorway": "Zinogre Color",
+        "releaseYear": 2025,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolormh zinogre.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-color-godzilla-70th-edition",
+    "name": "Digital Monster COLOR Godzilla 70th Edition",
+    "line": "Digital Monster",
+    "series": "COLOR Godzilla 70th Edition",
+    "wikimon": "Digital Monster COLOR",
+    "variants": [
+      {
+        "id": "dm-color-godzilla-g-erosion",
+        "colorway": "War Greymon \"G\" Erosion Mode Color",
+        "releaseYear": 2025,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorgodzilla wargreymon gerosion.jpg"
+      },
+      {
+        "id": "dm-color-godzilla-g-erosion-classic",
+        "colorway": "War Greymon \"G\" Erosion Mode Classic Color",
+        "releaseYear": 2025,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorgodzilla wargreymon gerosion classic.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-color-digimon-xros-wars-15th-edition",
+    "name": "Digital Monster COLOR Digimon Xros Wars 15th Edition",
+    "line": "Digital Monster",
+    "series": "COLOR Digimon Xros Wars 15th Edition",
+    "wikimon": "Digital Monster COLOR",
+    "variants": [
+      {
+        "id": "dm-color-xros-wars-xros-heart",
+        "colorway": "Xros Heart Color",
+        "releaseYear": 2026,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolordigimonxroswars xrosheart.jpg"
+      },
+      {
+        "id": "dm-color-xros-wars-blue-flare",
+        "colorway": "Blue Flare Color",
+        "releaseYear": 2026,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolordigimonxroswars blueflare.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dm-color-ultraman-series-60th-edition",
+    "name": "Digital Monster COLOR Ultraman Series 60th Edition",
+    "line": "Digital Monster",
+    "series": "COLOR Ultraman Series 60th Edition",
+    "wikimon": "Digital Monster COLOR",
+    "variants": [
+      {
+        "id": "dm-color-ultraman-henshin",
+        "colorway": "Ultraman Henshin Color",
+        "releaseYear": 2027,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorultraman ultramanhenshin.jpg"
+      },
+      {
+        "id": "dm-color-ultraman-graffiti-ultraheroes",
+        "colorway": "Graffiti Ultraheroes Color",
+        "releaseYear": 2027,
+        "region": "JP",
+        "imageSource": "wikimon:Digitalmonstercolorultraman graffitiultraheroes.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-ver-20th",
+    "name": "Digimon Pendulum Ver.20th",
+    "line": "Pendulum",
+    "series": "Ver.20th",
+    "wikimon": "Digimon Pendulum Ver.20th",
+    "variants": [
+      {
+        "id": "pen-ver20th-original-silver-black",
+        "colorway": "Original Silver Black",
+        "releaseYear": 2018,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulum ver20 black.jpg"
+      },
+      {
+        "id": "pen-ver20th-original-silver-blue",
+        "colorway": "Original Silver Blue",
+        "releaseYear": 2018,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulum ver20 blue.jpg"
+      },
+      {
+        "id": "pen-ver20th-dukemon-color",
+        "colorway": "Dukemon Color",
+        "releaseYear": 2018,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulum ver20 duke.jpg"
+      },
+      {
+        "id": "pen-ver20th-beelzebumon-color",
+        "colorway": "Beelzebumon Color",
+        "releaseYear": 2018,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulum ver20 beelzebu.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-z",
+    "name": "Digimon Pendulum Z Nature Spirits",
+    "line": "Pendulum",
+    "series": "Z",
+    "wikimon": "Digimon Pendulum Z",
+    "variants": [
+      {
+        "id": "pen-z-nature-spirits",
+        "colorway": "Nature Spirits Green",
+        "releaseYear": 2020,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulumz_naturespirits.jpg"
+      },
+      {
+        "id": "pen-z-deep-savers",
+        "colorway": "Deep Savers Blue",
+        "releaseYear": 2020,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulumz_deepsavers.jpg"
+      },
+      {
+        "id": "pen-z-nightmare-soldiers",
+        "colorway": "Nightmare Soldiers Red",
+        "releaseYear": 2020,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulumz_nightmaresoldiers.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-z-ii",
+    "name": "Digimon Pendulum Z II Wind Guardians",
+    "line": "Pendulum",
+    "series": "Z II",
+    "wikimon": "Digimon Pendulum Z II",
+    "variants": [
+      {
+        "id": "pen-z2-wind-guardians",
+        "colorway": "Wind Guardians Blue",
+        "releaseYear": 2021,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulumz_windguardians.jpg"
+      },
+      {
+        "id": "pen-z2-metal-empire",
+        "colorway": "Metal Empire Red",
+        "releaseYear": 2021,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulumz_metalempire.jpg"
+      },
+      {
+        "id": "pen-z2-virus-busters",
+        "colorway": "Virus Busters Yellow",
+        "releaseYear": 2021,
+        "region": "JP",
+        "imageSource": "wikimon:Pendulumz_virusbusters.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-1-nature-spirits",
+    "name": "Digimon Pendulum COLOR 1 Nature Spirits",
+    "line": "Pendulum",
+    "series": "COLOR 1 Nature Spirits",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-1-nature-spirits",
+        "colorway": "Original Silver-Blue",
+        "releaseYear": 2024,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor1 silverblue.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-2-deep-savers",
+    "name": "Digimon Pendulum COLOR 2 Deep Savers",
+    "line": "Pendulum",
+    "series": "COLOR 2 Deep Savers",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-2-deep-savers",
+        "colorway": "Original Blue-Orange",
+        "releaseYear": 2024,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor1 blueorange.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-3-nightmare-soldiers",
+    "name": "Digimon Pendulum COLOR 3 Nightmare Soldiers",
+    "line": "Pendulum",
+    "series": "COLOR 3 Nightmare Soldiers",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-3-nightmare-soldiers",
+        "colorway": "Original Red-Black",
+        "releaseYear": 2024,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor1 redblack.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-4-wind-guardians",
+    "name": "Digimon Pendulum COLOR 4 Wind Guardians",
+    "line": "Pendulum",
+    "series": "COLOR 4 Wind Guardians",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-4-wind-guardians",
+        "colorway": "Original Green-Bronze",
+        "releaseYear": 2024,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor greenbronze.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-5-metal-empire",
+    "name": "Digimon Pendulum COLOR 5 Metal Empire",
+    "line": "Pendulum",
+    "series": "COLOR 5 Metal Empire",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-5-metal-empire",
+        "colorway": "Original Black-Red",
+        "releaseYear": 2024,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor blackred.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-zero-virus-busters",
+    "name": "Digimon Pendulum COLOR ZERO Virus Busters",
+    "line": "Pendulum",
+    "series": "COLOR ZERO Virus Busters",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-zero-virus-busters",
+        "colorway": "Original Pearl White-Gold",
+        "releaseYear": 2024,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor pearlwhitegold.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-6-saiyu-warriors",
+    "name": "Digimon Pendulum COLOR 6 Saiyu Warriors",
+    "line": "Pendulum",
+    "series": "COLOR 6 Saiyu Warriors",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-6-saiyu-warriors",
+        "colorway": "Original Red-Yellow",
+        "releaseYear": 2025,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor redyellow.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-7-toho-braves",
+    "name": "Digimon Pendulum COLOR 7 Toho Braves",
+    "line": "Pendulum",
+    "series": "COLOR 7 Toho Braves",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-7-toho-braves",
+        "colorway": "Original White-Red",
+        "releaseYear": 2025,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor whitered.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-8-celestial-walker",
+    "name": "Digimon Pendulum COLOR 8 Celestial Walker",
+    "line": "Pendulum",
+    "series": "COLOR 8 Celestial Walker",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-8-celestial-walker",
+        "colorway": "Olympos Green",
+        "releaseYear": 2026,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor olymposgreen.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-9-astral-sentinel",
+    "name": "Digimon Pendulum COLOR 9 Astral Sentinel",
+    "line": "Pendulum",
+    "series": "COLOR 9 Astral Sentinel",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-9-astral-sentinel",
+        "colorway": "Iliad Blue",
+        "releaseYear": 2026,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor iliadblue.jpg"
+      }
+    ]
+  },
+  {
+    "id": "pen-color-godzilla-edition",
+    "name": "Digimon Pendulum COLOR Godzilla Edition",
+    "line": "Pendulum",
+    "series": "COLOR Godzilla Edition",
+    "wikimon": "Digimon Pendulum COLOR",
+    "variants": [
+      {
+        "id": "pen-color-godzilla-side-godzilla",
+        "colorway": "Omegamon G Fusion Mode (SIDE Godzilla)",
+        "releaseYear": 2026,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor godzillablack.jpg"
+      },
+      {
+        "id": "pen-color-godzilla-side-digimon",
+        "colorway": "Omegamon G Fusion Mode (SIDE Digimon)",
+        "releaseYear": 2026,
+        "region": "JP",
+        "imageSource": "wikimon:Digimonpendulumcolor godzillablue.jpg"
+      }
+    ]
+  },
+  {
+    "id": "vb-digital-monster",
+    "name": "Vital Bracelet Digital Monster",
+    "line": "Vital Bracelet",
+    "series": "Digital Monster",
+    "wikimon": "Vital Bracelet Digital Monster",
+    "variants": [
+      {
+        "id": "vb-digital-monster-ver-black",
+        "colorway": "ver.BLACK",
+        "releaseYear": 2021,
+        "region": "JP",
+        "imageSource": "wikimon:Vitalbracelet_black.jpg"
+      },
+      {
+        "id": "vb-digital-monster-ver-white",
+        "colorway": "ver.WHITE",
+        "releaseYear": 2021,
+        "region": "JP",
+        "imageSource": "wikimon:Vitalbracelet_white.jpg"
+      },
+      {
+        "id": "vb-digital-monster-ver-special",
+        "colorway": "ver.SPECIAL",
+        "releaseYear": 2021,
+        "region": "JP",
+        "imageSource": "wikimon:Vitalbracelet_yellow.jpg"
+      }
+    ]
+  },
+  {
+    "id": "vb-digivice-v",
+    "name": "Vital Bracelet Digivice-V-",
+    "line": "Vital Bracelet",
+    "series": "Digivice-V-",
+    "wikimon": "Vital Bracelet Digital Monster",
+    "variants": [
+      {
+        "id": "vb-digivice-v",
+        "colorway": "Original",
+        "releaseYear": 2021,
+        "region": "JP",
+        "imageSource": "wikimon:Vitalbraceletdigivicev.jpg"
+      }
+    ]
+  },
+  {
+    "id": "vb-vital-hero",
+    "name": "Vital Hero",
+    "line": "Vital Bracelet",
+    "series": "Vital Hero",
+    "wikimon": "Vital Bracelet Digital Monster",
+    "variants": [
+      {
+        "id": "vb-vital-hero-ver-black",
+        "colorway": "ver.BLACK",
+        "releaseYear": 2022,
+        "region": "NA",
+        "imageSource": "wikimon:Vital hero black box.jpg"
+      }
+    ]
+  },
+  {
+    "id": "vb-be",
+    "name": "Vital Bracelet BE",
+    "line": "Vital Bracelet",
+    "series": "BE",
+    "wikimon": "Vital Bracelet BE",
+    "variants": [
+      {
+        "id": "vb-be-clear-black",
+        "colorway": "Clear Black",
+        "releaseYear": 2022,
+        "region": "JP",
+        "imageSource": "wikimon:Vitalbraceletbe_clearblack.jpg"
+      },
+      {
+        "id": "vb-be-clear-white",
+        "colorway": "Clear White",
+        "releaseYear": 2022,
+        "region": "JP",
+        "imageSource": "wikimon:Vitalbraceletbe_clearwhite.jpg"
+      },
+      {
+        "id": "vb-be-25th-anniversary-set",
+        "colorway": "Original Brown and Original Gray",
+        "releaseYear": 2022,
+        "region": "JP",
+        "imageSource": "wikimon:Vitalbraceletbe_25thanniversary.jpg"
+      }
+    ]
+  },
+  {
+    "id": "vb-be-digivice-vv",
+    "name": "Vital Bracelet BE Digivice-VV-",
+    "line": "Vital Bracelet",
+    "series": "BE Digivice-VV-",
+    "wikimon": "Vital Bracelet BE",
+    "variants": [
+      {
+        "id": "vb-be-digivice-vv",
+        "colorway": "Original",
+        "releaseYear": 2022,
+        "region": "JP",
+        "imageSource": "wikimon:Vitalbraceletbe_digivicevv.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dv-ver-15th",
+    "name": "Digivice Ver.15th",
+    "line": "Digivice",
+    "series": "Ver.15th",
+    "wikimon": "Digivice Ver.15th",
+    "variants": [
+      {
+        "id": "dv-ver15th-yagami-taichi",
+        "colorway": "Yagami Taichi Orange",
+        "releaseYear": 2014,
+        "region": "JP",
+        "imageSource": "wikimon:Digivice ver15 yagami taichi.jpg"
+      },
+      {
+        "id": "dv-ver15th-ishida-yamato",
+        "colorway": "Ishida Yamato Blue",
+        "releaseYear": 2014,
+        "region": "JP",
+        "imageSource": "wikimon:Digivice ver15 ishida yamato.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dv-digivice",
+    "name": "Digivice:",
+    "line": "Digivice",
+    "series": "Digivice:",
+    "wikimon": "Digivice: Toy",
+    "variants": [
+      {
+        "id": "dv-2020-blue",
+        "colorway": "Blue",
+        "releaseYear": 2020,
+        "region": "JP",
+        "imageSource": "wikimon:Digivice：_toy.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dv-ver-complete",
+    "name": "Digivice Ver.Complete",
+    "line": "Digivice",
+    "series": "Ver.Complete",
+    "wikimon": "Digivice Ver.Complete",
+    "variants": [
+      {
+        "id": "dv-ver-complete",
+        "colorway": "Original",
+        "releaseYear": 2021,
+        "region": "JP",
+        "imageSource": "wikimon:Digivice_vercomplete.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dv-25th-color-evolution",
+    "name": "Digivice -25th COLOR EVOLUTION-",
+    "line": "Digivice",
+    "series": "-25th COLOR EVOLUTION-",
+    "wikimon": "Digivice -25th COLOR EVOLUTION-",
+    "variants": [
+      {
+        "id": "dv-25th-anime-original",
+        "colorway": "Anime Original Color",
+        "releaseYear": 2024,
+        "region": "JP",
+        "imageSource": "wikimon:Digivice_25thcolorevolution.jpg"
+      },
+      {
+        "id": "dv-25th-yagami-taichi",
+        "colorway": "Yagami Taichi Color",
+        "releaseYear": 2024,
+        "region": "JP",
+        "imageSource": "wikimon:Digivice_25thcolorevolution_yagami_taichi.jpg"
+      },
+      {
+        "id": "dv-25th-ishida-yamato",
+        "colorway": "Ishida Yamato Color",
+        "releaseYear": 2024,
+        "region": "JP",
+        "imageSource": "wikimon:Digivice_25thcolorevolution_ishida_yamato.jpg"
+      }
+    ]
+  },
+  {
+    "id": "d3-ver-15th",
+    "name": "D-3 Ver.15th",
+    "line": "D-3",
+    "series": "Ver.15th",
+    "wikimon": "D-3 Ver.15th",
+    "variants": [
+      {
+        "id": "d3-ver15th-motomiya-daisuke",
+        "colorway": "Motomiya Daisuke Color",
+        "releaseYear": 2016,
+        "region": "JP",
+        "imageSource": "wikimon:D-3 ver15th Photo1.jpg"
+      },
+      {
+        "id": "d3-ver15th-ichijouji-ken",
+        "colorway": "Ichijouji Ken Color",
+        "releaseYear": 2016,
+        "region": "JP",
+        "imageSource": "wikimon:D-3 ver15th Photo1.jpg"
+      },
+      {
+        "id": "d3-ver15th-paildramon",
+        "colorway": "Paildramon Color",
+        "releaseYear": 2016,
+        "region": "JP",
+        "imageSource": "wikimon:D-3 ver15th paildramon.jpg"
+      }
+    ]
+  },
+  {
+    "id": "d3-25th-color-evolution",
+    "name": "D-3 -25th COLOR EVOLUTION-",
+    "line": "D-3",
+    "series": "-25th COLOR EVOLUTION-",
+    "wikimon": "D-3 -25th COLOR EVOLUTION-",
+    "variants": [
+      {
+        "id": "d3-25th-motomiya-daisuke",
+        "colorway": "Motomiya Daisuke Color",
+        "releaseYear": 2025,
+        "region": "JP",
+        "imageSource": "wikimon:D3_25thcolorevolution_motomiya_daisuke.jpg"
+      },
+      {
+        "id": "d3-25th-ichijouji-ken",
+        "colorway": "Ichijouji Ken Color",
+        "releaseYear": 2025,
+        "region": "JP",
+        "imageSource": "wikimon:D3_25thcolorevolution_ichijouji_ken.jpg"
+      },
+      {
+        "id": "d3-25th-paildramon",
+        "colorway": "Paildramon Color",
+        "releaseYear": 2025,
+        "region": "JP",
+        "imageSource": "wikimon:D3_25thcolorevolution_paildramon.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dark-ver-15th",
+    "name": "D-Ark Ver.15th",
+    "line": "D-Ark",
+    "series": "Ver.15th",
+    "wikimon": "D-Ark Ver.15th",
+    "variants": [
+      {
+        "id": "dark-ver15th-matsuda-takato",
+        "colorway": "Matsuda Takato Color",
+        "releaseYear": 2017,
+        "region": "JP",
+        "imageSource": "wikimon:D-ark ver15th matsuda takato color box art.jpg"
+      },
+      {
+        "id": "dark-ver15th-makino-ruki",
+        "colorway": "Makino Ruki Color",
+        "releaseYear": 2017,
+        "region": "JP",
+        "imageSource": "wikimon:D-ark ver15th makino ruki color box art.jpg"
+      }
+    ]
+  },
+  {
+    "id": "dark-25th-color-evolution",
+    "name": "D-Ark -25th COLOR EVOLUTION-",
+    "line": "D-Ark",
+    "series": "-25th COLOR EVOLUTION-",
+    "wikimon": "D-Ark -25th COLOR EVOLUTION-",
+    "variants": [
+      {
+        "id": "dark-25th-matsuda-takato",
+        "colorway": "Matsuda Takato Color",
+        "releaseYear": 2026,
+        "region": "JP",
+        "imageSource": "wikimon:DArk_25thcolorevolution_matsuda_takato.jpg"
+      },
+      {
+        "id": "dark-25th-lee-jianliang",
+        "colorway": "Lee Jianliang Color",
+        "releaseYear": 2026,
+        "region": "JP",
+        "imageSource": "wikimon:DArk_25thcolorevolution_lee_jianliang.jpg"
+      },
+      {
+        "id": "dark-25th-makino-ruki",
+        "colorway": "Makino Ruki Color",
+        "releaseYear": 2026,
+        "region": "JP",
+        "imageSource": "wikimon:DArk_25thcolorevolution_makino_ruki.jpg"
+      }
+    ]
+  },
+  {
+    "id": "xl-original",
+    "name": "Digimon Xros Loader",
+    "line": "Xros Loader",
+    "series": "Original",
+    "wikimon": "Digimon Xros Loader Toy",
+    "variants": [
+      {
+        "id": "xl-original-red",
+        "colorway": "Red",
+        "releaseYear": 2010,
+        "region": "JP",
+        "imageSource": "wikimon:Digimon_xros_loader_toy_red.jpg"
+      }
+    ]
+  },
+  {
+    "id": "xl-black-color-ver",
+    "name": "Digimon Xros Loader Black Color Ver.",
+    "line": "Xros Loader",
+    "series": "Black Color Ver.",
+    "wikimon": "Digimon Xros Loader Black Color Ver.",
+    "variants": [
+      {
+        "id": "xl-black-color-ver",
+        "colorway": "Black",
+        "releaseYear": 2010,
+        "region": "JP",
+        "imageSource": "wikimon:Digimon_xros_loader_toy_black.jpg"
+      }
+    ]
+  },
+  {
+    "id": "xl-blue-flare-side",
+    "name": "Digimon Xros Loader Blue Flare Side",
+    "line": "Xros Loader",
+    "series": "Blue Flare Side",
+    "wikimon": "Digimon Xros Loader Blue Flare Side",
+    "variants": [
+      {
+        "id": "xl-blue-flare-side",
+        "colorway": "Blue",
+        "releaseYear": 2011,
+        "region": "JP",
+        "imageSource": "wikimon:Digimon_xros_loader_toy_blue.jpg"
+      }
+    ]
+  }
+]
