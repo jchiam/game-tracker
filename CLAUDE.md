@@ -243,6 +243,16 @@ Reference implementation: Reverse: 1999 (`src/hooks/reverse1999/useArcanists.ts`
 - `src/lib/imagekit.ts` provides `getMugshotUrl()`, `getAvatarUrl()`, etc. to resolve local paths → ImageKit CDN URLs with transforms.
 - Add new transform functions to `imagekit.ts` as needed for game-specific image treatments.
 
+### Catalog Data Sources (`dgm`)
+
+The Digimon device catalog is **curated, not fetched** — `scripts/seeds/dgm-devices.json` is the source of truth and external sources only inform it. When touching the seed or its script:
+
+- **Wikimon** (`wikimon.net`) is the fact source for release dates, version lists, shell colourways, and product images. It is a MediaWiki with an open `api.php`; content is CC BY-SA 3.0 (attributed in the generated-file banner). Each seed row names its Wikimon page in `wikimon`, and `imageSource` is written as `wikimon:<File name>` — the script resolves it to a URL at run time.
+- `node scripts/update-dgm-data.mjs --sync-wikimon` prints a drift report (colourways / versions the seed lacks, years the page does not list, image candidates, unreferenced list pages) and writes nothing. Run it while editing the seed; fold what matters in by hand. Never make it write.
+- **Bandai / Premium Bandai** product pages are the primary source for verification only — they expire after sale.
+- **Humulos / Digitama Hatchery** (`humulos.com/digimon`) is **not** a catalog source (no dates, colourways on three pages only) and its scripts and layout are reserved by the author. It is earmarked for a future evolution-guide tracker; do not scrape it for the seed, and ask the author before reusing anything.
+- Scope is the modern era (2010 onward); the 1997–2000s originals are out. Fix rows in the seed, then regenerate — never in `src/data/digimon/`.
+
 ### Testing Conventions
 
 - Tests colocated next to source: `Foo.tsx` → `Foo.test.tsx`. E2e tests in `tests/`.
