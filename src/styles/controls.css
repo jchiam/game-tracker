@@ -279,6 +279,74 @@
   gap: var(--spacing-3);
 }
 
+/* ─── Stepper (bounded integer control) ─────────────────────────────
+   Label, − button, value, + button. The counter twin of the toggle pill —
+   quantities (copies of a collectible), not flags. Buttons are self-styled;
+   they never take .btn. */
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+}
+
+.stepper-label {
+  font-size: var(--typography-font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.stepper-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--spacing-lg);
+  height: var(--spacing-lg);
+  border-radius: var(--border-radius-sm);
+  border: 1px solid var(--color-ui-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--color-text-secondary);
+  font-size: var(--typography-font-size-base);
+  font-weight: var(--typography-font-weight-semibold);
+  line-height: 1;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast),
+    border-color var(--transition-fast),
+    opacity var(--transition-fast);
+}
+
+.stepper-btn:hover:not(:disabled) {
+  border-color: var(--color-brand-primary);
+  color: var(--color-brand-primary);
+}
+
+.stepper-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.stepper-value {
+  min-width: 1.5em;
+  text-align: center;
+  font-size: var(--typography-font-size-sm);
+  font-weight: var(--typography-font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+
+.stepper.compact {
+  gap: var(--spacing-1);
+}
+
+.stepper.compact .stepper-label {
+  font-size: var(--typography-font-size-xs);
+}
+
+.stepper.compact .stepper-btn {
+  width: var(--spacing-md);
+  height: var(--spacing-md);
+  font-size: var(--typography-font-size-sm);
+}
+
 /* ─── Custom select dropdown (R1999 + N2E) ───────────────────────── */
 
 .game-select {

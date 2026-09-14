@@ -290,20 +290,30 @@ export interface P5xThiefPatch {
 
 // ── Digimon (dgm) — collection modality ──────────────────────────────────
 
-export type DgmVariantStatus = 'owned' | 'wishlist';
+/**
+ * Condition of one copy: sealed = shrink-wrap intact, never opened (not
+ * playable); boxed = opened, box kept; loose = device only.
+ */
 export type DgmCondition = 'sealed' | 'boxed' | 'loose';
+/** How many copies of a variant the collector holds in each condition. */
+export type DgmCopyCounts = Record<DgmCondition, number>;
 /** Derived, never stored: owned > wishlist > interested (tracked, no variant set). */
 export type DgmOwnership = 'owned' | 'wishlist' | 'interested';
 
+/**
+ * One variant's state: copy counts per condition plus an independent wishlist
+ * flag (a variant can be owned and still wanted). The row exists only while
+ * it is wishlisted or holds at least one copy.
+ */
 export interface DgmTrackedVariant {
-  status: DgmVariantStatus;
-  condition: DgmCondition | null;
+  wishlist: boolean;
+  copies: DgmCopyCounts;
 }
 
 /**
  * A tracked product: the collector's record for one release and all of its
  * colourway / regional variants. `variantState` is keyed by variant id; a
- * missing key means the variant is neither owned nor wishlisted. `progress`
+ * missing key means the variant holds no copies and is not wishlisted. `progress`
  * holds the checked progress-guide item ids (Game Progress in CONTEXT.md).
  */
 export interface DgmTrackedProduct extends DgmProduct {

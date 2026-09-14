@@ -53,13 +53,18 @@ const product: DgmTrackedProduct = {
 
 const owned: DgmTrackedProduct = {
   ...product,
-  variantState: { anime: { status: 'owned', condition: null } },
+  variantState: { anime: { wishlist: false, copies: { sealed: 0, boxed: 1, loose: 0 } } },
+};
+
+const sealedOnly: DgmTrackedProduct = {
+  ...product,
+  variantState: { anime: { wishlist: false, copies: { sealed: 1, boxed: 0, loose: 0 } } },
 };
 
 function renderModal(p: DgmTrackedProduct, initialTab?: string) {
   const props = {
-    onSetVariantStatus: vi.fn(),
-    onSetVariantCondition: vi.fn(),
+    onSetVariantCopies: vi.fn(),
+    onSetVariantWishlist: vi.fn(),
     onToggleItem: vi.fn(),
     onClose: vi.fn(),
   };
@@ -76,23 +81,53 @@ describe('ProductEditorModal', () => {
     expect(screen.getAllByText('JP · 2024', { exact: false })).toHaveLength(2);
   });
 
-  it('ticking a variant emits its status and shows the condition row only while owned', () => {
-    const { onSetVariantStatus, onSetVariantCondition } = renderModal(owned);
+  it('each row has a stepper per condition; increasing emits the new count', () => {
+    const { onSetVariantCopies } = renderModal(owned);
     const taichi = screen.getByRole('listitem', { name: 'Taichi' });
-    expect(within(taichi).queryByRole('button', { name: 'Boxed' })).not.toBeInTheDocument();
-    fireEvent.click(within(taichi).getByRole('button', { name: 'Owned' }));
-    expect(onSetVariantStatus).toHaveBeenCalledWith('taichi', 'owned');
-
-    const anime = screen.getByRole('listitem', { name: 'Anime Original' });
-    fireEvent.click(within(anime).getByRole('button', { name: 'Boxed' }));
-    expect(onSetVariantCondition).toHaveBeenCalledWith('anime', 'boxed');
+    expect(within(taichi).getAllByRole('group', { name: /Sealed|Boxed|Loose/ })).toHaveLength(3);
+    fireEvent.click(within(taichi).getByRole('button', { name: 'Increase Sealed' }));
+    expect(onSetVariantCopies).toHaveBeenCalledWith('taichi', 'sealed', 1);
+    expect(within(taichi).getByRole('button', { name: 'Decrease Sealed' })).toBeDisabled();
   });
 
-  it('deselecting the active status emits null', () => {
-    const { onSetVariantStatus } = renderModal(owned);
+  it('decreasing emits count - 1 and disables at zero', () => {
+    const { onSetVariantCopies } = renderModal(owned);
     const anime = screen.getByRole('listitem', { name: 'Anime Original' });
-    fireEvent.click(within(anime).getByRole('button', { name: 'Owned' }));
-    expect(onSetVariantStatus).toHaveBeenCalledWith('anime', null);
+    fireEvent.click(within(anime).getByRole('button', { name: 'Decrease Boxed' }));
+    expect(onSetVariantCopies).toHaveBeenCalledWith('anime', 'boxed', 0);
+    expect(within(anime).getByRole('button', { name: 'Decrease Loose' })).toBeDisabled();
+  });
+
+  it('the wishlist pill toggles independently of the copies', () => {
+    const { onSetVariantWishlist } = renderModal({
+      ...owned,
+      variantState: {
+        anime: { wishlist: true, copies: { sealed: 0, boxed: 1, loose: 0 } },
+      },
+    });
+    const anime = screen.getByRole('listitem', { name: 'Anime Original' });
+    const pill = within(anime).getByRole('button', { name: 'Wishlist' });
+    expect(pill).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(pill);
+    expect(onSetVariantWishlist).toHaveBeenCalledWith('anime', false);
+
+    const taichi = screen.getByRole('listitem', { name: 'Taichi' });
+    const off = within(taichi).getByRole('button', { name: 'Wishlist' });
+    expect(off).toHaveAttribute('aria-pressed', 'false');
+    fireEvent.click(off);
+    expect(onSetVariantWishlist).toHaveBeenCalledWith('taichi', true);
+  });
+
+  it('a sealed-only product keeps the track tabs disabled and shows the hint', () => {
+    renderModal(sealedOnly, 'partners');
+    expect(screen.getByRole('button', { name: 'Partners' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Variants' })).toHaveClass('active');
+    expect(screen.getByText('Open a copy to track progress.')).toHaveClass('product-editor-hint');
+  });
+
+  it('shows no hint while nothing is owned', () => {
+    renderModal(product);
+    expect(screen.queryByText('Open a copy to track progress.')).not.toBeInTheDocument();
   });
 
   it('disables the track tabs while nothing is owned', () => {

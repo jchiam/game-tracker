@@ -1,6 +1,6 @@
 # Game Tracker
 
-Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Currently tracks **Honkai Star Rail**, **Reverse: 1999**, **Neverness to Everness**, **Arknights: Endfield**, **Persona 5: The Phantom X**, **Zenless Zone Zero**, and the **Digimon Virtual Pets** collection (the first collection-modality tracker — see Tracker Modality in `CONTEXT.md`) tracked per product with its variants and game progress (Product / Variant / Ownership / Game Progress in `CONTEXT.md`).
+Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Currently tracks **Honkai Star Rail**, **Reverse: 1999**, **Neverness to Everness**, **Arknights: Endfield**, **Persona 5: The Phantom X**, **Zenless Zone Zero**, and the **Digimon Virtual Pets** collection (the first collection-modality tracker — see Tracker Modality in `CONTEXT.md`) tracked per product with its variants, copies per condition, and game progress (Product / Variant / Copy / Ownership / Playable / Game Progress in `CONTEXT.md`).
 
 ## Domain Language
 
@@ -122,17 +122,18 @@ Shared modal CSS: `src/components/parties/PartyEditorModal.css` (team builder). 
 
 Form controls shared across every build-preference / equipment editor (HSR relics, N2E cartridges, AE weapons) and card investment rows. All use `controls.css`.
 
-| Component          | Purpose                                                                                                                                         |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `Select`           | Tokenized `<select>` (`.game-select`) — chevron, gold focus glow, `sm`/`md` size                                                                |
-| `FormGroup`        | `.form-group` label + control wrapper                                                                                                           |
-| `LevelSlider`      | `.level-slider` with internal `getProgressStyle` fill + optional `.level-value`                                                                 |
-| `SegmentedButtons` | Single-exact button row; `coloring="static"` (per-option modifier class) or `"investment"` (active rung takes gradient colour); `allowDeselect` |
-| `SubStatList`      | Stat-row list — discriminated `stat-only` (string[]) / `stat-value` ({type,value}[]); add/remove rows                                           |
-| `PreferenceChain`  | Ordered preference chain with `>` / `>=` / `OR` operators (StatChain)                                                                           |
-| `BuildComments`    | `FormGroup` + free-text textarea                                                                                                                |
+| Component          | Purpose                                                                                                                                                        |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Select`           | Tokenized `<select>` (`.game-select`) — chevron, gold focus glow, `sm`/`md` size                                                                               |
+| `FormGroup`        | `.form-group` label + control wrapper                                                                                                                          |
+| `LevelSlider`      | `.level-slider` with internal `getProgressStyle` fill + optional `.level-value`                                                                                |
+| `SegmentedButtons` | Single-exact button row; `coloring="static"` (per-option modifier class) or `"investment"` (active rung takes gradient colour); `allowDeselect`                |
+| `SubStatList`      | Stat-row list — discriminated `stat-only` (string[]) / `stat-value` ({type,value}[]); add/remove rows                                                          |
+| `PreferenceChain`  | Ordered preference chain with `>` / `>=` / `OR` operators (StatChain)                                                                                          |
+| `Stepper`          | Bounded integer control (`.stepper`): label, −/+ `.stepper-btn` pair disabled at `min`/`max`, `.stepper-value` readout; `compact` size — quantities, not flags |
+| `BuildComments`    | `FormGroup` + free-text textarea                                                                                                                               |
 
-**Use shared components for consistency.** All game cards must use `ProgressSection` for stat sections, `GameBadge` for type/element/afflatus badges, and `StatChip` for compact stat displays. All build-preference and equipment editors must compose the build-preference primitives above — `Select` (never a raw `<select>`), `LevelSlider` (never a raw range input), `SegmentedButtons` for discrete tiers/phases, `SubStatList` for stat-row lists, `PreferenceChain` for priority chains, `BuildComments` for notes. Don't re-implement these patterns with raw `<div>`/`<span>`/`<select>`/`<input>` elements.
+**Use shared components for consistency.** All game cards must use `ProgressSection` for stat sections, `GameBadge` for type/element/afflatus badges, and `StatChip` for compact stat displays. All build-preference and equipment editors must compose the build-preference primitives above — `Select` (never a raw `<select>`), `LevelSlider` (never a raw range input), `SegmentedButtons` for discrete tiers/phases, `Stepper` for counts, `SubStatList` for stat-row lists, `PreferenceChain` for priority chains, `BuildComments` for notes. Don't re-implement these patterns with raw `<div>`/`<span>`/`<select>`/`<input>` elements.
 
 ### L4 — Game Components
 

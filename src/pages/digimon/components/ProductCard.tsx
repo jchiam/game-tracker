@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { DgmCondition, DgmOwnership, DgmTrackedProduct, DgmVariantStatus } from '@/types';
+import type { DgmCondition, DgmOwnership, DgmTrackedProduct } from '@/types';
 import { BuildComments } from '@/components/BuildComments';
 import { GameBadge } from '@/components/GameBadge';
 import { GameCardShell } from '@/components/GameCardShell';
@@ -9,9 +9,12 @@ import { getDeviceImageUrl } from '@/lib/imagekit';
 import { getProgressStyle } from '@/utils/progressGradient';
 import { lineModifier } from '@/pages/digimon/lineModifier';
 import {
+  copyCount,
   deriveOwnership,
+  isPlayable,
   ownedVariantCount,
   representativeVariant,
+  variantOwned,
 } from '@/pages/digimon/ownership';
 import { computeProgress } from '@/pages/digimon/gameProgress';
 import { ProductEditorModal, VARIANTS_TAB } from './ProductEditorModal';
@@ -24,24 +27,30 @@ const OWNERSHIP_LABEL: Record<DgmOwnership, string> = {
   interested: 'Interested',
 };
 
-const DOT: Record<DgmVariantStatus | 'none', string> = { owned: '●', wishlist: '◐', none: '○' };
+/** Filled = holds a copy; half = wanted, none held; hollow = nothing. Ownership first. */
+const DOT: Record<'owned' | 'wishlist' | 'none', string> = { owned: '●', wishlist: '◐', none: '○' };
 
 interface ProductCardProps {
   product: DgmTrackedProduct;
   onRemove: (id: string, e: React.MouseEvent) => void;
   onToggleFavorite: (id: string, value: boolean) => void;
   onUpdateNotes: (id: string, notes: string) => void;
-  onSetVariantStatus: (id: string, variantId: string, status: DgmVariantStatus | null) => void;
-  onSetVariantCondition: (id: string, variantId: string, condition: DgmCondition | null) => void;
+  onSetVariantCopies: (
+    id: string,
+    variantId: string,
+    condition: DgmCondition,
+    count: number,
+  ) => void;
+  onSetVariantWishlist: (id: string, variantId: string, wishlist: boolean) => void;
   onToggleItem: (id: string, itemId: string) => void;
   /** Projection-stability release point — fired on the ✓ edit collapse and on editor close. */
   onEditCommit?: () => void;
 }
 
 /**
- * One card per product: ownership first (chip, variant dots), then game
- * progress once a variant is owned and the product has a guide (header
- * percentage, one bar per track). Variants and progress are edited in
+ * One card per product: ownership first (chip, variant dots, copy total),
+ * then game progress once a copy is playable and the product has a guide
+ * (header percentage, one bar per track). Variants and progress are edited in
  * `ProductEditorModal`, never inline.
  */
 export function ProductCard({
@@ -49,24 +58,26 @@ export function ProductCard({
   onRemove,
   onToggleFavorite,
   onUpdateNotes,
-  onSetVariantStatus,
-  onSetVariantCondition,
+  onSetVariantCopies,
+  onSetVariantWishlist,
   onToggleItem,
   onEditCommit,
 }: ProductCardProps) {
   const [editorTab, setEditorTab] = useState<string | null>(null);
   const ownership = deriveOwnership(product);
   const owned = ownedVariantCount(product);
-  const showProgress = ownership === 'owned' && !!product.guide;
+  const copies = copyCount(product);
+  const showProgress = isPlayable(product) && !!product.guide;
   const summary = showProgress ? computeProgress(product.guide!, product.progress) : null;
 
   const dotLine = (
     <span className="variant-dots" aria-label="Variants">
       {product.variants.map((v) => {
-        const status = product.variantState[v.id]?.status ?? 'none';
+        const state = product.variantState[v.id];
+        const glyph = variantOwned(state) ? 'owned' : state?.wishlist ? 'wishlist' : 'none';
         return (
-          <span key={v.id} className={`variant-dot variant-dot-${status}`} title={v.colorway}>
-            {DOT[status]}
+          <span key={v.id} className={`variant-dot variant-dot-${glyph}`} title={v.colorway}>
+            {DOT[glyph]}
           </span>
         );
       })}
@@ -130,6 +141,7 @@ export function ProductCard({
               className={`dgm-status-chip dgm-status-chip-${ownership}`}
             />
             <StatChip label={`${owned} / ${product.variants.length}`} />
+            {copies > 0 && <StatChip label={`${copies} ${copies === 1 ? 'copy' : 'copies'}`} />}
             <StatChip label={String(product.releaseYear)} />
           </>
         }
@@ -157,11 +169,11 @@ export function ProductCard({
         <ProductEditorModal
           product={product}
           initialTab={editorTab}
-          onSetVariantStatus={(variantId, status) =>
-            onSetVariantStatus(product.id, variantId, status)
+          onSetVariantCopies={(variantId, condition, count) =>
+            onSetVariantCopies(product.id, variantId, condition, count)
           }
-          onSetVariantCondition={(variantId, condition) =>
-            onSetVariantCondition(product.id, variantId, condition)
+          onSetVariantWishlist={(variantId, wishlist) =>
+            onSetVariantWishlist(product.id, variantId, wishlist)
           }
           onToggleItem={(itemId) => onToggleItem(product.id, itemId)}
           onClose={() => {
