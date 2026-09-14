@@ -2,7 +2,12 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, within } from '@testing-library/react';
 import { ProductCard } from './ProductCard';
 import { lineModifier } from '@/pages/digimon/lineModifier';
-import type { DgmTrackedProduct } from '@/types';
+import type { DgmCopyCounts, DgmTrackedProduct, DgmTrackedVariant } from '@/types';
+
+const state = (copies: Partial<DgmCopyCounts>, wishlist = false): DgmTrackedVariant => ({
+  wishlist,
+  copies: { sealed: 0, boxed: 0, loose: 0, ...copies },
+});
 
 vi.mock('@/lib/imagekit', () => ({
   getDeviceImageUrl: (path: string) => path,
@@ -68,8 +73,8 @@ describe('ProductCard', () => {
     onRemove: vi.fn(),
     onToggleFavorite: vi.fn(),
     onUpdateNotes: vi.fn(),
-    onSetVariantStatus: vi.fn(),
-    onSetVariantCondition: vi.fn(),
+    onSetVariantCopies: vi.fn(),
+    onSetVariantWishlist: vi.fn(),
     onToggleItem: vi.fn(),
     onEditCommit: vi.fn(),
   };
@@ -77,8 +82,8 @@ describe('ProductCard', () => {
   it('renders an owned product with a guide: badge, chips, dots, and bars', () => {
     const product = makeProduct({
       variantState: {
-        taichi: { status: 'owned', condition: 'boxed' },
-        yamato: { status: 'wishlist', condition: null },
+        taichi: state({ sealed: 1, boxed: 1 }),
+        yamato: state({}, true),
       },
       progress: [...ids('partners', 18), ...ids('friends', 21), ...ids('map', 35)],
     });
@@ -87,6 +92,7 @@ describe('ProductCard', () => {
     expect(screen.getByText('53%')).toBeInTheDocument();
     expect(screen.getByText('Owned')).toHaveClass('dgm-status-chip-owned');
     expect(screen.getByText('1 / 3')).toBeInTheDocument();
+    expect(screen.getByText('2 copies')).toBeInTheDocument();
     expect(screen.getByText('2024')).toBeInTheDocument();
     const dots = container.querySelectorAll('.variant-dot');
     expect([...dots].map((d) => d.className)).toEqual([
@@ -105,6 +111,7 @@ describe('ProductCard', () => {
     const { container } = render(<ProductCard product={makeProduct()} {...props} />);
     expect(screen.getByText('Interested')).toHaveClass('dgm-status-chip-interested');
     expect(screen.getByText('0 / 3')).toBeInTheDocument();
+    expect(screen.queryByText(/cop(y|ies)$/)).not.toBeInTheDocument();
     expect(container.querySelector('.product-progress-badge')).not.toBeInTheDocument();
     expect(container.querySelector('.completion-bar')).not.toBeInTheDocument();
     expect(screen.getByAltText(/Digivice/)).toHaveAttribute('src', '/a.webp');
@@ -119,7 +126,7 @@ describe('ProductCard', () => {
     const { container } = render(
       <ProductCard
         product={makeProduct({
-          variantState: { anime: { status: 'wishlist', condition: null } },
+          variantState: { anime: state({}, true) },
           progress: ids('map', 10),
         })}
         {...props}
@@ -127,6 +134,25 @@ describe('ProductCard', () => {
     );
     expect(screen.getByText('Wishlist')).toHaveClass('dgm-status-chip-wishlist');
     expect(container.querySelector('.completion-bar')).not.toBeInTheDocument();
+  });
+
+  it('renders a sealed-only product as owned with a copy chip but no progress', () => {
+    const { container } = render(
+      <ProductCard
+        product={makeProduct({
+          variantState: { anime: state({ sealed: 1 }, true) },
+          progress: ids('map', 10),
+        })}
+        {...props}
+      />,
+    );
+    expect(screen.getByText('Owned')).toHaveClass('dgm-status-chip-owned');
+    expect(screen.getByText('1 copy')).toBeInTheDocument();
+    expect(container.querySelector('.product-progress-badge')).not.toBeInTheDocument();
+    expect(container.querySelector('.completion-bar')).not.toBeInTheDocument();
+    // Owned-and-wishlisted still reads as owned on the card.
+    expect(container.querySelector('.variant-dot-wishlist')).not.toBeInTheDocument();
+    expect(container.querySelectorAll('.variant-dot-owned')).toHaveLength(1);
   });
 
   it('shows the line badge with its modifier and titles controls with the noun', () => {
@@ -157,39 +183,40 @@ describe('ProductCard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Manage' }));
     expect(screen.getByRole('button', { name: 'Variants' })).toHaveClass('active');
     const row = screen.getByRole('listitem', { name: 'Taichi' });
-    fireEvent.click(row.querySelector('button')!);
-    expect(props.onSetVariantStatus).toHaveBeenCalledWith(
+    fireEvent.click(within(row).getByRole('button', { name: 'Increase Sealed' }));
+    expect(props.onSetVariantCopies).toHaveBeenCalledWith(
       'dv-25th-color-evolution',
       'taichi',
-      'owned',
+      'sealed',
+      1,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Done' }));
     expect(onEditCommit).toHaveBeenCalledTimes(1);
     expect(screen.queryByRole('button', { name: 'Variants' })).not.toBeInTheDocument();
   });
 
-  it('forwards a condition change from the editor with the product id', () => {
+  it('forwards a wishlist toggle from the editor with the product id', () => {
     render(
       <ProductCard
-        product={makeProduct({ variantState: { taichi: { status: 'owned', condition: null } } })}
+        product={makeProduct({ variantState: { taichi: state({ loose: 1 }) } })}
         {...props}
       />,
     );
     fireEvent.click(screen.getByTitle('Edit'));
     fireEvent.click(screen.getByRole('button', { name: 'Manage' }));
     const row = screen.getByRole('listitem', { name: 'Taichi' });
-    fireEvent.click(within(row).getByRole('button', { name: 'Boxed' }));
-    expect(props.onSetVariantCondition).toHaveBeenCalledWith(
+    fireEvent.click(within(row).getByRole('button', { name: 'Wishlist' }));
+    expect(props.onSetVariantWishlist).toHaveBeenCalledWith(
       'dv-25th-color-evolution',
       'taichi',
-      'boxed',
+      true,
     );
   });
 
   it('reaches a track through the editor tabs for an owned product and forwards toggles', () => {
     const { container } = render(
       <ProductCard
-        product={makeProduct({ variantState: { anime: { status: 'owned', condition: null } } })}
+        product={makeProduct({ variantState: { anime: state({ loose: 1 }) } })}
         {...props}
       />,
     );

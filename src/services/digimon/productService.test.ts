@@ -33,8 +33,8 @@ describe('productService', () => {
       notes: 'Birthday',
       progress: ['partners:taichi-greymon'],
       dgm_tracked_variants: [
-        { variant_id: 'dv-25th-anime-original', status: 'owned', condition: 'boxed' },
-        { variant_id: 'dv-25th-yagami-taichi', status: 'wishlist', condition: null },
+        { variant_id: 'dv-25th-anime-original', wishlist: false, sealed: 1, boxed: 0, loose: 1 },
+        { variant_id: 'dv-25th-yagami-taichi', wishlist: true, sealed: 0, boxed: 0, loose: 0 },
       ],
     };
     mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
@@ -53,8 +53,8 @@ describe('productService', () => {
     expect(p.notes).toBe('Birthday');
     expect(p.progress).toEqual(['partners:taichi-greymon']);
     expect(p.variantState).toEqual({
-      'dv-25th-anime-original': { status: 'owned', condition: 'boxed' },
-      'dv-25th-yagami-taichi': { status: 'wishlist', condition: null },
+      'dv-25th-anime-original': { wishlist: false, copies: { sealed: 1, boxed: 0, loose: 1 } },
+      'dv-25th-yagami-taichi': { wishlist: true, copies: { sealed: 0, boxed: 0, loose: 0 } },
     });
   });
 
@@ -69,6 +69,15 @@ describe('productService', () => {
             is_favorited: false,
             notes: null,
             progress: null,
+            dgm_tracked_variants: [
+              {
+                variant_id: 'dm-ver20th-original-brown',
+                wishlist: null,
+                sealed: null,
+                boxed: '2',
+                loose: -1,
+              },
+            ],
           },
         ],
         error: null,
@@ -79,7 +88,9 @@ describe('productService', () => {
     expect(result[0].dbId).toBe('db-2');
     expect(result[0].notes).toBe('');
     expect(result[0].progress).toEqual([]);
-    expect(result[0].variantState).toEqual({});
+    expect(result[0].variantState).toEqual({
+      'dm-ver20th-original-brown': { wishlist: false, copies: { sealed: 0, boxed: 0, loose: 0 } },
+    });
   });
 
   it('insertProduct inserts the entity FK column and configured defaults', async () => {
@@ -122,8 +133,8 @@ describe('productService', () => {
     mockFrom.mockReturnValue(builder);
 
     await service.upsertVariant('db-uuid-1', 'dv-25th-anime-original', {
-      status: 'owned',
-      condition: 'sealed',
+      wishlist: true,
+      copies: { sealed: 2, boxed: 0, loose: 0 },
     });
 
     expect(mockFrom).toHaveBeenCalledWith('dgm_tracked_variants');
@@ -131,8 +142,10 @@ describe('productService', () => {
       {
         tracked_product_id: 'db-uuid-1',
         variant_id: 'dv-25th-anime-original',
-        status: 'owned',
-        condition: 'sealed',
+        wishlist: true,
+        sealed: 2,
+        boxed: 0,
+        loose: 0,
       },
       { onConflict: 'tracked_product_id,variant_id' },
     );
@@ -142,7 +155,10 @@ describe('productService', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
     mockFrom.mockReturnValue(createBuilder({ data: null, error: { message: 'boom' } }));
     await expect(
-      service.upsertVariant('db-uuid-1', 'x', { status: 'owned', condition: null }),
+      service.upsertVariant('db-uuid-1', 'x', {
+        wishlist: false,
+        copies: { sealed: 1, boxed: 0, loose: 0 },
+      }),
     ).rejects.toEqual({ message: 'boom' });
     spy.mockRestore();
   });
@@ -151,7 +167,10 @@ describe('productService', () => {
     vi.resetModules();
     vi.stubEnv('VITE_SUPABASE_URL', '');
     const offline = await import('@/services/digimon/productService');
-    await offline.upsertVariant('db-uuid-1', 'x', { status: 'owned', condition: null });
+    await offline.upsertVariant('db-uuid-1', 'x', {
+      wishlist: false,
+      copies: { sealed: 1, boxed: 0, loose: 0 },
+    });
     await offline.deleteVariant('db-uuid-1', 'x');
     expect(mockFrom).not.toHaveBeenCalled();
   });

@@ -45,24 +45,35 @@
   white-space: nowrap;
 }
 
-/* Static segmented rows: the active status button takes its status hue;
-   condition buttons share the brand accent. */
-.toggle-btn.dgm-status-owned.active {
-  color: var(--color-dgm-status-owned);
-  border-color: color-mix(in srgb, var(--color-dgm-status-owned) 60%, transparent);
-  background: color-mix(in srgb, var(--color-dgm-status-owned) 25%, transparent);
+/* One stepper per condition, then the wishlist pill pushed to the row end. */
+.variant-row-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-sm) var(--spacing-md);
 }
 
+.variant-row-wishlist {
+  margin-left: auto;
+}
+
+.variant-row-wishlist .toggle-btn {
+  flex: 0 0 auto;
+}
+
+/* The wishlist pill takes the wishlist hue while on. */
 .toggle-btn.dgm-status-wishlist.active {
   color: var(--color-dgm-status-wishlist);
   border-color: color-mix(in srgb, var(--color-dgm-status-wishlist) 60%, transparent);
   background: color-mix(in srgb, var(--color-dgm-status-wishlist) 25%, transparent);
 }
 
-.toggle-btn.dgm-condition.active {
-  color: var(--color-brand-primary);
-  border-color: color-mix(in srgb, var(--color-brand-primary) 60%, transparent);
-  background: color-mix(in srgb, var(--color-brand-primary) 25%, transparent);
+/* Shown under the list while every copy is sealed: progress needs an opened one. */
+.product-editor-hint {
+  margin: 0;
+  font-size: var(--typography-font-size-sm);
+  color: var(--color-text-dim);
+  text-align: center;
 }
 
 /* ─── Progress track tabs ──────────────────────────────────────────── */

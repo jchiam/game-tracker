@@ -64,7 +64,8 @@ export function CompletionView({
           <div className="completion-bar-fill" style={{ width: `${row.percent}%` }} />
         </div>
         <div className="completion-row-variants">
-          {row.variantsOwned} / {row.variantsTotal} variants
+          {row.variantsOwned} / {row.variantsTotal} variants · {row.copiesOwned}{' '}
+          {row.copiesOwned === 1 ? 'copy' : 'copies'}
         </div>
       </li>
     );

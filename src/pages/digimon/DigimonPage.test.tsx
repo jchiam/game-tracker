@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, within } from '@testing-library/react';
 import { DigimonPage } from './DigimonPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import type { DgmTrackedProduct } from '@/types';
@@ -60,8 +60,8 @@ const defaultHook = {
   updateNotes: vi.fn(),
   toggleFavorite: vi.fn(),
   updateProgress: vi.fn(),
-  setVariantStatus: vi.fn(),
-  setVariantCondition: vi.fn(),
+  setVariantCopies: vi.fn(),
+  setVariantWishlist: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };
 
@@ -164,7 +164,7 @@ describe('DigimonPage', () => {
   });
 
   it('wires variant ticks and progress toggles through the hook, merging progress', () => {
-    const setVariantStatus = vi.fn();
+    const setVariantCopies = vi.fn();
     const updateProgress = vi.fn();
     const tracked: DgmTrackedProduct = {
       ...dvc,
@@ -172,21 +172,23 @@ describe('DigimonPage', () => {
       isFavorited: false,
       notes: '',
       progress: ['partners:taichi-greymon'],
-      variantState: { [dvc.variants[0].id]: { status: 'owned', condition: null } },
+      variantState: {
+        [dvc.variants[0].id]: { wishlist: false, copies: { sealed: 0, boxed: 0, loose: 1 } },
+      },
     };
     vi.mocked(useProducts).mockReturnValue({
       ...defaultHook,
       trackedProducts: [tracked],
       getFilteredRoster: vi.fn().mockReturnValue([tracked]),
-      setVariantStatus,
+      setVariantCopies,
       updateProgress,
     });
     renderWithProviders(<DigimonPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
     fireEvent.click(screen.getByTitle('Edit'));
     fireEvent.click(screen.getByRole('button', { name: 'Manage' }));
     const taichiRow = screen.getByRole('listitem', { name: 'Yagami Taichi Color' });
-    fireEvent.click(taichiRow.querySelector('button')!);
-    expect(setVariantStatus).toHaveBeenCalledWith(dvc.id, dvc.variants[1].id, 'owned');
+    fireEvent.click(within(taichiRow).getByRole('button', { name: 'Increase Boxed' }));
+    expect(setVariantCopies).toHaveBeenCalledWith(dvc.id, dvc.variants[1].id, 'boxed', 1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Partners' }));
     fireEvent.click(screen.getByLabelText(/^Metal Greymon/));

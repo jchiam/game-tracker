@@ -5,6 +5,9 @@ import { ALL_PRODUCTS, type DgmProduct } from '@/data/digimon/products';
 
 const DB_ENABLED = !!import.meta.env.VITE_SUPABASE_URL;
 
+/** A copy counter as stored; anything that is not a non-negative number reads as 0. */
+const count = (v: unknown): number => (typeof v === 'number' && v > 0 ? v : 0);
+
 /** Maps each camelCase patch key to its DB column. Schema stays service-private. */
 const PRODUCT_COLUMNS: Record<keyof DgmProductPatch, string> = {
   notes: 'notes',
@@ -14,9 +17,10 @@ const PRODUCT_COLUMNS: Record<keyof DgmProductPatch, string> = {
 
 /**
  * The Digimon product roster. The product row carries favorite, notes, and the
- * game-progress item ids; per-variant state (owned / wishlist + condition)
- * lives in `dgm_tracked_variants`, joined on load through the Extras Adapter
- * and written one row at a time by `upsertVariant` / `deleteVariant`.
+ * game-progress item ids; per-variant state (wishlist flag + copy counts per
+ * condition) lives in `dgm_tracked_variants`, joined on load through the
+ * Extras Adapter and written one row at a time by `upsertVariant` /
+ * `deleteVariant`.
  */
 const svc = createRosterPersistence<DgmProduct, DgmTrackedProduct, DgmProductPatch>({
   table: 'dgm_tracked_products',
@@ -40,13 +44,13 @@ const svc = createRosterPersistence<DgmProduct, DgmTrackedProduct, DgmProductPat
     variantState: {},
   }),
   extras: {
-    selectFragment: 'dgm_tracked_variants ( variant_id, status, condition )',
+    selectFragment: 'dgm_tracked_variants ( variant_id, wishlist, sealed, boxed, loose )',
     mapRow: (row, tracked) => {
       const variantState: Record<string, DgmTrackedVariant> = {};
       for (const v of row.dgm_tracked_variants || []) {
         variantState[v.variant_id] = {
-          status: v.status === 'wishlist' ? 'wishlist' : 'owned',
-          condition: v.condition ?? null,
+          wishlist: !!v.wishlist,
+          copies: { sealed: count(v.sealed), boxed: count(v.boxed), loose: count(v.loose) },
         };
       }
       return { ...tracked, variantState };
@@ -59,7 +63,7 @@ export const insertProduct = svc.insert;
 export const deleteProduct = svc.remove;
 export const updateProduct = svc.update;
 
-/** Single-row upsert of one variant's state, resolved on (tracked_product_id, variant_id). */
+/** Single-row upsert of one variant's wishlist flag and copy counts, resolved on (tracked_product_id, variant_id). */
 export async function upsertVariant(
   dbId: string,
   variantId: string,
@@ -70,8 +74,10 @@ export async function upsertVariant(
     {
       tracked_product_id: dbId,
       variant_id: variantId,
-      status: state.status,
-      condition: state.condition,
+      wishlist: state.wishlist,
+      sealed: state.copies.sealed,
+      boxed: state.copies.boxed,
+      loose: state.copies.loose,
     },
     { onConflict: 'tracked_product_id,variant_id' },
   );
@@ -81,7 +87,7 @@ export async function upsertVariant(
   }
 }
 
-/** Removes one variant's row — the variant is neither owned nor wishlisted any more. */
+/** Removes one variant's row — the variant holds no copies and is not wishlisted any more. */
 export async function deleteVariant(dbId: string, variantId: string): Promise<void> {
   if (!DB_ENABLED) return;
   const { error } = await supabase

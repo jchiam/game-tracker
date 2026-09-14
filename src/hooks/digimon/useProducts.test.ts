@@ -105,69 +105,110 @@ describe('useProducts', () => {
     expect(mockUpdate).toHaveBeenCalledWith('new-db-id', patch);
   });
 
-  it('setVariantStatus sets the state optimistically and upserts one row', async () => {
+  const copies = (c: Partial<Record<'sealed' | 'boxed' | 'loose', number>>) => ({
+    sealed: 0,
+    boxed: 0,
+    loose: 0,
+    ...c,
+  });
+
+  it('setVariantCopies sets the count optimistically and upserts one row', async () => {
     const { result } = await setupWithProduct();
     act(() => {
-      result.current.setVariantStatus(dvc.id, anime, 'owned');
+      result.current.setVariantCopies(dvc.id, anime, 'sealed', 1);
     });
     expect(result.current.trackedProducts[0].variantState[anime]).toEqual({
-      status: 'owned',
-      condition: null,
+      wishlist: false,
+      copies: copies({ sealed: 1 }),
     });
     await waitFor(() =>
       expect(mockUpsertVariant).toHaveBeenCalledWith('new-db-id', anime, {
-        status: 'owned',
-        condition: null,
+        wishlist: false,
+        copies: copies({ sealed: 1 }),
       }),
     );
   });
 
-  it('setVariantCondition keeps the owned status and upserts; switching to wishlist clears it', async () => {
+  it('setVariantCopies keeps the other counters and clamps below zero', async () => {
     const { result } = await setupWithProduct();
     act(() => {
-      result.current.setVariantStatus(dvc.id, anime, 'owned');
+      result.current.setVariantCopies(dvc.id, anime, 'sealed', 1);
     });
     act(() => {
-      result.current.setVariantCondition(dvc.id, anime, 'boxed');
+      result.current.setVariantCopies(dvc.id, anime, 'loose', 2);
     });
-    expect(result.current.trackedProducts[0].variantState[anime]).toEqual({
-      status: 'owned',
-      condition: 'boxed',
+    expect(result.current.trackedProducts[0].variantState[anime].copies).toEqual(
+      copies({ sealed: 1, loose: 2 }),
+    );
+    act(() => {
+      result.current.setVariantCopies(dvc.id, anime, 'sealed', -3);
     });
+    expect(result.current.trackedProducts[0].variantState[anime].copies).toEqual(
+      copies({ loose: 2 }),
+    );
     await waitFor(() =>
       expect(mockUpsertVariant).toHaveBeenLastCalledWith('new-db-id', anime, {
-        status: 'owned',
-        condition: 'boxed',
+        wishlist: false,
+        copies: copies({ loose: 2 }),
       }),
     );
-    act(() => {
-      result.current.setVariantStatus(dvc.id, anime, 'wishlist');
-    });
-    expect(result.current.trackedProducts[0].variantState[anime]).toEqual({
-      status: 'wishlist',
-      condition: null,
-    });
+    expect(mockDeleteVariant).not.toHaveBeenCalled();
   });
 
-  it('setVariantCondition is ignored for a variant that is not owned', async () => {
+  it('removing the last copy of an unwishlisted variant deletes the row', async () => {
     const { result } = await setupWithProduct();
     act(() => {
-      result.current.setVariantCondition(dvc.id, anime, 'boxed');
-    });
-    expect(result.current.trackedProducts[0].variantState[anime]).toBeUndefined();
-    expect(mockUpsertVariant).not.toHaveBeenCalled();
-  });
-
-  it('setVariantStatus null removes the state and deletes the row', async () => {
-    const { result } = await setupWithProduct();
-    act(() => {
-      result.current.setVariantStatus(dvc.id, anime, 'wishlist');
+      result.current.setVariantCopies(dvc.id, anime, 'sealed', 1);
     });
     act(() => {
-      result.current.setVariantStatus(dvc.id, anime, null);
+      result.current.setVariantCopies(dvc.id, anime, 'sealed', 0);
     });
     expect(result.current.trackedProducts[0].variantState).toEqual({});
     await waitFor(() => expect(mockDeleteVariant).toHaveBeenCalledWith('new-db-id', anime));
+  });
+
+  it('setVariantWishlist keeps a copy-less row alive and deletes it when cleared', async () => {
+    const { result } = await setupWithProduct();
+    act(() => {
+      result.current.setVariantWishlist(dvc.id, anime, true);
+    });
+    expect(result.current.trackedProducts[0].variantState[anime]).toEqual({
+      wishlist: true,
+      copies: copies({}),
+    });
+    await waitFor(() =>
+      expect(mockUpsertVariant).toHaveBeenCalledWith('new-db-id', anime, {
+        wishlist: true,
+        copies: copies({}),
+      }),
+    );
+    act(() => {
+      result.current.setVariantWishlist(dvc.id, anime, false);
+    });
+    expect(result.current.trackedProducts[0].variantState).toEqual({});
+    await waitFor(() => expect(mockDeleteVariant).toHaveBeenCalledWith('new-db-id', anime));
+  });
+
+  it('wishlist and copies are independent on the same variant', async () => {
+    const { result } = await setupWithProduct();
+    act(() => {
+      result.current.setVariantCopies(dvc.id, anime, 'loose', 1);
+    });
+    act(() => {
+      result.current.setVariantWishlist(dvc.id, anime, true);
+    });
+    expect(result.current.trackedProducts[0].variantState[anime]).toEqual({
+      wishlist: true,
+      copies: copies({ loose: 1 }),
+    });
+    act(() => {
+      result.current.setVariantCopies(dvc.id, anime, 'loose', 0);
+    });
+    expect(result.current.trackedProducts[0].variantState[anime]).toEqual({
+      wishlist: true,
+      copies: copies({}),
+    });
+    expect(mockDeleteVariant).not.toHaveBeenCalled();
   });
 
   it('rolls back the variant state and toasts when the write fails', async () => {
@@ -175,7 +216,7 @@ describe('useProducts', () => {
     mockUpsertVariant.mockRejectedValue(new Error('DB down'));
     const { result } = await setupWithProduct();
     act(() => {
-      result.current.setVariantStatus(dvc.id, anime, 'owned');
+      result.current.setVariantCopies(dvc.id, anime, 'boxed', 1);
     });
     await waitFor(() =>
       expect(result.current.trackedProducts[0].variantState[anime]).toBeUndefined(),

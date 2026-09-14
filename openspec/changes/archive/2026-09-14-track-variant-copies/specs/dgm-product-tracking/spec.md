@@ -1,10 +1,20 @@
-# dgm-product-tracking Specification
+## ADDED Requirements
 
-## Purpose
+### Requirement: Variant rows migrate to copy counts
 
-How the Digimon collection is tracked per product: product rows with variant child rows, derived ownership (owned / wishlist / interested), the roster hook, page, card, add modal, and the product editor's Variants tab.
+The migration `supabase/migrations/20260914000000_dgm_variant_copies.sql` SHALL add `wishlist BOOLEAN NOT NULL DEFAULT false` and `sealed`, `boxed`, `loose` (`INTEGER NOT NULL DEFAULT 0`, each `CHECK (>= 0)`) to `dgm_tracked_variants`, backfill every existing row (`wishlist = (status = 'wishlist')`; `sealed = 1` when `status = 'owned' AND condition = 'sealed'`, `boxed` likewise, `loose = 1` when `status = 'owned' AND (condition = 'loose' OR condition IS NULL)`, else `0`), drop `status` and `condition`, and add `CONSTRAINT dgm_tracked_variants_meaningful CHECK (wishlist OR sealed + boxed + loose > 0)`. The unique key, index, and RLS policies SHALL be untouched.
 
-## Requirements
+#### Scenario: Owned rows become one copy each
+
+- **WHEN** a profile has variant rows (owned, sealed), (owned, boxed), (owned, NULL), and (wishlist, NULL)
+- **THEN** after migration they read `sealed 1`, `boxed 1`, `loose 1` (the NULL-condition row), and `wishlist true` with all counters `0`
+
+#### Scenario: Empty row rejected
+
+- **WHEN** a row with `wishlist false` and every counter `0` is inserted
+- **THEN** the insert fails the `dgm_tracked_variants_meaningful` check
+
+## MODIFIED Requirements
 
 ### Requirement: Tracked product persistence with variant child rows
 
@@ -24,20 +34,6 @@ The system SHALL persist a user's tracked products in `dgm_tracked_products` (`i
 
 - **WHEN** `upsertVariant('db-1', 'dv-25th-anime-original', { wishlist: true, copies: { sealed: 2, boxed: 0, loose: 0 } })` runs
 - **THEN** one row `{ tracked_product_id: 'db-1', variant_id: 'dv-25th-anime-original', wishlist: true, sealed: 2, boxed: 0, loose: 0 }` is upserted on conflict `tracked_product_id,variant_id`; `deleteVariant('db-1', 'dv-25th-anime-original')` deletes that row
-
-### Requirement: Existing device rows migrate to products
-
-The migration `supabase/migrations/20260913000001_restructure_dgm_products.sql` SHALL create both tables, convert every `dgm_tracked_devices` row into its product row (favorite = any converted device favorited; notes = non-empty device notes joined by newline) and a variant row (status, condition) using a device-id → product-id map carried in the migration, SHALL raise if any device id is absent from the map, and SHALL then drop `dgm_tracked_devices`. `acquired_on` is not carried over.
-
-#### Scenario: Three colourways become one product
-
-- **WHEN** a profile has owned rows for all three `dv-25th-*` devices
-- **THEN** after migration it has one `dv-25th-color-evolution` product row and three owned variant rows
-
-#### Scenario: Unmapped device fails loudly
-
-- **WHEN** a `dgm_tracked_devices` row's `device_id` is not in the map
-- **THEN** the migration raises and nothing is dropped
 
 ### Requirement: Product roster hook
 
@@ -87,15 +83,6 @@ The migration `supabase/migrations/20260913000001_restructure_dgm_products.sql` 
 - **WHEN** a variant has `sealed 1` and `loose 2`
 - **THEN** `isPlayable` is true and `copyCount` is 3
 
-### Requirement: Product page
-
-`src/pages/digimon/DigimonPage.tsx` SHALL compose `useProducts`, `useRosterView` (sort modes `ALPHA` "AZ" / `YEAR` "Yr"; placeholder "Search by name, line, series, or colour…"; add title "Add Product"), and `RosterPageLayout` with title "Digimon Virtual Pets", `secondViewLabel` "Completion", empty message "No products in your collection yet. Use the + button to begin!", one `ProductCard` per filtered product, `AddProductModal`, and the completion view in `secondView`. Favorite toggles, edit commits, and product-editor closes SHALL call `projection.refreshBasis(id)`.
-
-#### Scenario: Registry wiring unchanged
-
-- **WHEN** `GAMES` is read
-- **THEN** the `dgm` entry still has `path '/digimon'`, `modality 'collection'`, `bgClass 'bg-dgm-sel'`
-
 ### Requirement: Product card
 
 `ProductCard` SHALL compose `GameCardShell` with `entityNoun` "Product", image = `representativeVariant` resolved via `getDeviceImageUrl`, favorite and remove controls, a `GameBadge` for `line` (variant `dgm-line`), `summaryStats` of an ownership `StatChip` (Owned / Wishlist / Interested with the `dgm-status-chip-*` tints), an `{owned} / {total}` variants chip, a `{copies} copies` chip (`1 copy` at one) rendered only when `copyCount` is above zero, and the product year chip; `summaryLine` = a variant dot line (one glyph per catalog variant: filled when the variant has any copy, half when it is wishlisted with no copy, hollow otherwise, titled with the colourway) followed, when the product has a guide and `isPlayable` is true, by one labelled `.completion-bar` per track; `headerExtra` = an overall-percentage badge under the same gating; `editBody` = a `ProgressSection` labelled "Variants & progress" holding one `btn secondary-action` "Manage" that opens `ProductEditorModal` on the Variants tab (track navigation happens inside the editor), followed by `BuildComments` for notes. No per-track buttons and no wishlist marker beyond the dot line SHALL render on the card.
@@ -133,26 +120,3 @@ The migration `supabase/migrations/20260913000001_restructure_dgm_products.sql` 
 
 - **WHEN** the editor opens for a product with no playable copy
 - **THEN** the track tab buttons are disabled and clicking one does not switch content
-
-### Requirement: Add product modal
-
-`AddProductModal` SHALL be an `AddEntityModal` config wrapper: title "Add Product", entity noun "products", `searchKeys` `['name', 'line', 'series', 'variants.colorway']`, badges for `line` and `{n} variants`; tracked products are excluded. Adding inserts the product only; variants are set in the editor.
-
-#### Scenario: Search by colourway
-
-- **WHEN** the user types "Yagami"
-- **THEN** the Digivice -25th COLOR EVOLUTION- product is listed
-
-### Requirement: Variant rows migrate to copy counts
-
-The migration `supabase/migrations/20260914000000_dgm_variant_copies.sql` SHALL add `wishlist BOOLEAN NOT NULL DEFAULT false` and `sealed`, `boxed`, `loose` (`INTEGER NOT NULL DEFAULT 0`, each `CHECK (>= 0)`) to `dgm_tracked_variants`, backfill every existing row (`wishlist = (status = 'wishlist')`; `sealed = 1` when `status = 'owned' AND condition = 'sealed'`, `boxed` likewise, `loose = 1` when `status = 'owned' AND (condition = 'loose' OR condition IS NULL)`, else `0`), drop `status` and `condition`, and add `CONSTRAINT dgm_tracked_variants_meaningful CHECK (wishlist OR sealed + boxed + loose > 0)`. The unique key, index, and RLS policies SHALL be untouched.
-
-#### Scenario: Owned rows become one copy each
-
-- **WHEN** a profile has variant rows (owned, sealed), (owned, boxed), (owned, NULL), and (wishlist, NULL)
-- **THEN** after migration they read `sealed 1`, `boxed 1`, `loose 1` (the NULL-condition row), and `wishlist true` with all counters `0`
-
-#### Scenario: Empty row rejected
-
-- **WHEN** a row with `wishlist false` and every counter `0` is inserted
-- **THEN** the insert fails the `dgm_tracked_variants_meaningful` check

@@ -21,11 +21,11 @@ function track(
   };
 }
 
-const owned = (variantId: string): Record<string, DgmTrackedVariant> => ({
-  [variantId]: { status: 'owned', condition: null },
+const owned = (variantId: string, copies = 1): Record<string, DgmTrackedVariant> => ({
+  [variantId]: { wishlist: false, copies: { sealed: 0, boxed: 0, loose: copies } },
 });
 const wishlist = (variantId: string): Record<string, DgmTrackedVariant> => ({
-  [variantId]: { status: 'wishlist', condition: null },
+  [variantId]: { wishlist: true, copies: { sealed: 0, boxed: 0, loose: 0 } },
 });
 
 const pendulum = ALL_PRODUCTS.filter((p) => p.line === 'Pendulum');
@@ -51,7 +51,7 @@ describe('computeCompletion', () => {
   it('counts owned products and variants per line; wishlist and interested never count', () => {
     const tracked = [
       track(pendulum[0].id, owned(pendulum[0].variants[0].id)),
-      track(pendulum[1].id, owned(pendulum[1].variants[0].id)),
+      track(pendulum[1].id, owned(pendulum[1].variants[0].id, 3)),
       track(pendulum[2].id, wishlist(pendulum[2].variants[0].id)),
       track(pendulum[3].id),
     ];
@@ -59,6 +59,7 @@ describe('computeCompletion', () => {
     expect(row.productsOwned).toBe(2);
     expect(row.productsTotal).toBe(pendulum.length);
     expect(row.variantsOwned).toBe(2);
+    expect(row.copiesOwned).toBe(4);
     expect(row.variantsTotal).toBe(pendulumVariants);
     expect(row.percent).toBe(Math.round((2 / pendulum.length) * 100));
   });
@@ -74,6 +75,7 @@ describe('computeCompletion', () => {
     const row = computeCompletion(tracked).find((r) => r.label === 'Digivice')!;
     expect(row.productsOwned).toBe(1);
     expect(row.variantsOwned).toBe(2);
+    expect(row.copiesOwned).toBe(2);
   });
 
   it('overall row counts across every line', () => {
@@ -91,6 +93,7 @@ describe('computeCompletion', () => {
     const row = computeCompletion([])[1];
     expect(row.productsOwned).toBe(0);
     expect(row.variantsOwned).toBe(0);
+    expect(row.copiesOwned).toBe(0);
     expect(row.percent).toBe(0);
   });
 });
@@ -99,12 +102,12 @@ describe('CompletionView', () => {
   it('renders count, percent, variant readout, and fill width per row', () => {
     const tracked = [
       track(pendulum[0].id, owned(pendulum[0].variants[0].id)),
-      track(pendulum[1].id, owned(pendulum[1].variants[0].id)),
+      track(pendulum[1].id, owned(pendulum[1].variants[0].id, 2)),
     ];
     const { container } = render(<CompletionView {...baseProps} trackedProducts={tracked} />);
     const pct = Math.round((2 / pendulum.length) * 100);
     expect(screen.getByText(`2 / ${pendulum.length}`)).toBeInTheDocument();
-    expect(screen.getByText(`2 / ${pendulumVariants} variants`)).toBeInTheDocument();
+    expect(screen.getByText(`2 / ${pendulumVariants} variants · 3 copies`)).toBeInTheDocument();
     const bar = screen.getByRole('progressbar', { name: /pendulum completion/i });
     expect(bar).toHaveAttribute('aria-valuenow', String(pct));
     expect(bar.querySelector('.completion-bar-fill')).toHaveStyle({ width: `${pct}%` });
@@ -115,6 +118,7 @@ describe('CompletionView', () => {
     render(<CompletionView {...baseProps} trackedProducts={[]} />);
     const bar = screen.getByRole('progressbar', { name: /^pendulum completion/i });
     expect(bar.querySelector('.completion-bar-fill')).toHaveStyle({ width: '0%' });
+    expect(screen.getAllByText(/0 copies$/).length).toBeGreaterThan(0);
   });
 
   it('shows AuthGate when signed out', () => {

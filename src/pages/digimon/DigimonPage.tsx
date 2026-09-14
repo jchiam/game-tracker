@@ -27,8 +27,8 @@ export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPagePro
     updateNotes,
     toggleFavorite,
     updateProgress,
-    setVariantStatus,
-    setVariantCondition,
+    setVariantCopies,
+    setVariantWishlist,
     getFilteredRoster,
   } = useProducts(session, isAuthLoading);
 
@@ -87,8 +87,8 @@ export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPagePro
           product={product}
           onRemove={removeProduct}
           onUpdateNotes={updateNotes}
-          onSetVariantStatus={setVariantStatus}
-          onSetVariantCondition={setVariantCondition}
+          onSetVariantCopies={setVariantCopies}
+          onSetVariantWishlist={setVariantWishlist}
           onToggleItem={toggleItem}
           onToggleFavorite={(id, value) => {
             // Favorite is a completed intent — release in the same handler

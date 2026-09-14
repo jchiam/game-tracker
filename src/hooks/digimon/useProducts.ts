@@ -1,13 +1,7 @@
 import { useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import { ALL_PRODUCTS, type DgmProduct } from '@/data/digimon/products';
-import type {
-  DgmCondition,
-  DgmProductPatch,
-  DgmTrackedProduct,
-  DgmTrackedVariant,
-  DgmVariantStatus,
-} from '@/types';
+import type { DgmCondition, DgmProductPatch, DgmTrackedProduct, DgmTrackedVariant } from '@/types';
 import {
   loadProductsFromDB,
   insertProduct,
@@ -20,6 +14,11 @@ import { useRoster } from '@/hooks/useRoster';
 import { addToast } from '@/utils/toast';
 
 export type DgmSortKey = 'ALPHA' | 'YEAR';
+
+const EMPTY_VARIANT: DgmTrackedVariant = {
+  wishlist: false,
+  copies: { sealed: 0, boxed: 0, loose: 0 },
+};
 
 function createTrackedProduct(product: DgmProduct): DgmTrackedProduct {
   return {
@@ -34,9 +33,9 @@ function createTrackedProduct(product: DgmProduct): DgmTrackedProduct {
 /**
  * The Digimon product roster (Product / Ownership / Game Progress in
  * CONTEXT.md). Notes, favorite, and progress are plain field updaters; the
- * per-variant state writes through `queueAction` like an equipment slot —
- * optimistic set on `variantState`, one single-row upsert or delete, rollback
- * on failure.
+ * per-variant state (wishlist flag + copy counts per condition) writes through
+ * `queueAction` like an equipment slot — optimistic set on `variantState`, one
+ * single-row upsert, or a delete once nothing is left, rollback on failure.
  */
 export function useProducts(session: Session | null, isAuthLoading: boolean) {
   const {
@@ -70,7 +69,7 @@ export function useProducts(session: Session | null, isAuthLoading: boolean) {
   const updateProgress = makeFieldUpdater('progress');
 
   /**
-   * Replace one variant's state (null = neither owned nor wishlisted) and
+   * Replace one variant's state (null = no copies and not wishlisted) and
    * persist it as one row write. Rows without a `dbId` update locally only,
    * matching the roster's patch contract.
    */
@@ -103,29 +102,33 @@ export function useProducts(session: Session | null, isAuthLoading: boolean) {
     });
   };
 
-  const setVariantStatus = (
+  const currentVariant = (productId: string, variantId: string): DgmTrackedVariant =>
+    trackedRef.current.find((p) => p.id === productId)?.variantState[variantId] ?? EMPTY_VARIANT;
+
+  /** A state with no copies and no wishlist has no row: it becomes a delete. */
+  const meaningful = (state: DgmTrackedVariant): DgmTrackedVariant | null =>
+    state.wishlist || state.copies.sealed + state.copies.boxed + state.copies.loose > 0
+      ? state
+      : null;
+
+  const setVariantCopies = (
     productId: string,
     variantId: string,
-    status: DgmVariantStatus | null,
+    condition: DgmCondition,
+    count: number,
   ) => {
-    const current = trackedRef.current.find((p) => p.id === productId)?.variantState[variantId];
+    const current = currentVariant(productId, variantId);
+    const next = Math.max(0, Math.floor(count));
     writeVariant(
       productId,
       variantId,
-      status
-        ? { status, condition: status === 'owned' ? (current?.condition ?? null) : null }
-        : null,
+      meaningful({ ...current, copies: { ...current.copies, [condition]: next } }),
     );
   };
 
-  const setVariantCondition = (
-    productId: string,
-    variantId: string,
-    condition: DgmCondition | null,
-  ) => {
-    const current = trackedRef.current.find((p) => p.id === productId)?.variantState[variantId];
-    if (!current || current.status !== 'owned') return;
-    writeVariant(productId, variantId, { status: 'owned', condition });
+  const setVariantWishlist = (productId: string, variantId: string, wishlist: boolean) => {
+    const current = currentVariant(productId, variantId);
+    writeVariant(productId, variantId, meaningful({ ...current, wishlist }));
   };
 
   const getFilteredRoster = useCallback(
@@ -150,8 +153,8 @@ export function useProducts(session: Session | null, isAuthLoading: boolean) {
     updateNotes,
     toggleFavorite,
     updateProgress,
-    setVariantStatus,
-    setVariantCondition,
+    setVariantCopies,
+    setVariantWishlist,
     getFilteredRoster,
   };
 }

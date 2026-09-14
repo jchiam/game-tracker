@@ -104,6 +104,35 @@ export const ToggleButtons: Story = {
   ),
 };
 
+export const Stepper: Story = {
+  render: () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: 400 }}>
+      {/* .stepper — bounded integer control (copies of a collectible) */}
+      <div className="stepper" role="group" aria-label="Sealed">
+        <span className="stepper-label">Sealed</span>
+        <button className="stepper-btn" aria-label="Decrease Sealed">
+          −
+        </button>
+        <span className="stepper-value">1</span>
+        <button className="stepper-btn" aria-label="Increase Sealed">
+          +
+        </button>
+      </div>
+      {/* .compact — dense rows; decrement disabled at the lower bound */}
+      <div className="stepper compact" role="group" aria-label="Loose">
+        <span className="stepper-label">Loose</span>
+        <button className="stepper-btn" aria-label="Decrease Loose" disabled>
+          −
+        </button>
+        <span className="stepper-value">0</span>
+        <button className="stepper-btn" aria-label="Increase Loose">
+          +
+        </button>
+      </div>
+    </div>
+  ),
+};
+
 export const EquipSlotCard: Story = {
   render: () => (
     <div style={{ maxWidth: 360, display: 'flex', flexDirection: 'column', gap: '16px' }}>
