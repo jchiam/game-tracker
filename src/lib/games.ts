@@ -35,6 +35,10 @@ export interface Game {
  * Single source of truth for the game roster. Adding a game here wires it into
  * the router, the GameSwitcher dropdown, and the SelectionPage grid at once —
  * see the CLAUDE.md "Wiring a New Game Into the App" checklist for the rest.
+ *
+ * Array order is display order (SelectionPage sections, GameSwitcher groups):
+ * games played or cared about most first, then publisher clusters kept
+ * adjacent (the HoYoverse pair). Deliberate — do not sort alphabetically.
  */
 export const GAMES: Game[] = [
   {
@@ -53,6 +57,21 @@ export const GAMES: Game[] = [
     ),
   },
   {
+    id: 'zzz',
+    name: 'Zenless Zone Zero',
+    path: '/zenless-zone-zero',
+    developer: 'HoYoverse',
+    description: 'Track agents, mindscapes, and party compositions.',
+    icon: '/assets/icons/zzz-icon.webp',
+    color: '#f5c04a',
+    coverImage: '/assets/zenless-zone-zero/selection-cover.webp',
+    bgClass: 'bg-zzz-sel',
+    modality: 'roster',
+    Page: lazy(() =>
+      import('@/pages/zenless-zone-zero/ZzzPage').then((m) => ({ default: m.ZzzPage })),
+    ),
+  },
+  {
     id: 'r1999',
     name: 'Reverse: 1999',
     path: '/reverse-1999',
@@ -68,18 +87,18 @@ export const GAMES: Game[] = [
     ),
   },
   {
-    id: 'n2e',
-    name: 'Neverness to Everness',
-    path: '/neverness-to-everness',
-    developer: 'Hotta Studio',
-    description: 'Track espers, awakenings, and team compositions.',
-    icon: '/assets/icons/n2e-icon.png',
-    color: '#7b2dff',
-    coverImage: '/assets/neverness-to-everness/selection-cover.webp',
-    bgClass: 'bg-n2e-sel',
+    id: 'p5x',
+    name: 'Persona 5: The Phantom X',
+    path: '/persona-5-phantom-x',
+    developer: 'Black Wing Game Studio',
+    description: 'Track phantom thieves, awareness, and party compositions.',
+    icon: '/assets/icons/p5x-icon.webp',
+    color: '#f84f36',
+    coverImage: '/assets/persona-5-phantom-x/selection-cover.webp',
+    bgClass: 'bg-p5x-sel',
     modality: 'roster',
     Page: lazy(() =>
-      import('@/pages/neverness-to-everness/N2ePage').then((m) => ({ default: m.N2ePage })),
+      import('@/pages/persona-5-phantom-x/P5xPage').then((m) => ({ default: m.P5xPage })),
     ),
   },
   {
@@ -100,33 +119,18 @@ export const GAMES: Game[] = [
     ),
   },
   {
-    id: 'p5x',
-    name: 'Persona 5: The Phantom X',
-    path: '/persona-5-phantom-x',
-    developer: 'Black Wing Game Studio',
-    description: 'Track phantom thieves, awareness, and party compositions.',
-    icon: '/assets/icons/p5x-icon.webp',
-    color: '#f84f36',
-    coverImage: '/assets/persona-5-phantom-x/selection-cover.webp',
-    bgClass: 'bg-p5x-sel',
+    id: 'n2e',
+    name: 'Neverness to Everness',
+    path: '/neverness-to-everness',
+    developer: 'Hotta Studio',
+    description: 'Track espers, awakenings, and team compositions.',
+    icon: '/assets/icons/n2e-icon.png',
+    color: '#7b2dff',
+    coverImage: '/assets/neverness-to-everness/selection-cover.webp',
+    bgClass: 'bg-n2e-sel',
     modality: 'roster',
     Page: lazy(() =>
-      import('@/pages/persona-5-phantom-x/P5xPage').then((m) => ({ default: m.P5xPage })),
-    ),
-  },
-  {
-    id: 'zzz',
-    name: 'Zenless Zone Zero',
-    path: '/zenless-zone-zero',
-    developer: 'HoYoverse',
-    description: 'Track agents, mindscapes, and party compositions.',
-    icon: '/assets/icons/zzz-icon.webp',
-    color: '#f5c04a',
-    coverImage: '/assets/zenless-zone-zero/selection-cover.webp',
-    bgClass: 'bg-zzz-sel',
-    modality: 'roster',
-    Page: lazy(() =>
-      import('@/pages/zenless-zone-zero/ZzzPage').then((m) => ({ default: m.ZzzPage })),
+      import('@/pages/neverness-to-everness/N2ePage').then((m) => ({ default: m.N2ePage })),
     ),
   },
   {

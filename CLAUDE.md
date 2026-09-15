@@ -1,6 +1,6 @@
 # Game Tracker
 
-Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Currently tracks **Honkai Star Rail**, **Reverse: 1999**, **Neverness to Everness**, **Arknights: Endfield**, **Persona 5: The Phantom X**, **Zenless Zone Zero**, and the **Digimon Virtual Pets** collection (the first collection-modality tracker — see Tracker Modality in `CONTEXT.md`) tracked per product with its variants, copies per condition, and game progress (Product / Variant / Copy / Ownership / Playable / Game Progress in `CONTEXT.md`).
+Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Currently tracks **Honkai Star Rail**, **Zenless Zone Zero**, **Reverse: 1999**, **Persona 5: The Phantom X**, **Arknights: Endfield**, **Neverness to Everness**, and the **Digimon Virtual Pets** collection (the first collection-modality tracker — see Tracker Modality in `CONTEXT.md`) tracked per product with its variants, copies per condition, and game progress (Product / Variant / Copy / Ownership / Playable / Game Progress in `CONTEXT.md`).
 
 ## Domain Language
 

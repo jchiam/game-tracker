@@ -12,7 +12,8 @@ vi.mock('@/lib/supabase', () => createSupabaseMockFactory());
 
 describe('GAMES registry', () => {
   it('contains the seven trackers', () => {
-    expect(GAMES.map((g) => g.id)).toEqual(['hsr', 'r1999', 'n2e', 'ae', 'p5x', 'zzz', 'dgm']);
+    // Display order: personal priority first, HoYoverse pair adjacent — see the GAMES doc comment.
+    expect(GAMES.map((g) => g.id)).toEqual(['hsr', 'zzz', 'r1999', 'p5x', 'ae', 'n2e', 'dgm']);
   });
 
   it('has unique ids and paths', () => {
