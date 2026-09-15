@@ -53,12 +53,13 @@ test.describe('Selection Page UI and Behavior', () => {
     const images = page.locator('.game-character-image');
     await expect(images).toHaveCount(7);
 
+    // Registry display order — see the GAMES doc comment in src/lib/games.ts.
     const hsrImage = images.nth(0);
-    const r1999Image = images.nth(1);
-    const n2eImage = images.nth(2);
-    const endfieldImage = images.nth(3);
-    const p5xImage = images.nth(4);
-    const zzzImage = images.nth(5);
+    const zzzImage = images.nth(1);
+    const r1999Image = images.nth(2);
+    const p5xImage = images.nth(3);
+    const endfieldImage = images.nth(4);
+    const n2eImage = images.nth(5);
     const dgmImage = images.nth(6);
 
     await expect(hsrImage).toHaveAttribute(
