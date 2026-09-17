@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useCharacters } from '@/hooks/neverness-to-everness/useCharacters';
 import { useParties } from '@/hooks/neverness-to-everness/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
@@ -6,6 +7,7 @@ import { AddCharacterModal } from './components/AddCharacterModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { Session } from '@supabase/supabase-js';
+import type { N2ETrackedCharacter } from '@/types';
 
 interface N2ePageProps {
   session: Session | null;
@@ -50,6 +52,18 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
     retryParties();
   };
 
+  // No chips — the predicate slot is unused; the adapter keeps the arity the
+  // view hook expects while staying referentially stable.
+  const filterRoster = useCallback(
+    (
+      searchTerm: string,
+      sortBy: 'ALPHA' | 'LEVEL' | 'SCORE',
+      _predicate: ((c: N2ETrackedCharacter) => boolean) | undefined,
+      entities?: N2ETrackedCharacter[],
+    ) => getFilteredRoster(searchTerm, sortBy, entities),
+    [getFilteredRoster],
+  );
+
   const {
     view,
     setView,
@@ -59,6 +73,7 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
     search,
     sort,
     add,
+    noMatchMessage,
     projection,
   } = useRosterView({
     sortModes: [
@@ -69,7 +84,8 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
     searchPlaceholder: 'Search by name, esper type, or role...',
     addTitle: 'Add Character',
     addDisabled: isLoadError,
-    filterRoster: getFilteredRoster,
+    nounPlural: 'espers',
+    filterRoster,
     trackedEntities: trackedCharacters,
   });
 
@@ -89,7 +105,7 @@ export function N2ePage({ session, isAuthLoading, onSignIn }: N2ePageProps) {
       hasTracked={trackedCharacters.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No espers tracked yet. Use the + button to begin!"
-      noMatchMessage="No espers match your search."
+      noMatchMessage={noMatchMessage}
       search={search}
       sort={sort}
       add={add}

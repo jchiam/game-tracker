@@ -1,7 +1,7 @@
-import { useCallback, useState, type CSSProperties } from 'react';
+import { useCallback, useState } from 'react';
 import { useAgents } from '@/hooks/zenless-zone-zero/useAgents';
 import { useParties } from '@/hooks/zenless-zone-zero/useParties';
-import { useRosterView } from '@/hooks/useRosterView';
+import { useRosterView, type RosterFilterChip } from '@/hooks/useRosterView';
 import { AgentCard } from './components/AgentCard';
 import { AddAgentModal } from './components/AddAgentModal';
 import { DiscEditorModal } from './components/DiscEditorModal';
@@ -13,6 +13,17 @@ import type { ZzzDiscSlot } from '@/data/zenless-zone-zero/discs';
 import type { ZzzTrackedAgent } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 import './ZzzPage.css';
+
+/** Roster filter chips — the Pass-gate bottleneck (roster-predicate-filter). */
+const FILTER_CHIPS: RosterFilterChip<ZzzTrackedAgent>[] = [
+  {
+    key: 'pass',
+    label: '🐹 Gated',
+    predicate: (a) => a.skillProgress === 1,
+    onTitle: 'Show only Pass-gated agents',
+    noMatch: 'No Pass-gated agents found.',
+  },
+];
 
 interface ZzzPageProps {
   session: Session | null;
@@ -62,21 +73,16 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     retryParties();
   };
 
-  const [passGateFilter, setPassGateFilter] = useState(false);
-
+  // Closes over nothing chip-related: the hook injects the composed predicate,
+  // so this identity stays stable across chip toggles and entity edits.
   const filterRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE', entities?: ZzzTrackedAgent[]) => {
-      // Undefined when the chip is off preserves the no-predicate fast path.
-      const predicate = passGateFilter ? (a: ZzzTrackedAgent) => a.skillProgress === 1 : undefined;
-      return getFilteredRoster(searchTerm, sortBy, calculateZzzBuildScore, predicate, entities);
-    },
-    [getFilteredRoster, passGateFilter],
-  );
-
-  // Ghost-tag copy for a held card — names the gate its live data fails.
-  const describeHeld = useCallback(
-    (a: ZzzTrackedAgent) => (a.skillProgress !== 1 ? 'no longer matches 🐹 Gated' : null),
-    [],
+    (
+      searchTerm: string,
+      sortBy: 'ALPHA' | 'LEVEL' | 'SCORE',
+      predicate: ((a: ZzzTrackedAgent) => boolean) | undefined,
+      entities?: ZzzTrackedAgent[],
+    ) => getFilteredRoster(searchTerm, sortBy, calculateZzzBuildScore, predicate, entities),
+    [getFilteredRoster],
   );
 
   const {
@@ -88,6 +94,8 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     search,
     sort,
     add,
+    filters,
+    noMatchMessage,
     projection,
   } = useRosterView({
     sortModes: [
@@ -98,10 +106,11 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
     searchPlaceholder: 'Search by name, specialty, or element...',
     addTitle: 'Add Agent',
     addDisabled: isLoadError,
+    nounPlural: 'agents',
+    filterChips: FILTER_CHIPS,
+    filterAccent: 'var(--color-zzz-rarity-s)',
     filterRoster,
     trackedEntities: trackedAgents,
-    // Held detection only pays its extra projection pass while the gate is on
-    describeHeld: passGateFilter ? describeHeld : undefined,
   });
 
   const [editingDisc, setEditingDisc] = useState<{
@@ -134,23 +143,8 @@ export function ZzzPage({ session, isAuthLoading, onSignIn }: ZzzPageProps) {
       hasTracked={trackedAgents.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No agents tracked yet. Use the + button to begin!"
-      noMatchMessage={
-        passGateFilter ? 'No Pass-gated agents found.' : 'No agents match your search.'
-      }
-      filterRow={
-        <div
-          className="filter-row"
-          style={{ '--filter-chip-accent': 'var(--color-zzz-rarity-s)' } as CSSProperties}
-        >
-          <button
-            className={`filter-chip ${passGateFilter ? 'active' : ''}`}
-            onClick={() => setPassGateFilter((v) => !v)}
-            title={passGateFilter ? 'Show all agents' : 'Show only Pass-gated agents'}
-          >
-            🐹 Gated
-          </button>
-        </div>
-      }
+      noMatchMessage={noMatchMessage}
+      filters={filters}
       search={search}
       sort={sort}
       add={add}

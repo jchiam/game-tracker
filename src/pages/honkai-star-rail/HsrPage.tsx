@@ -73,8 +73,12 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
   );
 
   const filterRoster = useCallback(
-    (searchTerm: string, sortBy: 'SCORE' | 'ALPHA', entities?: HsrTrackedCharacter[]) =>
-      getFilteredRoster(searchTerm, sortBy, calculateBuildScore, entities),
+    (
+      searchTerm: string,
+      sortBy: 'SCORE' | 'ALPHA',
+      _predicate: ((c: HsrTrackedCharacter) => boolean) | undefined,
+      entities?: HsrTrackedCharacter[],
+    ) => getFilteredRoster(searchTerm, sortBy, calculateBuildScore, entities),
     [getFilteredRoster],
   );
 
@@ -87,6 +91,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     search,
     sort,
     add,
+    noMatchMessage,
     projection,
   } = useRosterView({
     sortModes: [
@@ -96,6 +101,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
     searchPlaceholder: 'Search by name, element, or path...',
     addTitle: 'Add Character',
     addDisabled: isLoadError,
+    nounPlural: 'characters',
     filterRoster,
     trackedEntities: trackedCharacters,
   });
@@ -135,7 +141,7 @@ export function HsrPage({ session, isAuthLoading, onSignIn }: HsrPageProps) {
       hasTracked={trackedCharacters.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage='No characters tracked yet. Click "Add Character" to begin!'
-      noMatchMessage="No characters match your search."
+      noMatchMessage={noMatchMessage}
       search={search}
       sort={sort}
       add={add}

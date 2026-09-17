@@ -552,6 +552,7 @@
    `--filter-chip-accent` custom property set per game on the `.filter-row`. */
 .filter-row {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--spacing-xs);
 }
 

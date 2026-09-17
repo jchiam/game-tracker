@@ -187,6 +187,41 @@ export const RosterActive: Story = {
   },
 };
 
+export const FilterChips: Story = {
+  args: {
+    ...baseArgs,
+    title: 'Persona 5: The Phantom X',
+    subtitle: 'Track your phantom thieves and build parties.',
+    filters: {
+      accent: 'var(--color-p5x-element-fire)',
+      chips: [
+        { key: 'rose', label: '🌹 Gated', active: true, title: 'Show all thieves', toggle: fn() },
+        {
+          key: 'weapon',
+          label: '⚔ <5★',
+          active: false,
+          title: 'Show only thieves with a sub-5★ weapon',
+          toggle: fn(),
+        },
+        {
+          key: 'mindscape',
+          label: 'MS ✗',
+          active: false,
+          title: 'Show only thieves without Outer Mindscape',
+          toggle: fn(),
+        },
+        {
+          key: 'revelations',
+          label: '◈ Rev <5',
+          active: false,
+          title: 'Show only thieves with open revelation slots',
+          toggle: fn(),
+        },
+      ],
+    },
+  },
+};
+
 export const LineupsTabActive: Story = {
   args: {
     ...baseArgs,

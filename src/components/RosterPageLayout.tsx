@@ -1,5 +1,6 @@
-import type { ReactNode } from 'react';
+import type { CSSProperties, ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
+import type { RosterViewFilters } from '@/hooks/useRosterView';
 import { AuthGate } from '@/components/AuthGate';
 import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
@@ -32,8 +33,12 @@ interface RosterPageLayoutProps {
   sort: { active: boolean; label: string; title: string; onToggle: () => void };
   add: { title: string; onClick: () => void; disabled: boolean };
 
-  /** Optional filter row rendered between toolbar and card grid. */
-  filterRow?: ReactNode;
+  /**
+   * Predicate-filter chips from `useRosterView`; the layout renders the
+   * `.filter-row` between the controls and the card grid. Omit for games
+   * without chips.
+   */
+  filters?: RosterViewFilters;
   /** The mapped roster cards (rendered only when there are matches). */
   cards: ReactNode;
   /** The second-view content — parties/lineups for roster games, completion for collections. */
@@ -69,7 +74,7 @@ export function RosterPageLayout({
   search,
   sort,
   add,
-  filterRow,
+  filters,
   cards,
   secondView,
   pendingSaveCount,
@@ -141,7 +146,23 @@ export function RosterPageLayout({
                 +
               </button>
             </div>
-            {hasTracked && filterRow}
+            {hasTracked && filters && (
+              <div
+                className="filter-row"
+                style={{ '--filter-chip-accent': filters.accent } as CSSProperties}
+              >
+                {filters.chips.map((chip) => (
+                  <button
+                    key={chip.key}
+                    className={`filter-chip ${chip.active ? 'active' : ''}`}
+                    onClick={chip.toggle}
+                    title={chip.title}
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </header>
