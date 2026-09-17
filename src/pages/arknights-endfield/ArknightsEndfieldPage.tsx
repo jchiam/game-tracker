@@ -1,3 +1,4 @@
+import { useCallback } from 'react';
 import { useOperators } from '@/hooks/arknights-endfield/useOperators';
 import { useParties } from '@/hooks/arknights-endfield/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
@@ -6,6 +7,7 @@ import { AddOperatorModal } from './components/AddOperatorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { Session } from '@supabase/supabase-js';
+import type { AeTrackedOperator } from '@/types';
 
 interface ArknightsEndfieldPageProps {
   session: Session | null;
@@ -53,6 +55,18 @@ export function ArknightsEndfieldPage({
     retryParties();
   };
 
+  // No chips — the predicate slot is unused; the adapter keeps the arity the
+  // view hook expects while staying referentially stable.
+  const filterRoster = useCallback(
+    (
+      searchTerm: string,
+      sortBy: 'ALPHA' | 'LEVEL',
+      _predicate: ((o: AeTrackedOperator) => boolean) | undefined,
+      entities?: AeTrackedOperator[],
+    ) => getFilteredRoster(searchTerm, sortBy, entities),
+    [getFilteredRoster],
+  );
+
   const {
     view,
     setView,
@@ -62,6 +76,7 @@ export function ArknightsEndfieldPage({
     search,
     sort,
     add,
+    noMatchMessage,
     projection,
   } = useRosterView({
     sortModes: [
@@ -71,7 +86,8 @@ export function ArknightsEndfieldPage({
     searchPlaceholder: 'Search by name, class, element, or weapon...',
     addTitle: 'Add Operator',
     addDisabled: isLoadError,
-    filterRoster: getFilteredRoster,
+    nounPlural: 'operators',
+    filterRoster,
     trackedEntities: trackedOperators,
   });
 
@@ -91,7 +107,7 @@ export function ArknightsEndfieldPage({
       hasTracked={trackedOperators.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No operators tracked yet. Use the + button to begin!"
-      noMatchMessage="No operators match your search."
+      noMatchMessage={noMatchMessage}
       search={search}
       sort={sort}
       add={add}

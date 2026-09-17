@@ -1,4 +1,5 @@
-import { useProducts } from '@/hooks/digimon/useProducts';
+import { useCallback } from 'react';
+import { useProducts, type DgmSortKey } from '@/hooks/digimon/useProducts';
 import { useRosterView } from '@/hooks/useRosterView';
 import { toggleProgressItem } from '@/pages/digimon/gameProgress';
 import { ProductCard } from './components/ProductCard';
@@ -6,6 +7,7 @@ import { AddProductModal } from './components/AddProductModal';
 import { CompletionView } from './components/CompletionView';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { Session } from '@supabase/supabase-js';
+import type { DgmTrackedProduct } from '@/types';
 import './DigimonPage.css';
 
 interface DigimonPageProps {
@@ -32,6 +34,18 @@ export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPagePro
     getFilteredRoster,
   } = useProducts(session, isAuthLoading);
 
+  // No chips — the predicate slot is unused; the adapter keeps the arity the
+  // view hook expects while staying referentially stable.
+  const filterRoster = useCallback(
+    (
+      searchTerm: string,
+      sortBy: DgmSortKey,
+      _predicate: ((p: DgmTrackedProduct) => boolean) | undefined,
+      entities?: DgmTrackedProduct[],
+    ) => getFilteredRoster(searchTerm, sortBy, entities),
+    [getFilteredRoster],
+  );
+
   const {
     view,
     setView,
@@ -41,6 +55,7 @@ export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPagePro
     search,
     sort,
     add,
+    noMatchMessage,
     projection,
   } = useRosterView({
     sortModes: [
@@ -50,7 +65,8 @@ export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPagePro
     searchPlaceholder: 'Search by name, line, series, or colour…',
     addTitle: 'Add Product',
     addDisabled: isLoadError,
-    filterRoster: getFilteredRoster,
+    nounPlural: 'products',
+    filterRoster,
     trackedEntities: trackedProducts,
   });
 
@@ -77,7 +93,7 @@ export function DigimonPage({ session, isAuthLoading, onSignIn }: DigimonPagePro
       hasTracked={trackedProducts.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No products in your collection yet. Use the + button to begin!"
-      noMatchMessage="No products match your search."
+      noMatchMessage={noMatchMessage}
       search={search}
       sort={sort}
       add={add}

@@ -372,9 +372,13 @@ describe('HsrPage', () => {
       trackedCharacters: chars,
       getFilteredRoster: vi.fn().mockReturnValue(chars),
     });
-    renderWithProviders(<HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    const { container } = renderWithProviders(
+      <HsrPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
     expect(screen.getByPlaceholderText(/search by name/i)).toBeInTheDocument();
     expect(screen.getByTitle(/sorted by build score/i)).toBeInTheDocument();
+    // HSR declares no filter chips — the shared layout renders no filter row
+    expect(container.querySelector('.filter-row')).toBeNull();
   });
 
   // --- Sort button toggle ---

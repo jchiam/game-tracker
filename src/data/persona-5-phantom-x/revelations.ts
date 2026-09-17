@@ -271,6 +271,16 @@ export interface RevelationSummary {
 }
 
 /**
+ * Number of slots holding an equipped card — a card counts only when it has a set, the
+ * single test shared by the card's `Rev n/5` chip and the roster's `◈ Rev <5` filter chip.
+ */
+export function countEquippedRevelations(
+  revelations: Record<RevelationSlot, EquippedRevelation | null>,
+): number {
+  return REVELATION_SLOTS.filter((slot) => revelations[slot]?.setId).length;
+}
+
+/**
  * Consolidate equipped revelations into their active set bonuses — the single source for every
  * set display (summary chip + edit readout). Heavens sets group over HEAVENS_SLOTS: a set with
  * ≥2 matching cards grants a bonus (2pc for 2–3 cards, 4pc for 4); single-card sets are omitted.

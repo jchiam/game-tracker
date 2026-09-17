@@ -10,6 +10,7 @@ import {
   HEAVENS_SLOTS,
   statLabel,
   toStatOptions,
+  countEquippedRevelations,
   getRevelationSummary,
 } from './revelations';
 import type { EquippedRevelation, RevelationSlot } from './revelations';
@@ -122,6 +123,46 @@ describe('REVELATION_SLOTS ordering', () => {
 
   it('HEAVENS_SLOTS is unchanged (independent of display order)', () => {
     expect(HEAVENS_SLOTS).toEqual(['sun', 'moon', 'star', 'sky']);
+  });
+});
+
+describe('countEquippedRevelations', () => {
+  it('is 0 with no cards', () => {
+    expect(countEquippedRevelations(revels({}))).toBe(0);
+  });
+
+  it('counts a partial loadout', () => {
+    expect(
+      countEquippedRevelations(revels({ sun: card('power'), space: card('meditation') })),
+    ).toBe(2);
+  });
+
+  it('does not count a slot whose card has no set', () => {
+    expect(
+      countEquippedRevelations(
+        revels({
+          sun: card('power'),
+          moon: card('power'),
+          star: card('power'),
+          sky: card('power'),
+          space: { setId: null, mainStat: 'attack', subStats: ['crit-rate'] },
+        }),
+      ),
+    ).toBe(4);
+  });
+
+  it('is 5 when every slot holds a card with a set', () => {
+    expect(
+      countEquippedRevelations(
+        revels({
+          sun: card('power'),
+          moon: card('power'),
+          star: card('power'),
+          sky: card('power'),
+          space: card('meditation'),
+        }),
+      ),
+    ).toBe(5);
   });
 });
 

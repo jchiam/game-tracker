@@ -3,6 +3,7 @@ import {
   ALL_HEAVENS_SETS,
   ALL_SPACE_SETS,
   REVELATION_SLOTS,
+  countEquippedRevelations,
   getRevelationSummary,
   statLabel,
   type RevelationSlot,
@@ -126,7 +127,7 @@ export function ThiefCard({
     ? getProgressStyle(revScore, 0, 100)
     : getProgressStyle(revSummary.heavensBonuses[0]?.pieces ?? 0, 0, 4);
 
-  const revCardCount = REVELATION_SLOTS.filter((slot) => thief.revelations[slot]?.setId).length;
+  const revCardCount = countEquippedRevelations(thief.revelations);
   const hasAnyRevCard = revCardCount > 0;
 
   // Target Build readout — shown only when any revelation preference is set.

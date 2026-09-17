@@ -1,13 +1,31 @@
-import { useCallback, useState, type CSSProperties } from 'react';
+import { useCallback } from 'react';
 import { useArcanists } from '@/hooks/reverse1999/useArcanists';
 import { useParties } from '@/hooks/reverse1999/useParties';
-import { useRosterView } from '@/hooks/useRosterView';
+import { useRosterView, type RosterFilterChip } from '@/hooks/useRosterView';
 import { ArcanistCard } from './components/ArcanistCard';
 import { AddArcanistModal } from './components/AddArcanistModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { Session } from '@supabase/supabase-js';
 import type { R1999TrackedArcanist } from '@/types';
+
+/** Roster filter chips — item-gate bottlenecks (roster-predicate-filter). */
+const FILTER_CHIPS: RosterFilterChip<R1999TrackedArcanist>[] = [
+  {
+    key: 'resonance',
+    label: '💠 Resonating',
+    predicate: (a) => a.resonanceLevel > 0 && a.resonanceLevel < 15,
+    onTitle: 'Show only arcanists with resonance in progress',
+    noMatch: 'No arcanists with resonance in progress.',
+  },
+  {
+    key: 'gluttony',
+    label: '🍽️ Amplifying',
+    predicate: (a) => a.psychubeName !== null && a.psychubeAmplification < 5,
+    onTitle: 'Show only arcanists with an equipped psychube below max amplification',
+    noMatch: 'No arcanists with un-maxed psychube amplification.',
+  },
+];
 
 interface Reverse1999PageProps {
   session: Session | null;
@@ -52,35 +70,16 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     retryParties();
   };
 
-  const [resonanceGateFilter, setResonanceGateFilter] = useState(false);
-  const [gluttonyGateFilter, setGluttonyGateFilter] = useState(false);
-
-  const filteredGetRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL', entities?: R1999TrackedArcanist[]) => {
-      const gates: Array<(a: R1999TrackedArcanist) => boolean> = [];
-      if (resonanceGateFilter) gates.push((a) => a.resonanceLevel > 0 && a.resonanceLevel < 15);
-      if (gluttonyGateFilter)
-        gates.push((a) => a.psychubeName !== null && a.psychubeAmplification < 5);
-      const predicate = gates.length
-        ? (a: R1999TrackedArcanist) => gates.every((g) => g(a))
-        : undefined;
-      return getFilteredRoster(searchTerm, sortBy, predicate, entities);
-    },
-    [getFilteredRoster, resonanceGateFilter, gluttonyGateFilter],
-  );
-
-  // Ghost-tag copy for a held card — names the first gate its live data fails.
-  const describeHeld = useCallback(
-    (a: R1999TrackedArcanist) => {
-      if (resonanceGateFilter && !(a.resonanceLevel > 0 && a.resonanceLevel < 15))
-        return 'no longer matches 💠 Resonating';
-      if (gluttonyGateFilter && !(a.psychubeName !== null && a.psychubeAmplification < 5))
-        return 'no longer matches 🍽️ Amplifying';
-      /* v8 ignore next -- unreachable: a held card always fails at least one
-         active gate, so one of the branches above returns first */
-      return null;
-    },
-    [resonanceGateFilter, gluttonyGateFilter],
+  // Closes over nothing chip-related: the hook injects the composed predicate,
+  // so this identity stays stable across chip toggles and entity edits.
+  const filterRoster = useCallback(
+    (
+      searchTerm: string,
+      sortBy: 'ALPHA' | 'LEVEL',
+      predicate: ((a: R1999TrackedArcanist) => boolean) | undefined,
+      entities?: R1999TrackedArcanist[],
+    ) => getFilteredRoster(searchTerm, sortBy, predicate, entities),
+    [getFilteredRoster],
   );
 
   const {
@@ -92,6 +91,8 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     search,
     sort,
     add,
+    filters,
+    noMatchMessage,
     projection,
   } = useRosterView({
     sortModes: [
@@ -101,10 +102,11 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     searchPlaceholder: 'Search by name, afflatus, or damage type...',
     addTitle: 'Add Arcanist',
     addDisabled: isLoadError,
-    filterRoster: filteredGetRoster,
+    nounPlural: 'arcanists',
+    filterChips: FILTER_CHIPS,
+    filterAccent: 'var(--color-r1999-accent)',
+    filterRoster,
     trackedEntities: trackedArcanists,
-    // Held detection only pays its extra projection pass while a gate is on
-    describeHeld: resonanceGateFilter || gluttonyGateFilter ? describeHeld : undefined,
   });
 
   return (
@@ -123,44 +125,8 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
       hasTracked={trackedArcanists.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No arcanists tracked yet. Use the + button to begin!"
-      noMatchMessage={
-        resonanceGateFilter && gluttonyGateFilter
-          ? 'No arcanists match the active filters.'
-          : resonanceGateFilter
-            ? 'No arcanists with resonance in progress.'
-            : gluttonyGateFilter
-              ? 'No arcanists with un-maxed psychube amplification.'
-              : 'No arcanists match your search.'
-      }
-      filterRow={
-        <div
-          className="filter-row"
-          style={{ '--filter-chip-accent': 'var(--color-r1999-accent)' } as CSSProperties}
-        >
-          <button
-            className={`filter-chip ${resonanceGateFilter ? 'active' : ''}`}
-            onClick={() => setResonanceGateFilter((v) => !v)}
-            title={
-              resonanceGateFilter
-                ? 'Show all arcanists'
-                : 'Show only arcanists with resonance in progress'
-            }
-          >
-            💠 Resonating
-          </button>
-          <button
-            className={`filter-chip ${gluttonyGateFilter ? 'active' : ''}`}
-            onClick={() => setGluttonyGateFilter((v) => !v)}
-            title={
-              gluttonyGateFilter
-                ? 'Show all arcanists'
-                : 'Show only arcanists with an equipped psychube below max amplification'
-            }
-          >
-            🍽️ Amplifying
-          </button>
-        </div>
-      }
+      noMatchMessage={noMatchMessage}
+      filters={filters}
       search={search}
       sort={sort}
       add={add}

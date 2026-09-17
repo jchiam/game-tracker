@@ -14,6 +14,43 @@ export interface RosterViewEntity {
   id: string;
 }
 
+/**
+ * One predicate-filter chip, declared as data by a game page
+ * (`roster-predicate-filter`). The hook derives everything else from the
+ * list: chip state, the AND-composed predicate, the held-card ghost-tag copy
+ * (`no longer matches {label}`), the no-match message, and the rendered row.
+ */
+export interface RosterFilterChip<TEntity> {
+  /** Stable key — chip state and React keys. */
+  key: string;
+  /** Chip text; also the ghost-tag suffix on a held card. */
+  label: string;
+  /** Entities the chip keeps. Pure over the entity. */
+  predicate: (entity: TEntity) => boolean;
+  /** Tooltip while the chip is inactive — e.g. "Show only rose-gated thieves". */
+  onTitle: string;
+  /** Tooltip while active; defaults to `Show all {nounPlural}`. */
+  offTitle?: string;
+  /**
+   * No-match copy when this is the only active chip; defaults to the generic
+   * `No {nounPlural} match the active filters.`
+   */
+  noMatch?: string;
+}
+
+/** Filter-row descriptor rendered by `RosterPageLayout`. */
+export interface RosterViewFilters {
+  /** CSS value for `--filter-chip-accent` on the row. */
+  accent: string;
+  chips: {
+    key: string;
+    label: string;
+    active: boolean;
+    title: string;
+    toggle: () => void;
+  }[];
+}
+
 export interface RosterViewConfig<SortKey extends string, TEntity extends RosterViewEntity> {
   /**
    * Sort modes cycled by the single sort button; the first mode is the default.
@@ -25,14 +62,29 @@ export interface RosterViewConfig<SortKey extends string, TEntity extends Roster
   addTitle: string;
   /** Disables the add button — pass the roster hook's `isLoadError`. */
   addDisabled: boolean;
+  /** Plural entity noun — "thieves", "arcanists" — for tooltip and no-match copy. */
+  nounPlural: string;
+  /** No-match copy with no chip active; defaults to `No {nounPlural} match your search.` */
+  noMatchMessage?: string;
+  /** Predicate-filter chips in display order. Omit for games without chips. */
+  filterChips?: RosterFilterChip<TEntity>[];
+  /** CSS value for `--filter-chip-accent`; defaults to the brand colour. */
+  filterAccent?: string;
   /**
-   * Filter + sort projection — usually the page's wrapper over the roster
-   * hook's `getFilteredRoster`. Runs over `entities` when given (the hook
-   * passes basis snapshots), otherwise live state. Must be referentially
-   * stable across entity edits; its identity changing is the signal that the
-   * projection itself changed (a filter chip toggled) and refreshes all bases.
+   * Filter + sort projection — the page's one-line adapter over the roster
+   * hook's `getFilteredRoster`. Receives the AND-composed chip predicate
+   * (`undefined` when no chip is active) and runs over `entities` when given
+   * (the hook passes basis snapshots), otherwise live state. Must be
+   * referentially stable across entity edits — close over nothing
+   * chip-related; its identity changing is itself a projection change that
+   * refreshes all bases.
    */
-  filterRoster: (searchTerm: string, sortBy: SortKey, entities?: TEntity[]) => TEntity[];
+  filterRoster: (
+    searchTerm: string,
+    sortBy: SortKey,
+    predicate: ((entity: TEntity) => boolean) | undefined,
+    entities?: TEntity[],
+  ) => TEntity[];
   /**
    * The live tracked roster. Membership and order come from basis snapshots,
    * but every entity this hook yields is looked up live from this array —
@@ -40,25 +92,21 @@ export interface RosterViewConfig<SortKey extends string, TEntity extends Roster
    * CONTEXT.md).
    */
   trackedEntities: TEntity[];
-  /**
-   * Enables held-card detection (games with predicate filters). Called for an
-   * entity whose live data no longer matches the projection its basis still
-   * matches; returns the ghost-tag copy naming the failed filter, or null to
-   * fall back to a generic label. Wrap in `useCallback` — a fresh identity per
-   * render forces an extra projection pass.
-   */
-  describeHeld?: (entity: TEntity) => string | null;
 }
 
 /** Fallback removal delay when no `animationend` arrives for an exiting card. */
 const EXIT_FALLBACK_MS = 600;
 
+const NO_CHIPS: never[] = [];
+
 /**
  * View state of a roster page: roster/second view switch, search term,
- * two-mode sort toggle, add-modal visibility, and the memoized filtered
- * roster. Returns `search` / `sort` / `add` descriptors shaped exactly for
- * `RosterPageLayout`, with the sort button's label and title generated from
- * the configured modes. Pages keep only game-specific state (e.g. HSR's
+ * sort toggle, add-modal visibility, filter-chip state, and the memoized
+ * filtered roster. Returns `search` / `sort` / `add` / `filters` descriptors
+ * plus the `noMatchMessage`, shaped exactly for `RosterPageLayout`, with the
+ * sort button's label and title generated from the configured modes and the
+ * chip row, AND-composed predicate, held-card copy, and no-match copy derived
+ * from the declared chips. Pages keep only game-specific state (e.g. HSR's
  * relic editor target).
  *
  * The filtered roster is basis-aware (Projection Stability in CONTEXT.md):
@@ -71,15 +119,31 @@ const EXIT_FALLBACK_MS = 600;
 export function useRosterView<SortKey extends string, TEntity extends RosterViewEntity>(
   config: RosterViewConfig<SortKey, TEntity>,
 ) {
-  const { sortModes, searchPlaceholder, addTitle, addDisabled, filterRoster, trackedEntities } =
-    config;
-  const { describeHeld } = config;
+  const {
+    sortModes,
+    searchPlaceholder,
+    addTitle,
+    addDisabled,
+    nounPlural,
+    filterAccent,
+    filterRoster,
+    trackedEntities,
+  } = config;
+  const chips: RosterFilterChip<TEntity>[] = config.filterChips ?? NO_CHIPS;
   const defaultMode = sortModes[0];
 
   const [view, setView] = useState<'roster' | 'second'>('roster');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>(defaultMode.key);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  // Active chip keys. A toggle always yields a new Set, so identity doubles
+  // as the "projection changed" signal below.
+  const [activeKeys, setActiveKeys] = useState<ReadonlySet<string>>(() => new Set());
+  // Latest chip list, read inside the projection memo so an inline (per
+  // render) chip array never counts as a projection change on its own.
+  const chipsRef = useRef(chips);
+  // eslint-disable-next-line react-hooks/refs
+  chipsRef.current = chips;
 
   // --- Projection stability state ---------------------------------------
   // Basis snapshots: the entity data membership/order is evaluated against.
@@ -98,6 +162,7 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
   // itself (chip/search/sort/view), which refreshes all bases immediately.
   const projKeyRef = useRef<{
     filterRoster: typeof filterRoster;
+    activeKeys: ReadonlySet<string>;
     searchTerm: string;
     sortBy: SortKey;
     view: 'roster' | 'second';
@@ -121,10 +186,19 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
     const projectionChanged =
       !prev ||
       prev.filterRoster !== filterRoster ||
+      prev.activeKeys !== activeKeys ||
       prev.searchTerm !== searchTerm ||
       prev.sortBy !== sortBy ||
       prev.view !== view;
-    projKeyRef.current = { filterRoster, searchTerm, sortBy, view };
+    projKeyRef.current = { filterRoster, activeKeys, searchTerm, sortBy, view };
+
+    // Active chips compose as a logical AND; no active chip = no predicate,
+    // preserving the no-predicate fast path in the game's getFilteredRoster.
+    const activeChips = chipsRef.current.filter((c) => activeKeys.has(c.key));
+    const predicate = activeChips.length
+      ? (entity: TEntity) => activeChips.every((c) => c.predicate(entity))
+      : undefined;
+    const project = (entities?: TEntity[]) => filterRoster(searchTerm, sortBy, predicate, entities);
     if (projectionChanged) {
       // Refresh-all release point: bases realign to live, held/exiting clear.
       basis.clear();
@@ -160,9 +234,7 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
       }
       const next = new Map(basis);
       next.set(id, live);
-      const wouldStay = filterRoster(searchTerm, sortBy, [...next.values()]).some(
-        (e) => e.id === id,
-      );
+      const wouldStay = project([...next.values()]).some((e) => e.id === id);
       if (wouldStay) {
         basis.set(id, live);
         exitingRef.current.delete(id);
@@ -175,7 +247,7 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
     }
 
     // Membership and order from the basis; rendered objects always live.
-    const membership = filterRoster(searchTerm, sortBy, [...basis.values()]);
+    const membership = project([...basis.values()]);
     const roster: TEntity[] = [];
     for (const b of membership) {
       const live = liveById.get(b.id);
@@ -184,14 +256,19 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
     membershipIdsRef.current = new Set(roster.map((e) => e.id));
 
     // Held detection: in the basis membership but out of the live one. Only
-    // predicate-filter games configure `describeHeld`; without it the passes
-    // can only diverge on order, so the extra projection run is skipped.
+    // runs while a chip is active — with none, the passes can only diverge on
+    // order, so the extra projection run is skipped. The ghost tag names the
+    // first active chip (declaration order) the live data fails.
     const held = new Map<string, string>();
-    if (describeHeld) {
-      const liveMembership = new Set(filterRoster(searchTerm, sortBy).map((e) => e.id));
+    if (activeChips.length) {
+      const liveMembership = new Set(project().map((e) => e.id));
       for (const entity of roster) {
         if (!liveMembership.has(entity.id)) {
-          held.set(entity.id, describeHeld(entity) ?? 'No longer matches the active filters');
+          const failed = activeChips.find((c) => !c.predicate(entity));
+          held.set(
+            entity.id,
+            failed ? `no longer matches ${failed.label}` : 'No longer matches the active filters',
+          );
         }
       }
     }
@@ -200,12 +277,12 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     filterRoster,
+    activeKeys,
     searchTerm,
     sortBy,
     view,
     trackedEntities,
     liveById,
-    describeHeld,
     projectionVersion,
   ]);
   /* eslint-enable react-hooks/refs */
@@ -264,6 +341,42 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
     };
   }, []);
 
+  const toggleChip = useCallback((key: string) => {
+    setActiveKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }, []);
+
+  // No-match copy: no chip → the game's default; one chip → its own copy (or
+  // generic); two or more → generic. Stops the 2ⁿ-branch page ternary.
+  const activeChipList = chips.filter((c) => activeKeys.has(c.key));
+  const genericNoMatch = `No ${nounPlural} match the active filters.`;
+  const noMatchMessage =
+    activeChipList.length === 0
+      ? (config.noMatchMessage ?? `No ${nounPlural} match your search.`)
+      : activeChipList.length === 1
+        ? (activeChipList[0].noMatch ?? genericNoMatch)
+        : genericNoMatch;
+
+  const filters: RosterViewFilters | undefined = chips.length
+    ? {
+        accent: filterAccent ?? 'var(--color-brand-primary)',
+        chips: chips.map((c) => {
+          const active = activeKeys.has(c.key);
+          return {
+            key: c.key,
+            label: c.label,
+            active,
+            title: active ? (c.offTitle ?? `Show all ${nounPlural}`) : c.onTitle,
+            toggle: () => toggleChip(c.key),
+          };
+        }),
+      }
+    : undefined;
+
   const activeIndex = Math.max(
     0,
     sortModes.findIndex((m) => m.key === sortBy),
@@ -289,6 +402,10 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
       onClick: () => setIsAddModalOpen(true),
       disabled: addDisabled,
     },
+    /** Filter-row descriptor for `RosterPageLayout`; undefined when the game declares no chips. */
+    filters,
+    /** No-match copy for `RosterPageLayout`, derived from the active chips. */
+    noMatchMessage,
     projection: {
       refreshBasis,
       completeExit,

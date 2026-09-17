@@ -280,6 +280,121 @@ describe('P5xPage', () => {
     expect(predicate({ ...makeThief('c', 'C'), skillProgress: 1, weaponRarity: 5 })).toBe(false);
   });
 
+  // --- MS ✗ and ◈ Rev <5 chips ---
+
+  const fullRevelations = {
+    sun: { setId: 'power', mainStat: null, subStats: [] },
+    moon: { setId: 'power', mainStat: null, subStats: [] },
+    star: { setId: 'power', mainStat: null, subStats: [] },
+    sky: { setId: 'power', mainStat: null, subStats: [] },
+    space: { setId: 'meditation', mainStat: null, subStats: [] },
+  };
+
+  it('renders all four chips in card-summary order', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: vi.fn().mockReturnValue(thieves),
+    });
+    const { container } = renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    const labels = [...container.querySelectorAll('.filter-chip')].map((b) => b.textContent);
+    expect(labels).toEqual(['🌹 Gated', '⚔ <5★', 'MS ✗', '◈ Rev <5']);
+  });
+
+  it('MS ✗ predicate keeps thieves without Outer Mindscape and drops Outer/Inner', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    const mockGetFiltered = vi.fn().mockReturnValue(thieves);
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: mockGetFiltered,
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'MS ✗' }));
+    const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
+    expect(predicate({ ...makeThief('a', 'A'), mindscapeProgress: 0 })).toBe(true);
+    expect(predicate({ ...makeThief('b', 'B'), mindscapeProgress: 1 })).toBe(false);
+    expect(predicate({ ...makeThief('c', 'C'), mindscapeProgress: 2 })).toBe(false);
+  });
+
+  it('◈ Rev <5 predicate keeps open slots, treats a set-less card as empty, drops a full loadout', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    const mockGetFiltered = vi.fn().mockReturnValue(thieves);
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: mockGetFiltered,
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '◈ Rev <5' }));
+    const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
+    expect(predicate(makeThief('a', 'A'))).toBe(true); // no cards
+    expect(
+      predicate({
+        ...makeThief('b', 'B'),
+        revelations: { ...fullRevelations, space: null },
+      }),
+    ).toBe(true); // four cards
+    expect(
+      predicate({
+        ...makeThief('c', 'C'),
+        revelations: {
+          ...fullRevelations,
+          space: { setId: null, mainStat: 'attack', subStats: [] },
+        },
+      }),
+    ).toBe(true); // five entries, one without a set
+    expect(predicate({ ...makeThief('d', 'D'), revelations: fullRevelations })).toBe(false);
+  });
+
+  it('shows each new chip’s own empty copy when it is the only active chip', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: vi.fn().mockReturnValue([]),
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'MS ✗' }));
+    expect(screen.getByText('No thieves without Outer Mindscape.')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'MS ✗' }));
+    fireEvent.click(screen.getByRole('button', { name: '◈ Rev <5' }));
+    expect(screen.getByText('No thieves with open revelation slots.')).toBeInTheDocument();
+  });
+
+  it('all four chips compose as AND and share the generic empty copy', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    const mockGetFiltered = vi.fn().mockReturnValue([]);
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: mockGetFiltered,
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    for (const name of ['🌹 Gated', '⚔ <5★', 'MS ✗', '◈ Rev <5']) {
+      fireEvent.click(screen.getByRole('button', { name }));
+    }
+    expect(screen.getByText('No thieves match the active filters.')).toBeInTheDocument();
+    const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
+    const passing = { ...makeThief('a', 'A'), skillProgress: 1, weaponRarity: 3 };
+    expect(predicate(passing)).toBe(true);
+    expect(predicate({ ...passing, mindscapeProgress: 1 })).toBe(false);
+    expect(predicate({ ...passing, revelations: fullRevelations })).toBe(false);
+    expect(predicate({ ...passing, weaponRarity: 5 })).toBe(false);
+    expect(predicate({ ...passing, skillProgress: 2 })).toBe(false);
+  });
+
   // --- Projection stability (deferred eviction / reorder) ---
 
   /** Filter honouring predicate, entities override, and LEVEL sort. */
@@ -398,6 +513,77 @@ describe('P5xPage', () => {
 
     expect(container.querySelector('.game-card.is-held')).not.toBeNull();
     expect(screen.getByText(/no longer matches ⚔ <5★/)).toBeInTheDocument();
+  });
+
+  it('holds a card that completes Outer Mindscape with the MS ✗ ghost tag until edit commit', () => {
+    const session = createMockSession();
+    const live = { current: [makeThief('ann', 'Ann Takamaki')] };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'MS ✗' }));
+    expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
+
+    // "Finish Outer" mid-edit: live data stops matching
+    fireEvent.click(screen.getByTitle('Edit'));
+    live.current = [{ ...makeThief('ann', 'Ann Takamaki'), mindscapeProgress: 1 }];
+    mockRoster(live, filter);
+    rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches MS ✗/)).toBeInTheDocument();
+
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(screen.getByTitle('Done editing'));
+      expect(container.querySelector('.game-card.is-exiting')).not.toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(700);
+      });
+      expect(screen.queryByText('Ann Takamaki')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('holds a card that fills its fifth slot with the ◈ Rev <5 ghost tag until the editor closes', () => {
+    const session = createMockSession();
+    const live: { current: P5xTrackedThief[] } = {
+      current: [
+        { ...makeThief('ann', 'Ann Takamaki'), revelations: { ...fullRevelations, space: null } },
+      ],
+    };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: '◈ Rev <5' }));
+    expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
+
+    // Open the editor, then "equip the fifth card": live data stops matching
+    fireEvent.click(screen.getByTitle('Space'));
+    live.current = [{ ...makeThief('ann', 'Ann Takamaki'), revelations: fullRevelations }];
+    mockRoster(live, filter);
+    rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches ◈ Rev <5/)).toBeInTheDocument();
+
+    // Editor close is the release point — the card plays its exit animation
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(document.querySelector('.close-btn')!);
+      expect(container.querySelector('.game-card.is-exiting')).not.toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(700);
+      });
+      expect(screen.queryByText('Ann Takamaki')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('favorite toggle releases immediately (completed intent)', () => {

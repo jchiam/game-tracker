@@ -1,15 +1,53 @@
-import { useCallback, useState, type CSSProperties } from 'react';
+import { useCallback, useState } from 'react';
 import { useThieves } from '@/hooks/persona-5-phantom-x/useThieves';
 import { useParties } from '@/hooks/persona-5-phantom-x/useParties';
-import { useRosterView } from '@/hooks/useRosterView';
+import { useRosterView, type RosterFilterChip } from '@/hooks/useRosterView';
 import { ThiefCard } from './components/ThiefCard';
 import { AddThiefModal } from './components/AddThiefModal';
 import { RevelationEditorModal } from './components/RevelationEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
-import type { RevelationSlot } from '@/data/persona-5-phantom-x/revelations';
+import {
+  countEquippedRevelations,
+  type RevelationSlot,
+} from '@/data/persona-5-phantom-x/revelations';
 import type { P5xTrackedThief } from '@/types';
 import type { Session } from '@supabase/supabase-js';
+
+/**
+ * Roster filter chips — progression bottlenecks, in the card summary's
+ * Weapon → Mindscape → Revelations order (roster-predicate-filter).
+ */
+const FILTER_CHIPS: RosterFilterChip<P5xTrackedThief>[] = [
+  {
+    key: 'rose',
+    label: '🌹 Gated',
+    predicate: (t) => t.skillProgress === 1,
+    onTitle: 'Show only rose-gated thieves',
+    noMatch: 'No rose-gated thieves found.',
+  },
+  {
+    key: 'weapon',
+    label: '⚔ <5★',
+    predicate: (t) => t.weaponRarity < 5,
+    onTitle: 'Show only thieves with a sub-5★ weapon',
+    noMatch: 'No thieves with a sub-5★ weapon.',
+  },
+  {
+    key: 'mindscape',
+    label: 'MS ✗',
+    predicate: (t) => t.mindscapeProgress === 0,
+    onTitle: 'Show only thieves without Outer Mindscape',
+    noMatch: 'No thieves without Outer Mindscape.',
+  },
+  {
+    key: 'revelations',
+    label: '◈ Rev <5',
+    predicate: (t) => countEquippedRevelations(t.revelations) < 5,
+    onTitle: 'Show only thieves with open revelation slots',
+    noMatch: 'No thieves with open revelation slots.',
+  },
+];
 
 interface P5xPageProps {
   session: Session | null;
@@ -57,8 +95,6 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     retryParties();
   };
 
-  const [roseGateFilter, setRoseGateFilter] = useState(false);
-  const [weaponFilter, setWeaponFilter] = useState(false);
   const [editingRev, setEditingRev] = useState<{
     thiefId: string;
     anchorSlot: RevelationSlot;
@@ -68,30 +104,16 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     ? trackedThieves.find((t) => t.id === editingRev.thiefId)
     : null;
 
-  const filteredGetRoster = useCallback(
-    (searchTerm: string, sortBy: 'ALPHA' | 'LEVEL' | 'SCORE', entities?: P5xTrackedThief[]) => {
-      // Compose the active chip predicates as a logical AND; undefined when none
-      // active preserves the no-predicate fast path.
-      const predicate =
-        roseGateFilter || weaponFilter
-          ? (t: P5xTrackedThief) =>
-              (!roseGateFilter || t.skillProgress === 1) && (!weaponFilter || t.weaponRarity < 5)
-          : undefined;
-      return getFilteredRoster(searchTerm, sortBy, predicate, entities);
-    },
-    [getFilteredRoster, roseGateFilter, weaponFilter],
-  );
-
-  // Ghost-tag copy for a held card — names the first gate its live data fails.
-  const describeHeld = useCallback(
-    (t: P5xTrackedThief) => {
-      if (roseGateFilter && t.skillProgress !== 1) return 'no longer matches 🌹 Gated';
-      if (weaponFilter && t.weaponRarity >= 5) return 'no longer matches ⚔ <5★';
-      /* v8 ignore next -- unreachable: a held card always fails at least one
-         active gate, so one of the branches above returns first */
-      return null;
-    },
-    [roseGateFilter, weaponFilter],
+  // Closes over nothing chip-related: the hook injects the composed predicate,
+  // so this identity stays stable across chip toggles and entity edits.
+  const filterRoster = useCallback(
+    (
+      searchTerm: string,
+      sortBy: 'ALPHA' | 'LEVEL' | 'SCORE',
+      predicate: ((t: P5xTrackedThief) => boolean) | undefined,
+      entities?: P5xTrackedThief[],
+    ) => getFilteredRoster(searchTerm, sortBy, predicate, entities),
+    [getFilteredRoster],
   );
 
   const {
@@ -103,6 +125,8 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     search,
     sort,
     add,
+    filters,
+    noMatchMessage,
     projection,
   } = useRosterView({
     sortModes: [
@@ -113,10 +137,12 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     searchPlaceholder: 'Search by name, codename, persona, role, or element...',
     addTitle: 'Add Phantom Thief',
     addDisabled: isLoadError,
-    filterRoster: filteredGetRoster,
+    nounPlural: 'thieves',
+    noMatchMessage: 'No phantom thieves match your search.',
+    filterChips: FILTER_CHIPS,
+    filterAccent: 'var(--color-p5x-element-fire)',
+    filterRoster,
     trackedEntities: trackedThieves,
-    // Held detection only pays its extra projection pass while a gate is on
-    describeHeld: roseGateFilter || weaponFilter ? describeHeld : undefined,
   });
 
   return (
@@ -135,36 +161,8 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
       hasTracked={trackedThieves.length > 0}
       hasMatches={filteredRoster.length > 0}
       emptyMessage="No phantom thieves tracked yet. Use the + button to begin!"
-      noMatchMessage={
-        roseGateFilter && weaponFilter
-          ? 'No rose-gated thieves with a sub-5★ weapon.'
-          : roseGateFilter
-            ? 'No rose-gated thieves found.'
-            : weaponFilter
-              ? 'No thieves with a sub-5★ weapon.'
-              : 'No phantom thieves match your search.'
-      }
-      filterRow={
-        <div
-          className="filter-row"
-          style={{ '--filter-chip-accent': 'var(--color-p5x-element-fire)' } as CSSProperties}
-        >
-          <button
-            className={`filter-chip ${roseGateFilter ? 'active' : ''}`}
-            onClick={() => setRoseGateFilter((v) => !v)}
-            title={roseGateFilter ? 'Show all thieves' : 'Show only rose-gated thieves'}
-          >
-            🌹 Gated
-          </button>
-          <button
-            className={`filter-chip ${weaponFilter ? 'active' : ''}`}
-            onClick={() => setWeaponFilter((v) => !v)}
-            title={weaponFilter ? 'Show all thieves' : 'Show only thieves with a sub-5★ weapon'}
-          >
-            ⚔ &lt;5★
-          </button>
-        </div>
-      }
+      noMatchMessage={noMatchMessage}
+      filters={filters}
       search={search}
       sort={sort}
       add={add}
