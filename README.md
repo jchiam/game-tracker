@@ -8,8 +8,9 @@
 [![Update HSR Data](https://github.com/jchiam/game-tracker/actions/workflows/update-hsr-data.yml/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/update-hsr-data.yml)
 [![Update R1999 Data](https://github.com/jchiam/game-tracker/actions/workflows/update-r1999-data.yml/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/update-r1999-data.yml)
 [![Update N2E Data](https://github.com/jchiam/game-tracker/actions/workflows/update-n2e-data.yml/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/update-n2e-data.yml)
+[![Update ZZZ Data](https://github.com/jchiam/game-tracker/actions/workflows/update-zzz-data.yml/badge.svg)](https://github.com/jchiam/game-tracker/actions/workflows/update-zzz-data.yml)
 
-A modern, fast, and beautifully designed web application to track my progress in various games. Currently supports **Honkai: Star Rail**, **Reverse: 1999**, **Neverness to Everness**, **Arknights: Endfield**, and **Persona 5: The Phantom X**.
+A modern, fast, and beautifully designed web application to track my progress in various games. Currently supports live-service rosters for **Honkai: Star Rail**, **Zenless Zone Zero**, **Reverse: 1999**, **Persona 5: The Phantom X**, **Arknights: Endfield**, and **Neverness to Everness**, plus a **Digimon Virtual Pets** collection tracker.
 
 ## Tech Stack Choices
 
