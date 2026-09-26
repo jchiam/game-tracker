@@ -144,6 +144,15 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: false,
   },
   {
+    id: 'cornerstone',
+    sourceId: '10131',
+    name: 'Cornerstone',
+    afflatus: 'Mineral',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/cornerstone.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'corvus',
     sourceId: '10114',
     name: 'Corvus',
@@ -178,6 +187,15 @@ export const ALL_ARCANISTS: Arcanist[] = [
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/eternity.webp',
     hasEuphoria: true,
+  },
+  {
+    id: 'everecho',
+    sourceId: '10130',
+    name: 'Everecho',
+    afflatus: 'Mineral',
+    damageType: 'Real',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/everecho.webp',
+    hasEuphoria: false,
   },
   {
     id: 'ezio_auditore',
@@ -421,6 +439,15 @@ export const ALL_ARCANISTS: Arcanist[] = [
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/ms_newbabel.webp',
     hasEuphoria: true,
+  },
+  {
+    id: 'ms_stranger',
+    sourceId: '10129',
+    name: 'Ms. Stranger',
+    afflatus: 'Mineral',
+    damageType: 'Mental',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/ms_stranger.webp',
+    hasEuphoria: false,
   },
   {
     id: 'nautika',
