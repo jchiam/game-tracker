@@ -11,6 +11,12 @@ export interface Psychube {
 export const ALL_PSYCHUBES: Psychube[] = [
   // 6-Stars
   {
+    name: 'A Dream Beyond Light',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/a_dream_beyond_light.webp',
+  },
+  {
     name: 'A Tingle of a Thought',
     rarity: 6,
     tag: 'None',
