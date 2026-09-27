@@ -26,6 +26,16 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     imageUrl: '/assets/neverness-to-everness/characters/baicang.webp',
   },
   {
+    id: 'blackbird',
+    sourceId: '1042',
+    name: 'Blackbird',
+    rarity: 'S',
+    esperType: 'Psyche',
+    arcType: 'Gas',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/blackbird.webp',
+  },
+  {
     id: 'chaos',
     sourceId: '1071',
     name: 'Chaos',
@@ -174,6 +184,16 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     arcType: 'Solid',
     roles: ['Damage', 'Instant Cycle', 'Burst DPS'],
     imageUrl: '/assets/neverness-to-everness/characters/zero.webp',
+  },
+  {
+    id: 'unnamed_1057',
+    sourceId: '1057',
+    name: '明音凛',
+    rarity: 'S',
+    esperType: 'Lakshana',
+    arcType: 'Liquid',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/unnamed_1057.webp',
   },
   // A-Rank
   {
