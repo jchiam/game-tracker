@@ -16,6 +16,16 @@ export interface N2ECharacter {
 export const ALL_CHARACTERS: N2ECharacter[] = [
   // S-Rank
   {
+    id: 'unnamed_1057',
+    sourceId: '1057',
+    name: 'Akane Rin',
+    rarity: 'S',
+    esperType: 'Lakshana',
+    arcType: 'Liquid',
+    roles: [],
+    imageUrl: '/assets/neverness-to-everness/characters/unnamed_1057.webp',
+  },
+  {
     id: 'baicang',
     sourceId: '1023',
     name: 'Baicang',
@@ -184,16 +194,6 @@ export const ALL_CHARACTERS: N2ECharacter[] = [
     arcType: 'Solid',
     roles: ['Damage', 'Instant Cycle', 'Burst DPS'],
     imageUrl: '/assets/neverness-to-everness/characters/zero.webp',
-  },
-  {
-    id: 'unnamed_1057',
-    sourceId: '1057',
-    name: '明音凛',
-    rarity: 'S',
-    esperType: 'Lakshana',
-    arcType: 'Liquid',
-    roles: [],
-    imageUrl: '/assets/neverness-to-everness/characters/unnamed_1057.webp',
   },
   // A-Rank
   {
