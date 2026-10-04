@@ -424,6 +424,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     tag: 'None',
     imageUrl: '/assets/reverse-1999/psychubes/wayfarer_of_the_dao.webp',
   },
+  {
+    name: 'Where Light and Shadows Rest',
+    rarity: 6,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/where_light_and_shadows_rest.webp',
+  },
   // 5-Stars
   {
     name: 'A Free Heart',
