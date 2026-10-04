@@ -315,6 +315,13 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/mydei.webp',
   },
   {
+    id: 'pearl',
+    name: 'Pearl',
+    element: 'Ice',
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/characters/pearl.webp',
+  },
+  {
     id: 'phainon',
     name: 'Phainon',
     element: 'Physical',
