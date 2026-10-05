@@ -40,6 +40,13 @@ export const ALL_ARCS: N2EArc[] = [
     imageUrl: '/assets/neverness-to-everness/arcs/fork_mamen.webp',
   },
   {
+    id: 'fork_twinbirds',
+    name: 'Crime and Punishment',
+    rarity: 'S',
+    arcType: 'Gas',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_twinbirds.webp',
+  },
+  {
     id: 'fork_rishi',
     name: 'Day Off',
     rarity: 'S',
@@ -52,6 +59,13 @@ export const ALL_ARCS: N2EArc[] = [
     rarity: 'S',
     arcType: 'Synthesis',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_Arachne.webp',
+  },
+  {
+    id: 'fork_prism',
+    name: 'Far Side of the Moon',
+    rarity: 'S',
+    arcType: 'Liquid',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_prism.webp',
   },
   {
     id: 'fork_BlastCandy',
@@ -206,20 +220,6 @@ export const ALL_ARCS: N2EArc[] = [
     rarity: 'S',
     arcType: 'Liquid',
     imageUrl: '/assets/neverness-to-everness/arcs/fork_BlackBook.webp',
-  },
-  {
-    id: 'fork_prism',
-    name: '月的对跖点',
-    rarity: 'S',
-    arcType: 'Liquid',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_prism.webp',
-  },
-  {
-    id: 'fork_twinbirds',
-    name: '罪与罚',
-    rarity: 'S',
-    arcType: 'Gas',
-    imageUrl: '/assets/neverness-to-everness/arcs/fork_twinbirds.webp',
   },
   // A-Rank
   {
