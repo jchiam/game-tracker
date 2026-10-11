@@ -69,6 +69,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     icon: '/assets/honkai-star-rail/relics/130.png',
   },
   {
+    id: '133',
+    name: 'Dreamlit Actor',
+    icon: '/assets/honkai-star-rail/relics/133.png',
+  },
+  {
     id: '315',
     name: 'Duran, Dynasty of Running Wolves',
     icon: '/assets/honkai-star-rail/relics/315.png',
@@ -262,6 +267,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     id: '115',
     name: 'The Ashblazing Grand Duke',
     icon: '/assets/honkai-star-rail/relics/115.png',
+  },
+  {
+    id: '134',
+    name: 'The Edacious Heretic',
+    icon: '/assets/honkai-star-rail/relics/134.png',
   },
   {
     id: '120',

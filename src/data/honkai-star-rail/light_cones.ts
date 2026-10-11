@@ -75,6 +75,13 @@ export const ALL_LIGHT_CONES: LightCone[] = [
     imageUrl: '/assets/honkai-star-rail/light-cones/23003.webp',
   },
   {
+    id: '23055',
+    name: 'Colors for Tomorrow',
+    rarity: 5,
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/light-cones/23055.webp',
+  },
+  {
     id: '24001',
     name: 'Cruising in the Stellar Sea',
     rarity: 5,
