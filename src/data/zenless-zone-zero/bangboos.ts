@@ -101,6 +101,12 @@ export const ALL_ZZZ_BANGBOOS: ZzzBangboo[] = [
     imageUrl: '/assets/zenless-zone-zero/bangboos/708.png',
   },
   {
+    id: '54016',
+    name: 'Robin (Bangboo)',
+    rarity: 'S',
+    imageUrl: '/assets/zenless-zone-zero/bangboos/54016.png',
+  },
+  {
     id: '111',
     name: 'Rocketboo',
     rarity: 'S',
