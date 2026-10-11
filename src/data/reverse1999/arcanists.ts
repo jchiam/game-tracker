@@ -24,7 +24,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Star',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/37.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: '6',
@@ -96,7 +96,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/beryl.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'brume',
