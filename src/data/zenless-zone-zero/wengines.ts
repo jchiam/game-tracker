@@ -153,6 +153,13 @@ export const ALL_ZZZ_WENGINES: ZzzWEngine[] = [
     imageUrl: '/assets/zenless-zone-zero/wengines/14125.png',
   },
   {
+    id: '14163',
+    name: 'Incarcerating Grip',
+    rarity: 4,
+    specialty: 'Attack',
+    imageUrl: '/assets/zenless-zone-zero/wengines/14163.png',
+  },
+  {
     id: '14156',
     name: 'Joyau Dore',
     rarity: 4,
@@ -200,6 +207,13 @@ export const ALL_ZZZ_WENGINES: ZzzWEngine[] = [
     rarity: 4,
     specialty: 'Anomaly',
     imageUrl: '/assets/zenless-zone-zero/wengines/14158.png',
+  },
+  {
+    id: '14164',
+    name: 'Plume of Rebirth',
+    rarity: 4,
+    specialty: 'Anomaly',
+    imageUrl: '/assets/zenless-zone-zero/wengines/14164.png',
   },
   {
     id: '14140',
@@ -382,6 +396,13 @@ export const ALL_ZZZ_WENGINES: ZzzWEngine[] = [
     rarity: 3,
     specialty: 'Defense',
     imageUrl: '/assets/zenless-zone-zero/wengines/13010.png',
+  },
+  {
+    id: '13022',
+    name: 'Candlelit Scheme',
+    rarity: 3,
+    specialty: 'Armorer',
+    imageUrl: '/assets/zenless-zone-zero/wengines/13022.png',
   },
   {
     id: '14001',

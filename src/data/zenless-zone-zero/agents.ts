@@ -216,6 +216,14 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     imageUrl: '/assets/zenless-zone-zero/agents/1301.png',
   },
   {
+    id: '1641',
+    name: 'Phoenix',
+    rarity: 4,
+    specialty: 'Anomaly',
+    element: 'Fire',
+    imageUrl: '/assets/zenless-zone-zero/agents/1641.png',
+  },
+  {
     id: '1541',
     name: 'Promeia',
     rarity: 4,
@@ -270,6 +278,14 @@ export const ALL_ZZZ_AGENTS: ZzzAgent[] = [
     specialty: 'Attack',
     element: 'Elec',
     imageUrl: '/assets/zenless-zone-zero/agents/1461.png',
+  },
+  {
+    id: '1631',
+    name: 'Severian',
+    rarity: 4,
+    specialty: 'Attack',
+    element: 'Wind',
+    imageUrl: '/assets/zenless-zone-zero/agents/1631.png',
   },
   {
     id: '1591',
