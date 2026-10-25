@@ -498,6 +498,12 @@ export const ALL_PSYCHUBES: Psychube[] = [
     imageUrl: '/assets/reverse-1999/psychubes/falling_for_a_sweet_phenomenon.webp',
   },
   {
+    name: 'Farewell to the Old Night',
+    rarity: 5,
+    tag: 'None',
+    imageUrl: '/assets/reverse-1999/psychubes/farewell_to_the_old_night.webp',
+  },
+  {
     name: 'Going Along Alone',
     rarity: 5,
     tag: 'None',
