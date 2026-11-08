@@ -1,4 +1,4 @@
-import type { P5xTrackedThief } from '../types';
+import type { P5xRevelationPreferences, P5xTrackedThief } from '../types';
 import {
   HEAVENS_SLOTS,
   MAIN_STATS,
@@ -57,16 +57,23 @@ function setTerm(thief: P5xTrackedThief): number {
  *               occupied-main-excluded pool incl. Space's dual fixed mains, top 4),
  *               averaged over all five slots
  */
+/**
+ * Whether a Thief has any revelation Target Build set — a Heavens set, a Space
+ * set, a sub-stat chain, or a Moon/Star/Sky main-stat chain. Shared by the
+ * scorer's insufficient-data sentinel and the roster's `◈ No prefs` chip so
+ * the two can never disagree.
+ */
+export function hasRevelationPreferences(prefs: P5xRevelationPreferences): boolean {
+  return (
+    prefs.heavensSetId != null ||
+    prefs.spaceSetId != null ||
+    prefs.subStats.length > 0 ||
+    VARIABLE_MAIN_SLOTS.some((s) => prefs.mainStats[s].length > 0)
+  );
+}
+
 export const calculateRevelationScore = createEquipmentScore<P5xTrackedThief>({
-  hasPreferences: (thief) => {
-    const prefs = thief.revelationPreferences;
-    return (
-      prefs.heavensSetId != null ||
-      prefs.spaceSetId != null ||
-      prefs.subStats.length > 0 ||
-      VARIABLE_MAIN_SLOTS.some((s) => prefs.mainStats[s].length > 0)
-    );
-  },
+  hasPreferences: (thief) => hasRevelationPreferences(thief.revelationPreferences),
   hasEquipment: (thief) => ALL_SLOTS.some((s) => thief.revelations[s] != null),
   setTerm,
   slots: (thief) => {

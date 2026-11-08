@@ -50,22 +50,89 @@ export const StatChips: Story = {
 export const FilterChips: Story = {
   render: () => (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--spacing-md)' }}>
-      {/* Roster predicate-filter chip. The `.filter-chip` base lives in
+      {/* Roster predicate-filter block. `.filter-chip` base lives in
           controls.css; hover/active accent comes from the `--filter-chip-accent`
-          custom property each page sets on its `.filter-row`. */}
+          custom property each page sets on its `.filter-row`. The row is a
+          facet matrix: labelled `any` / `one` rows plus unlabelled bare rows. */}
       <div
         className="filter-row"
         style={{ '--filter-chip-accent': 'var(--color-p5x-element-fire)' } as CSSProperties}
       >
-        <button className="filter-chip">🌹 Gated</button>
-        <button className="filter-chip active">🌹 Gated (active)</button>
+        <div className="filter-facet" role="group" aria-label="Weapon">
+          <span className="filter-facet-label" aria-hidden="true">
+            Weapon
+          </span>
+          <div className="filter-facet-chips mode-any">
+            <button className="filter-chip active" aria-pressed="true">
+              Sub-5★
+            </button>
+            <button className="filter-chip" aria-pressed="false">
+              Under Lv 80
+            </button>
+          </div>
+        </div>
+        <div className="filter-facet" role="group" aria-label="Mindscape">
+          <span className="filter-facet-label" aria-hidden="true">
+            Mindscape
+          </span>
+          <div className="filter-facet-chips mode-one">
+            <button className="filter-chip active" aria-pressed="true">
+              No Outer
+            </button>
+            <button className="filter-chip" aria-pressed="false">
+              No Inner
+            </button>
+          </div>
+        </div>
+      </div>
+      {/* Collapsed multi-row block: the Filters toggle with its active count,
+          followed by removable facet-labelled summary pills. */}
+      <div
+        className="filter-block"
+        style={{ '--filter-chip-accent': 'var(--color-p5x-element-fire)' } as CSSProperties}
+      >
+        <div className="filter-header">
+          <button className="filter-chip filter-toggle" aria-expanded="false">
+            Filters
+            <span className="filter-toggle-count">2</span>
+            <span className="filter-toggle-chevron" aria-hidden="true">
+              ▾
+            </span>
+          </button>
+          <button
+            className="filter-chip active filter-summary"
+            aria-label="Remove filter Mindscape · No Outer"
+          >
+            Mindscape · No Outer
+            <span className="filter-summary-x" aria-hidden="true">
+              ×
+            </span>
+          </button>
+          <button
+            className="filter-chip active filter-summary"
+            aria-label="Remove filter Weapon · Sub-5★"
+          >
+            Weapon · Sub-5★
+            <span className="filter-summary-x" aria-hidden="true">
+              ×
+            </span>
+          </button>
+        </div>
       </div>
       <div
         className="filter-row"
         style={{ '--filter-chip-accent': 'var(--color-r1999-accent)' } as CSSProperties}
       >
-        <button className="filter-chip">💠 Resonating</button>
-        <button className="filter-chip active">💠 Resonating (active)</button>
+        <div className="filter-facet is-unlabelled">
+          <div className="filter-facet-chips mode-any">
+            <button className="filter-chip" aria-pressed="false">
+              💠 Resonating
+            </button>
+            <button className="filter-chip active" aria-pressed="true">
+              💠 Resonating (active)
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   ),

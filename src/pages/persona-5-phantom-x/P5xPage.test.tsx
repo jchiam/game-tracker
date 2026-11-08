@@ -3,6 +3,7 @@ import { screen, fireEvent, act } from '@testing-library/react';
 import { P5xPage } from './P5xPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import type { P5xTrackedThief, Party } from '@/types';
+import { calculateRevelationScore } from '@/utils/revelationScoring';
 
 vi.mock('@/hooks/persona-5-phantom-x/useThieves', () => ({
   useThieves: vi.fn(),
@@ -169,7 +170,7 @@ describe('P5xPage', () => {
     expect(screen.getByRole('heading', { name: /add phantom thief/i })).toBeInTheDocument();
   });
 
-  it('renders the rose-gate filter chip', () => {
+  it('renders the rose-gated filter chip', () => {
     const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
     vi.mocked(useThieves).mockReturnValue({
       ...defaultThievesHook,
@@ -179,7 +180,37 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    expect(screen.getByRole('button', { name: '🌹 Gated' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: '🌹 Rose-gated' })).toBeInTheDocument();
+  });
+
+  it('chip composes with search and LEVEL sort, and deactivating restores the roster', () => {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    const mockGetFiltered = vi.fn().mockReturnValue(thieves);
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster: mockGetFiltered,
+    });
+    renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Sub-5★' }));
+    fireEvent.click(screen.getByTitle(/sorted alphabetically/i)); // → LEVEL
+    fireEvent.change(screen.getByPlaceholderText(/search by name/i), { target: { value: 'fire' } });
+    const [term, sortBy, predicate] = mockGetFiltered.mock.calls.at(-1)!;
+    expect(term).toBe('fire');
+    expect(sortBy).toBe('LEVEL');
+    expect(
+      (predicate as (t: P5xTrackedThief) => boolean)({ ...makeThief('a', 'A'), weaponRarity: 3 }),
+    ).toBe(true);
+    expect(
+      (predicate as (t: P5xTrackedThief) => boolean)({ ...makeThief('b', 'B'), weaponRarity: 5 }),
+    ).toBe(false);
+
+    // Deactivate: search and sort survive, predicate is gone
+    fireEvent.click(screen.getByRole('button', { name: 'Sub-5★' }));
+    expect(mockGetFiltered).toHaveBeenLastCalledWith('fire', 'LEVEL', undefined, expect.any(Array));
+    expect(screen.getByRole('button', { name: 'Sub-5★' })).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('activating filter chip calls getFilteredRoster with predicate', () => {
@@ -193,7 +224,7 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
+    fireEvent.click(screen.getByRole('button', { name: '🌹 Rose-gated' }));
     const lastCall = mockGetFiltered.mock.calls[mockGetFiltered.mock.calls.length - 1];
     expect(lastCall[2]).toBeInstanceOf(Function);
   });
@@ -209,7 +240,7 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
+    fireEvent.click(screen.getByRole('button', { name: '🌹 Rose-gated' }));
     expect(screen.getByText(/no rose-gated thieves found/i)).toBeInTheDocument();
   });
 
@@ -223,11 +254,11 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: '⚔ <5★' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sub-5★' }));
     expect(screen.getByText(/no thieves with a sub-5★ weapon/i)).toBeInTheDocument();
   });
 
-  it('renders the <5★ weapon filter chip', () => {
+  it('renders the Sub-5★ weapon filter chip', () => {
     const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
     vi.mocked(useThieves).mockReturnValue({
       ...defaultThievesHook,
@@ -237,7 +268,7 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    expect(screen.getByRole('button', { name: '⚔ <5★' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Sub-5★' })).toBeInTheDocument();
   });
 
   it('weapon filter predicate keeps sub-5★ weapons and drops 5★', () => {
@@ -251,7 +282,7 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: '⚔ <5★' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sub-5★' }));
     const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
     expect(predicate({ ...makeThief('a', 'A'), weaponRarity: 4 })).toBe(true);
     expect(predicate({ ...makeThief('b', 'B'), weaponRarity: 2 })).toBe(true);
@@ -269,8 +300,8 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
-    fireEvent.click(screen.getByRole('button', { name: '⚔ <5★' }));
+    fireEvent.click(screen.getByRole('button', { name: '🌹 Rose-gated' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sub-5★' }));
     const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
     // rose-gated (skillProgress === 1) AND weapon < 5
     expect(predicate({ ...makeThief('a', 'A'), skillProgress: 1, weaponRarity: 3 })).toBe(true);
@@ -280,7 +311,7 @@ describe('P5xPage', () => {
     expect(predicate({ ...makeThief('c', 'C'), skillProgress: 1, weaponRarity: 5 })).toBe(false);
   });
 
-  // --- MS ✗ and ◈ Rev <5 chips ---
+  // --- Mindscape / Revelations / Skills / weapon-level chips ---
 
   const fullRevelations = {
     sun: { setId: 'power', mainStat: null, subStats: [] },
@@ -290,7 +321,7 @@ describe('P5xPage', () => {
     space: { setId: 'meditation', mainStat: null, subStats: [] },
   };
 
-  it('renders all four chips in card-summary order', () => {
+  it('renders four facet rows in card-summary order with their chips', () => {
     const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
     vi.mocked(useThieves).mockReturnValue({
       ...defaultThievesHook,
@@ -300,11 +331,39 @@ describe('P5xPage', () => {
     const { container } = renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    const labels = [...container.querySelectorAll('.filter-chip')].map((b) => b.textContent);
-    expect(labels).toEqual(['🌹 Gated', '⚔ <5★', 'MS ✗', '◈ Rev <5']);
+    const rows = [...container.querySelectorAll('.filter-facet')];
+    expect(rows.map((r) => r.getAttribute('aria-label'))).toEqual([
+      'Weapon',
+      'Mindscape',
+      'Revelations',
+      'Skills',
+    ]);
+    expect(rows.every((r) => r.getAttribute('role') === 'group')).toBe(true);
+    expect(rows.map((r) => r.querySelector('.filter-facet-label')?.textContent)).toEqual([
+      'Weapon',
+      'Mindscape',
+      'Revelations',
+      'Skills',
+    ]);
+    expect(
+      rows.map((r) => [...r.querySelectorAll('.filter-chip')].map((b) => b.textContent)),
+    ).toEqual([
+      ['Sub-5★', 'Under Lv 80'],
+      ['No Outer', 'No Inner'],
+      ['Open slots', 'No build'],
+      ['Under Lv 8', '🌹 Rose-gated'],
+    ]);
+    // Joined pill only on the one-mode facets
+    expect(rows.map((r) => r.querySelector('.filter-facet-chips')?.className)).toEqual([
+      'filter-facet-chips mode-any',
+      'filter-facet-chips mode-one',
+      'filter-facet-chips mode-any',
+      'filter-facet-chips mode-one',
+    ]);
+    expect(container.querySelectorAll('.filter-chip[aria-pressed="false"]')).toHaveLength(8);
   });
 
-  it('MS ✗ predicate keeps thieves without Outer Mindscape and drops Outer/Inner', () => {
+  it('No Outer predicate keeps thieves without Outer Mindscape and drops Outer/Inner', () => {
     const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
     const mockGetFiltered = vi.fn().mockReturnValue(thieves);
     vi.mocked(useThieves).mockReturnValue({
@@ -315,14 +374,14 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'MS ✗' }));
+    fireEvent.click(screen.getByRole('button', { name: 'No Outer' }));
     const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
     expect(predicate({ ...makeThief('a', 'A'), mindscapeProgress: 0 })).toBe(true);
     expect(predicate({ ...makeThief('b', 'B'), mindscapeProgress: 1 })).toBe(false);
     expect(predicate({ ...makeThief('c', 'C'), mindscapeProgress: 2 })).toBe(false);
   });
 
-  it('◈ Rev <5 predicate keeps open slots, treats a set-less card as empty, drops a full loadout', () => {
+  it('Open slots predicate keeps open slots, treats a set-less card as empty, drops a full loadout', () => {
     const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
     const mockGetFiltered = vi.fn().mockReturnValue(thieves);
     vi.mocked(useThieves).mockReturnValue({
@@ -333,7 +392,7 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: '◈ Rev <5' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open slots' }));
     const predicate = mockGetFiltered.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
     expect(predicate(makeThief('a', 'A'))).toBe(true); // no cards
     expect(
@@ -364,14 +423,14 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'MS ✗' }));
+    fireEvent.click(screen.getByRole('button', { name: 'No Outer' }));
     expect(screen.getByText('No thieves without Outer Mindscape.')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'MS ✗' }));
-    fireEvent.click(screen.getByRole('button', { name: '◈ Rev <5' }));
+    fireEvent.click(screen.getByRole('button', { name: 'No Outer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open slots' }));
     expect(screen.getByText('No thieves with open revelation slots.')).toBeInTheDocument();
   });
 
-  it('all four chips compose as AND and share the generic empty copy', () => {
+  it('chips across groups compose as AND and share the generic empty copy', () => {
     const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
     const mockGetFiltered = vi.fn().mockReturnValue([]);
     vi.mocked(useThieves).mockReturnValue({
@@ -382,7 +441,7 @@ describe('P5xPage', () => {
     renderWithProviders(
       <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    for (const name of ['🌹 Gated', '⚔ <5★', 'MS ✗', '◈ Rev <5']) {
+    for (const name of ['🌹 Rose-gated', 'Sub-5★', 'No Outer', 'Open slots']) {
       fireEvent.click(screen.getByRole('button', { name }));
     }
     expect(screen.getByText('No thieves match the active filters.')).toBeInTheDocument();
@@ -393,6 +452,194 @@ describe('P5xPage', () => {
     expect(predicate({ ...passing, revelations: fullRevelations })).toBe(false);
     expect(predicate({ ...passing, weaponRarity: 5 })).toBe(false);
     expect(predicate({ ...passing, skillProgress: 2 })).toBe(false);
+  });
+
+  function renderChips(getFilteredRoster = vi.fn().mockReturnValue([])) {
+    const thieves = [makeThief('ann-takamaki', 'Ann Takamaki')];
+    vi.mocked(useThieves).mockReturnValue({
+      ...defaultThievesHook,
+      trackedThieves: thieves,
+      getFilteredRoster,
+    });
+    return renderWithProviders(
+      <P5xPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+  }
+  const lastPredicate = (mock: ReturnType<typeof vi.fn>) =>
+    mock.mock.calls.at(-1)![2] as (t: P5xTrackedThief) => boolean;
+
+  it('Under Lv 80 predicate keeps weapons below Lv 80 regardless of rarity', () => {
+    const mock = vi.fn().mockReturnValue([]);
+    renderChips(mock);
+    fireEvent.click(screen.getByRole('button', { name: 'Under Lv 80' }));
+    const predicate = lastPredicate(mock);
+    expect(predicate({ ...makeThief('a', 'A'), weaponRarity: 5, weaponLevel: 79 })).toBe(true);
+    expect(predicate({ ...makeThief('b', 'B'), weaponRarity: 2, weaponLevel: 80 })).toBe(false);
+    expect(screen.getByText('No thieves with a weapon below Lv 80.')).toBeInTheDocument();
+  });
+
+  it('No Inner predicate keeps only thieves stuck at Outer', () => {
+    const mock = vi.fn().mockReturnValue([]);
+    renderChips(mock);
+    fireEvent.click(screen.getByRole('button', { name: 'No Inner' }));
+    const predicate = lastPredicate(mock);
+    expect(predicate({ ...makeThief('a', 'A'), mindscapeProgress: 0 })).toBe(false);
+    expect(predicate({ ...makeThief('b', 'B'), mindscapeProgress: 1 })).toBe(true);
+    expect(predicate({ ...makeThief('c', 'C'), mindscapeProgress: 2 })).toBe(false);
+    expect(screen.getByText('No thieves with Outer done and Inner pending.')).toBeInTheDocument();
+  });
+
+  it('No build predicate matches the scorer insufficient-data sentinel', () => {
+    const mock = vi.fn().mockReturnValue([]);
+    renderChips(mock);
+    fireEvent.click(screen.getByRole('button', { name: 'No build' }));
+    const predicate = lastPredicate(mock);
+    const bare = makeThief('a', 'A');
+    expect(predicate(bare)).toBe(true); // no prefs, no cards
+    const noPrefsWithCards = { ...makeThief('b', 'B'), revelations: fullRevelations };
+    expect(predicate(noPrefsWithCards)).toBe(true);
+    expect(calculateRevelationScore(noPrefsWithCards)).toBe(-1);
+    const withHeavens = {
+      ...makeThief('c', 'C'),
+      revelationPreferences: { ...bare.revelationPreferences, heavensSetId: 'power' },
+    };
+    expect(predicate(withHeavens)).toBe(false);
+    const withSub = {
+      ...makeThief('d', 'D'),
+      revelationPreferences: {
+        ...bare.revelationPreferences,
+        subStats: [{ stat: 'attack', operator: null, orderIndex: 0 }],
+      },
+    };
+    expect(predicate(withSub)).toBe(false);
+    expect(screen.getByText('No thieves without a revelation Target Build.')).toBeInTheDocument();
+  });
+
+  it('Under Lv 8 predicate keeps only thieves who have not started skills', () => {
+    const mock = vi.fn().mockReturnValue([]);
+    renderChips(mock);
+    fireEvent.click(screen.getByRole('button', { name: 'Under Lv 8' }));
+    const predicate = lastPredicate(mock);
+    expect(predicate({ ...makeThief('a', 'A'), skillProgress: 0 })).toBe(true);
+    expect(predicate({ ...makeThief('b', 'B'), skillProgress: 1 })).toBe(false);
+    expect(predicate({ ...makeThief('c', 'C'), skillProgress: 2 })).toBe(false);
+    expect(screen.getByText('No thieves with skills below Lv8.')).toBeInTheDocument();
+  });
+
+  it('Mindscape chips are mutually exclusive: a sibling click swaps, a repeat click clears', () => {
+    const mock = vi.fn().mockReturnValue([]);
+    renderChips(mock);
+    const outer = screen.getByRole('button', { name: 'No Outer' });
+    const inner = screen.getByRole('button', { name: 'No Inner' });
+    fireEvent.click(outer);
+    expect(outer).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(inner);
+    expect(outer).toHaveAttribute('aria-pressed', 'false');
+    expect(inner).toHaveAttribute('aria-pressed', 'true');
+    const predicate = lastPredicate(mock);
+    expect(predicate({ ...makeThief('a', 'A'), mindscapeProgress: 1 })).toBe(true);
+    expect(predicate({ ...makeThief('b', 'B'), mindscapeProgress: 0 })).toBe(false);
+    fireEvent.click(inner);
+    expect(inner).toHaveAttribute('aria-pressed', 'false');
+    expect(mock.mock.calls.at(-1)![2]).toBeUndefined();
+  });
+
+  it('Skills chips are mutually exclusive and compose with ungrouped chips', () => {
+    const mock = vi.fn().mockReturnValue([]);
+    renderChips(mock);
+    fireEvent.click(screen.getByRole('button', { name: '🌹 Rose-gated' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Under Lv 8' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sub-5★' }));
+    expect(screen.getByRole('button', { name: '🌹 Rose-gated' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    const predicate = lastPredicate(mock);
+    expect(predicate({ ...makeThief('a', 'A'), skillProgress: 0, weaponRarity: 3 })).toBe(true);
+    expect(predicate({ ...makeThief('b', 'B'), skillProgress: 1, weaponRarity: 3 })).toBe(false);
+    expect(predicate({ ...makeThief('c', 'C'), skillProgress: 0, weaponRarity: 5 })).toBe(false);
+    expect(screen.getByText('No thieves match the active filters.')).toBeInTheDocument();
+  });
+
+  // --- Collapsible block ---
+
+  it('renders the Filters disclosure open by default (no matchMedia in jsdom)', () => {
+    const { container } = renderChips();
+    const toggle = screen.getByRole('button', { name: /^Filters/ });
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(toggle).toHaveAttribute('aria-controls', container.querySelector('.filter-row')!.id);
+    expect(container.querySelectorAll('.filter-facet')).toHaveLength(4);
+    expect(container.querySelector('.filter-summary')).toBeNull();
+    // No active chip → no count badge
+    expect(container.querySelector('.filter-toggle-count')).toBeNull();
+    expect(toggle).toHaveTextContent(/^Filters▾$/);
+  });
+
+  it('starts collapsed under a narrow viewport and open under a wide one', () => {
+    const matchMedia = vi.fn().mockReturnValue({ matches: false });
+    vi.stubGlobal('matchMedia', matchMedia);
+    try {
+      const { container, unmount } = renderChips();
+      expect(matchMedia).toHaveBeenCalledWith('(min-width: 600px)');
+      expect(screen.getByRole('button', { name: /^Filters/ })).toHaveAttribute(
+        'aria-expanded',
+        'false',
+      );
+      expect(container.querySelector('.filter-facet')).toBeNull();
+      unmount();
+      matchMedia.mockReturnValue({ matches: true });
+      const wide = renderChips();
+      expect(wide.container.querySelectorAll('.filter-facet')).toHaveLength(4);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('collapsing shows active chips as removable facet-labelled pills; removing clears the chip', () => {
+    const mock = vi.fn().mockReturnValue([]);
+    const { container } = renderChips(mock);
+    fireEvent.click(screen.getByRole('button', { name: 'No Outer' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sub-5★' }));
+    const toggle = screen.getByRole('button', { name: /^Filters/ });
+    expect(toggle).toHaveTextContent('Filters2');
+
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    expect(container.querySelector('.filter-facet')).toBeNull();
+    const pills = [...container.querySelectorAll('.filter-summary')];
+    expect(pills.map((b) => b.getAttribute('aria-label'))).toEqual([
+      'Remove filter Weapon · Sub-5★',
+      'Remove filter Mindscape · No Outer',
+    ]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Remove filter Mindscape · No Outer' }));
+    expect(container.querySelectorAll('.filter-summary')).toHaveLength(1);
+    expect(toggle).toHaveTextContent('Filters1');
+    const predicate = lastPredicate(mock);
+    expect(predicate({ ...makeThief('a', 'A'), weaponRarity: 3, mindscapeProgress: 2 })).toBe(true);
+
+    fireEvent.click(toggle);
+    expect(screen.getByRole('button', { name: 'No Outer' })).toHaveAttribute(
+      'aria-pressed',
+      'false',
+    );
+    expect(container.querySelector('.filter-summary')).toBeNull();
+  });
+
+  it('Weapon chips toggle independently (any facet) and AND together', () => {
+    const mock = vi.fn().mockReturnValue([]);
+    renderChips(mock);
+    fireEvent.click(screen.getByRole('button', { name: 'Sub-5★' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Under Lv 80' }));
+    expect(screen.getByRole('button', { name: 'Sub-5★' })).toHaveAttribute('aria-pressed', 'true');
+    expect(screen.getByRole('button', { name: 'Under Lv 80' })).toHaveAttribute(
+      'aria-pressed',
+      'true',
+    );
+    const predicate = lastPredicate(mock);
+    expect(predicate({ ...makeThief('a', 'A'), weaponRarity: 4, weaponLevel: 50 })).toBe(true);
+    expect(predicate({ ...makeThief('b', 'B'), weaponRarity: 5, weaponLevel: 50 })).toBe(false);
+    expect(predicate({ ...makeThief('c', 'C'), weaponRarity: 4, weaponLevel: 80 })).toBe(false);
   });
 
   // --- Projection stability (deferred eviction / reorder) ---
@@ -436,7 +683,7 @@ describe('P5xPage', () => {
     const { rerender, container } = renderWithProviders(
       <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: '🌹 Gated' }));
+    fireEvent.click(screen.getByRole('button', { name: '🌹 Rose-gated' }));
     expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
 
     // "Complete the gated skill": live data stops matching mid-edit
@@ -447,7 +694,7 @@ describe('P5xPage', () => {
 
     expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
     expect(container.querySelector('.game-card.is-held')).not.toBeNull();
-    expect(screen.getByText(/no longer matches 🌹 Gated/)).toBeInTheDocument();
+    expect(screen.getByText(/no longer matches Skills · 🌹 Rose-gated/)).toBeInTheDocument();
 
     // ✓ commit releases via the exit animation (fallback timer in jsdom)
     vi.useFakeTimers();
@@ -502,7 +749,7 @@ describe('P5xPage', () => {
     const { rerender, container } = renderWithProviders(
       <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: '⚔ <5★' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sub-5★' }));
     expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
 
     // "Upgrade to a 5★ weapon" mid-edit: live data stops matching
@@ -512,10 +759,10 @@ describe('P5xPage', () => {
     rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
 
     expect(container.querySelector('.game-card.is-held')).not.toBeNull();
-    expect(screen.getByText(/no longer matches ⚔ <5★/)).toBeInTheDocument();
+    expect(screen.getByText(/no longer matches Weapon · Sub-5★/)).toBeInTheDocument();
   });
 
-  it('holds a card that completes Outer Mindscape with the MS ✗ ghost tag until edit commit', () => {
+  it('a held card survives a disclosure toggle', () => {
     const session = createMockSession();
     const live = { current: [makeThief('ann', 'Ann Takamaki')] };
     const filter = projectionFilter(live);
@@ -523,7 +770,30 @@ describe('P5xPage', () => {
     const { rerender, container } = renderWithProviders(
       <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: 'MS ✗' }));
+    fireEvent.click(screen.getByRole('button', { name: 'No Outer' }));
+    fireEvent.click(screen.getByTitle('Edit'));
+    live.current = [{ ...makeThief('ann', 'Ann Takamaki'), mindscapeProgress: 1 }];
+    mockRoster(live, filter);
+    rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: /^Filters/ }));
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches Mindscape · No Outer/)).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: 'Remove filter Mindscape · No Outer' }),
+    ).toBeInTheDocument();
+  });
+
+  it('holds a card that completes Outer Mindscape with the Mindscape · No Outer ghost tag until edit commit', () => {
+    const session = createMockSession();
+    const live = { current: [makeThief('ann', 'Ann Takamaki')] };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'No Outer' }));
     expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
 
     // "Finish Outer" mid-edit: live data stops matching
@@ -533,7 +803,7 @@ describe('P5xPage', () => {
     rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
 
     expect(container.querySelector('.game-card.is-held')).not.toBeNull();
-    expect(screen.getByText(/no longer matches MS ✗/)).toBeInTheDocument();
+    expect(screen.getByText(/no longer matches Mindscape · No Outer/)).toBeInTheDocument();
 
     vi.useFakeTimers();
     try {
@@ -548,7 +818,7 @@ describe('P5xPage', () => {
     }
   });
 
-  it('holds a card that fills its fifth slot with the ◈ Rev <5 ghost tag until the editor closes', () => {
+  it('holds a card that fills its fifth slot with the Revelations · Open slots ghost tag until the editor closes', () => {
     const session = createMockSession();
     const live: { current: P5xTrackedThief[] } = {
       current: [
@@ -560,7 +830,7 @@ describe('P5xPage', () => {
     const { rerender, container } = renderWithProviders(
       <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
     );
-    fireEvent.click(screen.getByRole('button', { name: '◈ Rev <5' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open slots' }));
     expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
 
     // Open the editor, then "equip the fifth card": live data stops matching
@@ -570,9 +840,80 @@ describe('P5xPage', () => {
     rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
 
     expect(container.querySelector('.game-card.is-held')).not.toBeNull();
-    expect(screen.getByText(/no longer matches ◈ Rev <5/)).toBeInTheDocument();
+    expect(screen.getByText(/no longer matches Revelations · Open slots/)).toBeInTheDocument();
 
     // Editor close is the release point — the card plays its exit animation
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(document.querySelector('.close-btn')!);
+      expect(container.querySelector('.game-card.is-exiting')).not.toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(700);
+      });
+      expect(screen.queryByText('Ann Takamaki')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('holds a card that completes Inner Mindscape with the Mindscape · No Inner ghost tag until edit commit', () => {
+    const session = createMockSession();
+    const live = { current: [{ ...makeThief('ann', 'Ann Takamaki'), mindscapeProgress: 1 }] };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'No Inner' }));
+    expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
+
+    fireEvent.click(screen.getByTitle('Edit'));
+    live.current = [{ ...makeThief('ann', 'Ann Takamaki'), mindscapeProgress: 2 }];
+    mockRoster(live, filter);
+    rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches Mindscape · No Inner/)).toBeInTheDocument();
+
+    vi.useFakeTimers();
+    try {
+      fireEvent.click(screen.getByTitle('Done editing'));
+      expect(container.querySelector('.game-card.is-exiting')).not.toBeNull();
+      act(() => {
+        vi.advanceTimersByTime(700);
+      });
+      expect(screen.queryByText('Ann Takamaki')).not.toBeInTheDocument();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('holds a card that gains a Target Build with the Revelations · No build ghost tag until the editor closes', () => {
+    const session = createMockSession();
+    const live: { current: P5xTrackedThief[] } = { current: [makeThief('ann', 'Ann Takamaki')] };
+    const filter = projectionFilter(live);
+    mockRoster(live, filter);
+    const { rerender, container } = renderWithProviders(
+      <P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'No build' }));
+    expect(screen.getByText('Ann Takamaki')).toBeInTheDocument();
+
+    // Open the editor, then "save a Heavens set": live data stops matching
+    fireEvent.click(screen.getByTitle('Space'));
+    const base = makeThief('ann', 'Ann Takamaki');
+    live.current = [
+      {
+        ...base,
+        revelationPreferences: { ...base.revelationPreferences, heavensSetId: 'power' },
+      },
+    ];
+    mockRoster(live, filter);
+    rerender(<P5xPage session={session} isAuthLoading={false} onSignIn={vi.fn()} />);
+
+    expect(container.querySelector('.game-card.is-held')).not.toBeNull();
+    expect(screen.getByText(/no longer matches Revelations · No build/)).toBeInTheDocument();
+
     vi.useFakeTimers();
     try {
       fireEvent.click(document.querySelector('.close-btn')!);

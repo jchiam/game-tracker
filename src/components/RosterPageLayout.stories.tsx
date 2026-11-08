@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { fn } from 'storybook/test';
 import { RosterPageLayout } from './RosterPageLayout';
+import type { RosterViewFilters } from '@/hooks/useRosterView';
 import type { Session } from '@supabase/supabase-js';
 
 const meta = {
@@ -187,38 +188,123 @@ export const RosterActive: Story = {
   },
 };
 
-export const FilterChips: Story = {
-  args: {
-    ...baseArgs,
-    title: 'Persona 5: The Phantom X',
-    subtitle: 'Track your phantom thieves and build parties.',
-    filters: {
-      accent: 'var(--color-p5x-element-fire)',
+const p5xFilters: Omit<RosterViewFilters, 'open'> = {
+  accent: 'var(--color-p5x-element-fire)',
+  rows: [
+    {
+      key: 'weapon',
+      label: 'Weapon',
+      mode: 'any',
       chips: [
-        { key: 'rose', label: '🌹 Gated', active: true, title: 'Show all thieves', toggle: fn() },
         {
           key: 'weapon',
-          label: '⚔ <5★',
+          label: 'Sub-5★',
+          fullLabel: 'Weapon · Sub-5★',
           active: false,
           title: 'Show only thieves with a sub-5★ weapon',
           toggle: fn(),
         },
         {
-          key: 'mindscape',
-          label: 'MS ✗',
+          key: 'weaponLevel',
+          label: 'Under Lv 80',
+          fullLabel: 'Weapon · Under Lv 80',
           active: false,
-          title: 'Show only thieves without Outer Mindscape',
-          toggle: fn(),
-        },
-        {
-          key: 'revelations',
-          label: '◈ Rev <5',
-          active: false,
-          title: 'Show only thieves with open revelation slots',
+          title: 'Show only thieves with a weapon below Lv 80',
           toggle: fn(),
         },
       ],
     },
+    {
+      key: 'mindscape',
+      label: 'Mindscape',
+      mode: 'one',
+      chips: [
+        {
+          key: 'mindscapeOuter',
+          label: 'No Outer',
+          fullLabel: 'Mindscape · No Outer',
+          active: true,
+          title: 'Show all thieves',
+          toggle: fn(),
+        },
+        {
+          key: 'mindscapeInner',
+          label: 'No Inner',
+          fullLabel: 'Mindscape · No Inner',
+          active: false,
+          title: 'Show only thieves with Outer Mindscape done but Inner not',
+          toggle: fn(),
+        },
+      ],
+    },
+    {
+      key: 'revelations',
+      label: 'Revelations',
+      mode: 'any',
+      chips: [
+        {
+          key: 'revelations',
+          label: 'Open slots',
+          fullLabel: 'Revelations · Open slots',
+          active: false,
+          title: 'Show only thieves with open revelation slots',
+          toggle: fn(),
+        },
+        {
+          key: 'revelationPrefs',
+          label: 'No build',
+          fullLabel: 'Revelations · No build',
+          active: false,
+          title: 'Show only thieves with no revelation Target Build set',
+          toggle: fn(),
+        },
+      ],
+    },
+    {
+      key: 'skills',
+      label: 'Skills',
+      mode: 'one',
+      chips: [
+        {
+          key: 'skillsBase',
+          label: 'Under Lv 8',
+          fullLabel: 'Skills · Under Lv 8',
+          active: false,
+          title: 'Show only thieves whose skills are below the Lv8 incense cap',
+          toggle: fn(),
+        },
+        {
+          key: 'rose',
+          label: '🌹 Rose-gated',
+          fullLabel: 'Skills · 🌹 Rose-gated',
+          active: false,
+          title: 'Show only rose-gated thieves',
+          toggle: fn(),
+        },
+      ],
+    },
+  ],
+  collapsible: true,
+  toggleOpen: fn(),
+  activeCount: 1,
+  active: [{ key: 'mindscapeOuter', label: 'Mindscape · No Outer', remove: fn() }],
+};
+
+export const FilterChips: Story = {
+  args: {
+    ...baseArgs,
+    title: 'Persona 5: The Phantom X',
+    subtitle: 'Track your phantom thieves and build parties.',
+    filters: { ...p5xFilters, open: true },
+  },
+};
+
+export const FilterChipsCollapsed: Story = {
+  args: {
+    ...baseArgs,
+    title: 'Persona 5: The Phantom X',
+    subtitle: 'Track your phantom thieves and build parties.',
+    filters: { ...p5xFilters, open: false },
   },
 };
 

@@ -1,6 +1,12 @@
 import { describe, it, expect, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useRosterView, type RosterFilterChip, type RosterViewConfig } from '@/hooks/useRosterView';
+import {
+  useRosterView,
+  type RosterFilterChip,
+  type RosterFilterEntry,
+  type RosterFilterFacet,
+  type RosterViewConfig,
+} from '@/hooks/useRosterView';
 
 type SortKey = 'ALPHA' | 'LEVEL';
 
@@ -13,6 +19,17 @@ interface Ent {
 type Predicate = ((e: Ent) => boolean) | undefined;
 
 const ent = (id: string, name: string, level: number): Ent => ({ id, name, level });
+
+/** Flat chip list across every descriptor row — what the old `filters.chips` was. */
+const chipsOf = (filters: { rows: { chips: unknown[] }[] } | undefined) =>
+  (filters?.rows ?? []).flatMap((r) => r.chips) as {
+    key: string;
+    label: string;
+    fullLabel: string;
+    active: boolean;
+    title: string;
+    toggle: () => void;
+  }[];
 
 /**
  * Mirrors the real page-level filter adapter: project over `entities` when
@@ -83,7 +100,7 @@ function setup(overrides: Partial<RosterViewConfig<SortKey, Ent>> = {}) {
 function setupProjection(opts: {
   initial: Ent[];
   predicate?: (e: Ent) => boolean;
-  chips?: RosterFilterChip<Ent>[];
+  chips?: RosterFilterEntry<Ent>[];
 }) {
   const liveRef = { current: opts.initial };
   const filterRoster = makeFilter(liveRef, opts.predicate);
@@ -113,7 +130,11 @@ function setupProjection(opts: {
     utils.rerender({ tracked: liveRef.current, filterRoster: nextFilter });
   };
   const toggle = (key: string) =>
-    act(() => utils.result.current.filters!.chips.find((c) => c.key === key)!.toggle());
+    act(() =>
+      chipsOf(utils.result.current.filters)
+        .find((c) => c.key === key)!
+        .toggle(),
+    );
   return { ...utils, setLive, swapFilter, toggle };
 }
 
@@ -244,9 +265,14 @@ describe('useRosterView', () => {
       });
       const filters = result.current.filters!;
       expect(filters.accent).toBe('var(--color-r1999-accent)');
-      expect(filters.chips.map((c) => c.label)).toEqual(['💠 Resonating', '⚔ <5']);
-      expect(filters.chips.every((c) => !c.active)).toBe(true);
-      expect(filters.chips[0].title).toBe('Show only things in progress');
+      const chips = chipsOf(filters);
+      expect(chips.map((c) => c.label)).toEqual(['💠 Resonating', '⚔ <5']);
+      expect(chips.every((c) => !c.active)).toBe(true);
+      expect(chips[0].title).toBe('Show only things in progress');
+      // Bare chips coalesce into one unlabelled `any` row
+      expect(filters.rows).toHaveLength(1);
+      expect(filters.rows[0].label).toBeUndefined();
+      expect(filters.rows[0].mode).toBe('any');
     });
 
     it('defaults the accent to the brand colour', () => {
@@ -259,23 +285,23 @@ describe('useRosterView', () => {
       const { result } = setup({ filterRoster, filterChips: [inProgressChip] });
       expect(filterRoster).toHaveBeenLastCalledWith('', 'ALPHA', undefined, expect.any(Array));
 
-      act(() => result.current.filters!.chips[0].toggle());
+      act(() => chipsOf(result.current.filters)[0].toggle());
       const predicate = filterRoster.mock.calls.at(-1)![2] as (e: Ent) => boolean;
       expect(typeof predicate).toBe('function');
       expect(predicate(ent('a', 'A', 3))).toBe(true);
       expect(predicate(ent('b', 'B', 12))).toBe(false);
-      expect(result.current.filters!.chips[0].active).toBe(true);
+      expect(chipsOf(result.current.filters)[0].active).toBe(true);
 
-      act(() => result.current.filters!.chips[0].toggle());
+      act(() => chipsOf(result.current.filters)[0].toggle());
       expect(filterRoster).toHaveBeenLastCalledWith('', 'ALPHA', undefined, expect.any(Array));
-      expect(result.current.filters!.chips[0].active).toBe(false);
+      expect(chipsOf(result.current.filters)[0].active).toBe(false);
     });
 
     it('composes two active chips as a logical AND', () => {
       const filterRoster = vi.fn().mockReturnValue([]);
       const { result } = setup({ filterRoster, filterChips: [inProgressChip, lowLevelChip] });
-      act(() => result.current.filters!.chips[0].toggle());
-      act(() => result.current.filters!.chips[1].toggle());
+      act(() => chipsOf(result.current.filters)[0].toggle());
+      act(() => chipsOf(result.current.filters)[1].toggle());
       const predicate = filterRoster.mock.calls.at(-1)![2] as (e: Ent) => boolean;
       expect(predicate(ent('a', 'A', 3))).toBe(true); // <10 and <5
       expect(predicate(ent('b', 'B', 7))).toBe(false); // <10 but not <5
@@ -286,26 +312,26 @@ describe('useRosterView', () => {
       const { result } = setup({
         filterChips: [inProgressChip, { ...lowLevelChip, offTitle: 'Everything, please' }],
       });
-      act(() => result.current.filters!.chips[0].toggle());
-      act(() => result.current.filters!.chips[1].toggle());
-      expect(result.current.filters!.chips[0].title).toBe('Show all things');
-      expect(result.current.filters!.chips[1].title).toBe('Everything, please');
+      act(() => chipsOf(result.current.filters)[0].toggle());
+      act(() => chipsOf(result.current.filters)[1].toggle());
+      expect(chipsOf(result.current.filters)[0].title).toBe('Show all things');
+      expect(chipsOf(result.current.filters)[1].title).toBe('Everything, please');
     });
 
     it('single active chip uses its own no-match copy, or the generic copy without one', () => {
       const { result } = setup({ filterChips: [inProgressChip, lowLevelChip] });
-      act(() => result.current.filters!.chips[0].toggle());
+      act(() => chipsOf(result.current.filters)[0].toggle());
       expect(result.current.noMatchMessage).toBe('No things in progress.');
 
-      act(() => result.current.filters!.chips[0].toggle());
-      act(() => result.current.filters!.chips[1].toggle());
+      act(() => chipsOf(result.current.filters)[0].toggle());
+      act(() => chipsOf(result.current.filters)[1].toggle());
       expect(result.current.noMatchMessage).toBe('No things match the active filters.');
     });
 
     it('two or more active chips use the generic no-match copy', () => {
       const { result } = setup({ filterChips: [inProgressChip, lowLevelChip] });
-      act(() => result.current.filters!.chips[0].toggle());
-      act(() => result.current.filters!.chips[1].toggle());
+      act(() => chipsOf(result.current.filters)[0].toggle());
+      act(() => chipsOf(result.current.filters)[1].toggle());
       expect(result.current.noMatchMessage).toBe('No things match the active filters.');
     });
 
@@ -348,12 +374,251 @@ describe('useRosterView', () => {
           }),
         { initialProps: { tracked: liveRef.current } },
       );
-      act(() => result.current.filters!.chips[0].toggle());
+      act(() => chipsOf(result.current.filters)[0].toggle());
       liveRef.current = [ent('a', 'Alpha', 15)];
       rerender({ tracked: liveRef.current });
       // Still held — the rerender with a new chip array did not refresh bases
       expect(result.current.filteredRoster).toHaveLength(1);
       expect(result.current.projection.heldReason('a')).toBe('no longer matches 💠 Resonating');
+    });
+  });
+
+  describe('chip facets', () => {
+    const notStarted: RosterFilterChip<Ent> = {
+      key: 'ms0',
+      label: 'No Outer',
+      predicate: (e) => e.level === 0,
+      onTitle: 'Show only not started',
+      noMatch: 'None not started.',
+    };
+    const stuckAtOne: RosterFilterChip<Ent> = {
+      key: 'ms1',
+      label: 'No Inner',
+      predicate: (e) => e.level === 1,
+      onTitle: 'Show only stuck at one',
+      noMatch: 'None stuck at one.',
+    };
+    const mindscape: RosterFilterFacet<Ent> = {
+      key: 'mindscape',
+      label: 'Mindscape',
+      mode: 'one',
+      chips: [notStarted, stuckAtOne],
+    };
+    const weapon: RosterFilterFacet<Ent> = {
+      key: 'weapon',
+      label: 'Weapon',
+      mode: 'any',
+      chips: [
+        lowLevelChip,
+        { key: 'odd', label: 'Odd', predicate: (e) => e.level % 2 === 1, onTitle: 'Odd only' },
+      ],
+    };
+
+    it('emits one row per facet with its label and mode, chips in order', () => {
+      const { result } = setup({ filterChips: [weapon, mindscape] });
+      const rows = result.current.filters!.rows;
+      expect(rows.map((r) => [r.key, r.label, r.mode])).toEqual([
+        ['weapon', 'Weapon', 'any'],
+        ['mindscape', 'Mindscape', 'one'],
+      ]);
+      expect(rows[1].chips.map((c) => c.label)).toEqual(['No Outer', 'No Inner']);
+    });
+
+    it('coalesces bare chips around facets and drops the label of a single-chip facet', () => {
+      const lone: RosterFilterFacet<Ent> = { ...mindscape, key: 'lone', chips: [notStarted] };
+      const { result } = setup({
+        filterChips: [
+          inProgressChip,
+          lowLevelChip,
+          lone,
+          mindscape,
+          { ...inProgressChip, key: 'p2' },
+        ],
+      });
+      const rows = result.current.filters!.rows;
+      expect(rows.map((r) => [r.label, r.mode, r.chips.map((c) => c.key)])).toEqual([
+        [undefined, 'any', ['progress', 'low']],
+        [undefined, 'one', ['ms0']],
+        ['Mindscape', 'one', ['ms0', 'ms1']],
+        [undefined, 'any', ['p2']],
+      ]);
+    });
+
+    it('activating a sibling in a one facet swaps the active member in one projection change', () => {
+      const filterRoster = vi.fn().mockReturnValue([]);
+      const { result } = setup({ filterRoster, filterChips: [mindscape] });
+      const chips = () => chipsOf(result.current.filters);
+      act(() => chips()[0].toggle());
+      const callsBefore = filterRoster.mock.calls.length;
+      act(() => chips()[1].toggle());
+      expect(chips()[0].active).toBe(false);
+      expect(chips()[1].active).toBe(true);
+      // Every projection pass during the swap already sees the sibling alone
+      const swapCalls = filterRoster.mock.calls.slice(callsBefore);
+      expect(swapCalls.length).toBeGreaterThan(0);
+      for (const call of swapCalls) {
+        const predicate = call[2] as (e: Ent) => boolean;
+        expect(predicate(ent('a', 'A', 1))).toBe(true);
+        expect(predicate(ent('b', 'B', 0))).toBe(false);
+      }
+      expect(result.current.noMatchMessage).toBe('None stuck at one.');
+    });
+
+    it('clicking the active member of a one facet clears it', () => {
+      const filterRoster = vi.fn().mockReturnValue([]);
+      const { result } = setup({ filterRoster, filterChips: [mindscape] });
+      act(() => chipsOf(result.current.filters)[1].toggle());
+      act(() => chipsOf(result.current.filters)[1].toggle());
+      expect(chipsOf(result.current.filters).every((c) => !c.active)).toBe(true);
+      expect(filterRoster).toHaveBeenLastCalledWith('', 'ALPHA', undefined, expect.any(Array));
+    });
+
+    it('chips in an any facet toggle independently and AND together', () => {
+      const filterRoster = vi.fn().mockReturnValue([]);
+      const { result } = setup({ filterRoster, filterChips: [weapon] });
+      act(() => chipsOf(result.current.filters)[0].toggle());
+      act(() => chipsOf(result.current.filters)[1].toggle());
+      expect(chipsOf(result.current.filters).map((c) => c.active)).toEqual([true, true]);
+      const predicate = filterRoster.mock.calls.at(-1)![2] as (e: Ent) => boolean;
+      expect(predicate(ent('a', 'A', 3))).toBe(true); // <5 and odd
+      expect(predicate(ent('b', 'B', 4))).toBe(false); // <5 but even
+      expect(predicate(ent('c', 'C', 7))).toBe(false);
+    });
+
+    it('a one-facet member ANDs with a bare chip and never with its sibling', () => {
+      const filterRoster = vi.fn().mockReturnValue([]);
+      const { result } = setup({ filterRoster, filterChips: [lowLevelChip, mindscape] });
+      const chips = () => chipsOf(result.current.filters);
+      act(() => chips()[1].toggle()); // ms0
+      act(() => chips()[2].toggle()); // ms1 replaces ms0
+      act(() => chips()[0].toggle()); // low (<5)
+      const predicate = filterRoster.mock.calls.at(-1)![2] as (e: Ent) => boolean;
+      expect(predicate(ent('a', 'A', 1))).toBe(true); // ms1 and <5
+      expect(predicate(ent('b', 'B', 0))).toBe(false); // ms0 is no longer active
+      expect(predicate(ent('c', 'C', 7))).toBe(false);
+      expect(result.current.noMatchMessage).toBe('No things match the active filters.');
+    });
+
+    it('a facet swap is a projection change that refreshes held cards', () => {
+      const { result, setLive, toggle } = setupProjection({
+        initial: [ent('a', 'Alpha', 0), ent('b', 'Beta', 1)],
+        chips: [mindscape],
+      });
+      toggle('ms0');
+      expect(result.current.filteredRoster.map((e) => e.id)).toEqual(['a']);
+      act(() => setLive([ent('a', 'Alpha', 1), ent('b', 'Beta', 1)]));
+      expect(result.current.projection.heldReason('a')).toBe(
+        'no longer matches Mindscape · No Outer',
+      );
+      toggle('ms1');
+      expect(result.current.filteredRoster.map((e) => e.id)).toEqual(['a', 'b']);
+      expect(result.current.projection.heldReason('a')).toBeNull();
+    });
+
+    it('ghost tag omits the facet label for a bare chip and for a single-chip facet', () => {
+      const lone: RosterFilterFacet<Ent> = { ...mindscape, key: 'lone', chips: [notStarted] };
+      const { result, setLive, toggle } = setupProjection({
+        initial: [ent('a', 'Alpha', 0), ent('b', 'Beta', 5)],
+        chips: [lone, inProgressChip],
+      });
+      toggle('ms0');
+      act(() => setLive([ent('a', 'Alpha', 1), ent('b', 'Beta', 5)]));
+      expect(result.current.projection.heldReason('a')).toBe('no longer matches No Outer');
+      toggle('ms0');
+      toggle('progress');
+      act(() => setLive([ent('a', 'Alpha', 1), ent('b', 'Beta', 15)]));
+      expect(result.current.projection.heldReason('b')).toBe('no longer matches 💠 Resonating');
+    });
+  });
+
+  describe('collapsible filter block', () => {
+    const mindscape: RosterFilterFacet<Ent> = {
+      key: 'mindscape',
+      label: 'Mindscape',
+      mode: 'one',
+      chips: [
+        { key: 'ms0', label: 'No Outer', predicate: (e) => e.level === 0, onTitle: 'Outer' },
+        { key: 'ms1', label: 'No Inner', predicate: (e) => e.level === 1, onTitle: 'Inner' },
+      ],
+    };
+
+    it('is collapsible only with two or more rows', () => {
+      expect(
+        setup({ filterChips: [inProgressChip, lowLevelChip] }).result.current.filters!.collapsible,
+      ).toBe(false);
+      expect(
+        setup({ filterChips: [mindscape, inProgressChip] }).result.current.filters!.collapsible,
+      ).toBe(true);
+    });
+
+    it('starts open without matchMedia, and follows matchMedia when present', () => {
+      expect(setup({ filterChips: [mindscape, inProgressChip] }).result.current.filters!.open).toBe(
+        true,
+      );
+      const matchMedia = vi.fn().mockReturnValue({ matches: false });
+      vi.stubGlobal('matchMedia', matchMedia);
+      try {
+        expect(
+          setup({ filterChips: [mindscape, inProgressChip] }).result.current.filters!.open,
+        ).toBe(false);
+        expect(matchMedia).toHaveBeenCalledWith('(min-width: 600px)');
+        matchMedia.mockReturnValue({ matches: true });
+        expect(
+          setup({ filterChips: [mindscape, inProgressChip] }).result.current.filters!.open,
+        ).toBe(true);
+      } finally {
+        vi.unstubAllGlobals();
+      }
+    });
+
+    it('toggleOpen flips open without re-projecting or releasing a held card', () => {
+      const { result, setLive, toggle } = setupProjection({
+        initial: [ent('a', 'Alpha', 0), ent('b', 'Beta', 5)],
+        chips: [mindscape, inProgressChip],
+      });
+      toggle('ms0');
+      act(() => setLive([ent('a', 'Alpha', 1), ent('b', 'Beta', 5)]));
+      expect(result.current.projection.heldReason('a')).toBe(
+        'no longer matches Mindscape · No Outer',
+      );
+      act(() => result.current.filters!.toggleOpen());
+      expect(result.current.filters!.open).toBe(false);
+      expect(result.current.filteredRoster.map((e) => e.id)).toEqual(['a']);
+      expect(result.current.projection.heldReason('a')).toBe(
+        'no longer matches Mindscape · No Outer',
+      );
+      act(() => result.current.filters!.toggleOpen());
+      expect(result.current.filters!.open).toBe(true);
+    });
+
+    it('toggleOpen does not call the filter function again', () => {
+      const filterRoster = vi.fn().mockReturnValue([]);
+      const { result } = setup({ filterRoster, filterChips: [mindscape, inProgressChip] });
+      const calls = filterRoster.mock.calls.length;
+      act(() => result.current.filters!.toggleOpen());
+      expect(filterRoster.mock.calls.length).toBe(calls);
+    });
+
+    it('summarises active chips in declaration order with facet-composed labels, and remove clears one', () => {
+      const { result } = setup({ filterChips: [inProgressChip, mindscape] });
+      const chips = () => chipsOf(result.current.filters);
+      expect(result.current.filters!.activeCount).toBe(0);
+      expect(result.current.filters!.active).toEqual([]);
+      act(() => chips()[2].toggle()); // ms1
+      act(() => chips()[0].toggle()); // progress
+      expect(result.current.filters!.activeCount).toBe(2);
+      expect(result.current.filters!.active.map((a) => a.label)).toEqual([
+        '💠 Resonating',
+        'Mindscape · No Inner',
+      ]);
+      expect(chips().map((c) => c.fullLabel)).toEqual([
+        '💠 Resonating',
+        'Mindscape · No Outer',
+        'Mindscape · No Inner',
+      ]);
+      act(() => result.current.filters!.active[1].remove());
+      expect(result.current.filters!.active.map((a) => a.label)).toEqual(['💠 Resonating']);
+      expect(chips()[2].active).toBe(false);
     });
   });
 
