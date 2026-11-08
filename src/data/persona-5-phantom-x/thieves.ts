@@ -1,4 +1,4 @@
-// Auto-generated from Prydwen (prydwen.gg/persona-5x) — do not edit manually.
+// Auto-generated from Prydwen (prydwen.gg/persona-5x) plus the hand-curated overlay scripts/seeds/p5x-thieves.json — do not edit manually.
 // Run `node scripts/update-p5x-data.mjs` or trigger the GitHub Actions workflow to update.
 
 export interface P5xThief {
@@ -163,6 +163,16 @@ export const ALL_THIEVES: P5xThief[] = [
     role: 'Debuffer',
     element: 'Curse',
     imageUrl: '/assets/persona-5-phantom-x/thieves/koromaru.webp',
+  },
+  {
+    id: 'kotone-shiomi',
+    name: 'Kotone Shiomi',
+    codename: 'Kotone',
+    personaName: 'Orpheus',
+    rarity: 5,
+    role: 'Buffer',
+    element: 'Fire',
+    imageUrl: '/assets/persona-5-phantom-x/thieves/kotone-shiomi.webp',
   },
   {
     id: 'kumi-katayama',

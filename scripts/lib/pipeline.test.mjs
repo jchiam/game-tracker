@@ -12,9 +12,110 @@ import {
   esc,
   jsStr,
   diffByKey,
+  applyOverlay,
+  validateOverlaySeed,
   formatDiff,
   generatedHeader,
 } from './pipeline.mjs';
+
+describe('applyOverlay', () => {
+  const key = (x) => x.id;
+
+  it('appends overlay entries the fetched catalog lacks, in seed order after fetched order', () => {
+    const fetched = [{ id: 'b' }, { id: 'a' }];
+    const overlay = [{ id: 'z' }, { id: 'y' }];
+    const { entries, shadowed } = applyOverlay(fetched, overlay, key);
+    expect(entries.map(key)).toEqual(['b', 'a', 'z', 'y']);
+    expect(shadowed).toEqual([]);
+  });
+
+  it('drops an overlay entry whose key the source now carries and reports it as shadowed', () => {
+    const fetched = [{ id: 'a', name: 'Upstream A' }];
+    const overlay = [
+      { id: 'a', name: 'Seed A' },
+      { id: 'b', name: 'Seed B' },
+    ];
+    const { entries, shadowed } = applyOverlay(fetched, overlay, key);
+    expect(entries).toEqual([
+      { id: 'a', name: 'Upstream A' },
+      { id: 'b', name: 'Seed B' },
+    ]);
+    expect(shadowed).toEqual([{ id: 'a', name: 'Seed A' }]);
+  });
+
+  it('returns the fetched catalog unchanged for an empty overlay', () => {
+    const fetched = [{ id: 'a' }];
+    expect(applyOverlay(fetched, [], key)).toEqual({ entries: [{ id: 'a' }], shadowed: [] });
+  });
+});
+
+describe('validateOverlaySeed', () => {
+  const opts = { label: 'seeds/x.json', required: ['id', 'name', 'rarity'], rarities: [4, 5] };
+  const entry = (overrides = {}) => ({
+    id: 'kotone-shiomi',
+    name: 'Kotone Shiomi',
+    rarity: 5,
+    imageSource: 'https://example.test/kotone.webp',
+    ...overrides,
+  });
+
+  it('returns a valid seed unchanged, accepting a null imageSource', () => {
+    const seed = [entry(), entry({ id: 'other-unit', imageSource: null })];
+    expect(validateOverlaySeed(seed, opts)).toBe(seed);
+  });
+
+  it('accepts an empty seed', () => {
+    expect(validateOverlaySeed([], opts)).toEqual([]);
+  });
+
+  it('rejects a seed that is not an array', () => {
+    expect(() => validateOverlaySeed({ id: 'x' }, opts)).toThrow(
+      'seeds/x.json: seed must be a JSON array',
+    );
+  });
+
+  it('rejects a missing or empty required field, naming the entry and field', () => {
+    expect(() => validateOverlaySeed([entry({ name: '' })], opts)).toThrow(
+      'seeds/x.json entry 0 (kotone-shiomi): missing required field "name"',
+    );
+    expect(() => validateOverlaySeed([entry(), { name: 'No Id' }], opts)).toThrow(
+      'seeds/x.json entry 1: missing required field "id"',
+    );
+  });
+
+  it('rejects an id that is not a kebab-case slug', () => {
+    expect(() => validateOverlaySeed([entry({ id: 'Kotone_Shiomi' })], opts)).toThrow(
+      /entry 0 \(Kotone_Shiomi\): id must be a kebab-case slug/,
+    );
+  });
+
+  it('rejects a duplicate id', () => {
+    expect(() => validateOverlaySeed([entry(), entry()], opts)).toThrow(
+      'seeds/x.json entry 1 (kotone-shiomi): duplicate id',
+    );
+  });
+
+  it('rejects a rarity outside the allowed set', () => {
+    expect(() => validateOverlaySeed([entry({ rarity: 3 })], opts)).toThrow(
+      'seeds/x.json entry 0 (kotone-shiomi): rarity must be 4 or 5',
+    );
+  });
+
+  it('skips the rarity check when no rarities are given', () => {
+    const { rarities: _unused, ...noRarities } = opts;
+    expect(() => validateOverlaySeed([entry({ rarity: 3 })], noRarities)).not.toThrow();
+  });
+
+  it('rejects an imageSource that is absent, http, or not a URL', () => {
+    const msg = 'seeds/x.json entry 0 (kotone-shiomi): imageSource must be an https URL or null';
+    const { imageSource: _unused, ...noImage } = entry();
+    expect(() => validateOverlaySeed([noImage], opts)).toThrow(msg);
+    expect(() =>
+      validateOverlaySeed([entry({ imageSource: 'http://x.test/a.webp' })], opts),
+    ).toThrow(msg);
+    expect(() => validateOverlaySeed([entry({ imageSource: 'kotone.webp' })], opts)).toThrow(msg);
+  });
+});
 
 describe('fetchJSON', () => {
   afterEach(() => {

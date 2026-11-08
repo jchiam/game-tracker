@@ -244,6 +244,55 @@ export function diffByKey(existing, next, keyFn) {
   };
 }
 
+/**
+ * Merge a hand-curated overlay (seed entries the upstream source lacks or lags on) into a fetched
+ * catalog. Upstream wins: an overlay entry whose key already exists in `fetched` is dropped and
+ * returned in `shadowed` so the script can tell the maintainer to delete it from the seed. Entries
+ * come back in fetched order followed by the surviving overlay entries in seed order.
+ */
+export function applyOverlay(fetched, overlay, keyFn) {
+  const fetchedKeys = new Set(fetched.map(keyFn));
+  const shadowed = overlay.filter((item) => fetchedKeys.has(keyFn(item)));
+  const added = overlay.filter((item) => !fetchedKeys.has(keyFn(item)));
+  return { entries: [...fetched, ...added], shadowed };
+}
+
+const KEBAB_SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+
+/**
+ * Validate a hand-curated overlay seed (the input to applyOverlay) before any codegen runs. The
+ * seed must be a JSON array; every entry must carry each `required` field, a kebab-case `id` unique
+ * within the seed (the slug the upstream source will assign, so tracked rows survive the hand-off),
+ * a `rarity` from `rarities` when given, and an `imageSource` that is an https URL or `null`.
+ * Throws on the first problem, naming the seed and entry; returns the seed unchanged otherwise.
+ */
+export function validateOverlaySeed(seed, { label, required, rarities }) {
+  if (!Array.isArray(seed)) throw new Error(`${label}: seed must be a JSON array`);
+  const present = (v) => v !== undefined && v !== null && v !== '';
+  const ids = new Set();
+  seed.forEach((entry, i) => {
+    const where = `${label} entry ${i}${entry?.id ? ` (${entry.id})` : ''}`;
+    for (const key of required) {
+      if (!present(entry?.[key])) throw new Error(`${where}: missing required field "${key}"`);
+    }
+    if (!KEBAB_SLUG.test(entry.id)) {
+      throw new Error(`${where}: id must be a kebab-case slug (the slug the source will assign)`);
+    }
+    if (ids.has(entry.id)) throw new Error(`${where}: duplicate id`);
+    ids.add(entry.id);
+    if (rarities && !rarities.includes(entry.rarity)) {
+      throw new Error(`${where}: rarity must be ${rarities.join(' or ')}`);
+    }
+    if (
+      !('imageSource' in entry) ||
+      (entry.imageSource !== null && !/^https:\/\/\S+$/.test(entry.imageSource))
+    ) {
+      throw new Error(`${where}: imageSource must be an https URL or null`);
+    }
+  });
+  return seed;
+}
+
 export function formatDiff(added, removed) {
   return added.length || removed.length
     ? `+${added.length} added, -${removed.length} removed`

@@ -256,6 +256,14 @@ The Digimon product catalog is **curated, not fetched** — `scripts/seeds/dgm-p
 - **Progress guides** (`scripts/seeds/dgm-guides/<productId>.json`) describe a product's in-game checklist: the `overall` formula and tracks → groups → items with `hint` / `requires`. Written once — the software never updates — and attached to the product by the same script, which rejects a guide whose file name matches no product. Item ids are `{trackId}:{slug}`; keep `requires` acyclic.
 - Scope is the modern era (2010 onward); the 1997–2000s originals are out. Fix products in the seed, then regenerate — never in `src/data/digimon/`.
 
+### Catalog Data Sources (`p5x`)
+
+Thieves are fetched from Prydwen's CloudFront origin, which can lag the game by months (collab units, units added after the origin's last build). `scripts/seeds/p5x-thieves.json` is the **overlay seed** for thieves Prydwen lacks: each entry carries the full `P5xThief` shape plus `imageSource` (an https URL for the card art, or `null` while none is sourced) and a free-text `note`. The script validates the seed, merges it after the fetched list, and uploads seed images through the same `ensureAsset` path. Rules:
+
+- A seed entry's `id` is the slug Prydwen will give the unit (its `www.prydwen.gg/persona-5x/characters/<slug>` path), so tracked rows keyed on it survive the hand-off. Upstream wins on collision: once the slug appears in the fetched list, the run warns and the seed entry is deleted by hand.
+- `role` and `element` use Prydwen's job vocabulary as already present in `thieves.ts` (`Single-target`, `Buffer`, `Navigator`, …), not in-game job names.
+- Fix thieves in the seed, then regenerate — never in `src/data/persona-5-phantom-x/`.
+
 ### Testing Conventions
 
 - Tests colocated next to source: `Foo.tsx` → `Foo.test.tsx`. E2e tests in `tests/`.

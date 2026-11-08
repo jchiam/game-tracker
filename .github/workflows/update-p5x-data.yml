@@ -52,6 +52,6 @@ jobs:
           git push --no-verify origin "$BRANCH"
           gh pr create \
             --title "chore: update P5X thief data" \
-            --body "Automated weekly update of the P5X Thief catalog and portrait assets from [Prydwen](https://www.prydwen.gg/persona-5x)." \
+            --body "Automated weekly update of the P5X Thief catalog and portrait assets from [Prydwen](https://www.prydwen.gg/persona-5x), plus the hand-curated overlay in \`scripts/seeds/p5x-thieves.json\`." \
             --base main \
             --head "$BRANCH"
