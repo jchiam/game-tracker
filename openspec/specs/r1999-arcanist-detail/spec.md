@@ -116,130 +116,154 @@ The system SHALL search the R1999 roster using Fuse.js with keys: name, afflatus
 - **WHEN** user searches for an afflatus name (e.g. "Star")
 - **THEN** arcanists matching that afflatus are returned via fuzzy search
 
-### Requirement: Resonance-gate filter predicate
+### Requirement: R1999 roster filter facets
 
-The R1999 `getFilteredRoster` SHALL accept an optional filter predicate
-`(arcanist: R1999TrackedArcanist) => boolean`, applied before search and sort,
-conforming to the shared `roster-predicate-filter` signature. When provided, only
-arcanists for which the predicate returns `true` SHALL appear in results.
+The R1999 roster toolbar SHALL declare three filter facets holding seven chips
+through the shared `roster-predicate-filter` pattern (off by default,
+page-local, composing with search and sort), rendered as a matrix in this
+order — the card's Resonance → Euphoria → Psychube section sequence:
 
-The roster page SHALL supply a resonance-gate predicate defined as
-`resonanceLevel > 0 && resonanceLevel < 15` — arcanists that have started
-resonance but are not yet at the maximum of 15.
+| facet     | mode  | chip            | keeps arcanists where                                   | single-chip no-match copy                            |
+| --------- | ----- | --------------- | ------------------------------------------------------- | ---------------------------------------------------- |
+| Resonance | `one` | `Not started`   | `resonanceLevel === 0`                                  | `No arcanists without resonance started.`            |
+| Resonance | `one` | `In progress`   | `resonanceLevel > 0 && resonanceLevel < 15`             | `No arcanists with resonance in progress.`           |
+| Euphoria  | `one` | `Not started`   | `hasEuphoria && euphoriaStage === 0`                    | `No Euphoria arcanists without Euphoria started.`    |
+| Euphoria  | `one` | `In progress`   | `hasEuphoria && euphoriaStage > 0 && euphoriaStage < 4` | `No Euphoria arcanists with Euphoria in progress.`   |
+| Psychube  | `any` | `None equipped` | `psychubeName === null` — **exclusive**                 | `No arcanists without a psychube.`                   |
+| Psychube  | `any` | `Under Lv 60`   | `psychubeName !== null && psychubeLevel < 60`           | `No arcanists with a psychube below Lv 60.`          |
+| Psychube  | `any` | `Under A5`      | `psychubeName !== null && psychubeAmplification < 5`    | `No arcanists with un-maxed psychube amplification.` |
 
-#### Scenario: Predicate excludes un-started arcanists
+Every chip label is a noun phrase naming the state or the missing
+progression; no chip label carries a dimension prefix, a glyph, a `<`
+threshold, or a `✗`. Resonance and Euphoria are `one` mode: within each at
+most one chip is active and the pair renders as one joined segment. Psychube
+is `any` mode with `None equipped` declared exclusive: a level or
+amplification question presumes an equipped psychube, so activating
+`None equipped` deactivates `Under Lv 60` and `Under A5`, activating either
+of those deactivates `None equipped`, and the two threshold chips intersect
+freely; a divider separates `None equipped` from them in the row. `hasEuphoria` is the catalog flag carried on the tracked
+arcanist; arcanists without the Euphoria system SHALL match neither Euphoria
+chip. Chips across facets compose as a logical AND; when two or more chips
+are active and nothing matches, the no-match copy is the generic
+`No arcanists match the active filters.` Portrait level (dupe-bound) and
+arcanist level (covered by the `Lv` sort) have no chip.
 
-- **WHEN** the resonance gate is active and an arcanist has `resonanceLevel` of 0
-- **THEN** that arcanist is excluded from the roster results
+#### Scenario: Three facet rows render in card order
 
-#### Scenario: Predicate excludes maxed arcanists
+- **WHEN** the R1999 roster view renders with tracked arcanists
+- **THEN** the filter block shows three labelled group rows, top to bottom "Resonance", "Euphoria", "Psychube", holding in order `Not started`, `In progress`; `Not started`, `In progress`; `None equipped`, `Under Lv 60`, `Under A5`
 
-- **WHEN** the resonance gate is active and an arcanist has `resonanceLevel` of 15
-- **THEN** that arcanist is excluded from the roster results
+#### Scenario: Resonance and Euphoria render as joined segments
 
-#### Scenario: Predicate includes in-progress arcanists
+- **WHEN** the filter block renders
+- **THEN** the Resonance and Euphoria chip pairs each render as one joined segmented pill, while the Psychube chips render as spaced pills with a vertical divider between `None equipped` and `Under Lv 60`
 
-- **WHEN** the resonance gate is active and an arcanist has `resonanceLevel` between 1 and 14 inclusive
-- **THEN** that arcanist is included in the roster results
+#### Scenario: No chips without tracked arcanists
 
-#### Scenario: No predicate passes all
+- **WHEN** no arcanists are tracked
+- **THEN** no filter block, facet row, or chip is rendered
 
-- **WHEN** the resonance gate is inactive (no predicate provided)
-- **THEN** `getFilteredRoster` returns all arcanists matching the search term and sort
+#### Scenario: Resonance not-started chip narrows roster
 
-### Requirement: Resonance-gate filter chip
+- **WHEN** user activates Resonance `Not started`
+- **THEN** only arcanists with `resonanceLevel === 0` are shown; arcanists at 1–15 are excluded
 
-The R1999 roster toolbar SHALL render a togglable resonance-gate filter chip in
-the filter row (`.filter-row` / `.filter-chip`), per the `roster-predicate-filter`
-pattern. The chip SHALL be off by default, page-local (not persisted to DB or
-URL), and compose with search and sort as an intersection. When the gate is
-active and no arcanist matches, the roster SHALL show a gate-specific empty
-message distinct from the default no-match message.
+#### Scenario: Resonance in-progress chip narrows roster
 
-#### Scenario: Chip toggles gate on
+- **WHEN** user activates Resonance `In progress`
+- **THEN** only arcanists with `resonanceLevel` between 1 and 14 inclusive are shown; arcanists at 0 or 15 are excluded
 
-- **WHEN** the user clicks the inactive resonance-gate chip
-- **THEN** the resonance-gate predicate is passed to `getFilteredRoster` and the roster narrows to in-progress arcanists
+#### Scenario: Resonance chips are exclusive
 
-#### Scenario: Chip toggles gate off
+- **WHEN** Resonance `Not started` is active and user activates Resonance `In progress`
+- **THEN** `In progress` becomes active and `Not started` becomes inactive in the same update, and the roster shows only in-progress arcanists
 
-- **WHEN** the user clicks the active resonance-gate chip
-- **THEN** the predicate is removed and the full roster (matching search and sort) is shown
+#### Scenario: Clicking the active Resonance chip clears the facet
 
-#### Scenario: Gate composes with search
+- **WHEN** Resonance `In progress` is active and user clicks it again
+- **THEN** no Resonance chip is active and no resonance predicate is applied
 
-- **WHEN** the resonance gate is active and the user types a search term
-- **THEN** results are the intersection — arcanists matching BOTH the gate predicate AND the search term
+#### Scenario: Euphoria not-started chip narrows roster
 
-#### Scenario: Gate resets on navigation
+- **WHEN** user activates Euphoria `Not started`
+- **THEN** only arcanists with `hasEuphoria` true and `euphoriaStage === 0` are shown
+
+#### Scenario: Euphoria in-progress chip narrows roster
+
+- **WHEN** user activates Euphoria `In progress`
+- **THEN** only arcanists with `hasEuphoria` true and `euphoriaStage` between 1 and 3 inclusive are shown; stage 4 is excluded
+
+#### Scenario: Euphoria chips exclude arcanists without the Euphoria system
+
+- **WHEN** either Euphoria chip is active and an arcanist has `hasEuphoria` false
+- **THEN** that arcanist is excluded regardless of its `euphoriaStage`
+
+#### Scenario: Euphoria chips are exclusive
+
+- **WHEN** Euphoria `In progress` is active and user activates Euphoria `Not started`
+- **THEN** `Not started` becomes active and `In progress` becomes inactive in the same update
+
+#### Scenario: Psychube none-equipped chip narrows roster
+
+- **WHEN** user activates `None equipped`
+- **THEN** only arcanists with `psychubeName === null` are shown
+
+#### Scenario: Psychube level chip narrows roster
+
+- **WHEN** user activates `Under Lv 60`
+- **THEN** only arcanists with a psychube equipped and `psychubeLevel < 60` are shown; arcanists with no psychube or a Lv 60 psychube are excluded
+
+#### Scenario: Psychube amplification chip narrows roster
+
+- **WHEN** user activates `Under A5`
+- **THEN** only arcanists with a psychube equipped and `psychubeAmplification < 5` are shown; arcanists with no psychube or an A5 psychube are excluded
+
+#### Scenario: Psychube chips toggle independently
+
+- **WHEN** user activates `Under Lv 60` and then `Under A5`
+- **THEN** both are active and only arcanists with an equipped psychube below Lv 60 AND below A5 are shown
+
+#### Scenario: None equipped is exclusive with the threshold chips
+
+- **WHEN** `Under Lv 60` and `Under A5` are active and user activates `None equipped`
+- **THEN** `None equipped` is the only active Psychube chip and the predicate keeps only arcanists without a psychube
+
+#### Scenario: A threshold chip clears None equipped
+
+- **WHEN** `None equipped` is active and user activates `Under A5`
+- **THEN** `Under A5` is active, `None equipped` is inactive, and the predicate keeps only equipped psychubes below A5
+
+#### Scenario: Chips across facets intersect
+
+- **WHEN** Resonance `In progress` and `Under A5` are both active
+- **THEN** only arcanists satisfying both predicates are shown
+
+#### Scenario: Chips compose with search and sort
+
+- **WHEN** a chip is active, the user types a search term, and the sort is LEVEL
+- **THEN** `getFilteredRoster` receives the term, `LEVEL`, and the composed predicate; deactivating the chip removes the predicate and leaves the term and sort in place
+
+#### Scenario: Chip state resets on navigation
 
 - **WHEN** the user navigates away from the R1999 roster page and returns
-- **THEN** the resonance-gate chip is inactive (off)
+- **THEN** every chip is inactive
 
-#### Scenario: Gate-specific empty message
+#### Scenario: Single-chip no-match copy
 
-- **WHEN** the resonance gate is active and no arcanist has resonance in progress
-- **THEN** the roster shows a gate-specific empty message rather than the default no-match message
+- **WHEN** exactly one chip is active and no arcanist matches
+- **THEN** the roster shows that chip's no-match copy from the table above
 
-### Requirement: Gluttony-gate filter predicate
+#### Scenario: Multi-chip no-match copy
 
-The R1999 roster page SHALL supply a gluttony-gate predicate, applied through the existing
-`getFilteredRoster` optional-predicate seam (`roster-predicate-filter` signature), defined as
-`psychubeName !== null && psychubeAmplification < 5` — arcanists that have a psychube equipped
-whose amplification has not yet reached the maximum of A5. Arcanists with no psychube equipped
-SHALL be excluded.
+- **WHEN** two or more chips are active and no arcanist matches
+- **THEN** the roster shows `No arcanists match the active filters.`
 
-#### Scenario: Predicate excludes arcanists with no psychube
+#### Scenario: Collapsible block with facet-labelled summary pills
 
-- **WHEN** the gluttony gate is active and an arcanist has `psychubeName` of `null`
-- **THEN** that arcanist is excluded from the roster results
+- **WHEN** the block is collapsed while Resonance `In progress` and `Under A5` are active
+- **THEN** the `Filters` header shows the count 2 and the summary pills read `Resonance · In progress` and `Psychube · Under A5`; removing the Psychube pill clears `Under A5` and leaves `In progress` active
 
-#### Scenario: Predicate excludes fully-amplified arcanists
+#### Scenario: Held card ghost tag composes the facet label
 
-- **WHEN** the gluttony gate is active and an arcanist has a psychube equipped with `psychubeAmplification` of 5
-- **THEN** that arcanist is excluded from the roster results
-
-#### Scenario: Predicate includes equipped, not-maxed arcanists
-
-- **WHEN** the gluttony gate is active and an arcanist has a psychube equipped with `psychubeAmplification` between 1 and 4 inclusive
-- **THEN** that arcanist is included in the roster results
-
-### Requirement: Gluttony-gate filter chip
-
-The R1999 roster toolbar SHALL render a togglable gluttony-gate filter chip in the filter row
-(`.filter-row` / `.filter-chip`), per the `roster-predicate-filter` pattern, alongside the
-resonance-gate chip. The chip SHALL be off by default, page-local (not persisted to DB or URL),
-and compose with search, sort, and any other active gate as an intersection — an arcanist appears
-only if it satisfies every active gate predicate AND the search term. When at least one gate is
-active and no arcanist matches, the roster SHALL show a gate-aware empty message distinct from the
-default no-match message.
-
-#### Scenario: Chip toggles gate on
-
-- **WHEN** the user clicks the inactive gluttony-gate chip
-- **THEN** the gluttony-gate predicate is applied and the roster narrows to arcanists with a psychube equipped below A5 amplification
-
-#### Scenario: Chip toggles gate off
-
-- **WHEN** the user clicks the active gluttony-gate chip
-- **THEN** the gluttony predicate is removed and the roster (matching search, sort, and any other active gate) is shown
-
-#### Scenario: Gluttony gate composes with the resonance gate
-
-- **WHEN** both the resonance gate and the gluttony gate are active
-- **THEN** results are the intersection — only arcanists that satisfy BOTH the resonance predicate AND the gluttony predicate appear
-
-#### Scenario: Gluttony gate composes with search
-
-- **WHEN** the gluttony gate is active and the user types a search term
-- **THEN** results are the intersection — arcanists matching BOTH the gluttony predicate AND the search term
-
-#### Scenario: Gate resets on navigation
-
-- **WHEN** the user navigates away from the R1999 roster page and returns
-- **THEN** the gluttony-gate chip is inactive (off)
-
-#### Scenario: Gate-aware empty message
-
-- **WHEN** at least one gate is active and no arcanist matches the active filters
-- **THEN** the roster shows a gate-aware empty message rather than the default no-match message
+- **WHEN** Resonance `In progress` is active and an arcanist's resonance is edited to 15 mid-edit
+- **THEN** the card is held with the tag `no longer matches Resonance · In progress` until the edit commits

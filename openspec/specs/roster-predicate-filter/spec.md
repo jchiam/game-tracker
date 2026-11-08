@@ -212,13 +212,17 @@ message when it declares none; two or more active chips — the generic message
 
 A game MAY nest chips under a facet — a declared dimension with a stable key, a
 label, a mode, and an ordered chip list. Mode `any` chips SHALL toggle
-independently. Mode `one` chips SHALL be radio-exclusive: activating one
-member SHALL deactivate every other active member of that facet in the same
-toggle, and activating the already-active member SHALL deactivate it, leaving
-the facet with no active member. A chip toggle that changes facet membership
-SHALL still be a single projection change (one fresh active-key set). Chips in
-different facets, chips in an `any` facet, and bare chips SHALL continue to
-compose as a logical AND.
+independently, except that a chip MAY be declared `exclusive`: activating an
+exclusive chip SHALL deactivate every other active member of its facet, and
+activating any member SHALL deactivate every active exclusive member, while
+the non-exclusive members continue to intersect. The `exclusive` flag SHALL
+have no effect on a bare chip or inside a `one` facet. Mode `one` chips SHALL
+be radio-exclusive: activating one member SHALL deactivate every other active
+member of that facet in the same toggle, and activating the already-active
+member SHALL deactivate it, leaving the facet with no active member. A chip
+toggle that changes facet membership SHALL still be a single projection change
+(one fresh active-key set). Chips in different facets, non-exclusive chips in
+an `any` facet, and bare chips SHALL continue to compose as a logical AND.
 
 The layout SHALL render the filter row as a matrix of rows with an aligned
 label column: one row per facet, and one unlabelled row per run of
@@ -228,7 +232,9 @@ only when the facet holds two or more chips; a facet with one chip renders as
 an unlabelled row. A `one` facet's chips SHALL render as a joined segmented
 pill — members touch, share one border between them, and only the outer ends
 carry the pill radius. An `any` facet's chips and bare chips SHALL render as
-spaced pills that wrap within the row's chips cell. Every filter chip SHALL
+spaced pills that wrap within the row's chips cell; in an `any` facet a
+vertical divider SHALL stand between the exclusive chips and the non-exclusive
+chips. Every filter chip SHALL
 expose `aria-pressed` reflecting its active state. The held-card ghost tag for
 a chip in a labelled facet SHALL read `no longer matches {facet label} · {chip
 label}`.
@@ -247,6 +253,21 @@ label}`.
 
 - **WHEN** chips C and D share an `any` facet and the user clicks C then D
 - **THEN** both are active and the composed predicate ANDs C and D
+
+#### Scenario: Exclusive chip clears its any-facet siblings
+
+- **WHEN** chips N (exclusive), C, and D share an `any` facet, C and D are active, and the user clicks N
+- **THEN** N is active, C and D are inactive, and the composed predicate contains N alone, in one projection change
+
+#### Scenario: Any sibling clears the exclusive chip
+
+- **WHEN** chips N (exclusive), C, and D share an `any` facet, N is active, and the user clicks C
+- **THEN** C is active and N is inactive; clicking D then leaves C and D both active and ANDed
+
+#### Scenario: Exclusive flag is inert outside any facets
+
+- **WHEN** a bare chip or a `one`-facet member is declared `exclusive`
+- **THEN** its toggle behaviour and rendering are those of an ordinary bare chip or `one` member
 
 #### Scenario: Facets compose as AND with other chips
 
@@ -267,6 +288,11 @@ label}`.
 
 - **WHEN** a `one` facet holds chips A and B
 - **THEN** A's leading edge and B's trailing edge are rounded, the shared edge is square, and the two buttons touch
+
+#### Scenario: Exclusive chip is divided from its siblings
+
+- **WHEN** an `any` facet holds exclusive chip N followed by chips C and D
+- **THEN** the row renders N, a vertical divider, then C and D as spaced pills; the divider is not a button
 
 #### Scenario: Single-chip facet renders without a label
 
@@ -295,8 +321,8 @@ label}`.
 
 #### Scenario: Ghost tag for a bare chip is unchanged
 
-- **WHEN** bare chip "💠 Resonating" is active and a rendered entity's live data stops matching it
-- **THEN** the held card's ghost tag reads `no longer matches 💠 Resonating`
+- **WHEN** bare chip "🐹 Gated" is active and a rendered entity's live data stops matching it
+- **THEN** the held card's ghost tag reads `no longer matches 🐹 Gated`
 
 ### Requirement: Collapsible filter block
 
@@ -337,8 +363,8 @@ render no disclosure header and SHALL always show its row.
 
 #### Scenario: Collapsed block summarises active chips
 
-- **WHEN** the block is collapsed and "No Outer" (facet "Mindscape") and bare chip "💠 Resonating" are active
-- **THEN** the header row shows removable pills `Mindscape · No Outer` and `💠 Resonating`, in declaration order
+- **WHEN** the block is collapsed and "No Outer" (facet "Mindscape") and bare chip "🐹 Gated" are active
+- **THEN** the header row shows removable pills `Mindscape · No Outer` and `🐹 Gated`, in declaration order
 
 #### Scenario: Removing a summary pill clears that chip
 

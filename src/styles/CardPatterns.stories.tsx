@@ -80,13 +80,13 @@ export const HeldCard: Story = {
         </div>
       </div>
       <div className="game-card is-held" style={{ maxWidth: 220, flex: 1 }}>
-        <div className="game-card-held-tag">no longer matches 💠 Resonating</div>
+        <div className="game-card-held-tag">no longer matches Resonance · In progress</div>
         <div className="game-card-body">
           <h3 className="game-card-name">Held card</h3>
         </div>
       </div>
       <div className="game-card is-held is-exiting" style={{ maxWidth: 220, flex: 1 }}>
-        <div className="game-card-held-tag">no longer matches 💠 Resonating</div>
+        <div className="game-card-held-tag">no longer matches Resonance · In progress</div>
         <div className="game-card-body">
           <h3 className="game-card-name">Exiting (frozen end frame)</h3>
         </div>

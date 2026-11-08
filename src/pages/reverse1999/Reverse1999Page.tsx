@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useArcanists } from '@/hooks/reverse1999/useArcanists';
 import { useParties } from '@/hooks/reverse1999/useParties';
-import { useRosterView, type RosterFilterChip } from '@/hooks/useRosterView';
+import { useRosterView, type RosterFilterEntry } from '@/hooks/useRosterView';
 import { ArcanistCard } from './components/ArcanistCard';
 import { AddArcanistModal } from './components/AddArcanistModal';
 import { PartiesTab } from './components/PartiesTab';
@@ -9,21 +9,86 @@ import { RosterPageLayout } from '@/components/RosterPageLayout';
 import type { Session } from '@supabase/supabase-js';
 import type { R1999TrackedArcanist } from '@/types';
 
-/** Roster filter chips — item-gate bottlenecks (roster-predicate-filter). */
-const FILTER_CHIPS: RosterFilterChip<R1999TrackedArcanist>[] = [
+/**
+ * Roster filter facets (roster-predicate-filter) — every grindable bottleneck,
+ * in the card's Resonance → Euphoria → Psychube section order. Portrait is
+ * dupe-bound and Level has the Lv sort, so neither gets a chip. Resonance and
+ * Euphoria are counters with disjoint "not started" / "in progress" states, so
+ * each is a `one` facet. `None equipped` is exclusive with the other Psychube
+ * chips (a level or amplification needs an equipped psychube); those two
+ * intersect freely.
+ */
+const FILTER_FACETS: RosterFilterEntry<R1999TrackedArcanist>[] = [
   {
     key: 'resonance',
-    label: '💠 Resonating',
-    predicate: (a) => a.resonanceLevel > 0 && a.resonanceLevel < 15,
-    onTitle: 'Show only arcanists with resonance in progress',
-    noMatch: 'No arcanists with resonance in progress.',
+    label: 'Resonance',
+    mode: 'one',
+    chips: [
+      {
+        key: 'resonanceNotStarted',
+        label: 'Not started',
+        predicate: (a) => a.resonanceLevel === 0,
+        onTitle: 'Show only arcanists who have not started resonance',
+        noMatch: 'No arcanists without resonance started.',
+      },
+      {
+        key: 'resonanceInProgress',
+        label: 'In progress',
+        predicate: (a) => a.resonanceLevel > 0 && a.resonanceLevel < 15,
+        onTitle: 'Show only arcanists with resonance in progress',
+        noMatch: 'No arcanists with resonance in progress.',
+      },
+    ],
   },
   {
-    key: 'gluttony',
-    label: '🍽️ Amplifying',
-    predicate: (a) => a.psychubeName !== null && a.psychubeAmplification < 5,
-    onTitle: 'Show only arcanists with an equipped psychube below max amplification',
-    noMatch: 'No arcanists with un-maxed psychube amplification.',
+    key: 'euphoria',
+    label: 'Euphoria',
+    mode: 'one',
+    chips: [
+      {
+        key: 'euphoriaNotStarted',
+        label: 'Not started',
+        predicate: (a) => a.hasEuphoria && a.euphoriaStage === 0,
+        onTitle: 'Show only Euphoria arcanists who have not started Euphoria',
+        noMatch: 'No Euphoria arcanists without Euphoria started.',
+      },
+      {
+        key: 'euphoriaInProgress',
+        label: 'In progress',
+        predicate: (a) => a.hasEuphoria && a.euphoriaStage > 0 && a.euphoriaStage < 4,
+        onTitle: 'Show only Euphoria arcanists with Euphoria in progress',
+        noMatch: 'No Euphoria arcanists with Euphoria in progress.',
+      },
+    ],
+  },
+  {
+    key: 'psychube',
+    label: 'Psychube',
+    mode: 'any',
+    chips: [
+      {
+        key: 'psychubeNone',
+        label: 'None equipped',
+        exclusive: true,
+        predicate: (a) => a.psychubeName === null,
+        onTitle: 'Show only arcanists with no psychube equipped',
+        noMatch: 'No arcanists without a psychube.',
+      },
+      {
+        key: 'psychubeLevel',
+        label: 'Under Lv 60',
+        predicate: (a) => a.psychubeName !== null && a.psychubeLevel < 60,
+        onTitle: 'Show only arcanists with an equipped psychube below Lv 60',
+        noMatch: 'No arcanists with a psychube below Lv 60.',
+      },
+      {
+        key: 'psychubeAmp',
+        label: 'Under A5',
+        predicate: (a) => a.psychubeName !== null && a.psychubeAmplification < 5,
+        onTitle: 'Show only arcanists with an equipped psychube below A5',
+        noMatch: 'No arcanists with un-maxed psychube amplification.',
+      },
+    ],
   },
 ];
 
@@ -103,7 +168,7 @@ export function Reverse1999Page({ session, isAuthLoading, onSignIn }: Reverse199
     addTitle: 'Add Arcanist',
     addDisabled: isLoadError,
     nounPlural: 'arcanists',
-    filterChips: FILTER_CHIPS,
+    filterChips: FILTER_FACETS,
     filterAccent: 'var(--color-r1999-accent)',
     filterRoster,
     trackedEntities: trackedArcanists,

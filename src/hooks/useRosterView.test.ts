@@ -27,6 +27,7 @@ const chipsOf = (filters: { rows: { chips: unknown[] }[] } | undefined) =>
     label: string;
     fullLabel: string;
     active: boolean;
+    exclusive: boolean;
     title: string;
     toggle: () => void;
   }[];
@@ -483,6 +484,61 @@ describe('useRosterView', () => {
       expect(predicate(ent('a', 'A', 3))).toBe(true); // <5 and odd
       expect(predicate(ent('b', 'B', 4))).toBe(false); // <5 but even
       expect(predicate(ent('c', 'C', 7))).toBe(false);
+    });
+
+    const psychube: RosterFilterFacet<Ent> = {
+      key: 'psychube',
+      label: 'Psychube',
+      mode: 'any',
+      chips: [
+        {
+          key: 'none',
+          label: 'None equipped',
+          exclusive: true,
+          predicate: (e) => e.level === 0,
+          onTitle: 'None',
+        },
+        lowLevelChip,
+        { key: 'odd', label: 'Odd', predicate: (e) => e.level % 2 === 1, onTitle: 'Odd only' },
+      ],
+    };
+
+    it('an exclusive any-facet chip clears its siblings, and any sibling clears it', () => {
+      const filterRoster = vi.fn().mockReturnValue([]);
+      const { result } = setup({ filterRoster, filterChips: [psychube] });
+      const chips = () => chipsOf(result.current.filters);
+      const predicate = () => filterRoster.mock.calls.at(-1)![2] as (e: Ent) => boolean;
+      act(() => chips()[1].toggle()); // low
+      act(() => chips()[2].toggle()); // odd
+      act(() => chips()[0].toggle()); // none — drops both
+      expect(chips().map((c) => c.active)).toEqual([true, false, false]);
+      expect(predicate()(ent('a', 'A', 0))).toBe(true);
+      expect(predicate()(ent('b', 'B', 3))).toBe(false);
+      act(() => chips()[2].toggle()); // odd — drops none
+      expect(chips().map((c) => c.active)).toEqual([false, false, true]);
+      act(() => chips()[1].toggle()); // low — intersects with odd
+      expect(chips().map((c) => c.active)).toEqual([false, true, true]);
+      expect(predicate()(ent('a', 'A', 3))).toBe(true);
+      expect(predicate()(ent('b', 'B', 4))).toBe(false);
+      act(() => chips()[0].toggle()); // none again — drops both
+      expect(chips().map((c) => c.active)).toEqual([true, false, false]);
+      expect(result.current.noMatchMessage).toBe('No things match the active filters.');
+    });
+
+    it('descriptor flags exclusive chips only inside any facets', () => {
+      const { result } = setup({
+        filterChips: [
+          psychube,
+          { ...mindscape, chips: [{ ...notStarted, exclusive: true }, stuckAtOne] },
+          { ...inProgressChip, exclusive: true },
+        ],
+      });
+      const rows = result.current.filters!.rows;
+      expect(rows.map((r) => r.chips.map((c) => c.exclusive))).toEqual([
+        [true, false, false],
+        [false, false],
+        [false],
+      ]);
     });
 
     it('a one-facet member ANDs with a bare chip and never with its sibling', () => {
