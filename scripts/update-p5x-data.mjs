@@ -4,6 +4,15 @@
 // regenerates:
 //   - src/data/persona-5-phantom-x/thieves.ts
 //   - src/data/persona-5-phantom-x/personas.ts
+//
+// Thieves Prydwen lacks (collab units it has not published yet, or units added
+// after the origin's last build) come from the hand-curated overlay seed
+// scripts/seeds/p5x-thieves.json. Each seed entry carries the full P5xThief
+// shape plus `imageSource` (an https URL for the card art, or null while none
+// is sourced) and a free-text `note`. Its `id` is the slug Prydwen will give
+// the unit, so tracked rows keyed on it survive the hand-off: once the slug
+// appears upstream the fetched entry wins and the run warns to delete the
+// seed entry. Validation failures abort the run before any codegen.
 // Downloads card art / icons and uploads to ImageKit CDN:
 //   - thief portraits → ImageKit: /persona_5_phantom_x/thieves
 //   - persona icons   → ImageKit: /persona_5_phantom_x/personas
@@ -31,6 +40,8 @@ import {
   mintId,
   jsStr,
   diffByKey,
+  applyOverlay,
+  validateOverlaySeed,
   formatDiff,
   generatedHeader,
 } from './lib/pipeline.mjs';
@@ -44,6 +55,11 @@ const detailPageData = (slug) =>
 // Personas: metadata from page-data, image URLs scraped from the rendered grid.
 const PERSONA_LIST_PAGE_DATA = `${PRYDWEN_ORIGIN}/page-data/persona-5x/personas/page-data.json`;
 const PERSONA_PAGE_HTML = `${PRYDWEN_ORIGIN}/persona-5x/personas/`;
+
+// Hand-curated overlay for thieves the Prydwen origin does not list (see header).
+const THIEF_SEED_PATH = resolve(ROOT, 'scripts/seeds/p5x-thieves.json');
+const THIEF_SEED_LABEL = 'scripts/seeds/p5x-thieves.json';
+const THIEF_SEED_REQUIRED = ['id', 'name', 'codename', 'personaName', 'rarity', 'role', 'element'];
 
 loadLocalEnv();
 const { ensureAsset } = initImageKit();
@@ -70,6 +86,23 @@ async function loadExistingThieves() {
   }
 }
 
+// Reads and validates the thief overlay seed. A missing file is an empty overlay;
+// a malformed one aborts the run (the catalog is only written from a valid set).
+async function loadThiefSeed() {
+  let raw;
+  try {
+    raw = await readFile(THIEF_SEED_PATH, 'utf-8');
+  } catch (e) {
+    if (e?.code === 'ENOENT') return [];
+    throw e;
+  }
+  return validateOverlaySeed(JSON.parse(raw), {
+    label: THIEF_SEED_LABEL,
+    required: THIEF_SEED_REQUIRED,
+    rarities: [4, 5],
+  });
+}
+
 // Pull the largest fallback image path out of a Prydwen gatsby image node.
 function gatsbyImagePath(imageNode) {
   const src = imageNode?.localFile?.childImageSharp?.gatsbyImageData?.images?.fallback?.src;
@@ -82,7 +115,10 @@ function generateThievesTs(thieves) {
   const fourStars = thieves.filter((t) => t.rarity === 4);
 
   const lines = [
-    ...generatedHeader('Prydwen (prydwen.gg/persona-5x)', 'update-p5x-data.mjs'),
+    ...generatedHeader(
+      'Prydwen (prydwen.gg/persona-5x) plus the hand-curated overlay scripts/seeds/p5x-thieves.json',
+      'update-p5x-data.mjs',
+    ),
     '',
     'export interface P5xThief {',
     '  id: string;',
@@ -315,9 +351,10 @@ async function processPersonas() {
 async function main() {
   console.log('Fetching P5X character list from Prydwen...');
 
-  const [listData, existingThieves] = await Promise.all([
+  const [listData, existingThieves, seed] = await Promise.all([
     fetchJSON(LIST_PAGE_DATA),
     loadExistingThieves(),
+    loadThiefSeed(),
   ]);
 
   const listNodes = listData?.result?.data?.allCharacters?.nodes;
@@ -344,17 +381,46 @@ async function main() {
     details.push({ node, unit, rarity });
   }
 
+  // Source strings occasionally carry trailing whitespace — normalize.
+  const clean = (s, fallback = '') => (s ?? fallback).trim();
+  const fetched = details.map(({ node, unit, rarity }) => ({
+    id: node.slug,
+    name: clean(unit.name),
+    codename: clean(unit.codename, unit.name),
+    personaName: clean(unit.persona),
+    rarity,
+    role: clean(unit.job, 'Unknown'),
+    element: clean(unit.element, 'Unknown'),
+    // Card art (262×358) is the highest-res source; fall back to the square icon.
+    sourceUrl: gatsbyImagePath(unit.cardImage) ?? gatsbyImagePath(unit.smallImage),
+    missingImageReason: 'No image node in page-data',
+  }));
+  const overlay = seed.map((t) => ({
+    id: t.id,
+    name: clean(t.name),
+    codename: clean(t.codename),
+    personaName: clean(t.personaName),
+    rarity: t.rarity,
+    role: clean(t.role),
+    element: clean(t.element),
+    sourceUrl: t.imageSource,
+    missingImageReason: `No imageSource in ${THIEF_SEED_LABEL}`,
+  }));
+  const { entries: units, shadowed } = applyOverlay(fetched, overlay, (t) => t.id);
+  console.log(`  ${units.length - fetched.length} thieves overlaid from ${THIEF_SEED_LABEL}`);
+  for (const t of shadowed) {
+    console.warn(`    Seed entry ${t.id} is now on Prydwen — delete it from ${THIEF_SEED_LABEL}`);
+  }
+
   const thieves = [];
   let imgCount = 0;
   const failedImages = [];
 
-  for (const { node, unit, rarity } of details) {
-    const id = node.slug;
+  for (const { sourceUrl, missingImageReason, ...unit } of units) {
+    const { id } = unit;
     // Portraits live on ImageKit only — never written into public/assets
     // (the repo stores no game images; imagekit.ts resolves this path to the CDN).
     const imageUrl = `/assets/persona-5-phantom-x/thieves/${id}.webp`;
-    // Card art (262×358) is the highest-res source; fall back to the square icon.
-    const sourceUrl = gatsbyImagePath(unit.cardImage) ?? gatsbyImagePath(unit.smallImage);
 
     if (sourceUrl) {
       const result = await ensureAsset({
@@ -370,22 +436,11 @@ async function main() {
       if (result === 'uploaded') imgCount++;
       if (result === 'failed') failedImages.push(id);
     } else {
-      console.warn(`    No image node in page-data for ${id}`);
+      console.warn(`    ${missingImageReason} for ${id}`);
       failedImages.push(id);
     }
 
-    // Source strings occasionally carry trailing whitespace — normalize.
-    const clean = (s, fallback = '') => (s ?? fallback).trim();
-    thieves.push({
-      id,
-      name: clean(unit.name),
-      codename: clean(unit.codename, unit.name),
-      personaName: clean(unit.persona),
-      rarity,
-      role: clean(unit.job, 'Unknown'),
-      element: clean(unit.element, 'Unknown'),
-      imageUrl,
-    });
+    thieves.push({ ...unit, imageUrl });
   }
 
   // Sort: 5-stars first, then alphabetically within each group

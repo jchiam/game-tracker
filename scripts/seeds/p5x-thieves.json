@@ -1,0 +1,13 @@
+[
+  {
+    "id": "kotone-shiomi",
+    "name": "Kotone Shiomi",
+    "codename": "Kotone",
+    "personaName": "Orpheus",
+    "rarity": 5,
+    "role": "Buffer",
+    "element": "Fire",
+    "imageSource": "https://lufel.net/assets/img/character-cards/%EC%BD%94%ED%86%A0%EB%84%A4.webp",
+    "note": "P3P collab unit, v4.10 (2026-09-24). Prydwen's CloudFront origin build predates her. Kit facts from prydwen.gg/persona-5x/characters/kotone-shiomi (Fire Strategist, Orpheus); role mapped to Prydwen's job vocabulary. Card art via lufel.net."
+  }
+]
