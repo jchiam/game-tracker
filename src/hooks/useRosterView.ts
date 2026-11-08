@@ -38,17 +38,111 @@ export interface RosterFilterChip<TEntity> {
   noMatch?: string;
 }
 
+/**
+ * A labelled filter dimension nesting its chips (Chip Facet in CONTEXT.md).
+ * `one` facets are radio-exclusive: activating a member deactivates its
+ * siblings, clicking the active member clears the facet. `any` facets are
+ * independent toggles. The layout renders a facet as one matrix row — label
+ * column (shown only when the facet holds two or more chips) plus its chips,
+ * joined into one segmented pill for `one`.
+ */
+export interface RosterFilterFacet<TEntity> {
+  /** Stable key — row React key. */
+  key: string;
+  /** Row label, e.g. "Mindscape"; also the ghost-tag prefix of its chips. */
+  label: string;
+  mode: 'any' | 'one';
+  chips: RosterFilterChip<TEntity>[];
+}
+
+/** One entry of a game's filter declaration: a bare chip or a facet. */
+export type RosterFilterEntry<TEntity> = RosterFilterChip<TEntity> | RosterFilterFacet<TEntity>;
+
+function isFacet<T>(entry: RosterFilterEntry<T>): entry is RosterFilterFacet<T> {
+  return 'chips' in entry;
+}
+
+/** One rendered chip of the `filters` descriptor. */
+export interface RosterViewFilterChip {
+  key: string;
+  label: string;
+  /** Facet-composed label (`Mindscape · No Inner`), or the label for bare chips. */
+  fullLabel: string;
+  active: boolean;
+  title: string;
+  toggle: () => void;
+}
+
+/** An active chip as the collapsed block summarises it. */
+export interface RosterViewActiveChip {
+  key: string;
+  /** Facet-composed label — the facet labels are hidden while collapsed. */
+  label: string;
+  /** Deactivates the chip. */
+  remove: () => void;
+}
+
+/** One matrix row of the `filters` descriptor: a facet, or a run of bare chips. */
+export interface RosterViewFilterRow {
+  key: string;
+  /** Facet label; absent for bare-chip rows and single-chip facets. */
+  label?: string;
+  mode: 'any' | 'one';
+  chips: RosterViewFilterChip[];
+}
+
 /** Filter-row descriptor rendered by `RosterPageLayout`. */
 export interface RosterViewFilters {
   /** CSS value for `--filter-chip-accent` on the row. */
   accent: string;
-  chips: {
-    key: string;
-    label: string;
-    active: boolean;
-    title: string;
-    toggle: () => void;
-  }[];
+  rows: RosterViewFilterRow[];
+  /** Two or more rows — the layout renders the disclosure header. */
+  collapsible: boolean;
+  /** Disclosure state; meaningful only when `collapsible`. */
+  open: boolean;
+  toggleOpen: () => void;
+  activeCount: number;
+  /** Active chips in declaration order, for the collapsed summary. */
+  active: RosterViewActiveChip[];
+}
+
+/** Toolbar cap — the block starts open at or above it, collapsed below. */
+const FILTER_BLOCK_OPEN_QUERY = '(min-width: 600px)';
+
+/** Mount-time default for the disclosure; environments without matchMedia start open. */
+function defaultFilterBlockOpen(): boolean {
+  if (typeof window === 'undefined' || typeof window.matchMedia !== 'function') return true;
+  return window.matchMedia(FILTER_BLOCK_OPEN_QUERY).matches;
+}
+
+/** A facet's label is rendered (and composed into copy) only at two or more chips. */
+const facetLabelOf = <T>(facet: RosterFilterFacet<T> | undefined): string | undefined =>
+  facet && facet.chips.length >= 2 ? facet.label : undefined;
+
+/** Ghost-tag text: `{facet label} · {chip label}` inside a labelled facet, else the chip label. */
+function heldLabel<T>(chip: RosterFilterChip<T>, facet: RosterFilterFacet<T> | undefined): string {
+  const facetLabel = facetLabelOf(facet);
+  return facetLabel !== undefined ? `${facetLabel} · ${chip.label}` : chip.label;
+}
+
+/**
+ * Flatten a declaration into the chip list the hook's state runs over, plus
+ * the facet each chip belongs to. Declaration order is preserved.
+ */
+function flattenEntries<T>(entries: RosterFilterEntry<T>[]) {
+  const allChips: RosterFilterChip<T>[] = [];
+  const facetOf = new Map<string, RosterFilterFacet<T>>();
+  for (const entry of entries) {
+    if (isFacet(entry)) {
+      for (const chip of entry.chips) {
+        allChips.push(chip);
+        facetOf.set(chip.key, entry);
+      }
+    } else {
+      allChips.push(entry);
+    }
+  }
+  return { allChips, facetOf };
 }
 
 export interface RosterViewConfig<SortKey extends string, TEntity extends RosterViewEntity> {
@@ -66,8 +160,11 @@ export interface RosterViewConfig<SortKey extends string, TEntity extends Roster
   nounPlural: string;
   /** No-match copy with no chip active; defaults to `No {nounPlural} match your search.` */
   noMatchMessage?: string;
-  /** Predicate-filter chips in display order. Omit for games without chips. */
-  filterChips?: RosterFilterChip<TEntity>[];
+  /**
+   * Predicate-filter chips in display order, bare or nested under a facet.
+   * Omit for games without chips.
+   */
+  filterChips?: RosterFilterEntry<TEntity>[];
   /** CSS value for `--filter-chip-accent`; defaults to the brand colour. */
   filterAccent?: string;
   /**
@@ -129,13 +226,16 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
     filterRoster,
     trackedEntities,
   } = config;
-  const chips: RosterFilterChip<TEntity>[] = config.filterChips ?? NO_CHIPS;
+  const entries: RosterFilterEntry<TEntity>[] = config.filterChips ?? NO_CHIPS;
+  const { allChips: chips, facetOf } = flattenEntries(entries);
   const defaultMode = sortModes[0];
 
   const [view, setView] = useState<'roster' | 'second'>('roster');
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<SortKey>(defaultMode.key);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  // Filter-block disclosure. View state only — never part of the projection key.
+  const [isFilterBlockOpen, setIsFilterBlockOpen] = useState(defaultFilterBlockOpen);
   // Active chip keys. A toggle always yields a new Set, so identity doubles
   // as the "projection changed" signal below.
   const [activeKeys, setActiveKeys] = useState<ReadonlySet<string>>(() => new Set());
@@ -144,6 +244,9 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
   const chipsRef = useRef(chips);
   // eslint-disable-next-line react-hooks/refs
   chipsRef.current = chips;
+  const facetOfRef = useRef(facetOf);
+  // eslint-disable-next-line react-hooks/refs
+  facetOfRef.current = facetOf;
 
   // --- Projection stability state ---------------------------------------
   // Basis snapshots: the entity data membership/order is evaluated against.
@@ -267,7 +370,9 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
           const failed = activeChips.find((c) => !c.predicate(entity));
           held.set(
             entity.id,
-            failed ? `no longer matches ${failed.label}` : 'No longer matches the active filters',
+            failed
+              ? `no longer matches ${heldLabel(failed, facetOfRef.current.get(failed.key))}`
+              : 'No longer matches the active filters',
           );
         }
       }
@@ -341,11 +446,19 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
     };
   }, []);
 
+  // `one`-facet exclusivity: activating a member drops its siblings in the
+  // same update, so the facet never contributes two predicates and every
+  // toggle is still exactly one fresh Set (one projection change).
   const toggleChip = useCallback((key: string) => {
     setActiveKeys((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) next.delete(key);
-      else next.add(key);
+      if (next.has(key)) {
+        next.delete(key);
+        return next;
+      }
+      const facet = facetOfRef.current.get(key);
+      if (facet?.mode === 'one') for (const c of facet.chips) next.delete(c.key);
+      next.add(key);
       return next;
     });
   }, []);
@@ -361,19 +474,52 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
         ? (activeChipList[0].noMatch ?? genericNoMatch)
         : genericNoMatch;
 
+  const renderChip = (c: RosterFilterChip<TEntity>): RosterViewFilterChip => {
+    const active = activeKeys.has(c.key);
+    return {
+      key: c.key,
+      label: c.label,
+      fullLabel: heldLabel(c, facetOf.get(c.key)),
+      active,
+      title: active ? (c.offTitle ?? `Show all ${nounPlural}`) : c.onTitle,
+      toggle: () => toggleChip(c.key),
+    };
+  };
+  // Matrix rows: one per facet (label only at two or more chips), one per run
+  // of consecutive bare chips — so a game with only bare chips gets one row.
+  const rows: RosterViewFilterRow[] = [];
+  let bareRun: RosterViewFilterRow | null = null;
+  for (const entry of entries) {
+    if (isFacet(entry)) {
+      const label = facetLabelOf(entry);
+      rows.push({
+        key: entry.key,
+        ...(label !== undefined ? { label } : {}),
+        mode: entry.mode,
+        chips: entry.chips.map(renderChip),
+      });
+      bareRun = null;
+    } else {
+      if (!bareRun) {
+        bareRun = { key: `bare:${entry.key}`, mode: 'any', chips: [] };
+        rows.push(bareRun);
+      }
+      bareRun.chips.push(renderChip(entry));
+    }
+  }
   const filters: RosterViewFilters | undefined = chips.length
     ? {
         accent: filterAccent ?? 'var(--color-brand-primary)',
-        chips: chips.map((c) => {
-          const active = activeKeys.has(c.key);
-          return {
-            key: c.key,
-            label: c.label,
-            active,
-            title: active ? (c.offTitle ?? `Show all ${nounPlural}`) : c.onTitle,
-            toggle: () => toggleChip(c.key),
-          };
-        }),
+        rows,
+        collapsible: rows.length >= 2,
+        open: isFilterBlockOpen,
+        toggleOpen: () => setIsFilterBlockOpen((o) => !o),
+        activeCount: activeChipList.length,
+        active: activeChipList.map((c) => ({
+          key: c.key,
+          label: heldLabel(c, facetOf.get(c.key)),
+          remove: () => toggleChip(c.key),
+        })),
       }
     : undefined;
 

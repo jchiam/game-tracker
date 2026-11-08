@@ -120,7 +120,7 @@ The system SHALL sort the filtered roster with favorited entities first, an opti
 
 ### Requirement: Roster-page view state provided by the shared view hook
 
-Roster-page view state SHALL be provided by the single shared `useRosterView` hook: the roster/second view switch, the search term, a sort toggle that cycles the configured sort modes (two or more; the first configured mode is the default), the add-modal visibility, the filter-chip state, and the filtered roster memoized over the configured filter function. The hook SHALL generate the `search` / `sort` / `add` / `filters` descriptors consumed by `RosterPageLayout` from its config (sort modes with key/label/described phrase, search placeholder, add title, add disabled flag, the plural entity noun, and the optional filter-chip list with its accent colour), composing the sort button title as `Sorted {active} — click to sort {next}` where `{next}` is the mode the toggle advances to. From the declared chips the hook SHALL derive the AND-composed predicate it passes to the configured filter function, the held-card description, the no-match message, and each chip's active flag, tooltip, and toggle (see `roster-predicate-filter`). Game pages SHALL pass config only and SHALL NOT hand-write the view-state fields, descriptor objects, chip state, predicate composition, or no-match selection; state that is genuinely game-specific (e.g. HSR's relic-editor target) stays in the page.
+Roster-page view state SHALL be provided by the single shared `useRosterView` hook: the roster/second view switch, the search term, a sort toggle that cycles the configured sort modes (two or more; the first configured mode is the default), the add-modal visibility, the filter-chip state, and the filtered roster memoized over the configured filter function. The hook SHALL generate the `search` / `sort` / `add` / `filters` descriptors consumed by `RosterPageLayout` from its config (sort modes with key/label/described phrase, search placeholder, add title, add disabled flag, the plural entity noun, and the optional filter-chip list with its accent colour), composing the sort button title as `Sorted {active} — click to sort {next}` where `{next}` is the mode the toggle advances to. From the declared chips the hook SHALL derive the AND-composed predicate it passes to the configured filter function, the flat chip list behind any declared facets, the `one`-facet toggle semantics (activating a member deactivates its siblings), the held-card description (composing a labelled facet's label), the no-match message, the row descriptors the layout renders (one per facet or run of bare chips), the block's open/closed disclosure state with its active-chip summary, and each chip's active flag, tooltip, and toggle (see `roster-predicate-filter`). Game pages SHALL pass config only and SHALL NOT hand-write the view-state fields, descriptor objects, chip state, predicate composition, facet exclusivity, disclosure state, or no-match selection; state that is genuinely game-specific (e.g. HSR's relic-editor target) stays in the page.
 
 The filtered roster SHALL be basis-aware (see `roster-projection-stability`): membership and order are evaluated against per-entity basis snapshots, while each returned entity object is the live tracked entity. Entity edits therefore do not immediately re-project the grid; projection changes (search term, sort mode, chip toggle) and other release points refresh bases and re-project immediately. The hook SHALL expose the release operations pages wire to their release points (per-entity basis refresh, refresh-all).
 
@@ -144,6 +144,11 @@ The filtered roster SHALL be basis-aware (see `roster-projection-stability`): me
 - **WHEN** a chip's toggle fires while an entity is held
 - **THEN** every basis is refreshed and the held state clears — the grid re-projects against live data
 
+#### Scenario: Facet swap is one projection change
+
+- **WHEN** a `one`-facet member's toggle fires while a sibling in the same facet is active
+- **THEN** the sibling deactivates and the member activates in a single active-key update, and the filtered roster is recomputed once with the member's predicate in place of the sibling's
+
 #### Scenario: Entity edit does not re-project
 
 - **WHEN** a tracked entity's data changes without any release point firing
@@ -156,13 +161,23 @@ The filtered roster SHALL be basis-aware (see `roster-projection-stability`): me
 
 #### Scenario: Pages contain no duplicated view-state code
 
-- **WHEN** the game pages are searched for local view/search/sort/add-modal/chip `useState`, hand-built sort-descriptor objects, predicate ladders, or no-match ternaries
+- **WHEN** the game pages are searched for local view/search/sort/add-modal/chip `useState`, hand-built sort-descriptor objects, predicate ladders, facet-exclusivity handlers, or no-match ternaries
 - **THEN** none exists; every page derives them from `useRosterView` config
 
 #### Scenario: Games without chips are unaffected
 
 - **WHEN** a game passes no filter-chip list
 - **THEN** the `filters` descriptor is absent, no predicate is passed to the filter function, and the no-match message is the game's default
+
+#### Scenario: Disclosure toggle leaves the projection alone
+
+- **WHEN** the filters descriptor's `toggleOpen` fires while an entity is held
+- **THEN** the filtered roster, its bases, and the held state are unchanged
+
+#### Scenario: Bare chips yield one unlabelled row
+
+- **WHEN** a game passes only bare chips (no facet entries)
+- **THEN** the `filters` descriptor holds exactly one row with no label holding those chips in declaration order
 
 ### Requirement: Roster page layout second-view slot is modality-neutral
 

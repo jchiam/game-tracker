@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from 'react';
+import { useId, type CSSProperties, type ReactNode } from 'react';
 import type { Session } from '@supabase/supabase-js';
 import type { RosterViewFilters } from '@/hooks/useRosterView';
 import { AuthGate } from '@/components/AuthGate';
@@ -6,6 +6,46 @@ import { ErrorState } from '@/components/ErrorState';
 import { LoadingState } from '@/components/LoadingState';
 import { SavingToast } from '@/components/SavingToast';
 import './RosterPageLayout.css';
+
+type RenderableChip = RosterViewFilters['rows'][number]['chips'][number];
+type RenderableRow = RosterViewFilters['rows'][number];
+
+function renderChip(chip: RenderableChip) {
+  return (
+    <button
+      key={chip.key}
+      className={`filter-chip ${chip.active ? 'active' : ''}`}
+      onClick={chip.toggle}
+      title={chip.title}
+      aria-pressed={chip.active}
+    >
+      {chip.label}
+    </button>
+  );
+}
+
+/**
+ * One matrix row of the filter block (Chip Facet in CONTEXT.md): a labelled
+ * facet (`role="group"`) or an unlabelled run of bare chips. `one` rows join
+ * their chips into a single segmented pill.
+ */
+function renderRow(row: RenderableRow) {
+  const labelled = row.label !== undefined;
+  return (
+    <div
+      key={row.key}
+      className={`filter-facet ${labelled ? '' : 'is-unlabelled'}`}
+      {...(labelled ? { role: 'group', 'aria-label': row.label } : {})}
+    >
+      {labelled && (
+        <span className="filter-facet-label" aria-hidden="true">
+          {row.label}
+        </span>
+      )}
+      <div className={`filter-facet-chips mode-${row.mode}`}>{row.chips.map(renderChip)}</div>
+    </div>
+  );
+}
 
 interface RosterPageLayoutProps {
   title: string;
@@ -80,6 +120,8 @@ export function RosterPageLayout({
   pendingSaveCount,
   children,
 }: RosterPageLayoutProps) {
+  // Disclosure target for the collapsible filter matrix (aria-controls).
+  const filterMatrixId = useId();
   return (
     <main className="main-content">
       <header className="hero">
@@ -148,19 +190,46 @@ export function RosterPageLayout({
             </div>
             {hasTracked && filters && (
               <div
-                className="filter-row"
+                className="filter-block"
                 style={{ '--filter-chip-accent': filters.accent } as CSSProperties}
               >
-                {filters.chips.map((chip) => (
-                  <button
-                    key={chip.key}
-                    className={`filter-chip ${chip.active ? 'active' : ''}`}
-                    onClick={chip.toggle}
-                    title={chip.title}
-                  >
-                    {chip.label}
-                  </button>
-                ))}
+                {filters.collapsible && (
+                  <div className="filter-header">
+                    <button
+                      className="filter-chip filter-toggle"
+                      aria-expanded={filters.open}
+                      aria-controls={filterMatrixId}
+                      onClick={filters.toggleOpen}
+                    >
+                      Filters
+                      {filters.activeCount > 0 && (
+                        <span className="filter-toggle-count">{filters.activeCount}</span>
+                      )}
+                      <span className="filter-toggle-chevron" aria-hidden="true">
+                        ▾
+                      </span>
+                    </button>
+                    {!filters.open &&
+                      filters.active.map((chip) => (
+                        <button
+                          key={chip.key}
+                          className="filter-chip active filter-summary"
+                          aria-label={`Remove filter ${chip.label}`}
+                          onClick={chip.remove}
+                        >
+                          {chip.label}
+                          <span className="filter-summary-x" aria-hidden="true">
+                            ×
+                          </span>
+                        </button>
+                      ))}
+                  </div>
+                )}
+                {(!filters.collapsible || filters.open) && (
+                  <div id={filterMatrixId} className="filter-row">
+                    {filters.rows.map(renderRow)}
+                  </div>
+                )}
               </div>
             )}
           </div>

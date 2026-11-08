@@ -283,6 +283,11 @@ describe('ZzzPage', () => {
 
     // Chip present, both agents shown while inactive
     const chip = screen.getByRole('button', { name: '🐹 Gated' });
+    // One row → no collapsible disclosure, and a bare-chip row carries no label or group role
+    expect(screen.queryByRole('button', { name: /^Filters/ })).toBeNull();
+    expect(screen.queryByRole('group')).toBeNull();
+    expect(chip.closest('.filter-facet')).toHaveClass('is-unlabelled');
+    expect(chip.closest('.filter-facet')!.querySelector('.filter-facet-label')).toBeNull();
     expect(screen.getByText('Ellen')).toBeInTheDocument();
     expect(screen.getByText('Soldier 11')).toBeInTheDocument();
 

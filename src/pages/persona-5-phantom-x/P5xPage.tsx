@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useThieves } from '@/hooks/persona-5-phantom-x/useThieves';
 import { useParties } from '@/hooks/persona-5-phantom-x/useParties';
-import { useRosterView, type RosterFilterChip } from '@/hooks/useRosterView';
+import { useRosterView, type RosterFilterEntry } from '@/hooks/useRosterView';
 import { ThiefCard } from './components/ThiefCard';
 import { AddThiefModal } from './components/AddThiefModal';
 import { RevelationEditorModal } from './components/RevelationEditorModal';
@@ -11,41 +11,102 @@ import {
   countEquippedRevelations,
   type RevelationSlot,
 } from '@/data/persona-5-phantom-x/revelations';
+import { hasRevelationPreferences } from '@/utils/revelationScoring';
 import type { P5xTrackedThief } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 
 /**
- * Roster filter chips — progression bottlenecks, in the card summary's
- * Weapon → Mindscape → Revelations order (roster-predicate-filter).
+ * Roster filter facets — every grindable progression bottleneck, one labelled
+ * facet per card-summary dimension in Weapon → Mindscape → Revelations →
+ * Skills order (roster-predicate-filter). Mindscape and Skills are 0/1/2
+ * milestone fields whose "not started" / "stuck at milestone 1" states are
+ * disjoint, so those facets are `one` (radio-exclusive). Chip labels name the
+ * missing progression; the facet label supplies the dimension.
  */
-const FILTER_CHIPS: RosterFilterChip<P5xTrackedThief>[] = [
-  {
-    key: 'rose',
-    label: '🌹 Gated',
-    predicate: (t) => t.skillProgress === 1,
-    onTitle: 'Show only rose-gated thieves',
-    noMatch: 'No rose-gated thieves found.',
-  },
+const FILTER_FACETS: RosterFilterEntry<P5xTrackedThief>[] = [
   {
     key: 'weapon',
-    label: '⚔ <5★',
-    predicate: (t) => t.weaponRarity < 5,
-    onTitle: 'Show only thieves with a sub-5★ weapon',
-    noMatch: 'No thieves with a sub-5★ weapon.',
+    label: 'Weapon',
+    mode: 'any',
+    chips: [
+      {
+        key: 'weapon',
+        label: 'Sub-5★',
+        predicate: (t) => t.weaponRarity < 5,
+        onTitle: 'Show only thieves with a sub-5★ weapon',
+        noMatch: 'No thieves with a sub-5★ weapon.',
+      },
+      {
+        key: 'weaponLevel',
+        label: 'Under Lv 80',
+        predicate: (t) => t.weaponLevel < 80,
+        onTitle: 'Show only thieves with a weapon below Lv 80',
+        noMatch: 'No thieves with a weapon below Lv 80.',
+      },
+    ],
   },
   {
     key: 'mindscape',
-    label: 'MS ✗',
-    predicate: (t) => t.mindscapeProgress === 0,
-    onTitle: 'Show only thieves without Outer Mindscape',
-    noMatch: 'No thieves without Outer Mindscape.',
+    label: 'Mindscape',
+    mode: 'one',
+    chips: [
+      {
+        key: 'mindscapeOuter',
+        label: 'No Outer',
+        predicate: (t) => t.mindscapeProgress === 0,
+        onTitle: 'Show only thieves without Outer Mindscape',
+        noMatch: 'No thieves without Outer Mindscape.',
+      },
+      {
+        key: 'mindscapeInner',
+        label: 'No Inner',
+        predicate: (t) => t.mindscapeProgress === 1,
+        onTitle: 'Show only thieves with Outer Mindscape done but Inner not',
+        noMatch: 'No thieves with Outer done and Inner pending.',
+      },
+    ],
   },
   {
     key: 'revelations',
-    label: '◈ Rev <5',
-    predicate: (t) => countEquippedRevelations(t.revelations) < 5,
-    onTitle: 'Show only thieves with open revelation slots',
-    noMatch: 'No thieves with open revelation slots.',
+    label: 'Revelations',
+    mode: 'any',
+    chips: [
+      {
+        key: 'revelations',
+        label: 'Open slots',
+        predicate: (t) => countEquippedRevelations(t.revelations) < 5,
+        onTitle: 'Show only thieves with open revelation slots',
+        noMatch: 'No thieves with open revelation slots.',
+      },
+      {
+        key: 'revelationPrefs',
+        label: 'No build',
+        predicate: (t) => !hasRevelationPreferences(t.revelationPreferences),
+        onTitle: 'Show only thieves with no revelation Target Build set',
+        noMatch: 'No thieves without a revelation Target Build.',
+      },
+    ],
+  },
+  {
+    key: 'skills',
+    label: 'Skills',
+    mode: 'one',
+    chips: [
+      {
+        key: 'skillsBase',
+        label: 'Under Lv 8',
+        predicate: (t) => t.skillProgress === 0,
+        onTitle: 'Show only thieves whose skills are below the Lv8 incense cap',
+        noMatch: 'No thieves with skills below Lv8.',
+      },
+      {
+        key: 'rose',
+        label: '🌹 Rose-gated',
+        predicate: (t) => t.skillProgress === 1,
+        onTitle: 'Show only rose-gated thieves',
+        noMatch: 'No rose-gated thieves found.',
+      },
+    ],
   },
 ];
 
@@ -139,7 +200,7 @@ export function P5xPage({ session, isAuthLoading, onSignIn }: P5xPageProps) {
     addDisabled: isLoadError,
     nounPlural: 'thieves',
     noMatchMessage: 'No phantom thieves match your search.',
-    filterChips: FILTER_CHIPS,
+    filterChips: FILTER_FACETS,
     filterAccent: 'var(--color-p5x-element-fire)',
     filterRoster,
     trackedEntities: trackedThieves,

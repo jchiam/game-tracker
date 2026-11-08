@@ -3,6 +3,7 @@ import {
   calculateRevelationScore,
   getStatMatchScore,
   getScoreGrade,
+  hasRevelationPreferences,
 } from '@/utils/revelationScoring';
 import type { P5xTrackedThief } from '@/types';
 import type { EquippedRevelation } from '@/data/persona-5-phantom-x/revelations';
@@ -184,7 +185,37 @@ describe('calculateRevelationScore — range & weights', () => {
   });
 });
 
+describe('hasRevelationPreferences', () => {
+  const empty = makeThief().revelationPreferences;
+
+  it('is false for the empty preference shape', () => {
+    expect(hasRevelationPreferences(empty)).toBe(false);
+  });
+
+  it('is true for each single signal', () => {
+    expect(hasRevelationPreferences({ ...empty, heavensSetId: 'power' })).toBe(true);
+    expect(hasRevelationPreferences({ ...empty, spaceSetId: 'meditation' })).toBe(true);
+    expect(hasRevelationPreferences({ ...empty, subStats: [pref('attack')] })).toBe(true);
+    expect(
+      hasRevelationPreferences({
+        ...empty,
+        mainStats: { moon: [], star: [pref('crit-rate')], sky: [] },
+      }),
+    ).toBe(true);
+  });
+
+  it('ignores comments', () => {
+    expect(hasRevelationPreferences({ ...empty, comments: 'farm later' })).toBe(false);
+  });
+});
+
 describe('calculateRevelationScore — insufficient-data sentinel', () => {
+  it('agrees with hasRevelationPreferences: no prefs → -1 even with cards', () => {
+    const thief = makeThief({ moon: card('power', 'attack-pct') });
+    expect(hasRevelationPreferences(thief.revelationPreferences)).toBe(false);
+    expect(calculateRevelationScore(thief)).toBe(-1);
+  });
+
   it('returns -1 with no preferences at all, even with cards equipped', () => {
     const thief = makeThief({ moon: card('power', 'attack-pct') });
     expect(calculateRevelationScore(thief)).toBe(-1);
