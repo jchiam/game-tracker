@@ -243,6 +243,15 @@ export const ALL_ARCANISTS: Arcanist[] = [
     hasEuphoria: true,
   },
   {
+    id: 'hedone',
+    sourceId: '10134',
+    name: 'Hedone',
+    afflatus: 'Mineral',
+    damageType: 'Reality',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/hedone.webp',
+    hasEuphoria: false,
+  },
+  {
     id: 'hissabeth',
     sourceId: '10101',
     name: 'Hissabeth',
@@ -447,6 +456,15 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Mineral',
     damageType: 'Mental',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/ms_stranger.webp',
+    hasEuphoria: false,
+  },
+  {
+    id: 'narcissus',
+    sourceId: '10135',
+    name: 'Narcissus',
+    afflatus: 'Beast',
+    damageType: 'Mental',
+    imageUrl: '/assets/reverse-1999/arcanists-mugshots/narcissus.webp',
     hasEuphoria: false,
   },
   {
