@@ -27,10 +27,26 @@ function renderChip(chip: RenderableChip) {
 /**
  * One matrix row of the filter block (Chip Facet in CONTEXT.md): a labelled
  * facet (`role="group"`) or an unlabelled run of bare chips. `one` rows join
- * their chips into a single segmented pill.
+ * their chips into a single segmented pill; in an `any` row a divider stands
+ * between the exclusive chips and the siblings they cannot combine with.
  */
 function renderRow(row: RenderableRow) {
   const labelled = row.label !== undefined;
+  const chips: ReactNode[] = [];
+  row.chips.forEach((chip, i) => {
+    const prev = row.chips[i - 1];
+    if (prev && prev.exclusive !== chip.exclusive) {
+      chips.push(
+        <span
+          key={`${chip.key}:divider`}
+          className="filter-facet-divider"
+          role="separator"
+          aria-orientation="vertical"
+        />,
+      );
+    }
+    chips.push(renderChip(chip));
+  });
   return (
     <div
       key={row.key}
@@ -42,7 +58,7 @@ function renderRow(row: RenderableRow) {
           {row.label}
         </span>
       )}
-      <div className={`filter-facet-chips mode-${row.mode}`}>{row.chips.map(renderChip)}</div>
+      <div className={`filter-facet-chips mode-${row.mode}`}>{chips}</div>
     </div>
   );
 }

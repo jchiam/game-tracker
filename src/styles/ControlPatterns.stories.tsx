@@ -53,7 +53,8 @@ export const FilterChips: Story = {
       {/* Roster predicate-filter block. `.filter-chip` base lives in
           controls.css; hover/active accent comes from the `--filter-chip-accent`
           custom property each page sets on its `.filter-row`. The row is a
-          facet matrix: labelled `any` / `one` rows plus unlabelled bare rows. */}
+          facet matrix: labelled `any` / `one` rows plus unlabelled bare rows;
+          an exclusive `any` chip is divided from the siblings it excludes. */}
       <div
         className="filter-row"
         style={{ '--filter-chip-accent': 'var(--color-p5x-element-fire)' } as CSSProperties}
@@ -123,13 +124,35 @@ export const FilterChips: Story = {
         className="filter-row"
         style={{ '--filter-chip-accent': 'var(--color-r1999-accent)' } as CSSProperties}
       >
+        <div className="filter-facet" role="group" aria-label="Psychube">
+          <span className="filter-facet-label" aria-hidden="true">
+            Psychube
+          </span>
+          <div className="filter-facet-chips mode-any">
+            <button className="filter-chip" aria-pressed="false">
+              None equipped
+            </button>
+            <span className="filter-facet-divider" role="separator" aria-orientation="vertical" />
+            <button className="filter-chip active" aria-pressed="true">
+              Under Lv 60
+            </button>
+            <button className="filter-chip" aria-pressed="false">
+              Under A5
+            </button>
+          </div>
+        </div>
+      </div>
+      <div
+        className="filter-row"
+        style={{ '--filter-chip-accent': 'var(--color-brand-primary)' } as CSSProperties}
+      >
         <div className="filter-facet is-unlabelled">
           <div className="filter-facet-chips mode-any">
             <button className="filter-chip" aria-pressed="false">
-              💠 Resonating
+              🐹 Gated
             </button>
             <button className="filter-chip active" aria-pressed="true">
-              💠 Resonating (active)
+              🐹 Gated (active)
             </button>
           </div>
         </div>

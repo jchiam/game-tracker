@@ -638,6 +638,15 @@
   grid-column: 1 / -1;
 }
 
+/* Exclusive chip in an `any` facet: a divider separates it from the siblings
+   it cannot combine with. */
+.filter-facet-divider {
+  align-self: stretch;
+  width: 1px;
+  margin-block: var(--spacing-xs);
+  background: var(--color-ui-border);
+}
+
 .filter-chip {
   flex-shrink: 0;
   height: 32px;

@@ -58,7 +58,7 @@ An entity's basis snapshot SHALL be refreshed to its live data at these release 
 
 ### Requirement: Held-card affordance and exit animation
 
-A card whose live data no longer matches an active predicate filter SHALL be visually marked as held: dimmed, with a ghost tag naming the filter it no longer matches (e.g. "no longer matches 💠 Resonating"). On release, an evicted card SHALL exit with a fade/collapse animation. All motion SHALL honour the global `prefers-reduced-motion` kill switch.
+A card whose live data no longer matches an active predicate filter SHALL be visually marked as held: dimmed, with a ghost tag naming the filter it no longer matches (e.g. "no longer matches Resonance · In progress"). On release, an evicted card SHALL exit with a fade/collapse animation. All motion SHALL honour the global `prefers-reduced-motion` kill switch.
 
 #### Scenario: Held card is marked
 

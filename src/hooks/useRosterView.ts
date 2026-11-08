@@ -36,15 +36,24 @@ export interface RosterFilterChip<TEntity> {
    * `No {nounPlural} match the active filters.`
    */
   noMatch?: string;
+  /**
+   * Inside an `any` facet: mutually exclusive with every sibling — activating
+   * it deactivates them, activating any sibling deactivates it, while the
+   * non-exclusive siblings still intersect (`None equipped │ Under Lv 60 ·
+   * Under A5`). Ignored for bare chips and in `one` facets, whose members
+   * are all exclusive already.
+   */
+  exclusive?: boolean;
 }
 
 /**
  * A labelled filter dimension nesting its chips (Chip Facet in CONTEXT.md).
  * `one` facets are radio-exclusive: activating a member deactivates its
  * siblings, clicking the active member clears the facet. `any` facets are
- * independent toggles. The layout renders a facet as one matrix row — label
- * column (shown only when the facet holds two or more chips) plus its chips,
- * joined into one segmented pill for `one`.
+ * independent toggles, except for chips marked `exclusive`. The layout
+ * renders a facet as one matrix row — label column (shown only when the facet
+ * holds two or more chips) plus its chips, joined into one segmented pill for
+ * `one`.
  */
 export interface RosterFilterFacet<TEntity> {
   /** Stable key — row React key. */
@@ -69,6 +78,8 @@ export interface RosterViewFilterChip {
   /** Facet-composed label (`Mindscape · No Inner`), or the label for bare chips. */
   fullLabel: string;
   active: boolean;
+  /** Exclusive member of an `any` facet — the layout divides it from its siblings. */
+  exclusive: boolean;
   title: string;
   toggle: () => void;
 }
@@ -446,9 +457,10 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
     };
   }, []);
 
-  // `one`-facet exclusivity: activating a member drops its siblings in the
-  // same update, so the facet never contributes two predicates and every
-  // toggle is still exactly one fresh Set (one projection change).
+  // Facet exclusivity in the same update, so every toggle is still exactly
+  // one fresh Set (one projection change): a `one` member or an exclusive
+  // `any` member drops every sibling; any other `any` member drops only the
+  // exclusive siblings.
   const toggleChip = useCallback((key: string) => {
     setActiveKeys((prev) => {
       const next = new Set(prev);
@@ -457,7 +469,11 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
         return next;
       }
       const facet = facetOfRef.current.get(key);
-      if (facet?.mode === 'one') for (const c of facet.chips) next.delete(c.key);
+      if (facet) {
+        const clearAll =
+          facet.mode === 'one' || facet.chips.some((c) => c.key === key && c.exclusive);
+        for (const c of facet.chips) if (clearAll || c.exclusive) next.delete(c.key);
+      }
       next.add(key);
       return next;
     });
@@ -476,11 +492,13 @@ export function useRosterView<SortKey extends string, TEntity extends RosterView
 
   const renderChip = (c: RosterFilterChip<TEntity>): RosterViewFilterChip => {
     const active = activeKeys.has(c.key);
+    const facet = facetOf.get(c.key);
     return {
       key: c.key,
       label: c.label,
-      fullLabel: heldLabel(c, facetOf.get(c.key)),
+      fullLabel: heldLabel(c, facet),
       active,
+      exclusive: facet?.mode === 'any' && c.exclusive === true,
       title: active ? (c.offTitle ?? `Show all ${nounPlural}`) : c.onTitle,
       toggle: () => toggleChip(c.key),
     };
