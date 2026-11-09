@@ -7,8 +7,8 @@
     "node": ">=24.15.0"
   },
   "scripts": {
-    "build:tokens": "style-dictionary build --config style-dictionary.config.mjs",
-    "dev": "concurrently \"style-dictionary build --watch --config style-dictionary.config.mjs\" \"vite\"",
+    "build:tokens": "node scripts/build-tokens.mjs",
+    "dev": "concurrently \"node --watch-path=src/styles/design-tokens.json --watch-path=style-dictionary.config.mjs scripts/build-tokens.mjs\" \"vite\"",
     "build": "tsc -b && vite build",
     "prebuild": "npm run build:tokens",
     "lint": "eslint .",
