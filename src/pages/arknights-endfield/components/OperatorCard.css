@@ -5,17 +5,8 @@
   opacity: 0.4;
 }
 
-/* Equipped-vs-preferred match badge on the weapon static-line. Color is set
-   inline from the shared rust→teal gradient; only the pill shape lives here. */
-.weapon-match-badge {
-  margin-left: var(--spacing-sm);
-  padding: 0 var(--spacing-2);
-  font-size: var(--typography-font-size-xs);
-  font-weight: var(--typography-font-weight-bold);
-  border: 1px solid;
-  border-radius: var(--border-radius-sm);
-  line-height: 1.4;
-}
+/* The equipped-vs-preferred match badge on the weapon static-line is the
+   shared `.pref-match-badge` pill in card.css (colour set inline). */
 
 /* The phase row now renders via the shared SegmentedButtons (.segmented-buttons
    + .toggle-btn) with coloring="investment"; its old .phase-row / .phase-btn

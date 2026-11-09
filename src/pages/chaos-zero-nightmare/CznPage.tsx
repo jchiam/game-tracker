@@ -29,6 +29,8 @@ export function CznPage({ session, isAuthLoading, onSignIn }: CznPageProps) {
     updateLevel,
     updateEgo,
     togglePotential,
+    updatePartner,
+    updatePartnerPreferences,
     toggleFavorite,
     getFilteredRoster,
   } = useCombatants(session, isAuthLoading);
@@ -116,6 +118,8 @@ export function CznPage({ session, isAuthLoading, onSignIn }: CznPageProps) {
           onUpdateLevel={updateLevel}
           onUpdateEgo={updateEgo}
           onTogglePotential={togglePotential}
+          onUpdatePartner={updatePartner}
+          onUpdatePartnerPreferences={updatePartnerPreferences}
           onToggleFavorite={(id, value) => {
             // Favorite is a completed intent — release in the same handler
             toggleFavorite(id, value);

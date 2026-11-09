@@ -312,6 +312,49 @@ export const ProgressSections: Story = {
 };
 
 /**
+ * Preference match badge — the shared `.pref-match-badge` pill that sits on an
+ * equipment static-line (AE weapon, CZN partner) and reports where the equipped
+ * item ranks in the card's preference list. Colour and border-colour come inline
+ * from the rust→teal investment gradient; the pill shape lives once in card.css.
+ */
+export const PreferenceMatchBadge: Story = {
+  render: () => (
+    <div style={{ maxWidth: 300, display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="game-card-static-line">
+        <span style={{ color: 'var(--color-brand-primary)' }}>First choice</span>
+        <span
+          className="pref-match-badge"
+          style={{ color: 'var(--color-brand-primary)', borderColor: 'var(--color-brand-primary)' }}
+        >
+          #1
+        </span>
+      </div>
+      <div className="game-card-static-line">
+        <span style={{ color: 'var(--color-text-secondary)' }}>Lower rank</span>
+        <span
+          className="pref-match-badge"
+          style={{
+            color: 'var(--color-text-secondary)',
+            borderColor: 'var(--color-text-secondary)',
+          }}
+        >
+          #3
+        </span>
+      </div>
+      <div className="game-card-static-line">
+        <span style={{ color: 'var(--color-status-danger)' }}>Not preferred</span>
+        <span
+          className="pref-match-badge"
+          style={{ color: 'var(--color-status-danger)', borderColor: 'var(--color-status-danger)' }}
+        >
+          Off-build
+        </span>
+      </div>
+    </div>
+  ),
+};
+
+/**
  * Section group — the canonical labeled container that visually encloses several
  * `.progress-section`s under one heading (`.card-section-group` +
  * `.card-section-group-header` in card.css). Visually neutral: it carries no

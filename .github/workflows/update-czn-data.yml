@@ -36,7 +36,7 @@ jobs:
       - name: Check for changes
         id: changes
         run: |
-          git diff --quiet && echo "changed=false" >> $GITHUB_OUTPUT || echo "changed=true" >> $GITHUB_OUTPUT
+          git diff --quiet && echo "changed=false" >> "$GITHUB_OUTPUT" || echo "changed=true" >> "$GITHUB_OUTPUT"
 
       - name: Create PR
         if: steps.changes.outputs.changed == 'true'
@@ -48,10 +48,12 @@ jobs:
           git config user.name "github-actions[bot]"
           git checkout -b "$BRANCH"
           git add -A
-          git commit -m "chore: update CZN combatant data"
+          git commit -m "chore: update CZN data"
           git push --no-verify origin "$BRANCH"
+          # Single-quoted body: the backticks are Markdown, not command substitution.
+          # shellcheck disable=SC2016
           gh pr create \
-            --title "chore: update CZN combatant data" \
-            --body "Automated weekly update of the CZN Combatant catalog and portrait assets from [Prydwen](https://www.prydwen.gg/chaos-zero-nightmare), plus the hand-curated overlay in `scripts/seeds/czn-combatants.json`." \
+            --title "chore: update CZN data" \
+            --body 'Automated weekly update of the CZN Combatant and Partner catalogs and their ImageKit assets from [Prydwen](https://www.prydwen.gg/chaos-zero-nightmare), plus the hand-curated overlays in `scripts/seeds/czn-combatants.json` and `scripts/seeds/czn-partners.json`.' \
             --base main \
             --head "$BRANCH"

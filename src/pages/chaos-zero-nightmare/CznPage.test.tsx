@@ -35,6 +35,10 @@ function makeCombatant(id: string, name: string): CznTrackedCombatant {
     level: 45,
     ego: 2,
     potentialAttained: false,
+    partnerId: null,
+    partnerLevel: 1,
+    partnerEgo: 0,
+    partnerPreferences: [],
   };
 }
 
@@ -61,6 +65,8 @@ const defaultCombatantsHook = {
   updateLevel: vi.fn(),
   updateEgo: vi.fn(),
   togglePotential: vi.fn(),
+  updatePartner: vi.fn(),
+  updatePartnerPreferences: vi.fn(),
   toggleFavorite: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };
@@ -181,6 +187,18 @@ describe('CznPage', () => {
     await user.click(screen.getByTitle('Edit'));
     await user.click(screen.getByRole('button', { name: 'T6' }));
     expect(defaultCombatantsHook.updateEgo).toHaveBeenCalledWith('mei-lin', 6);
+    const partnerRungs = document.querySelectorAll<HTMLButtonElement>(
+      '.partner-ego-row .toggle-btn',
+    );
+    await user.click(partnerRungs[partnerRungs.length - 1]);
+    expect(defaultCombatantsHook.updatePartner).toHaveBeenCalledWith('mei-lin', {
+      partnerEgo: 4,
+    });
+    await user.click(screen.getByRole('button', { name: '+ Add Partner' }));
+    expect(defaultCombatantsHook.updatePartnerPreferences).toHaveBeenCalledWith(
+      'mei-lin',
+      expect.any(Array),
+    );
     await user.click(screen.getByTitle('Done editing'));
     await user.click(screen.getByTitle('Remove Combatant'));
     expect(defaultCombatantsHook.removeCombatant).toHaveBeenCalledWith(

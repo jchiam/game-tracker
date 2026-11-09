@@ -252,6 +252,12 @@ export interface CznTrackedCombatant extends CznCombatant {
   ego: number; // 0–6 Manifest Ego rank (dupe unlocks), shown as T0–T6
   /** Whole Potential tree unlocked — a boolean like HSR tracesAttained; nodes are not tracked. */
   potentialAttained: boolean;
+  /** Equipped Partner — ALL_CZN_PARTNERS id (kebab slug of the name), or null when none. */
+  partnerId: string | null;
+  partnerLevel: number; // 1–60
+  partnerEgo: number; // 0–4 Partner Manifest Ego rank (dupe unlocks), shown as T0–T4
+  /** Ordered ALL_CZN_PARTNERS ids, highest priority first, no duplicates. */
+  partnerPreferences: string[];
 }
 
 /** Typed partial update for a CZN tracked combatant row (camelCase keys). */
@@ -259,8 +265,15 @@ export interface CznCombatantPatch {
   level?: number;
   ego?: number;
   potentialAttained?: boolean;
+  partnerId?: string | null;
+  partnerLevel?: number;
+  partnerEgo?: number;
+  partnerPreferences?: string[];
   isFavorited?: boolean;
 }
+
+/** Patch shape for the CZN Partner-equip callback (`onUpdatePartner`). */
+export type CznPartnerPatch = Pick<CznCombatantPatch, 'partnerId' | 'partnerLevel' | 'partnerEgo'>;
 
 export interface P5xRevelationPreferences {
   heavensSetId: string | null;

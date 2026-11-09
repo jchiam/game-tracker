@@ -28,7 +28,12 @@ vi.mock('@/utils/toast', () => ({
   addToast: vi.fn(),
 }));
 
-import { useCombatants, CZN_MAX_LEVEL } from '@/hooks/chaos-zero-nightmare/useCombatants';
+import {
+  useCombatants,
+  CZN_MAX_LEVEL,
+  CZN_PARTNER_MAX_EGO,
+  CZN_PARTNER_MAX_LEVEL,
+} from '@/hooks/chaos-zero-nightmare/useCombatants';
 import { ALL_CZN_COMBATANTS } from '@/data/chaos-zero-nightmare/combatants';
 import * as combatantService from '@/services/chaos-zero-nightmare/combatantService';
 import * as toastUtils from '@/utils/toast';
@@ -49,6 +54,10 @@ function trackedFixture(index: number, overrides: Record<string, unknown>) {
     level: 1,
     ego: 0,
     potentialAttained: false,
+    partnerId: null,
+    partnerLevel: 1,
+    partnerEgo: 0,
+    partnerPreferences: [],
     ...overrides,
   };
 }
@@ -96,6 +105,10 @@ describe('useCombatants', () => {
     expect(tracked.level).toBe(1);
     expect(tracked.ego).toBe(0);
     expect(tracked.potentialAttained).toBe(false);
+    expect(tracked.partnerId).toBeNull();
+    expect(tracked.partnerLevel).toBe(1);
+    expect(tracked.partnerEgo).toBe(0);
+    expect(tracked.partnerPreferences).toEqual([]);
     expect(tracked.isFavorited).toBe(false);
     expect(mockInsert).toHaveBeenCalledWith(mockSession.user.id, first.id);
   });
@@ -140,6 +153,58 @@ describe('useCombatants', () => {
 
     act(() => result.current.togglePotential(first.id, false));
     expect(result.current.trackedCombatants[0].potentialAttained).toBe(false);
+  });
+
+  it('updatePartner equips by id and queues a single patch', async () => {
+    const { result } = await setupWithCombatant();
+    act(() => result.current.updatePartner(first.id, { partnerId: 'zeta' }));
+    expect(result.current.trackedCombatants[0].partnerId).toBe('zeta');
+    expect(mockUpdate).toHaveBeenLastCalledWith('new-db-id', { partnerId: 'zeta' });
+  });
+
+  it('updatePartner unequips with null and keeps level and Ego', async () => {
+    const { result } = await setupWithCombatant();
+    act(() => result.current.updatePartner(first.id, { partnerId: 'zeta', partnerLevel: 40 }));
+    act(() => result.current.updatePartner(first.id, { partnerEgo: 3 }));
+    act(() => result.current.updatePartner(first.id, { partnerId: null }));
+    const tracked = result.current.trackedCombatants[0];
+    expect(tracked.partnerId).toBeNull();
+    expect(tracked.partnerLevel).toBe(40);
+    expect(tracked.partnerEgo).toBe(3);
+  });
+
+  it('updatePartner clamps level to 1–60 and Ego to 0–4', async () => {
+    const { result } = await setupWithCombatant();
+    act(() => result.current.updatePartner(first.id, { partnerLevel: 99, partnerEgo: 9 }));
+    expect(result.current.trackedCombatants[0].partnerLevel).toBe(CZN_PARTNER_MAX_LEVEL);
+    expect(result.current.trackedCombatants[0].partnerEgo).toBe(CZN_PARTNER_MAX_EGO);
+    expect(mockUpdate).toHaveBeenLastCalledWith('new-db-id', { partnerLevel: 60, partnerEgo: 4 });
+
+    act(() => result.current.updatePartner(first.id, { partnerLevel: 0, partnerEgo: -2 }));
+    expect(result.current.trackedCombatants[0].partnerLevel).toBe(1);
+    expect(result.current.trackedCombatants[0].partnerEgo).toBe(0);
+  });
+
+  it('updatePartnerPreferences dedupes while preserving first-occurrence order', async () => {
+    const { result } = await setupWithCombatant();
+    act(() =>
+      result.current.updatePartnerPreferences(first.id, ['zeta', 'akad', 'zeta', 'janet', 'akad']),
+    );
+    expect(result.current.trackedCombatants[0].partnerPreferences).toEqual([
+      'zeta',
+      'akad',
+      'janet',
+    ]);
+    expect(mockUpdate).toHaveBeenLastCalledWith('new-db-id', {
+      partnerPreferences: ['zeta', 'akad', 'janet'],
+    });
+  });
+
+  it('updatePartnerPreferences reorders the ranking', async () => {
+    const { result } = await setupWithCombatant();
+    act(() => result.current.updatePartnerPreferences(first.id, ['zeta', 'akad']));
+    act(() => result.current.updatePartnerPreferences(first.id, ['akad', 'zeta']));
+    expect(result.current.trackedCombatants[0].partnerPreferences).toEqual(['akad', 'zeta']);
   });
 
   it('toggleFavorite updates isFavorited', async () => {

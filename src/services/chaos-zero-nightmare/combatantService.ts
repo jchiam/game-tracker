@@ -7,6 +7,10 @@ const COMBATANT_COLUMNS: Record<keyof CznCombatantPatch, string> = {
   level: 'level',
   ego: 'ego',
   potentialAttained: 'potential_attained',
+  partnerId: 'partner_id',
+  partnerLevel: 'partner_level',
+  partnerEgo: 'partner_ego',
+  partnerPreferences: 'partner_preferences',
   isFavorited: 'is_favorited',
 };
 
@@ -19,8 +23,11 @@ const svc = createRosterPersistence<CznCombatant, CznTrackedCombatant, CznCombat
     level: 1,
     ego: 0,
     potential_attained: false,
+    partner_level: 1,
+    partner_ego: 0,
   },
-  select: 'id, combatant_id, level, ego, potential_attained, is_favorited',
+  select:
+    'id, combatant_id, level, ego, potential_attained, partner_id, partner_level, partner_ego, partner_preferences, is_favorited',
   fromRow: (row, base) => ({
     ...base,
     dbId: row.id,
@@ -28,6 +35,10 @@ const svc = createRosterPersistence<CznCombatant, CznTrackedCombatant, CznCombat
     level: row.level,
     ego: row.ego ?? 0,
     potentialAttained: !!row.potential_attained,
+    partnerId: row.partner_id ?? null,
+    partnerLevel: row.partner_level ?? 1,
+    partnerEgo: row.partner_ego ?? 0,
+    partnerPreferences: row.partner_preferences ?? [],
   }),
 });
 

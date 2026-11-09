@@ -304,7 +304,7 @@ describe('OperatorCard', () => {
         })}
       />,
     );
-    const badge = container.querySelector<HTMLElement>('.weapon-match-badge');
+    const badge = container.querySelector<HTMLElement>('.pref-match-badge');
     expect(badge).not.toBeNull();
     expect(badge).toHaveTextContent('#1');
     expect(badge!.style.color).toBe('rgb(64, 200, 160)'); // teal — full match
@@ -320,7 +320,7 @@ describe('OperatorCard', () => {
         })}
       />,
     );
-    const badge = container.querySelector<HTMLElement>('.weapon-match-badge');
+    const badge = container.querySelector<HTMLElement>('.pref-match-badge');
     expect(badge).toHaveTextContent('#2');
     expect(badge!.style.color).not.toBe('rgb(64, 200, 160)'); // not full teal
   });
@@ -335,7 +335,7 @@ describe('OperatorCard', () => {
         })}
       />,
     );
-    const badge = container.querySelector<HTMLElement>('.weapon-match-badge');
+    const badge = container.querySelector<HTMLElement>('.pref-match-badge');
     expect(badge).toHaveTextContent('Off-build');
     expect(badge!.style.color).toBe('rgb(138, 96, 80)'); // rust
   });
@@ -350,7 +350,7 @@ describe('OperatorCard', () => {
         })}
       />,
     );
-    expect(container.querySelector('.weapon-match-badge')).toHaveTextContent('Off-build');
+    expect(container.querySelector('.pref-match-badge')).toHaveTextContent('Off-build');
   });
 
   it('renders no badge when there are no preferences', () => {
@@ -360,7 +360,7 @@ describe('OperatorCard', () => {
         operator={makeOperator({ weaponName: greatswordWeapon.name, weaponPreferences: [] })}
       />,
     );
-    expect(container.querySelector('.weapon-match-badge')).toBeNull();
+    expect(container.querySelector('.pref-match-badge')).toBeNull();
   });
 
   it('renders no badge when no weapon is equipped even if preferences exist', () => {
@@ -370,7 +370,7 @@ describe('OperatorCard', () => {
         operator={makeOperator({ weaponName: null, weaponPreferences: [greatswordWeapon.id] })}
       />,
     );
-    expect(container.querySelector('.weapon-match-badge')).toBeNull();
+    expect(container.querySelector('.pref-match-badge')).toBeNull();
   });
 
   // --- Weapon preference editor ---
