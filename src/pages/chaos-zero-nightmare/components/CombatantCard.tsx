@@ -7,7 +7,7 @@ import { ProgressSection } from '@/components/ProgressSection';
 import { SegmentedButtons } from '@/components/SegmentedButtons';
 import { StatChip } from '@/components/StatChip';
 import { getProgressStyle } from '@/utils/progressGradient';
-import { CZN_MAX_EGO, CZN_MAX_LEVEL } from '@/hooks/chaos-zero-nightmare/useCombatants';
+import { CZN_MAX_EGO, CZN_MAX_LEVEL } from '@/hooks/chaos-zero-nightmare/combatantLimits';
 import { formatEgo, getClassBadge, getElementBadge, getRarityBadge } from './combatantBadges';
 import './CombatantCard.css';
 

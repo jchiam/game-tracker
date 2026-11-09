@@ -5,8 +5,7 @@ import { CznPage } from './CznPage';
 import { renderWithProviders, createMockSession } from '@/test/utils';
 import type { CznTrackedCombatant, Party } from '@/types';
 
-vi.mock('@/hooks/chaos-zero-nightmare/useCombatants', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@/hooks/chaos-zero-nightmare/useCombatants')>()),
+vi.mock('@/hooks/chaos-zero-nightmare/useCombatants', () => ({
   useCombatants: vi.fn(),
 }));
 

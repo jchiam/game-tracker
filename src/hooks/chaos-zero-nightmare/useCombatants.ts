@@ -9,11 +9,9 @@ import {
   updateCombatant,
 } from '@/services/chaos-zero-nightmare/combatantService';
 import { useRoster } from '@/hooks/useRoster';
+import { CZN_MAX_EGO, CZN_MAX_LEVEL } from '@/hooks/chaos-zero-nightmare/combatantLimits';
 
-/** End-game level cap: base 60 + 2 from Unconscious Awakening. Paired with the DB CHECK. */
-export const CZN_MAX_LEVEL = 62;
-/** Manifest Ego ranks: 0 base, 1–6 dupe unlocks (shown as T0–T6). */
-export const CZN_MAX_EGO = 6;
+export { CZN_MAX_EGO, CZN_MAX_LEVEL };
 
 function createTrackedCombatant(combatant: CznCombatant): CznTrackedCombatant {
   return {
