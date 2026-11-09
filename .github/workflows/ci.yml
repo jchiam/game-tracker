@@ -66,6 +66,8 @@ jobs:
 
       - name: Verify production build
         run: npm run build
+        env:
+          VITE_IMAGEKIT_URL_ENDPOINT: https://ik.imagekit.io/dummy
 
       # Gates shipped dependencies only. braces (GHSA-vfj7-8cjw-p6xm) has no patched
       # release and reaches us only through the dev-only openspec CLI — revert to a
@@ -97,6 +99,7 @@ jobs:
           VITE_HOST: 127.0.0.1
           VITE_SUPABASE_URL: http://127.0.0.1:54321
           VITE_SUPABASE_ANON_KEY: dummy_key
+          VITE_IMAGEKIT_URL_ENDPOINT: https://ik.imagekit.io/dummy
       - uses: actions/upload-artifact@v6
         if: always()
         with:
