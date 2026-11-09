@@ -35,6 +35,10 @@ describe('combatantService', () => {
       level: 62,
       ego: 6,
       potential_attained: true,
+      partner_id: 'akad',
+      partner_level: 60,
+      partner_ego: 4,
+      partner_preferences: ['akad', 'zeta'],
       is_favorited: true,
     };
 
@@ -49,6 +53,10 @@ describe('combatantService', () => {
     expect(result[0].level).toBe(62);
     expect(result[0].ego).toBe(6);
     expect(result[0].potentialAttained).toBe(true);
+    expect(result[0].partnerId).toBe('akad');
+    expect(result[0].partnerLevel).toBe(60);
+    expect(result[0].partnerEgo).toBe(4);
+    expect(result[0].partnerPreferences).toEqual(['akad', 'zeta']);
     expect(result[0].isFavorited).toBe(true);
     // Catalog fields merged from ALL_CZN_COMBATANTS.
     expect(result[0].name).toBe(first.name);
@@ -74,6 +82,25 @@ describe('combatantService', () => {
     expect(result[0].isFavorited).toBe(false);
   });
 
+  it('loadCombatantsFromDB defaults the Partner fields for a row saved before Phase 2', async () => {
+    const legacyRow = {
+      id: 'db-uuid-1',
+      combatant_id: first.id,
+      level: 10,
+      ego: 1,
+      potential_attained: false,
+      is_favorited: false,
+    };
+    mockFrom.mockReturnValue(createBuilder({ data: [legacyRow], error: null }));
+
+    const result = await service.loadCombatantsFromDB('user-1');
+
+    expect(result[0].partnerId).toBeNull();
+    expect(result[0].partnerLevel).toBe(1);
+    expect(result[0].partnerEgo).toBe(0);
+    expect(result[0].partnerPreferences).toEqual([]);
+  });
+
   it('insertCombatant inserts the entity FK column and configured defaults', async () => {
     const combatantBuilder = createBuilder({ data: { id: 'new-db-id' }, error: null });
     const profileBuilder = createBuilder({ data: null, error: null });
@@ -90,6 +117,8 @@ describe('combatantService', () => {
       level: 1,
       ego: 0,
       potential_attained: false,
+      partner_level: 1,
+      partner_ego: 0,
     });
     expect(result).toBe('new-db-id');
   });
@@ -102,6 +131,10 @@ describe('combatantService', () => {
       level: 50,
       ego: 2,
       potentialAttained: true,
+      partnerId: 'akad',
+      partnerLevel: 30,
+      partnerEgo: 2,
+      partnerPreferences: ['akad'],
       isFavorited: true,
     });
 
@@ -110,6 +143,10 @@ describe('combatantService', () => {
       level: 50,
       ego: 2,
       potential_attained: true,
+      partner_id: 'akad',
+      partner_level: 30,
+      partner_ego: 2,
+      partner_preferences: ['akad'],
       is_favorited: true,
     });
     expect(builder.eq).toHaveBeenCalledWith('id', 'db-uuid-1');

@@ -132,7 +132,7 @@ export function OperatorCard({
           )}
           {showMatchBadge && (
             <span
-              className="weapon-match-badge"
+              className="pref-match-badge"
               style={{ color: matchPs.color, borderColor: matchPs.borderColor }}
               title="Equipped weapon vs preferred"
             >

@@ -1,6 +1,12 @@
 /* CZN combatant card — game-unique badge colours only; structure comes from
    card.css / controls.css via GameCardShell. Badge convention: fill 25% /
-   border 60% of the token hue via color-mix. */
+   border 60% of the token hue via color-mix. The Partner static-line's match
+   badge is the shared `.pref-match-badge` pill in card.css. */
+
+/* Empty Partner static-line placeholder (colour set inline from the gradient). */
+.no-partner {
+  opacity: 0.4;
+}
 
 /* Rarity */
 .czn-rarity-5 {

@@ -273,7 +273,8 @@ Combatants are fetched from Prydwen's CloudFront origin (`d2ankz0m1a0dsp.cloudfr
 - A seed entry's `id` is the slug Prydwen will give the unit (its `www.prydwen.gg/chaos-zero-nightmare/characters/<slug>` path), so tracked rows keyed on it survive the hand-off. Upstream wins on collision: once the slug appears in the fetched list, the run warns and the seed entry is deleted by hand.
 - `class` and `element` use Prydwen's spelling as already present in `combatants.ts` (`Striker`, `Vanguard`, `Ranger`, `Hunter`, `Psionic`, `Controller`; `Passion`, `Order`, `Justice`, `Void`, `Instinct`). `faction` is carried raw and is catalog-only — no badge or filter.
 - Portraits are Prydwen's `cardImage` (262×358) uploaded as webp at source size; the app's default `getMugshotUrl` / `getAvatarUrl` transforms crop them. No CZN-specific resolver.
-- Fix combatants in the seed, then regenerate — never in `src/data/chaos-zero-nightmare/`.
+- **Partners** (the weapon analog, Phase 2) come from the same script. The partners page-data (`/page-data/chaos-zero-nightmare/partners/page-data.json`) carries taxonomy only — no slug, no images, and there are no per-partner pages — so the script reads its `staticQueryHashes` and takes the nodes from the matching `/page-data/sq/d/<hash>.json` (`allContentfulChaosPartner.nodes`, `smallImage` 160² icons → ImageKit `chaos_zero_nightmare/partners`). The hash is resolved every run, never hardcoded. Partner `id` is `slugify(name, '-')`; `scripts/seeds/czn-partners.json` is the Partner overlay seed (same rules as the combatant seed, rarities 3–5, and its `id` must equal the slug of its `name` or the run aborts). `--reupload-partners` forces the icons. Partner `class` uses the combatant class vocabulary — it is the equip join key (a Combatant's Partner picker offers only same-class Partners).
+- Fix combatants and partners in their seeds, then regenerate — never in `src/data/chaos-zero-nightmare/`.
 
 ### Testing Conventions
 

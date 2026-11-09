@@ -78,6 +78,10 @@ describe('AddCombatantModal', () => {
         level: 1,
         ego: 0,
         potentialAttained: false,
+        partnerId: null,
+        partnerLevel: 1,
+        partnerEgo: 0,
+        partnerPreferences: [],
       },
     ];
     render(<AddCombatantModal {...defaultProps} trackedCombatants={tracked} />);

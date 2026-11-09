@@ -1,0 +1,56 @@
+[
+  {
+    "id": "aria",
+    "name": "Aria",
+    "rarity": 5,
+    "class": "Psionic",
+    "faction": "Terrascion",
+    "imageSource": "https://img.game8.co/4535409/6e5f38ebf30b3ae8a8f9697a6badbf59.png/show",
+    "note": "Not on the Prydwen origin as of 2026-11-09; taxonomy and 75px icon from Game8 (archives/602984)."
+  },
+  {
+    "id": "emilie",
+    "name": "Emilie",
+    "rarity": 5,
+    "class": "Psionic",
+    "faction": "Wanderer",
+    "imageSource": "https://img.game8.co/4570671/87980cbc9375fac6dc821ac949248670.png/show",
+    "note": "Not on the Prydwen origin as of 2026-11-09; taxonomy and 75px icon from Game8 (archives/614195)."
+  },
+  {
+    "id": "eunie",
+    "name": "Eunie",
+    "rarity": 5,
+    "class": "Ranger",
+    "faction": "Ironrain",
+    "imageSource": "https://img.game8.co/4570665/96da417a611bc640c63752d00ad5d148.png/show",
+    "note": "Not on the Prydwen origin as of 2026-11-09; taxonomy and 75px icon from Game8 (archives/613154)."
+  },
+  {
+    "id": "licinia",
+    "name": "Licinia",
+    "rarity": 5,
+    "class": "Striker",
+    "faction": "Stella Familia",
+    "imageSource": "https://img.game8.co/4570669/3a7d27a57a790fdd834d3575891671f0.png/show",
+    "note": "Not on the Prydwen origin as of 2026-11-09; taxonomy and 75px icon from Game8 (archives/614143)."
+  },
+  {
+    "id": "ruixiang",
+    "name": "Ruixiang",
+    "rarity": 5,
+    "class": "Ranger",
+    "faction": "Wanderer",
+    "imageSource": "https://img.game8.co/4550767/b1b781e3da38a2f33cb50edee7ccb042.png/show",
+    "note": "Not on the Prydwen origin as of 2026-11-09; taxonomy and 75px icon from Game8 (archives/602988)."
+  },
+  {
+    "id": "sig",
+    "name": "Sig",
+    "rarity": 5,
+    "class": "Striker",
+    "faction": "Wanderer",
+    "imageSource": "https://img.game8.co/4656029/1661e97980e2ad0577c74a19996fad65.png/show",
+    "note": "Season 5 Phase 1 (2026-10-21) rate-up Partner; not on the Prydwen origin as of 2026-11-09. Taxonomy and 75px icon from Game8 (archives/630841)."
+  }
+]

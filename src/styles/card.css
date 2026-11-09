@@ -255,6 +255,20 @@
   text-overflow: ellipsis;
 }
 
+/* Equipped-vs-preferred match badge on an equipment static-line (AE weapon,
+   CZN partner). Reports the equipped item's rank in the card's preference list
+   (`#1`, `#3`, `Off-build`). Colour and border-colour are set inline from the
+   shared rust→teal gradient; only the pill shape lives here. */
+.pref-match-badge {
+  margin-left: var(--spacing-sm);
+  padding: 0 var(--spacing-2);
+  font-size: var(--typography-font-size-xs);
+  font-weight: var(--typography-font-weight-bold);
+  border: 1px solid;
+  border-radius: var(--border-radius-sm);
+  line-height: 1.4;
+}
+
 .game-card-edit-body {
   max-height: 0;
   overflow: hidden;

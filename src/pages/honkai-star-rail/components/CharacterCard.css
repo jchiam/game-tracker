@@ -62,7 +62,7 @@
 
 /* Light Cone match badge on the summary line — rank of the equipped cone in the
    preference list. Text/border colours are set inline from the shared progress
-   gradient (AE .weapon-match-badge convention). */
+   gradient (shared .pref-match-badge convention). */
 .cone-match-badge {
   margin-left: var(--spacing-sm);
   padding: 0 var(--spacing-2);
