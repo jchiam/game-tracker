@@ -134,6 +134,21 @@ export const GAMES: Game[] = [
     ),
   },
   {
+    id: 'czn',
+    name: 'Chaos Zero Nightmare',
+    path: '/chaos-zero-nightmare',
+    developer: 'Super Creative',
+    description: 'Track combatants, Manifest Ego, and team compositions.',
+    icon: '/assets/icons/czn-icon.webp',
+    color: '#e0325a',
+    coverImage: '/assets/chaos-zero-nightmare/selection-cover.webp',
+    bgClass: 'bg-czn-sel',
+    modality: 'roster',
+    Page: lazy(() =>
+      import('@/pages/chaos-zero-nightmare/CznPage').then((m) => ({ default: m.CznPage })),
+    ),
+  },
+  {
     id: 'dgm',
     name: 'Digimon Virtual Pets',
     path: '/digimon',

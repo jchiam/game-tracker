@@ -226,6 +226,15 @@ button {
   );
 }
 
+.selection-card-header.bg-czn-sel {
+  background: linear-gradient(
+    135deg,
+    var(--color-czn-sel-start) 0%,
+    var(--color-czn-sel-mid) 50%,
+    var(--color-bg-selection-fade) 100%
+  );
+}
+
 .selection-card-header.bg-dgm-sel {
   background: linear-gradient(
     135deg,
@@ -265,6 +274,13 @@ button {
 .selection-card-header.bg-zzz-sel .game-character-image {
   object-fit: cover;
   object-position: center top;
+}
+
+/* Key art is cropped to 1024×780 so the centre figure and the logo both fit; 70% biases the
+   residual overflow toward the top so the logo along the bottom edge stays whole. */
+.selection-card-header.bg-czn-sel .game-character-image {
+  object-fit: cover;
+  object-position: center 70%;
 }
 
 .selection-card:hover .game-character-image {

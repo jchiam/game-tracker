@@ -1,0 +1,102 @@
+/* CZN combatant card — game-unique badge colours only; structure comes from
+   card.css / controls.css via GameCardShell. Badge convention: fill 25% /
+   border 60% of the token hue via color-mix. */
+
+/* Rarity */
+.czn-rarity-5 {
+  color: var(--color-czn-rarity5);
+  background: color-mix(in srgb, var(--color-czn-rarity5) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-rarity5) 60%, transparent);
+}
+
+.czn-rarity-4 {
+  color: var(--color-czn-rarity4);
+  background: color-mix(in srgb, var(--color-czn-rarity4) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-rarity4) 60%, transparent);
+}
+
+.czn-rarity-unknown {
+  color: var(--color-czn-class-unknown);
+  background: color-mix(in srgb, var(--color-czn-class-unknown) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-class-unknown) 60%, transparent);
+}
+
+/* Class */
+.czn-class-striker {
+  color: var(--color-czn-class-striker);
+  background: color-mix(in srgb, var(--color-czn-class-striker) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-class-striker) 60%, transparent);
+}
+
+.czn-class-vanguard {
+  color: var(--color-czn-class-vanguard);
+  background: color-mix(in srgb, var(--color-czn-class-vanguard) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-class-vanguard) 60%, transparent);
+}
+
+.czn-class-ranger {
+  color: var(--color-czn-class-ranger);
+  background: color-mix(in srgb, var(--color-czn-class-ranger) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-class-ranger) 60%, transparent);
+}
+
+.czn-class-hunter {
+  color: var(--color-czn-class-hunter);
+  background: color-mix(in srgb, var(--color-czn-class-hunter) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-class-hunter) 60%, transparent);
+}
+
+.czn-class-psionic {
+  color: var(--color-czn-class-psionic);
+  background: color-mix(in srgb, var(--color-czn-class-psionic) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-class-psionic) 60%, transparent);
+}
+
+.czn-class-controller {
+  color: var(--color-czn-class-controller);
+  background: color-mix(in srgb, var(--color-czn-class-controller) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-class-controller) 60%, transparent);
+}
+
+.czn-class-unknown {
+  color: var(--color-czn-class-unknown);
+  background: color-mix(in srgb, var(--color-czn-class-unknown) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-class-unknown) 60%, transparent);
+}
+
+/* Attribute (element) */
+.czn-element-passion {
+  color: var(--color-czn-element-passion);
+  background: color-mix(in srgb, var(--color-czn-element-passion) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-element-passion) 60%, transparent);
+}
+
+.czn-element-order {
+  color: var(--color-czn-element-order);
+  background: color-mix(in srgb, var(--color-czn-element-order) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-element-order) 60%, transparent);
+}
+
+.czn-element-justice {
+  color: var(--color-czn-element-justice);
+  background: color-mix(in srgb, var(--color-czn-element-justice) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-element-justice) 60%, transparent);
+}
+
+.czn-element-void {
+  color: var(--color-czn-element-void);
+  background: color-mix(in srgb, var(--color-czn-element-void) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-element-void) 60%, transparent);
+}
+
+.czn-element-instinct {
+  color: var(--color-czn-element-instinct);
+  background: color-mix(in srgb, var(--color-czn-element-instinct) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-element-instinct) 60%, transparent);
+}
+
+.czn-element-unknown {
+  color: var(--color-czn-element-unknown);
+  background: color-mix(in srgb, var(--color-czn-element-unknown) 25%, transparent);
+  border-color: color-mix(in srgb, var(--color-czn-element-unknown) 60%, transparent);
+}

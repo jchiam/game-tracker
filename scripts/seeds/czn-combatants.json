@@ -1,0 +1,72 @@
+[
+  {
+    "id": "rossweisse",
+    "name": "Rossweisse",
+    "rarity": 5,
+    "class": "Striker",
+    "element": "Justice",
+    "faction": "Wanderer",
+    "imageSource": "https://img.game8.co/4656035/1bdc22e2ec3ba649d040d666e93a3c86.png/show",
+    "note": "Season 5 anniversary seasonal (2026-10-21). Prydwen's origin build predates her. Taxonomy from Game8 (archives/630826); portrait is Game8's 300px framed icon — replace with card art when a source exists."
+  },
+  {
+    "id": "olga",
+    "name": "Olga",
+    "rarity": 5,
+    "class": "Psionic",
+    "element": "Instinct",
+    "faction": "Wanderer",
+    "imageSource": "https://img.game8.co/4550728/c561ddc497b3904a9a4020ee811c50b7.png/show",
+    "note": "Season 4 phase 3 (2026-09-09). Taxonomy from Game8 (archives/608779); portrait is Game8's 150px framed icon."
+  },
+  {
+    "id": "arabella",
+    "name": "Arabella",
+    "rarity": 5,
+    "class": "Striker",
+    "element": "Instinct",
+    "faction": "Stella Familia",
+    "imageSource": "https://img.game8.co/4550729/2856f37031f8f0aa982075838b2dcdbd.png/show",
+    "note": "Season 4 phase 2 seasonal (2026-08-19). Taxonomy from Game8 (archives/608770); portrait is Game8's 150px framed icon."
+  },
+  {
+    "id": "hilde",
+    "name": "Hilde",
+    "rarity": 5,
+    "class": "Ranger",
+    "element": "Instinct",
+    "faction": "Ironrain",
+    "imageSource": "https://img.game8.co/4550733/7f4a492e61bc09e3a504ba52fbe0bc01.png/show",
+    "note": "Season 4 phase 1 (2026-07-29). Taxonomy from Game8 (archives/608781); portrait is Game8's 150px framed icon."
+  },
+  {
+    "id": "fei",
+    "name": "Fei",
+    "rarity": 5,
+    "class": "Ranger",
+    "element": "Void",
+    "faction": "Wanderer",
+    "imageSource": "https://img.game8.co/4503288/dc3f5ab3eb3b0ef33837dd47a05a57c2.png/show",
+    "note": "Released 2026-07-08 with the story revamp. Prydwen's origin still lists her as an Unknown/Unknown teaser; this entry fills the slot until that node gets real data. Taxonomy from Game8 (archives/600575); portrait is Game8's 150px framed icon."
+  },
+  {
+    "id": "tenebria",
+    "name": "Tenebria",
+    "rarity": 5,
+    "class": "Psionic",
+    "element": "Passion",
+    "faction": "Terrascion",
+    "imageSource": "https://img.game8.co/4480809/0f73c046b57fd2b64307d4c8b4656894.png/show",
+    "note": "Released 2026-06-17 (Season 3 final phase). Prydwen's origin still lists her as an Unknown/Unknown teaser; this entry fills the slot until that node gets real data. Taxonomy from Game8 (archives/597275); portrait is Game8's 150px framed icon."
+  },
+  {
+    "id": "anika",
+    "name": "Anika",
+    "rarity": 4,
+    "class": "Striker",
+    "element": "Order",
+    "faction": "Ironrain",
+    "imageSource": "https://img.game8.co/4634173/8c09adfe5f360d8ecfb5f247d699ca41.png/show",
+    "note": "4-star added after Prydwen's origin build. Taxonomy from Game8 (archives/627187); portrait is Game8's 150px framed icon."
+  }
+]

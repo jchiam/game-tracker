@@ -181,6 +181,25 @@
       "rarityS": { "$value": "#ffd700", "$type": "color" },
       "rarityA": { "$value": "#c9a8f8", "$type": "color" }
     },
+    "czn": {
+      "selStart": { "$value": "#2a0a12", "$type": "color" },
+      "selMid": { "$value": "#4a1224", "$type": "color" },
+      "elementPassion": { "$value": "#ff6a6a", "$type": "color" },
+      "elementOrder": { "$value": "#6aa8ff", "$type": "color" },
+      "elementJustice": { "$value": "#f5d060", "$type": "color" },
+      "elementVoid": { "$value": "#b48cff", "$type": "color" },
+      "elementInstinct": { "$value": "#7fd98a", "$type": "color" },
+      "elementUnknown": { "$value": "#9a9a9a", "$type": "color" },
+      "classStriker": { "$value": "#ff9a7a", "$type": "color" },
+      "classVanguard": { "$value": "#8ab8f5", "$type": "color" },
+      "classRanger": { "$value": "#90e09a", "$type": "color" },
+      "classHunter": { "$value": "#f5c04a", "$type": "color" },
+      "classPsionic": { "$value": "#d59cff", "$type": "color" },
+      "classController": { "$value": "#7fd6e8", "$type": "color" },
+      "classUnknown": { "$value": "#9a9a9a", "$type": "color" },
+      "rarity5": { "$value": "#ffd700", "$type": "color" },
+      "rarity4": { "$value": "#c9a8f8", "$type": "color" }
+    },
     "dgm": {
       "selStart": { "$value": "#0f1e2a", "$type": "color" },
       "selMid": { "$value": "#1d3a52", "$type": "color" },

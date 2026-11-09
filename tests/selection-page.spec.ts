@@ -12,13 +12,14 @@ test.describe('Selection Page UI and Behavior', () => {
     await expect(brand).toHaveAttribute('href', '/');
   });
 
-  test('should display all seven tracker cards', async ({ page }) => {
+  test('should display all eight tracker cards', async ({ page }) => {
     const hsrCard = page.locator('.selection-card', { hasText: 'Honkai Star Rail' });
     const r1999Card = page.locator('.selection-card', { hasText: 'Reverse: 1999' });
     const n2eCard = page.locator('.selection-card', { hasText: 'Neverness to Everness' });
     const endfieldCard = page.locator('.selection-card', { hasText: 'Arknights: Endfield' });
     const p5xCard = page.locator('.selection-card', { hasText: 'Persona 5: The Phantom X' });
     const zzzCard = page.locator('.selection-card', { hasText: 'Zenless Zone Zero' });
+    const cznCard = page.locator('.selection-card', { hasText: 'Chaos Zero Nightmare' });
     const dgmCard = page.locator('.selection-card', { hasText: 'Digimon Virtual Pets' });
 
     await expect(hsrCard).toBeVisible();
@@ -27,12 +28,13 @@ test.describe('Selection Page UI and Behavior', () => {
     await expect(endfieldCard).toBeVisible();
     await expect(p5xCard).toBeVisible();
     await expect(zzzCard).toBeVisible();
+    await expect(cznCard).toBeVisible();
     await expect(dgmCard).toBeVisible();
   });
 
   test('should show "Requires Login" badge on game cards', async ({ page }) => {
     const loginBadges = page.locator('.requires-login-badge');
-    await expect(loginBadges).toHaveCount(7);
+    await expect(loginBadges).toHaveCount(8);
     await expect(loginBadges.first()).toContainText('Requires Login');
   });
 
@@ -51,7 +53,7 @@ test.describe('Selection Page UI and Behavior', () => {
 
   test('should show character images in cards', async ({ page }) => {
     const images = page.locator('.game-character-image');
-    await expect(images).toHaveCount(7);
+    await expect(images).toHaveCount(8);
 
     // Registry display order — see the GAMES doc comment in src/lib/games.ts.
     const hsrImage = images.nth(0);
@@ -60,7 +62,8 @@ test.describe('Selection Page UI and Behavior', () => {
     const p5xImage = images.nth(3);
     const endfieldImage = images.nth(4);
     const n2eImage = images.nth(5);
-    const dgmImage = images.nth(6);
+    const cznImage = images.nth(6);
+    const dgmImage = images.nth(7);
 
     await expect(hsrImage).toHaveAttribute(
       'src',
@@ -85,6 +88,10 @@ test.describe('Selection Page UI and Behavior', () => {
     await expect(zzzImage).toHaveAttribute(
       'src',
       /\/assets\/zenless-zone-zero\/selection-cover\.webp/,
+    );
+    await expect(cznImage).toHaveAttribute(
+      'src',
+      /\/assets\/chaos-zero-nightmare\/selection-cover\.webp/,
     );
     await expect(dgmImage).toHaveAttribute('src', /\/assets\/digimon\/selection-cover\.webp/);
   });

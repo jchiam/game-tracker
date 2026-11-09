@@ -6,6 +6,7 @@ import { type AeOperator } from '@/data/arknights-endfield/operators';
 import { type P5xThief } from '@/data/persona-5-phantom-x/thieves';
 import { type ZzzAgent } from '@/data/zenless-zone-zero/agents';
 import { type ZzzDiscSlot, type ZzzEquippedDisc } from '@/data/zenless-zone-zero/discs';
+import { type CznCombatant } from '@/data/chaos-zero-nightmare/combatants';
 import { type EquippedRevelation } from '@/data/persona-5-phantom-x/revelations';
 import { type DgmProduct } from '@/data/digimon/products';
 
@@ -242,6 +243,23 @@ export interface ZzzAgentPatch {
   wEngineLevel?: number;
   wEnginePhase?: number;
   wEnginePreferences?: string[];
+}
+
+export interface CznTrackedCombatant extends CznCombatant {
+  dbId?: string;
+  isFavorited: boolean;
+  level: number; // 1–62 (base cap 60 + 2 from Unconscious Awakening; per-combatant cap is not tracked)
+  ego: number; // 0–6 Manifest Ego rank (dupe unlocks), shown as T0–T6
+  /** Whole Potential tree unlocked — a boolean like HSR tracesAttained; nodes are not tracked. */
+  potentialAttained: boolean;
+}
+
+/** Typed partial update for a CZN tracked combatant row (camelCase keys). */
+export interface CznCombatantPatch {
+  level?: number;
+  ego?: number;
+  potentialAttained?: boolean;
+  isFavorited?: boolean;
 }
 
 export interface P5xRevelationPreferences {

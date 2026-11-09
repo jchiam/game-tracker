@@ -66,6 +66,11 @@ The system SHALL enforce slot index constraints per game when saving party membe
 - **WHEN** saving a ZZZ party
 - **THEN** member slot indices are in range 0–2 (maximum 3 agents)
 
+#### Scenario: CZN party slots
+
+- **WHEN** saving a CZN party
+- **THEN** member slot indices are in range 0–2 (maximum 3 combatants)
+
 #### Scenario: P5X party slots
 
 - **WHEN** saving a P5X party
@@ -88,7 +93,7 @@ The system SHALL enforce slot index constraints per game when saving party membe
 
 ### Requirement: Party favorite toggle
 
-The system SHALL allow toggling the favorite status of a party optimistically, reverting and notifying on failure. This capability is available for all games (HSR, R1999, N2E, AE, P5X, ZZZ).
+The system SHALL allow toggling the favorite status of a party optimistically, reverting and notifying on failure. This capability is available for all games (HSR, R1999, N2E, AE, P5X, ZZZ, CZN).
 
 #### Scenario: Favorite toggled successfully
 
@@ -102,7 +107,7 @@ The system SHALL allow toggling the favorite status of a party optimistically, r
 
 ### Requirement: Party tier field
 
-The system SHALL support an optional tier field on parties for all games (HSR, R1999, N2E, AE, P5X, ZZZ). Tier is one of S+/S/A/B or null.
+The system SHALL support an optional tier field on parties for all games (HSR, R1999, N2E, AE, P5X, ZZZ, CZN). Tier is one of S+/S/A/B or null.
 
 #### Scenario: Tier saved with party
 
@@ -158,7 +163,7 @@ The shared party editor and card SHALL support an optional per-slot configuratio
 
 #### Scenario: Uniform reduced slot count
 
-- **WHEN** a game's `PartyViewConfig` declares fewer uniform slots (ZZZ: three unfiltered slots at indices 0–2)
+- **WHEN** a game's `PartyViewConfig` declares fewer uniform slots (ZZZ and CZN: three unfiltered slots at indices 0–2)
 - **THEN** the editor and card render exactly that many slots and no member can be saved at an index outside them
 
 #### Scenario: Fixed display slot

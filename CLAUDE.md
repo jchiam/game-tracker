@@ -1,6 +1,6 @@
 # Game Tracker
 
-Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Currently tracks **Honkai Star Rail**, **Zenless Zone Zero**, **Reverse: 1999**, **Persona 5: The Phantom X**, **Arknights: Endfield**, **Neverness to Everness**, and the **Digimon Virtual Pets** collection (the first collection-modality tracker — see Tracker Modality in `CONTEXT.md`) tracked per product with its variants, copies per condition, and game progress (Product / Variant / Copy / Ownership / Playable / Game Progress in `CONTEXT.md`).
+Multi-game roster and party tracker. React 19 + Vite + Supabase + Vercel. Currently tracks **Honkai Star Rail**, **Zenless Zone Zero**, **Reverse: 1999**, **Persona 5: The Phantom X**, **Arknights: Endfield**, **Neverness to Everness**, **Chaos Zero Nightmare**, and the **Digimon Virtual Pets** collection (the first collection-modality tracker — see Tracker Modality in `CONTEXT.md`) tracked per product with its variants, copies per condition, and game progress (Product / Variant / Copy / Ownership / Playable / Game Progress in `CONTEXT.md`).
 
 ## Domain Language
 
@@ -38,7 +38,7 @@ Pre-push hook (Husky) runs: `format:check`, `lint`, `test`, `build`, `test:e2e`.
 
 - Always use `git -c commit.gpgsign=false` — GPG signing is not configured in this environment.
 - Conventional Commits style: `feat(r1999):`, `fix(hsr):`, `chore(n2e):`, `test:`, `refactor:`, `style:`.
-- Game-scoped commits use the short game ID: `hsr`, `r1999`, `n2e`, `ae`, `p5x`, `zzz`, `dgm`.
+- Game-scoped commits use the short game ID: `hsr`, `r1999`, `n2e`, `ae`, `p5x`, `zzz`, `czn`, `dgm`.
 - **Always run `npx openspec validate --all` before committing** when openspec specs or changes were modified. The pre-commit hook enforces this, but verify manually if unsure.
 
 ## Code Conventions
@@ -263,6 +263,17 @@ Thieves are fetched from Prydwen's CloudFront origin, which can lag the game by 
 - A seed entry's `id` is the slug Prydwen will give the unit (its `www.prydwen.gg/persona-5x/characters/<slug>` path), so tracked rows keyed on it survive the hand-off. Upstream wins on collision: once the slug appears in the fetched list, the run warns and the seed entry is deleted by hand.
 - `role` and `element` use Prydwen's job vocabulary as already present in `thieves.ts` (`Single-target`, `Buffer`, `Navigator`, …), not in-game job names.
 - Fix thieves in the seed, then regenerate — never in `src/data/persona-5-phantom-x/`.
+
+### Catalog Data Sources (`czn`)
+
+Combatants are fetched from Prydwen's CloudFront origin (`d2ankz0m1a0dsp.cloudfront.net`, the same seam as `p5x`): the list page-data at `/page-data/chaos-zero-nightmare/characters/page-data.json` plus each slug's detail page-data for the hashed portrait paths. `scripts/seeds/czn-combatants.json` is the **overlay seed** for combatants Prydwen lacks: each entry carries the `CznCombatant` shape plus `imageSource` (an https URL for the card art, or `null` while none is sourced) and a free-text `note`. Rules:
+
+- Prydwen lists announced-but-unreleased combatants as teaser nodes with `class` / `element` `"Unknown"`. The script drops those at generation and reports them as excluded; they enter the catalog (as `added` in the diff) the week they get real data. Never add a teaser to the seed with guessed taxonomy. Once the unit has actually released, a seed entry under the teaser's slug (taxonomy sourced from Game8 or the game) fills the slot — the run logs the placeholder as `covered by` the seed — and is deleted by hand the week Prydwen's node gets real data and the run warns it is shadowed.
+- Prydwen's origin build can lag the game by a whole season (as of Nov 2026 it stops at Season 3). Game8 (`game8.co/games/Chaos-Zero-Nightmare`) is the fallback for taxonomy and release dates; its per-character icons (150–300 px, orange-framed) are the only portrait source reachable without a browser, so seed `imageSource` values point there until better card art is found.
+- A seed entry's `id` is the slug Prydwen will give the unit (its `www.prydwen.gg/chaos-zero-nightmare/characters/<slug>` path), so tracked rows keyed on it survive the hand-off. Upstream wins on collision: once the slug appears in the fetched list, the run warns and the seed entry is deleted by hand.
+- `class` and `element` use Prydwen's spelling as already present in `combatants.ts` (`Striker`, `Vanguard`, `Ranger`, `Hunter`, `Psionic`, `Controller`; `Passion`, `Order`, `Justice`, `Void`, `Instinct`). `faction` is carried raw and is catalog-only — no badge or filter.
+- Portraits are Prydwen's `cardImage` (262×358) uploaded as webp at source size; the app's default `getMugshotUrl` / `getAvatarUrl` transforms crop them. No CZN-specific resolver.
+- Fix combatants in the seed, then regenerate — never in `src/data/chaos-zero-nightmare/`.
 
 ### Testing Conventions
 

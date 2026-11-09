@@ -242,6 +242,25 @@ function ColorsSection() {
       />
 
       <ColorGroup
+        label="Game: Chaos Zero Nightmare"
+        variables={[
+          '--color-czn-element-passion',
+          '--color-czn-element-order',
+          '--color-czn-element-justice',
+          '--color-czn-element-void',
+          '--color-czn-element-instinct',
+          '--color-czn-class-striker',
+          '--color-czn-class-vanguard',
+          '--color-czn-class-ranger',
+          '--color-czn-class-hunter',
+          '--color-czn-class-psionic',
+          '--color-czn-class-controller',
+          '--color-czn-rarity5',
+          '--color-czn-rarity4',
+        ]}
+      />
+
+      <ColorGroup
         label="Tier"
         variables={['--color-tier-splus', '--color-tier-s', '--color-tier-a', '--color-tier-b']}
       />
@@ -281,6 +300,8 @@ function ColorsSection() {
           '--color-p5x-sel-mid',
           '--color-zzz-sel-start',
           '--color-zzz-sel-mid',
+          '--color-czn-sel-start',
+          '--color-czn-sel-mid',
           '--color-dgm-sel-start',
           '--color-dgm-sel-mid',
           '--color-bg-selection-fade',
