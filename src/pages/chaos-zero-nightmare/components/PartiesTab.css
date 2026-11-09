@@ -1,0 +1,23 @@
+/* Attribute accent borders for CZN lineup slot avatars. Compound-scoped to
+   .slot-avatar (like the HSR element / ZZZ element accents) so they beat the
+   base .slot-avatar border by specificity. Prefixed czn-element-* because HSR
+   already claims .slot-avatar.element-* with its own hues and route-split
+   stylesheets must never clobber each other. */
+.slot-avatar.czn-element-passion {
+  border-color: color-mix(in srgb, var(--color-czn-element-passion) 30%, transparent);
+}
+.slot-avatar.czn-element-order {
+  border-color: color-mix(in srgb, var(--color-czn-element-order) 30%, transparent);
+}
+.slot-avatar.czn-element-justice {
+  border-color: color-mix(in srgb, var(--color-czn-element-justice) 30%, transparent);
+}
+.slot-avatar.czn-element-void {
+  border-color: color-mix(in srgb, var(--color-czn-element-void) 30%, transparent);
+}
+.slot-avatar.czn-element-instinct {
+  border-color: color-mix(in srgb, var(--color-czn-element-instinct) 30%, transparent);
+}
+.slot-avatar.czn-element-unknown {
+  border-color: color-mix(in srgb, var(--color-czn-element-unknown) 30%, transparent);
+}
