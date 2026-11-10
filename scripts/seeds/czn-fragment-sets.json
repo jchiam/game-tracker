@@ -1,0 +1,30 @@
+[
+  {
+    "id": "sanguine-thorn",
+    "name": "Sanguine Thorn",
+    "pieces": 4,
+    "imageSource": "https://img.game8.co/4570707/2031af3a848af733339fcbf7e80eb7cb.png/show",
+    "note": "Not on the Prydwen origin as of 2026-11-09; piece count and 165px icon from Game8 (archives/560572)."
+  },
+  {
+    "id": "battlefield-evolution",
+    "name": "Battlefield Evolution",
+    "pieces": 4,
+    "imageSource": "https://img.game8.co/4570716/0fe84beaa62fa350ca7a36483f552cd2.png/show",
+    "note": "Not on the Prydwen origin as of 2026-11-09; piece count and 165px icon from Game8 (archives/560572)."
+  },
+  {
+    "id": "veiled-radiance",
+    "name": "Veiled Radiance",
+    "pieces": 4,
+    "imageSource": "https://img.game8.co/wg1y1j88usulhwjqspljf3mhscl1",
+    "note": "Not on the Prydwen origin as of 2026-11-09; piece count and icon from Game8 (archives/560572)."
+  },
+  {
+    "id": "snowflake-of-our-first-meeting",
+    "name": "Snowflake of Our First Meeting",
+    "pieces": 4,
+    "imageSource": "https://img.game8.co/3a713e12yvvhxyp43fxbu70np0zh",
+    "note": "Not on the Prydwen origin as of 2026-11-09; piece count and icon from Game8 (archives/560572)."
+  }
+]

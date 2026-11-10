@@ -110,6 +110,13 @@ describe('imagekit', () => {
       );
     });
 
+    it('getCznFragmentSetIconUrl returns the local path', async () => {
+      const { getCznFragmentSetIconUrl } = await import('@/lib/imagekit');
+      expect(
+        getCznFragmentSetIconUrl('/assets/chaos-zero-nightmare/fragment-sets/black-wing.webp'),
+      ).toBe('/assets/chaos-zero-nightmare/fragment-sets/black-wing.webp');
+    });
+
     it('getZzzBangbooIconUrl returns the local path', async () => {
       const { getZzzBangbooIconUrl } = await import('@/lib/imagekit');
       expect(getZzzBangbooIconUrl('/assets/zenless-zone-zero/bangboos/912.png')).toBe(
@@ -200,6 +207,15 @@ describe('imagekit', () => {
       const { getZzzWEngineIconUrl } = await import('@/lib/imagekit');
       expect(getZzzWEngineIconUrl('/assets/zenless-zone-zero/wengines/14119.png')).toBe(
         'https://ik.imagekit.io/test/tr:w-128/zenless_zone_zero/wengines/14119.png',
+      );
+    });
+
+    it('getCznFragmentSetIconUrl resizes to at most 128px without upscaling', async () => {
+      const { getCznFragmentSetIconUrl } = await import('@/lib/imagekit');
+      expect(
+        getCznFragmentSetIconUrl('/assets/chaos-zero-nightmare/fragment-sets/black-wing.webp'),
+      ).toBe(
+        'https://ik.imagekit.io/test/tr:w-128,c-at_max/chaos_zero_nightmare/fragment_sets/black-wing.webp',
       );
     });
 

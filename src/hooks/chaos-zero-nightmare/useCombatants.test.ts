@@ -8,6 +8,9 @@ vi.mock('@/services/chaos-zero-nightmare/combatantService', () => ({
   insertCombatant: vi.fn(),
   deleteCombatant: vi.fn(),
   updateCombatant: vi.fn(),
+  upsertFragment: vi.fn(),
+  deleteFragment: vi.fn(),
+  saveFragmentPreferences: vi.fn(),
 }));
 
 vi.mock('@/hooks/usePendingSaves', () => ({
@@ -42,10 +45,16 @@ const mockLoad = vi.mocked(combatantService.loadCombatantsFromDB);
 const mockInsert = vi.mocked(combatantService.insertCombatant);
 const mockDelete = vi.mocked(combatantService.deleteCombatant);
 const mockUpdate = vi.mocked(combatantService.updateCombatant);
+const mockUpsertFragment = vi.mocked(combatantService.upsertFragment);
+const mockDeleteFragment = vi.mocked(combatantService.deleteFragment);
+const mockSaveFragmentPreferences = vi.mocked(combatantService.saveFragmentPreferences);
 const mockAddToast = vi.mocked(toastUtils.addToast);
 
 const mockSession = createMockSession();
 const first = ALL_CZN_COMBATANTS[0];
+
+const emptyFragments = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null } as const;
+const emptyPrefs = { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] };
 
 function trackedFixture(index: number, overrides: Record<string, unknown>) {
   return {
@@ -58,6 +67,8 @@ function trackedFixture(index: number, overrides: Record<string, unknown>) {
     partnerLevel: 1,
     partnerEgo: 0,
     partnerPreferences: [],
+    fragments: { ...emptyFragments },
+    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
     ...overrides,
   };
 }
@@ -109,8 +120,77 @@ describe('useCombatants', () => {
     expect(tracked.partnerLevel).toBe(1);
     expect(tracked.partnerEgo).toBe(0);
     expect(tracked.partnerPreferences).toEqual([]);
+    expect(tracked.fragments).toEqual(emptyFragments);
+    expect(tracked.fragmentPreferences).toEqual(emptyPrefs);
     expect(tracked.isFavorited).toBe(false);
     expect(mockInsert).toHaveBeenCalledWith(mockSession.user.id, first.id);
+  });
+
+  it('saveFragmentData updates the slot optimistically and queues the upsert', async () => {
+    const { result } = await setupWithCombatant();
+    const piece = { setId: 'spark-of-passion', mainStat: 'Critical Chance%', subStats: ['ATK%'] };
+    await act(async () => {
+      await result.current.saveFragmentData({ combatantId: first.id, slot: 4 }, piece);
+    });
+    expect(result.current.trackedCombatants[0].fragments[4]).toEqual(piece);
+    expect(result.current.trackedCombatants[0].fragments[1]).toBeNull();
+    expect(mockUpsertFragment).toHaveBeenCalledWith('new-db-id', 4, piece);
+  });
+
+  it('removeFragmentData writes null into the slot and queues the delete', async () => {
+    const { result } = await setupWithCombatant();
+    const piece = { setId: 'spark-of-passion', mainStat: 'Critical Chance%', subStats: [] };
+    await act(async () => {
+      await result.current.saveFragmentData({ combatantId: first.id, slot: 4 }, piece);
+    });
+    await act(async () => {
+      await result.current.removeFragmentData({ combatantId: first.id, slot: 4 });
+    });
+    // Null, not an empty-piece sentinel — in-session state matches a reload.
+    expect(result.current.trackedCombatants[0].fragments[4]).toBeNull();
+    expect(mockDeleteFragment).toHaveBeenCalledWith('new-db-id', 4);
+  });
+
+  it('saveFragmentPreferences replaces the whole preferences object and queues the save', async () => {
+    const { result } = await setupWithCombatant();
+    const prefs = {
+      mainStats: {
+        4: [{ stat: 'Critical Chance%', operator: null, orderIndex: 0 }],
+        5: [],
+        6: [],
+      },
+      subStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
+      set4Id: 'spark-of-passion',
+      set2Id: null,
+      comments: 'notes',
+    };
+    act(() => result.current.saveFragmentPreferences(first.id, prefs));
+    expect(result.current.trackedCombatants[0].fragmentPreferences).toEqual(prefs);
+    expect(mockSaveFragmentPreferences).toHaveBeenCalledWith('new-db-id', prefs);
+  });
+
+  it('fragment writes are no-ops against the DB for a combatant without a dbId', async () => {
+    mockLoad.mockResolvedValue([trackedFixture(0, {})]); // no dbId
+    const { result } = await setup();
+    const piece = { setId: 'black-wing', mainStat: 'Flat ATK', subStats: [] };
+    await act(async () => {
+      await result.current.saveFragmentData({ combatantId: first.id, slot: 1 }, piece);
+    });
+    act(() => result.current.saveFragmentPreferences(first.id, emptyPrefs));
+    expect(result.current.trackedCombatants[0].fragments[1]).toEqual(piece);
+    expect(mockUpsertFragment).not.toHaveBeenCalled();
+    expect(mockSaveFragmentPreferences).not.toHaveBeenCalled();
+  });
+
+  it('getFilteredRoster score sort orders by the supplied scorer descending', async () => {
+    mockLoad.mockResolvedValue([
+      trackedFixture(0, { dbId: 'db-1' }),
+      trackedFixture(1, { dbId: 'db-2' }),
+    ]);
+    const { result } = await setup();
+    const scoreFor = (c: { id: string }) => (c.id === ALL_CZN_COMBATANTS[1].id ? 90 : -1);
+    const sorted = result.current.getFilteredRoster('', 'SCORE', scoreFor);
+    expect(sorted.map((c) => c.id)).toEqual([ALL_CZN_COMBATANTS[1].id, ALL_CZN_COMBATANTS[0].id]);
   });
 
   it('removes a combatant', async () => {
@@ -252,7 +332,12 @@ describe('useCombatants', () => {
       trackedFixture(1, { dbId: 'db-2', potentialAttained: false }),
     ]);
     const { result } = await setup();
-    const attained = result.current.getFilteredRoster('', 'ALPHA', (c) => c.potentialAttained);
+    const attained = result.current.getFilteredRoster(
+      '',
+      'ALPHA',
+      undefined,
+      (c) => c.potentialAttained,
+    );
     expect(attained.map((c) => c.potentialAttained)).toEqual([true]);
   });
 

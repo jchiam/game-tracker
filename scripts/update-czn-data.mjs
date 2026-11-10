@@ -1,44 +1,56 @@
-// Auto-update script for Chaos Zero Nightmare (CZN) Combatant and Partner data.
-// Fetches structured data from Prydwen's Gatsby page-data endpoints (via the
-// CloudFront origin — www.prydwen.gg blocks generic fetchers) and regenerates:
+// Auto-update script for Chaos Zero Nightmare (CZN) Combatant, Partner, and
+// Memory Fragment set data. Fetches structured data from Prydwen's Gatsby
+// page-data endpoints (via the CloudFront origin — www.prydwen.gg blocks
+// generic fetchers) and regenerates:
 //   - src/data/chaos-zero-nightmare/combatants.ts
 //   - src/data/chaos-zero-nightmare/partners.ts
+//   - src/data/chaos-zero-nightmare/fragment_sets.ts
 //
 // Prydwen publishes teaser nodes for announced-but-unreleased combatants with
 // `class` / `element` set to "Unknown"; those are dropped at generation and
 // reported as excluded so they never reach the Add modal with placeholder
 // taxonomy. They appear in the diff as `added` the week they get real data.
 //
-// Units Prydwen lacks (added after the origin's last build) come from the
-// hand-curated overlay seeds scripts/seeds/czn-combatants.json and
-// scripts/seeds/czn-partners.json. Each seed entry carries the catalog shape
-// plus `imageSource` (an https URL for the art, or null while none is sourced)
-// and a free-text `note`. Its `id` is the id the script would mint for the unit
-// (the Prydwen slug for combatants; the kebab-case name slug for partners), so
-// tracked rows keyed on it survive the hand-off: once the id appears upstream
-// the fetched entry wins and the run warns to delete the seed entry. Validation
-// failures abort the run before any codegen.
+// Entries Prydwen lacks (added after the origin's last build) come from the
+// hand-curated overlay seeds scripts/seeds/czn-combatants.json,
+// scripts/seeds/czn-partners.json, and scripts/seeds/czn-fragment-sets.json.
+// Each seed entry carries the catalog shape plus `imageSource` (an https URL
+// for the art, or null while none is sourced) and a free-text `note`. Its `id`
+// is the id the script would mint for the entry (the Prydwen slug for
+// combatants; the kebab-case name slug for partners and sets), so tracked rows
+// keyed on it survive the hand-off: once the id appears upstream the fetched
+// entry wins and the run warns to delete the seed entry. Validation failures
+// abort the run before any codegen.
 //
 // Partners have no Prydwen slug and no per-partner pages: the partners list
 // page-data carries taxonomy only, and the icons live in the page's Gatsby
 // static query (/page-data/sq/d/<hash>.json → allContentfulChaosPartner.nodes),
 // whose hash is read from the page-data's `staticQueryHashes` each run.
 //
+// Memory Fragment sets have no page-data at all: the list is a hardcoded array
+// inside the memory-fragments page's webpack component chunk, located each run
+// through webpack.stats.json, and the set icons are Gatsby fixed images inlined
+// in the same chunk. The chunk is pattern-matched (scripts/lib/czn-fragments.mjs)
+// and never evaluated.
+//
 // Downloads art and uploads to ImageKit CDN:
 //   - combatant portraits → ImageKit: /chaos_zero_nightmare/combatants
 //   - partner icons       → ImageKit: /chaos_zero_nightmare/partners
+//   - set icons           → ImageKit: /chaos_zero_nightmare/fragment-sets
 //
-// Image URLs are parsed from each run's freshly fetched page-data JSON —
-// Prydwen's hashed /static/ paths change per site build, so they are never
+// Image URLs are parsed from each run's freshly fetched page-data JSON or chunk
+// — Prydwen's hashed /static/ paths change per site build, so they are never
 // hardcoded here. Portraits are uploaded at the source card-art size (262×358,
 // webp); the app's default mugshot transform top-anchors a square crop. Partner
-// icons are the 160² `smallImage`, uploaded at source size.
+// icons are the 160² `smallImage`, uploaded at source size. Set icons are the
+// 60² Gatsby image (the largest Prydwen serves), uploaded at source size.
 //
 // Usage:
-//   node scripts/update-czn-data.mjs                       # only upload missing assets
-//   node scripts/update-czn-data.mjs --reupload-all        # force reupload all assets
-//   node scripts/update-czn-data.mjs --reupload-combatants # force reupload combatant portraits
-//   node scripts/update-czn-data.mjs --reupload-partners   # force reupload partner icons
+//   node scripts/update-czn-data.mjs                          # only upload missing assets
+//   node scripts/update-czn-data.mjs --reupload-all           # force reupload all assets
+//   node scripts/update-czn-data.mjs --reupload-combatants    # force reupload combatant portraits
+//   node scripts/update-czn-data.mjs --reupload-partners      # force reupload partner icons
+//   node scripts/update-czn-data.mjs --reupload-fragment-sets # force reupload set icons
 
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { resolve } from 'path';
@@ -59,7 +71,13 @@ import {
   formatDiff,
   generatedHeader,
 } from './lib/pipeline.mjs';
-import { selectPartnerNodes, assertPartnerSeedIds } from './lib/czn-partners.mjs';
+import { selectPartnerNodes } from './lib/czn-partners.mjs';
+import {
+  parseFragmentSetEntries,
+  selectFragmentChunkAsset,
+  selectFragmentIconPaths,
+} from './lib/czn-fragments.mjs';
+import { assertMintedSeedIds } from './lib/czn-seeds.mjs';
 
 // Prydwen's CloudFront origin serves the same page-data JSON as www.prydwen.gg
 // without the Cloudflare bot challenge the main domain applies.
@@ -70,12 +88,17 @@ const detailPageData = (slug) =>
   `${PRYDWEN_ORIGIN}/page-data/${GAME_PATH}/characters/${slug}/page-data.json`;
 const PARTNERS_PAGE_DATA = `${PRYDWEN_ORIGIN}/page-data/${GAME_PATH}/partners/page-data.json`;
 const staticQueryData = (hash) => `${PRYDWEN_ORIGIN}/page-data/sq/d/${hash}.json`;
+// Gatsby's build manifest — maps the stable memory-fragments chunk name to the
+// hashed component asset that carries the set array (see czn-fragments.mjs).
+const WEBPACK_STATS = `${PRYDWEN_ORIGIN}/webpack.stats.json`;
 
 const DATA_DIR = resolve(ROOT, 'src/data/chaos-zero-nightmare');
 const COMBATANTS_TS = resolve(DATA_DIR, 'combatants.ts');
 const PARTNERS_TS = resolve(DATA_DIR, 'partners.ts');
+const FRAGMENT_SETS_TS = resolve(DATA_DIR, 'fragment_sets.ts');
 const PORTRAIT_PATH = (id) => `/assets/chaos-zero-nightmare/combatants/${id}.webp`;
 const PARTNER_ICON_PATH = (id) => `/assets/chaos-zero-nightmare/partners/${id}.webp`;
+const FRAGMENT_SET_ICON_PATH = (id) => `/assets/chaos-zero-nightmare/fragment-sets/${id}.webp`;
 
 // Hand-curated overlays for units the Prydwen origin does not list (see header).
 const SEED_PATH = resolve(ROOT, 'scripts/seeds/czn-combatants.json');
@@ -84,21 +107,31 @@ const SEED_REQUIRED = ['id', 'name', 'rarity', 'class', 'element'];
 const PARTNER_SEED_PATH = resolve(ROOT, 'scripts/seeds/czn-partners.json');
 const PARTNER_SEED_LABEL = 'scripts/seeds/czn-partners.json';
 const PARTNER_SEED_REQUIRED = ['id', 'name', 'rarity', 'class'];
+const FRAGMENT_SET_SEED_PATH = resolve(ROOT, 'scripts/seeds/czn-fragment-sets.json');
+const FRAGMENT_SET_SEED_LABEL = 'scripts/seeds/czn-fragment-sets.json';
+const FRAGMENT_SET_SEED_REQUIRED = ['id', 'name', 'pieces'];
+// A set activates at exactly one piece count; anything else is a model change.
+const FRAGMENT_SET_PIECES = [2, 4];
 
 // Prydwen's placeholder taxonomy for announced-but-unreleased teaser nodes.
 const PLACEHOLDER = 'Unknown';
 
-// Partner ids are minted from names (no upstream slug) — kebab-case like the
-// combatant slugs so one KEBAB_SLUG rule covers both seeds.
-const PARTNER_ID_SEPARATOR = '-';
-const partnerId = (name) => slugify(name, PARTNER_ID_SEPARATOR);
+// Partner and set ids are minted from names (no upstream slug) — kebab-case
+// like the combatant slugs so one KEBAB_SLUG rule covers every seed.
+const MINTED_ID_SEPARATOR = '-';
+const mintedId = (name) => slugify(name, MINTED_ID_SEPARATOR);
 
 loadLocalEnv();
 const { ensureAsset } = initImageKit();
 
-const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags(['combatants', 'partners']);
+const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags([
+  'combatants',
+  'partners',
+  'fragment-sets',
+]);
 const reuploadCombatants = reuploadAll || reuploadFlags.combatants;
 const reuploadPartners = reuploadAll || reuploadFlags.partners;
+const reuploadFragmentSets = reuploadAll || reuploadFlags['fragment-sets'];
 
 // Reads the id/name pairs out of a previously generated catalog for the diff.
 async function loadExistingEntries(tsPath) {
@@ -145,7 +178,24 @@ async function loadPartnerSeed() {
     required: PARTNER_SEED_REQUIRED,
     rarities: [3, 4, 5],
   });
-  return assertPartnerSeedIds(seed, { label: PARTNER_SEED_LABEL, mint: partnerId });
+  return assertMintedSeedIds(seed, { label: PARTNER_SEED_LABEL, mint: mintedId });
+}
+
+// Set seed entries carry `pieces` instead of `rarity`; the shared validator
+// has no slot for it, so the 2-or-4 rule is checked here before the id rule.
+async function loadFragmentSetSeed() {
+  const seed = validateOverlaySeed(await readSeed(FRAGMENT_SET_SEED_PATH), {
+    label: FRAGMENT_SET_SEED_LABEL,
+    required: FRAGMENT_SET_SEED_REQUIRED,
+  });
+  for (const entry of seed) {
+    if (!FRAGMENT_SET_PIECES.includes(entry.pieces)) {
+      throw new Error(
+        `${FRAGMENT_SET_SEED_LABEL} entry ${entry.id}: pieces must be ${FRAGMENT_SET_PIECES.join(' or ')}`,
+      );
+    }
+  }
+  return assertMintedSeedIds(seed, { label: FRAGMENT_SET_SEED_LABEL, mint: mintedId });
 }
 
 // Pull the largest fallback image path out of a Prydwen gatsby image node.
@@ -174,9 +224,16 @@ async function uploadAsset({ localPath, label, sourceUrl, reupload }) {
   });
 }
 
+// Default catalog order: highest rarity first, then alphabetically within each group.
+const byRarityThenName = (a, b) => {
+  if (a.rarity !== b.rarity) return b.rarity - a.rarity;
+  return a.name.localeCompare(b.name);
+};
+const byName = (a, b) => a.name.localeCompare(b.name);
+
 // Shared per-entry asset loop: resolves each unit's CDN path, uploads (or
 // skips) its art, and returns the catalog entries plus the run counters.
-async function seedAssets(units, { localPath, labelFor, reupload }) {
+async function seedAssets(units, { localPath, labelFor, reupload, sort = byRarityThenName }) {
   const entries = [];
   const counts = { skipped: 0, uploaded: 0, failed: 0 };
   const missingImages = [];
@@ -204,11 +261,7 @@ async function seedAssets(units, { localPath, labelFor, reupload }) {
     entries.push({ ...unit, imageUrl });
   }
 
-  // Sort: highest rarity first, then alphabetically within each group
-  entries.sort((a, b) => {
-    if (a.rarity !== b.rarity) return b.rarity - a.rarity;
-    return a.name.localeCompare(b.name);
-  });
+  entries.sort(sort);
 
   return { entries, counts, missingImages };
 }
@@ -311,6 +364,40 @@ function generatePartnersTs(partners) {
     }
   }
 
+  lines.push('];', '');
+  return lines.join('\n');
+}
+
+function generateFragmentSetsTs(sets) {
+  const lines = [
+    ...generatedHeader(
+      `Prydwen (prydwen.gg/${GAME_PATH}/memory-fragments) plus the hand-curated overlay ${FRAGMENT_SET_SEED_LABEL}`,
+      'update-czn-data.mjs',
+    ),
+    '',
+    'export interface CznFragmentSet {',
+    '  /** Kebab-case slug of the name — the stable key equipped rows, picks, and the overlay seed use. */',
+    '  id: string;',
+    '  name: string;',
+    '  /** Piece count the set activates at. A set is either a 2-piece or a 4-piece set, never both. */',
+    '  pieces: 2 | 4;',
+    '  imageUrl: string;',
+    '}',
+    '',
+    'export const ALL_CZN_FRAGMENT_SETS: CznFragmentSet[] = [',
+  ];
+
+  const formatEntry = (s) =>
+    [
+      `  {`,
+      `    id: '${s.id}',`,
+      `    name: ${jsStr(s.name)},`,
+      `    pieces: ${s.pieces},`,
+      `    imageUrl: '${s.imageUrl}',`,
+      `  },`,
+    ].join('\n');
+
+  lines.push(...sets.map(formatEntry));
   lines.push('];', '');
   return lines.join('\n');
 }
@@ -447,7 +534,7 @@ async function processPartners() {
       throw new Error(`Unexpected rarity "${node.rarity}" for partner ${name}`);
     }
     return {
-      id: mintId({ name, sourceId: node.unitId, taken, separator: PARTNER_ID_SEPARATOR }),
+      id: mintId({ name, sourceId: node.unitId, taken, separator: MINTED_ID_SEPARATOR }),
       name,
       rarity,
       class: clean(node.class),
@@ -498,9 +585,89 @@ async function processPartners() {
   }
 }
 
+// The set list and icons both live in the memory-fragments page component
+// chunk; webpack.stats.json names the current hashed asset (see czn-fragments.mjs).
+async function fetchFragmentChunk() {
+  const stats = await fetchJSON(WEBPACK_STATS);
+  const asset = selectFragmentChunkAsset(stats);
+  const res = await fetch(`${PRYDWEN_ORIGIN}/${asset}`);
+  if (!res.ok) throw new Error(`Failed to fetch ${asset}: ${res.status}`);
+  return { asset, source: await res.text() };
+}
+
+async function processFragmentSets() {
+  console.log('\nFetching CZN Memory Fragment sets from Prydwen...');
+
+  const [{ asset, source }, existing, seed] = await Promise.all([
+    fetchFragmentChunk(),
+    loadExistingEntries(FRAGMENT_SETS_TS),
+    loadFragmentSetSeed(),
+  ]);
+  const parsed = parseFragmentSetEntries(source);
+  const iconPaths = selectFragmentIconPaths(source);
+  console.log(`  ${parsed.length} sets listed in ${asset}`);
+
+  // mintId throws on a collision — two names slugifying alike would make one
+  // set unpickable under the parent-row set columns.
+  const taken = new Map();
+  const fetched = parsed.map((entry) => {
+    const name = clean(entry.name);
+    const iconPath = iconPaths.get(entry.id);
+    return {
+      id: mintId({ name, sourceId: entry.id, taken, separator: MINTED_ID_SEPARATOR }),
+      name,
+      pieces: entry.pieces,
+      // 60² Gatsby image — the largest set art Prydwen publishes anywhere.
+      sourceUrl: iconPath ? `${PRYDWEN_ORIGIN}${iconPath}` : null,
+      missingImageReason: 'No icon binding in the memory-fragments chunk',
+    };
+  });
+  const overlay = seed.map((s) => ({
+    id: s.id,
+    name: clean(s.name),
+    pieces: s.pieces,
+    sourceUrl: s.imageSource,
+    missingImageReason: `No imageSource in ${FRAGMENT_SET_SEED_LABEL}`,
+  }));
+  const { entries: units, shadowed } = applyOverlay(fetched, overlay, (s) => s.id);
+  console.log(`  ${units.length - fetched.length} sets overlaid from ${FRAGMENT_SET_SEED_LABEL}`);
+  for (const s of shadowed) {
+    console.warn(
+      `    Seed entry ${s.id} is now on Prydwen — delete it from ${FRAGMENT_SET_SEED_LABEL}`,
+    );
+  }
+
+  const {
+    entries: sets,
+    counts,
+    missingImages,
+  } = await seedAssets(units, {
+    localPath: FRAGMENT_SET_ICON_PATH,
+    labelFor: (unit) => `Icon for set ${unit.name}`,
+    reupload: reuploadFragmentSets,
+    sort: byName,
+  });
+
+  await mkdir(DATA_DIR, { recursive: true });
+  await writeFile(FRAGMENT_SETS_TS, generateFragmentSetsTs(sets), 'utf-8');
+
+  const { added, removed } = diffByKey(existing, sets, (s) => s.id);
+  console.log('\nDone!');
+  console.log(
+    `  Memory Fragment sets: ${sets.length} total (${formatDiff(added, removed)}) — icons: ` +
+      `${counts.uploaded} uploaded, ${counts.skipped} skipped, ${counts.failed} failed`,
+  );
+  for (const s of added) console.log(`    + ${s.name} [${s.pieces}-PC]`);
+  for (const s of removed) console.log(`    - ${s.name} (removed from source)`);
+  if (missingImages.length > 0) {
+    console.warn(`  Missing icons: ${missingImages.join(', ')}`);
+  }
+}
+
 async function main() {
   await processCombatants();
   await processPartners();
+  await processFragmentSets();
 }
 
 main().catch((e) => {

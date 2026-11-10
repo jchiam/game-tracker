@@ -7,3 +7,6 @@ src/styles/tokens.css
 storybook-static
 wiki
 .claude
+
+# Captured third-party chunk used as a parse fixture — never reformatted.
+scripts/lib/__fixtures__/
