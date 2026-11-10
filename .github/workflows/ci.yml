@@ -61,8 +61,18 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
         run: npm run verify:csp
 
-      - name: Run unit tests
-        run: npm test
+      # Coverage runs here so the unit suite executes once per run; the lcov
+      # upload below replaced the former standalone Code Coverage workflow.
+      - name: Run unit tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v6
+        with:
+          files: ./coverage/lcov.info
+          fail_ci_if_error: false
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
 
       - name: Verify production build
         run: npm run build
@@ -79,10 +89,11 @@ jobs:
         run: npm audit
         continue-on-error: true
 
+  # Deliberately not `needs: build_and_test` — the job checks out and installs
+  # on its own, so running both in parallel halves the wall time of a green run.
   e2e-tests:
     timeout-minutes: 60
     runs-on: ubuntu-latest
-    needs: build_and_test
     # Browsers + system deps come preinstalled in the official Playwright image,
     # replacing `npx playwright install --with-deps` (3 browser downloads + apt
     # every run). The image tag MUST match the installed @playwright/test
@@ -106,12 +117,13 @@ jobs:
             echo "::error::@playwright/test is $installed but the e2e container image is v1.62.1 — bump the image tag in ci.yml"
             exit 1
           fi
+      # HOME is set in the shell, not step env: Actions rewrites HOME to
+      # /github/home inside containers (the image expects /root), and a step
+      # env HOME also leaks into the host-side `docker exec`, which then warns
+      # about an unreadable /root/.docker/config.json.
       - name: Run Playwright tests
-        run: npm run test:e2e
+        run: HOME=/root npm run test:e2e
         env:
-          # Actions overrides HOME to /github/home inside containers; the
-          # image's browsers live under /root/.cache/ms-playwright.
-          HOME: /root
           VITE_HOST: 127.0.0.1
           VITE_SUPABASE_URL: http://127.0.0.1:54321
           VITE_SUPABASE_ANON_KEY: dummy_key
