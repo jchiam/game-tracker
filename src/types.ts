@@ -7,6 +7,10 @@ import { type P5xThief } from '@/data/persona-5-phantom-x/thieves';
 import { type ZzzAgent } from '@/data/zenless-zone-zero/agents';
 import { type ZzzDiscSlot, type ZzzEquippedDisc } from '@/data/zenless-zone-zero/discs';
 import { type CznCombatant } from '@/data/chaos-zero-nightmare/combatants';
+import {
+  type CznEquippedFragment,
+  type CznFragmentSlot,
+} from '@/data/chaos-zero-nightmare/fragments';
 import { type EquippedRevelation } from '@/data/persona-5-phantom-x/revelations';
 import { type DgmProduct } from '@/data/digimon/products';
 
@@ -258,6 +262,23 @@ export interface CznTrackedCombatant extends CznCombatant {
   partnerEgo: number; // 0–4 Partner Manifest Ego rank (dupe unlocks), shown as T0–T4
   /** Ordered ALL_CZN_PARTNERS ids, highest priority first, no duplicates. */
   partnerPreferences: string[];
+  /** Equipped Memory Fragments by slot; null = empty slot (never a sentinel object). */
+  fragments: Record<CznFragmentSlot, CznEquippedFragment | null>;
+  fragmentPreferences: CznFragmentBuildPreferences;
+}
+
+export interface CznFragmentBuildPreferences {
+  mainStats: {
+    4: StatPreference[];
+    5: StatPreference[];
+    6: StatPreference[];
+  };
+  subStats: StatPreference[];
+  /** Preferred 4-piece Memory Fragment set — ALL_CZN_FRAGMENT_SETS id with pieces 4. */
+  set4Id?: string | null;
+  /** Preferred 2-piece Memory Fragment set — ALL_CZN_FRAGMENT_SETS id with pieces 2. */
+  set2Id?: string | null;
+  comments?: string;
 }
 
 /** Typed partial update for a CZN tracked combatant row (camelCase keys). */

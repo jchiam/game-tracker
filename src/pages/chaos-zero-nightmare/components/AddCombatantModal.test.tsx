@@ -82,6 +82,8 @@ describe('AddCombatantModal', () => {
         partnerLevel: 1,
         partnerEgo: 0,
         partnerPreferences: [],
+        fragments: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
+        fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
       },
     ];
     render(<AddCombatantModal {...defaultProps} trackedCombatants={tracked} />);

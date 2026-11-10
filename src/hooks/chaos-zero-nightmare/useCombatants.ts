@@ -1,12 +1,24 @@
 import { useCallback } from 'react';
 import { type Session } from '@supabase/supabase-js';
 import { ALL_CZN_COMBATANTS, type CznCombatant } from '@/data/chaos-zero-nightmare/combatants';
-import type { CznCombatantPatch, CznPartnerPatch, CznTrackedCombatant } from '@/types';
+import {
+  type CznEquippedFragment,
+  type CznFragmentSlot,
+} from '@/data/chaos-zero-nightmare/fragments';
+import type {
+  CznCombatantPatch,
+  CznFragmentBuildPreferences,
+  CznPartnerPatch,
+  CznTrackedCombatant,
+} from '@/types';
 import {
   loadCombatantsFromDB,
   insertCombatant,
   deleteCombatant,
   updateCombatant,
+  upsertFragment,
+  deleteFragment,
+  saveFragmentPreferences as saveFragmentPreferencesToDB,
 } from '@/services/chaos-zero-nightmare/combatantService';
 import { useRoster } from '@/hooks/useRoster';
 import {
@@ -31,6 +43,10 @@ function createTrackedCombatant(combatant: CznCombatant): CznTrackedCombatant {
     partnerLevel: 1,
     partnerEgo: 0,
     partnerPreferences: [],
+    // Fresh objects per combatant — a module-level default assigned directly
+    // would share one identity across every added combatant (P5X aliasing bug class).
+    fragments: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
+    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
   };
 }
 
@@ -38,10 +54,13 @@ export function useCombatants(session: Session | null, isAuthLoading: boolean) {
   const {
     availableEntities: availableCombatants,
     trackedEntities: trackedCombatants,
+    setTrackedEntities: setTrackedCombatants,
+    trackedRef: trackedCombatantsRef,
     isInitialLoad,
     isLoadError,
     retryLoad,
     pendingSaveCount,
+    queueAction,
     addEntity: addCombatant,
     removeEntity: removeCombatant,
     makeFieldUpdater,
@@ -81,16 +100,70 @@ export function useCombatants(session: Session | null, isAuthLoading: boolean) {
     applyPatch(id, normalized);
   };
 
+  // Equipped pieces write through the upsert_equipment_slot RPC rather than a
+  // row patch, so they are the queueAction case the Field Updater rule allows.
+  const saveFragmentData = async (
+    editing: { combatantId: string; slot: CznFragmentSlot },
+    piece: CznEquippedFragment,
+  ) => {
+    const { combatantId, slot } = editing;
+    setTrackedCombatants((prev) =>
+      prev.map((c) =>
+        c.id === combatantId ? { ...c, fragments: { ...c.fragments, [slot]: piece } } : c,
+      ),
+    );
+    const combatant = trackedCombatantsRef.current.find((c) => c.id === combatantId);
+    if (combatant?.dbId) {
+      const dbId = combatant.dbId;
+      queueAction(`${dbId}-frag-${slot}`, () => upsertFragment(dbId, slot, piece));
+    }
+  };
+
+  // Removal writes null — matching what a reload yields after the row delete,
+  // so the scorer never sees an in-session-only empty-piece sentinel.
+  const removeFragmentData = async (editing: { combatantId: string; slot: CznFragmentSlot }) => {
+    const { combatantId, slot } = editing;
+    setTrackedCombatants((prev) =>
+      prev.map((c) =>
+        c.id === combatantId ? { ...c, fragments: { ...c.fragments, [slot]: null } } : c,
+      ),
+    );
+    const combatant = trackedCombatantsRef.current.find((c) => c.id === combatantId);
+    if (combatant?.dbId) {
+      const dbId = combatant.dbId;
+      queueAction(`${dbId}-frag-${slot}-delete`, () => deleteFragment(dbId, slot));
+    }
+  };
+
+  const saveFragmentPreferences = (
+    combatantId: string,
+    newPreferences: CznFragmentBuildPreferences,
+  ) => {
+    setTrackedCombatants((prev) =>
+      prev.map((c) => (c.id === combatantId ? { ...c, fragmentPreferences: newPreferences } : c)),
+    );
+    const combatant = trackedCombatantsRef.current.find((c) => c.id === combatantId);
+    if (combatant?.dbId) {
+      const dbId = combatant.dbId;
+      queueAction(`${dbId}-fragprefs`, () => saveFragmentPreferencesToDB(dbId, newPreferences));
+    }
+  };
+
   const getFilteredRoster = useCallback(
     (
       searchTerm: string,
-      sortBy: 'ALPHA' | 'LEVEL',
+      sortBy: 'ALPHA' | 'LEVEL' | 'SCORE',
+      scoreFor?: (c: CznTrackedCombatant) => number,
       predicate?: (c: CznTrackedCombatant) => boolean,
       entities?: CznTrackedCombatant[],
     ) => {
       const sorted = filterRoster(
         searchTerm,
-        sortBy === 'LEVEL' ? (a, b) => b.level - a.level : undefined,
+        sortBy === 'LEVEL'
+          ? (a, b) => b.level - a.level
+          : sortBy === 'SCORE' && scoreFor
+            ? (a, b) => scoreFor(b) - scoreFor(a)
+            : undefined,
         entities,
       );
       return predicate ? sorted.filter(predicate) : sorted;
@@ -113,6 +186,9 @@ export function useCombatants(session: Session | null, isAuthLoading: boolean) {
     updatePartner,
     updatePartnerPreferences,
     toggleFavorite,
+    saveFragmentData,
+    removeFragmentData,
+    saveFragmentPreferences,
     getFilteredRoster,
   };
 }

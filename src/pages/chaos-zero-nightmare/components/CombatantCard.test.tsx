@@ -69,6 +69,8 @@ const baseCombatant: CznTrackedCombatant = {
   partnerLevel: 1,
   partnerEgo: 0,
   partnerPreferences: [],
+  fragments: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
+  fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
 };
 
 const withPartner: CznTrackedCombatant = {
@@ -92,6 +94,7 @@ describe('CombatantCard', () => {
     onUpdatePartner: vi.fn(),
     onUpdatePartnerPreferences: vi.fn(),
     onToggleFavorite: vi.fn(),
+    onToggleFragment: vi.fn(),
   };
 
   beforeEach(() => {
@@ -164,14 +167,25 @@ describe('CombatantCard', () => {
     expect(defaultProps.onUpdateLevel).toHaveBeenCalledWith('mei-lin', 62);
   });
 
-  it('renders edit sections in the order Level → Manifest Ego → Potential → Partner → Preferred Partners', async () => {
+  it('renders edit sections in the order Level → Manifest Ego → Potential → Partner → Preferred Partners → Memory Fragments', async () => {
     const user = userEvent.setup();
     const { container } = render(<CombatantCard {...defaultProps} />);
     await enterEditMode(user);
     const labels = Array.from(container.querySelectorAll('.section-header')).map((el) =>
       el.textContent?.replace(/\d+ \/ \d+|T\d/g, '').trim(),
     );
-    expect(labels).toEqual(['Level', 'Manifest Ego', 'Potential', 'Partner', 'Preferred Partners']);
+    // The Memory Fragments group contributes its slot grid section; Target Build is gated.
+    expect(labels).toEqual([
+      'Level',
+      'Manifest Ego',
+      'Potential',
+      'Partner',
+      'Preferred Partners',
+      'Slots',
+    ]);
+    expect(container.querySelector('.card-section-group-header')?.textContent).toBe(
+      'Memory Fragments',
+    );
   });
 
   it('renders the Manifest Ego row as T0–T6 and reports the numeric rank', async () => {
@@ -384,5 +398,141 @@ describe('CombatantCard', () => {
     await enterEditMode(user);
     await user.click(screen.getByTitle('Done editing'));
     expect(onEditCommit).toHaveBeenCalledTimes(1);
+  });
+
+  // --- Memory Fragments ---
+
+  const SPARK = 'spark-of-passion'; // 4-PC
+  const WING = 'black-wing'; // 2-PC
+
+  const withGear = (): CznTrackedCombatant => ({
+    ...baseCombatant,
+    fragments: {
+      1: { setId: SPARK, mainStat: 'Flat ATK', subStats: ['ATK%'] },
+      2: { setId: SPARK, mainStat: 'Flat DEF', subStats: [] },
+      3: null,
+      4: { setId: WING, mainStat: 'Critical Chance%', subStats: [] },
+      5: null,
+      6: null,
+    },
+    fragmentPreferences: {
+      mainStats: {
+        4: [{ stat: 'Critical Chance%', operator: null, orderIndex: 0 }],
+        5: [],
+        6: [],
+      },
+      subStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
+      set4Id: SPARK,
+      set2Id: WING,
+      comments: 'crit build',
+    },
+  });
+
+  // The second static line is the set digest.
+  const digestText = (container: HTMLElement) =>
+    container
+      .querySelectorAll('.game-card-static-line')[1]
+      ?.textContent?.replace(/\s/g, ' ')
+      .trim();
+
+  it('hides the score badge on the -1 sentinel (no preferences)', () => {
+    const { container } = render(<CombatantCard {...defaultProps} />);
+    expect(container.querySelector('.score-badge')).toBeNull();
+  });
+
+  it('shows a graded score badge when preferences and pieces are set', () => {
+    const { container } = render(<CombatantCard {...defaultProps} combatant={withGear()} />);
+    const badge = container.querySelector('.score-badge');
+    expect(badge).not.toBeNull();
+    expect(badge!.className).toMatch(/grade-[sabcd]/);
+  });
+
+  it('renders the set digest line with short names and counts, most pieces first', () => {
+    const { container } = render(<CombatantCard {...defaultProps} combatant={withGear()} />);
+    expect(digestText(container)).toBe('Spark ×2 · Wing ×1');
+  });
+
+  it('renders an em-dash digest when no piece is equipped', () => {
+    const { container } = render(<CombatantCard {...defaultProps} />);
+    expect(container.querySelector('.no-fragments')?.textContent).toBe('—');
+  });
+
+  it('renders six slot cells with numeral glyphs and reports clicks with the numeric slot', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CombatantCard {...defaultProps} />);
+    await enterEditMode(user);
+    const cells = container.querySelectorAll('.equip-slot-cell');
+    expect(cells).toHaveLength(6);
+    expect([...container.querySelectorAll('.equip-slot-icon')].map((el) => el.textContent)).toEqual(
+      ['I', 'II', 'III', 'IV', 'V', 'VI'],
+    );
+    expect(container.querySelectorAll('.equip-slot-cell.active')).toHaveLength(0);
+    await user.click(cells[4]);
+    expect(defaultProps.onToggleFragment).toHaveBeenCalledWith('mei-lin', 5);
+  });
+
+  it('marks equipped slot cells active with the set icon and set name title', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CombatantCard {...defaultProps} combatant={withGear()} />);
+    await enterEditMode(user);
+    expect(container.querySelectorAll('.equip-slot-cell.active')).toHaveLength(3);
+    expect(container.querySelectorAll('.equip-slot-img')).toHaveLength(3);
+    const cells = container.querySelectorAll('.equip-slot-cell');
+    expect(cells[0].getAttribute('title')).toBe('I Shock - Spark of Passion');
+    expect(cells[2].getAttribute('title')).toBe('III Denial');
+  });
+
+  it('hides a set icon image that fails to load', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CombatantCard {...defaultProps} combatant={withGear()} />);
+    await enterEditMode(user);
+    const img = container.querySelector('.equip-slot-img') as HTMLImageElement;
+    fireEvent.error(img);
+    expect(img.style.display).toBe('none');
+  });
+
+  it('hides the Target Build readout when no preference is set', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CombatantCard {...defaultProps} />);
+    await enterEditMode(user);
+    expect(container.querySelector('.build-prefs-display')).toBeNull();
+  });
+
+  it('shows the Target Build readout with set badges, chains, and comments', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CombatantCard {...defaultProps} combatant={withGear()} />);
+    await enterEditMode(user);
+    expect(container.querySelector('.build-prefs-display')).not.toBeNull();
+    const badges = [...container.querySelectorAll('.pref-stat-badge')].map((el) => el.textContent);
+    expect(badges).toContain('Spark of Passion');
+    expect(badges).toContain('Black Wing');
+    expect(badges).toContain('Critical Chance%');
+    expect(screen.getByText('crit build')).toBeInTheDocument();
+  });
+
+  it('shows the Target Build readout when only comments are set', async () => {
+    const user = userEvent.setup();
+    const combatant = {
+      ...baseCombatant,
+      fragmentPreferences: { ...baseCombatant.fragmentPreferences, comments: 'later' },
+    };
+    const { container } = render(<CombatantCard {...defaultProps} combatant={combatant} />);
+    await enterEditMode(user);
+    expect(container.querySelector('.build-prefs-display')).not.toBeNull();
+  });
+
+  it('renders the Memory Fragments group after Preferred Partners', async () => {
+    const user = userEvent.setup();
+    const { container } = render(<CombatantCard {...defaultProps} combatant={withGear()} />);
+    await enterEditMode(user);
+    const group = container.querySelector('.card-section-group');
+    expect(group?.querySelector('.card-section-group-header')?.textContent).toBe(
+      'Memory Fragments',
+    );
+    const sections = [...container.querySelectorAll('.game-card-edit-body .section-header')].map(
+      (el) => el.textContent?.trim(),
+    );
+    expect(sections.indexOf('Preferred Partners')).toBeLessThan(sections.indexOf('Slots'));
+    expect(sections.indexOf('Slots')).toBeLessThan(sections.indexOf('Target Build'));
   });
 });

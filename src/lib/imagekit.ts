@@ -97,6 +97,16 @@ export function getZzzDiscSuitIconUrl(localPath: string): string {
   return `${IMAGEKIT_URL_ENDPOINT}/tr:w-128${toImageKitPath(localPath)}`;
 }
 
+// Returns a fully-formed ImageKit URL for a CZN Memory Fragment set icon.
+// Prydwen's set icons are 60² webp (the largest it serves) and Game8's seed
+// overrides are 165² — plain width resize capped at the source so the
+// 60² files are never upscaled; the slot grid renders them at ≈40px.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getCznFragmentSetIconUrl(localPath: string): string {
+  if (!isImageKitEnabled) return localPath;
+  return `${IMAGEKIT_URL_ENDPOINT}/tr:w-128,c-at_max${toImageKitPath(localPath)}`;
+}
+
 // Returns a fully-formed ImageKit URL for a ZZZ W-Engine icon.
 // Engine icons are already square Enka artwork — plain width resize, no crop.
 // Falls back to the raw local path when ImageKit is not configured.

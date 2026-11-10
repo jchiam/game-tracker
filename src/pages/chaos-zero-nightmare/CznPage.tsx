@@ -1,11 +1,14 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useCombatants } from '@/hooks/chaos-zero-nightmare/useCombatants';
 import { useParties } from '@/hooks/chaos-zero-nightmare/useParties';
 import { useRosterView } from '@/hooks/useRosterView';
 import { CombatantCard } from './components/CombatantCard';
 import { AddCombatantModal } from './components/AddCombatantModal';
+import { FragmentEditorModal } from './components/FragmentEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
+import { calculateCznBuildScore } from '@/utils/cznBuildScore';
+import type { CznFragmentSlot } from '@/data/chaos-zero-nightmare/fragments';
 import type { CznTrackedCombatant } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 import './CznPage.css';
@@ -32,6 +35,9 @@ export function CznPage({ session, isAuthLoading, onSignIn }: CznPageProps) {
     updatePartner,
     updatePartnerPreferences,
     toggleFavorite,
+    saveFragmentData,
+    removeFragmentData,
+    saveFragmentPreferences,
     getFilteredRoster,
   } = useCombatants(session, isAuthLoading);
 
@@ -56,10 +62,10 @@ export function CznPage({ session, isAuthLoading, onSignIn }: CznPageProps) {
   const filterRoster = useCallback(
     (
       searchTerm: string,
-      sortBy: 'ALPHA' | 'LEVEL',
+      sortBy: 'ALPHA' | 'LEVEL' | 'SCORE',
       predicate: ((c: CznTrackedCombatant) => boolean) | undefined,
       entities?: CznTrackedCombatant[],
-    ) => getFilteredRoster(searchTerm, sortBy, predicate, entities),
+    ) => getFilteredRoster(searchTerm, sortBy, calculateCznBuildScore, predicate, entities),
     [getFilteredRoster],
   );
 
@@ -79,6 +85,7 @@ export function CznPage({ session, isAuthLoading, onSignIn }: CznPageProps) {
     sortModes: [
       { key: 'ALPHA', label: 'AZ', described: 'alphabetically' },
       { key: 'LEVEL', label: 'Lv', described: 'by Level' },
+      { key: 'SCORE', label: '★', described: 'by Build Score' },
     ],
     searchPlaceholder: 'Search by name, class, or attribute...',
     addTitle: 'Add Combatant',
@@ -88,6 +95,15 @@ export function CznPage({ session, isAuthLoading, onSignIn }: CznPageProps) {
     filterRoster,
     trackedEntities: trackedCombatants,
   });
+
+  const [editingFragment, setEditingFragment] = useState<{
+    combatantId: string;
+    anchorSlot: CznFragmentSlot;
+  } | null>(null);
+
+  const editingCombatant = editingFragment
+    ? trackedCombatants.find((c) => c.id === editingFragment.combatantId)
+    : undefined;
 
   return (
     <RosterPageLayout
@@ -125,6 +141,7 @@ export function CznPage({ session, isAuthLoading, onSignIn }: CznPageProps) {
             toggleFavorite(id, value);
             projection.refreshBasis(id);
           }}
+          onToggleFragment={(id, slot) => setEditingFragment({ combatantId: id, anchorSlot: slot })}
           onEditCommit={() => projection.refreshBasis(combatant.id)}
           heldReason={projection.heldReason(combatant.id)}
           isExiting={projection.isExiting(combatant.id)}
@@ -148,6 +165,27 @@ export function CznPage({ session, isAuthLoading, onSignIn }: CznPageProps) {
       }
       pendingSaveCount={pendingSaveCount}
     >
+      {editingFragment && editingCombatant && (
+        <FragmentEditorModal
+          combatant={editingCombatant}
+          anchorSlot={editingFragment.anchorSlot}
+          onSaveFragment={(slot, piece) =>
+            saveFragmentData({ combatantId: editingCombatant.id, slot }, piece)
+          }
+          onRemoveFragment={(slot) =>
+            removeFragmentData({ combatantId: editingCombatant.id, slot })
+          }
+          onUpdateBuildPreferences={(newPrefs) =>
+            saveFragmentPreferences(editingCombatant.id, newPrefs)
+          }
+          onClose={() => {
+            // Equipment-modal close is a release point
+            projection.refreshBasis(editingCombatant.id);
+            setEditingFragment(null);
+          }}
+        />
+      )}
+
       {isAddModalOpen && session && (
         <AddCombatantModal
           availableCombatants={availableCombatants}

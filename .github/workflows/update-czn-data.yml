@@ -54,6 +54,6 @@ jobs:
           # shellcheck disable=SC2016
           gh pr create \
             --title "chore: update CZN data" \
-            --body 'Automated weekly update of the CZN Combatant and Partner catalogs and their ImageKit assets from [Prydwen](https://www.prydwen.gg/chaos-zero-nightmare), plus the hand-curated overlays in `scripts/seeds/czn-combatants.json` and `scripts/seeds/czn-partners.json`.' \
+            --body 'Automated weekly update of the CZN Combatant, Partner, and Memory Fragment set catalogs and their ImageKit assets from [Prydwen](https://www.prydwen.gg/chaos-zero-nightmare), plus the hand-curated overlays in `scripts/seeds/czn-combatants.json`, `scripts/seeds/czn-partners.json`, and `scripts/seeds/czn-fragment-sets.json`.' \
             --base main \
             --head "$BRANCH"

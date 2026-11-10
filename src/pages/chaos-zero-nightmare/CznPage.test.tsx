@@ -16,6 +16,7 @@ vi.mock('@/hooks/chaos-zero-nightmare/useParties', () => ({
 vi.mock('@/lib/imagekit', () => ({
   getMugshotUrl: (path: string) => path,
   getAvatarUrl: (path: string) => path,
+  getCznFragmentSetIconUrl: (path: string) => path,
 }));
 
 import { useCombatants } from '@/hooks/chaos-zero-nightmare/useCombatants';
@@ -39,6 +40,8 @@ function makeCombatant(id: string, name: string): CznTrackedCombatant {
     partnerLevel: 1,
     partnerEgo: 0,
     partnerPreferences: [],
+    fragments: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
+    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
   };
 }
 
@@ -68,6 +71,9 @@ const defaultCombatantsHook = {
   updatePartner: vi.fn(),
   updatePartnerPreferences: vi.fn(),
   toggleFavorite: vi.fn(),
+  saveFragmentData: vi.fn(),
+  removeFragmentData: vi.fn(),
+  saveFragmentPreferences: vi.fn(),
   getFilteredRoster: vi.fn().mockReturnValue([]),
 };
 
@@ -233,5 +239,117 @@ describe('CznPage', () => {
     );
     await user.click(screen.getByRole('button', { name: /parties/i }));
     expect(screen.getByText('Nightmare Team')).toBeInTheDocument();
+  });
+
+  it('sort button cycles AZ → Lv → ★ (Build Score)', () => {
+    const combatants = [makeCombatant('mei-lin', 'Mei Lin')];
+    vi.mocked(useCombatants).mockReturnValue({
+      ...defaultCombatantsHook,
+      trackedCombatants: combatants,
+      getFilteredRoster: vi.fn().mockReturnValue(combatants),
+    });
+    renderWithProviders(
+      <CznPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    const sortBtn = screen.getByTitle(/sorted alphabetically/i);
+    expect(sortBtn).toHaveTextContent('AZ');
+    fireEvent.click(sortBtn);
+    expect(screen.getByTitle(/sorted by level/i)).toHaveTextContent('Lv');
+    fireEvent.click(screen.getByTitle(/sorted by level/i));
+    expect(screen.getByTitle(/sorted by build score/i)).toHaveTextContent('★');
+  });
+
+  it('passes the build scorer to getFilteredRoster', () => {
+    const getFilteredRoster = vi.fn().mockReturnValue([]);
+    vi.mocked(useCombatants).mockReturnValue({
+      ...defaultCombatantsHook,
+      trackedCombatants: [makeCombatant('mei-lin', 'Mei Lin')],
+      getFilteredRoster,
+    });
+    renderWithProviders(
+      <CznPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    expect(getFilteredRoster).toHaveBeenCalledWith(
+      '',
+      'ALPHA',
+      expect.any(Function),
+      undefined,
+      expect.any(Array),
+    );
+  });
+
+  it('opens the fragment editor anchored to the clicked slot and wires the hook actions', () => {
+    const saveFragmentData = vi.fn();
+    const combatants = [makeCombatant('mei-lin', 'Mei Lin')];
+    vi.mocked(useCombatants).mockReturnValue({
+      ...defaultCombatantsHook,
+      trackedCombatants: combatants,
+      saveFragmentData,
+      getFilteredRoster: vi.fn().mockReturnValue(combatants),
+    });
+    const { container } = renderWithProviders(
+      <CznPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    // Open edit mode on the card, then click slot cell IV (index 3).
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(container.querySelectorAll('.equip-slot-cell')[3]);
+    expect(screen.getByText('Memory Fragments — Mei Lin')).toBeInTheDocument();
+
+    // Selecting a set in the editor routes through the hook's saveFragmentData.
+    fireEvent.change(container.querySelector('select[name="fragment-4-set"]')!, {
+      target: { value: 'spark-of-passion' },
+    });
+    expect(saveFragmentData).toHaveBeenCalledWith(
+      { combatantId: 'mei-lin', slot: 4 },
+      expect.objectContaining({ setId: 'spark-of-passion' }),
+    );
+  });
+
+  it('routes editor remove, preference, and close actions through the hook', () => {
+    const removeFragmentData = vi.fn();
+    const saveFragmentPreferences = vi.fn();
+    const combatant = {
+      ...makeCombatant('mei-lin', 'Mei Lin'),
+      fragments: {
+        1: null,
+        2: null,
+        3: null,
+        4: { setId: 'spark-of-passion', mainStat: 'Critical Chance%', subStats: [] },
+        5: null,
+        6: null,
+      },
+    };
+    vi.mocked(useCombatants).mockReturnValue({
+      ...defaultCombatantsHook,
+      trackedCombatants: [combatant],
+      removeFragmentData,
+      saveFragmentPreferences,
+      getFilteredRoster: vi.fn().mockReturnValue([combatant]),
+    });
+    const { container } = renderWithProviders(
+      <CznPage session={createMockSession()} isAuthLoading={false} onSignIn={vi.fn()} />,
+    );
+    fireEvent.click(screen.getByTitle('Edit'));
+    fireEvent.click(container.querySelectorAll('.equip-slot-cell')[3]);
+
+    // Clearing the set routes through removeFragmentData.
+    fireEvent.change(container.querySelector('select[name="fragment-4-set"]')!, {
+      target: { value: '' },
+    });
+    expect(removeFragmentData).toHaveBeenCalledWith({ combatantId: 'mei-lin', slot: 4 });
+
+    // A preference edit routes through saveFragmentPreferences.
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    fireEvent.change(container.querySelector('select[name="pref-set-4"]')!, {
+      target: { value: 'spark-of-passion' },
+    });
+    expect(saveFragmentPreferences).toHaveBeenCalledWith(
+      'mei-lin',
+      expect.objectContaining({ set4Id: 'spark-of-passion' }),
+    );
+
+    // Done unmounts the editor.
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }));
+    expect(screen.queryByText('Memory Fragments — Mei Lin')).toBeNull();
   });
 });

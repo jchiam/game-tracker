@@ -3,8 +3,10 @@
    border 60% of the token hue via color-mix. The Partner static-line's match
    badge is the shared `.pref-match-badge` pill in card.css. */
 
-/* Empty Partner static-line placeholder (colour set inline from the gradient). */
-.no-partner {
+/* Empty Partner / Memory Fragment static-line placeholders (colour set inline
+   from the gradient). */
+.no-partner,
+.no-fragments {
   opacity: 0.4;
 }
 

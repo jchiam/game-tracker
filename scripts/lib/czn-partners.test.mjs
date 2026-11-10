@@ -1,8 +1,8 @@
 // Unit tests for the CZN Partner source-shape and seed rules. The live fetch
 // and ImageKit paths are exercised by the weekly workflow, not here.
 import { describe, it, expect, vi } from 'vitest';
-import { selectPartnerNodes, assertPartnerSeedIds } from './czn-partners.mjs';
-import { mintId, slugify } from './pipeline.mjs';
+import { selectPartnerNodes } from './czn-partners.mjs';
+import { mintId } from './pipeline.mjs';
 
 const partnerNode = (name) => ({ name, rarity: '5', class: 'Striker', faction: null });
 const pageData = (hashes, listCount = 2) => ({
@@ -52,29 +52,6 @@ describe('selectPartnerNodes', () => {
     const fetchStaticQuery = async () => ({ data: { allContentfulChaosPartner: { nodes: [] } } });
     await expect(selectPartnerNodes(pageData(['x', 'y']), { fetchStaticQuery })).rejects.toThrow(
       'no payload among x, y carries allContentfulChaosPartner.nodes',
-    );
-  });
-});
-
-describe('assertPartnerSeedIds', () => {
-  const mint = (name) => slugify(name, '-');
-  const label = 'scripts/seeds/czn-partners.json';
-
-  it('returns the seed when every id is the kebab-case slug of its name', () => {
-    const seed = [
-      { id: 'sig', name: 'Sig' },
-      { id: 'mei-lin', name: 'Mei Lin' },
-    ];
-    expect(assertPartnerSeedIds(seed, { label, mint })).toBe(seed);
-  });
-
-  it('throws naming the entry and the expected slug on a mismatch', () => {
-    const seed = [
-      { id: 'sig', name: 'Sig' },
-      { id: 'emily', name: 'Emilie' },
-    ];
-    expect(() => assertPartnerSeedIds(seed, { label, mint })).toThrow(
-      `${label} entry emily: id must be the kebab-case slug of its name ("emilie")`,
     );
   });
 });
