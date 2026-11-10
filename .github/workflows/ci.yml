@@ -83,6 +83,13 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     needs: build_and_test
+    # Browsers + system deps come preinstalled in the official Playwright image,
+    # replacing `npx playwright install --with-deps` (3 browser downloads + apt
+    # every run). The image tag MUST match the installed @playwright/test
+    # version — the assert step below fails loudly when a dependency bump
+    # moves one without the other.
+    container:
+      image: mcr.microsoft.com/playwright:v1.62.1-noble
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
@@ -91,11 +98,20 @@ jobs:
           cache: 'npm'
       - name: Install dependencies
         run: npm ci
-      - name: Install Playwright Browsers
-        run: npx playwright install --with-deps chromium firefox webkit
+      - name: Assert Playwright image matches @playwright/test
+        shell: bash
+        run: |
+          installed=$(node -p "require('@playwright/test/package.json').version")
+          if [ "$installed" != "1.62.1" ]; then
+            echo "::error::@playwright/test is $installed but the e2e container image is v1.62.1 — bump the image tag in ci.yml"
+            exit 1
+          fi
       - name: Run Playwright tests
         run: npm run test:e2e
         env:
+          # Actions overrides HOME to /github/home inside containers; the
+          # image's browsers live under /root/.cache/ms-playwright.
+          HOME: /root
           VITE_HOST: 127.0.0.1
           VITE_SUPABASE_URL: http://127.0.0.1:54321
           VITE_SUPABASE_ANON_KEY: dummy_key
