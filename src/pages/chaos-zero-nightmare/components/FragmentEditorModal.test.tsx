@@ -14,6 +14,8 @@ const emptyFragments: CznTrackedCombatant['fragments'] = {
 
 const SPARK = 'spark-of-passion'; // 4-PC
 const WING = 'black-wing'; // 2-PC
+const CORPSE = 'cursed-corpse'; // 2-PC
+const SCARAB = 'seth-s-scarab'; // 2-PC
 
 function makeCombatant(overrides: Partial<CznTrackedCombatant> = {}): CznTrackedCombatant {
   return {
@@ -34,7 +36,7 @@ function makeCombatant(overrides: Partial<CznTrackedCombatant> = {}): CznTracked
     partnerEgo: 0,
     partnerPreferences: [],
     fragments: { ...emptyFragments },
-    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [], targetSetIds: [] },
     ...overrides,
   };
 }
@@ -257,8 +259,9 @@ describe('FragmentEditorModal', () => {
   it('shows set selects, three main chains, substat chain, and comments', () => {
     const { container } = renderModal();
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    expect(container.querySelector('select[name="pref-set-4"]')).toBeInTheDocument();
+    expect(container.querySelector('select[name="pref-set-1"]')).toBeInTheDocument();
     expect(container.querySelector('select[name="pref-set-2"]')).toBeInTheDocument();
+    expect(container.querySelector('select[name="pref-set-3"]')).toBeInTheDocument();
     expect(screen.getByText('Preferred Main Stat (IV · Ideal)')).toBeInTheDocument();
     expect(screen.getByText('Preferred Main Stat (V · Desire)')).toBeInTheDocument();
     expect(screen.getByText('Preferred Main Stat (VI · Imagination)')).toBeInTheDocument();
@@ -266,31 +269,85 @@ describe('FragmentEditorModal', () => {
     expect(screen.getByText('Build Comments')).toBeInTheDocument();
   });
 
-  it('scopes the 4-piece pick to 4-PC sets and the 2-piece pick to 2-PC sets', () => {
+  const compositionLabels = (container: HTMLElement, name: string) =>
+    within(container.querySelector<HTMLSelectElement>(`select[name="${name}"]`)!)
+      .getAllByRole('option')
+      .map((o) => o.textContent ?? '');
+  const isDisabled = (container: HTMLElement, name: string) =>
+    container.querySelector<HTMLSelectElement>(`select[name="${name}"]`)!.disabled;
+  const withComposition = (targetSetIds: string[]) =>
+    makeCombatant({
+      fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [], targetSetIds },
+    });
+
+  it('offers every set on every composition row when the composition is empty', () => {
     const { container } = renderModal();
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    const labels = (name: string) =>
-      within(container.querySelector<HTMLSelectElement>(`select[name="${name}"]`)!)
-        .getAllByRole('option')
-        .map((o) => o.textContent ?? '');
-    const set4 = labels('pref-set-4');
-    const set2 = labels('pref-set-2');
-    expect(set4).toContain('Spark of Passion [4-PC]');
-    expect(set4.some((l) => l.includes('[2-PC]'))).toBe(false);
-    expect(set2).toContain('Black Wing [2-PC]');
-    expect(set2.some((l) => l.includes('[4-PC]'))).toBe(false);
+    for (const name of ['pref-set-1', 'pref-set-2', 'pref-set-3']) {
+      const labels = compositionLabels(container, name);
+      expect(labels).toContain('Spark of Passion [4-PC]');
+      expect(labels).toContain('Black Wing [2-PC]');
+      expect(isDisabled(container, name)).toBe(false);
+    }
+  });
+
+  it('a 4-PC set in row 1 leaves rows 2 and 3 with 2-PC sets only', () => {
+    const { container } = renderModal({ combatant: withComposition([SPARK]) });
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    for (const name of ['pref-set-2', 'pref-set-3']) {
+      const labels = compositionLabels(container, name);
+      expect(labels).toContain('Black Wing [2-PC]');
+      expect(labels.some((l) => l.includes('[4-PC]'))).toBe(false);
+      expect(isDisabled(container, name)).toBe(false);
+    }
+    // Row 1 keeps offering its own value and the other 4-PC sets.
+    expect(compositionLabels(container, 'pref-set-1')).toContain('Spark of Passion [4-PC]');
+  });
+
+  it('a full 4+2 composition disables the third row', () => {
+    const { container } = renderModal({ combatant: withComposition([SPARK, WING]) });
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    expect(isDisabled(container, 'pref-set-3')).toBe(true);
+    expect(compositionLabels(container, 'pref-set-3')).toEqual(['-- None --']);
+    // Rows 1 and 2 keep their own values offered.
+    expect(compositionLabels(container, 'pref-set-1')).toContain('Spark of Passion [4-PC]');
+    expect(compositionLabels(container, 'pref-set-2')).toContain('Black Wing [2-PC]');
+  });
+
+  it('two 2-PC sets leave row 3 with the remaining 2-PC sets and no 4-PC set', () => {
+    const { container } = renderModal({ combatant: withComposition([WING, CORPSE]) });
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    const row3 = compositionLabels(container, 'pref-set-3');
+    expect(row3).toContain("Seth's Scarab [2-PC]");
+    expect(row3).not.toContain('Black Wing [2-PC]');
+    expect(row3).not.toContain('Cursed Corpse [2-PC]');
+    expect(row3.some((l) => l.includes('[4-PC]'))).toBe(false);
+    expect(isDisabled(container, 'pref-set-3')).toBe(false);
+  });
+
+  it('emits a three-set composition when the third row is filled', () => {
+    const { container, props } = renderModal({ combatant: withComposition([WING, CORPSE]) });
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    fireEvent.change(container.querySelector('select[name="pref-set-3"]')!, {
+      target: { value: SCARAB },
+    });
+    expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith({
+      mainStats: { 4: [], 5: [], 6: [] },
+      subStats: [],
+      targetSetIds: [WING, CORPSE, SCARAB],
+    });
   });
 
   it('emits the whole preferences object when a preferred set is chosen', () => {
     const { container, props } = renderModal();
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    fireEvent.change(container.querySelector('select[name="pref-set-4"]')!, {
+    fireEvent.change(container.querySelector('select[name="pref-set-1"]')!, {
       target: { value: SPARK },
     });
     expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith({
       mainStats: { 4: [], 5: [], 6: [] },
       subStats: [],
-      set4Id: SPARK,
+      targetSetIds: [SPARK],
     });
   });
 
@@ -331,27 +388,32 @@ describe('FragmentEditorModal', () => {
     );
   });
 
-  it('emits the whole preferences object when clearing the 2-piece set', () => {
+  it('clearing a 4-PC row drops it from the composition without leaving a hole', () => {
     const combatant = makeCombatant({
       fragmentPreferences: {
         mainStats: { 4: [], 5: [], 6: [] },
         subStats: [],
-        set4Id: SPARK,
-        set2Id: WING,
+        targetSetIds: [SPARK, WING],
         comments: 'keep',
       },
     });
     const { container, props } = renderModal({ combatant });
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    fireEvent.change(container.querySelector('select[name="pref-set-2"]')!, {
+    fireEvent.change(container.querySelector('select[name="pref-set-1"]')!, {
       target: { value: '' },
     });
     expect(props.onUpdateBuildPreferences).toHaveBeenCalledWith({
       mainStats: { 4: [], 5: [], 6: [] },
       subStats: [],
-      set4Id: SPARK,
-      set2Id: null,
+      targetSetIds: [WING],
       comments: 'keep',
     });
+  });
+
+  it('a lone 2-PC set frees the budget for a 4-PC set on every other row', () => {
+    const { container } = renderModal({ combatant: withComposition([WING]) });
+    fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
+    expect(compositionLabels(container, 'pref-set-2')).toContain('Spark of Passion [4-PC]');
+    expect(compositionLabels(container, 'pref-set-3')).toContain('Spark of Passion [4-PC]');
   });
 });

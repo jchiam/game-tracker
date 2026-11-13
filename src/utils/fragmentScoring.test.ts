@@ -6,8 +6,7 @@ import type { CznEquippedFragment } from '@/data/chaos-zero-nightmare/fragments'
 const emptyPrefs: CznFragmentBuildPreferences = {
   mainStats: { 4: [], 5: [], 6: [] },
   subStats: [],
-  set4Id: null,
-  set2Id: null,
+  targetSetIds: [],
   comments: '',
 };
 
@@ -50,6 +49,8 @@ function combatantWith(
 
 const SPARK = 'spark-of-passion'; // 4-PC
 const WING = 'black-wing'; // 2-PC
+const CORPSE = 'cursed-corpse'; // 2-PC
+const SCARAB = 'seth-s-scarab'; // 2-PC
 
 describe('calculateFragmentScore sentinels', () => {
   it('returns -1 when no preferences are set', () => {
@@ -57,7 +58,7 @@ describe('calculateFragmentScore sentinels', () => {
   });
 
   it('returns -1 when no pieces are equipped', () => {
-    expect(calculateFragmentScore(combatantWith({}, { set4Id: SPARK }))).toBe(-1);
+    expect(calculateFragmentScore(combatantWith({}, { targetSetIds: [SPARK] }))).toBe(-1);
   });
 });
 
@@ -74,8 +75,7 @@ describe('calculateFragmentScore set term', () => {
         6: piece(WING, 'ATK%', ['Critical Chance%', 'Critical Damage%', 'Flat ATK', 'Flat HP']),
       },
       {
-        set4Id: SPARK,
-        set2Id: WING,
+        targetSetIds: [SPARK, WING],
         mainStats: {
           4: chain('Critical Chance%'),
           5: chain('Passion Damage%'),
@@ -87,7 +87,7 @@ describe('calculateFragmentScore set term', () => {
     expect(calculateFragmentScore(c)).toBeCloseTo(100);
   });
 
-  it('surplus pieces of the 4-PC pick do not count beyond four (0.67 set term)', () => {
+  it('surplus pieces of a 4-PC target do not count beyond four (4/6 set term)', () => {
     const six = combatantWith(
       {
         1: piece(SPARK, 'Flat ATK'),
@@ -97,28 +97,83 @@ describe('calculateFragmentScore set term', () => {
         5: piece(SPARK, 'ATK%'),
         6: piece(SPARK, 'ATK%'),
       },
-      { set4Id: SPARK },
+      { targetSetIds: [SPARK] },
     );
-    // Set 0.67 × 0.35 + mains don't-care 0.30 + no sub prefs (achievable 0 → full) 0.35.
-    expect(calculateFragmentScore(six)).toBeCloseTo((0.67 * 0.35 + 0.3 + 0.35) * 100);
+    // Set 4/6 × 0.35 + mains don't-care 0.30 + no sub prefs (achievable 0 → full) 0.35.
+    expect(calculateFragmentScore(six)).toBeCloseTo(((4 / 6) * 0.35 + 0.3 + 0.35) * 100);
   });
 
-  it('one piece of the 2-PC pick contributes half the 2-PC part', () => {
-    // Same occupancy (slots 5 and 6 filled) so only the set term differs: 0.165 vs 0.33.
+  it('one piece of a 2-PC target contributes half its share (1/6)', () => {
+    // Same occupancy (slots 5 and 6 filled) so only the set term differs: 1/6 vs 2/6.
     const one = combatantWith(
       { 5: piece(WING, 'ATK%'), 6: piece(SPARK, 'ATK%') },
-      { set2Id: WING },
+      { targetSetIds: [WING] },
     );
-    const two = combatantWith({ 5: piece(WING, 'ATK%'), 6: piece(WING, 'ATK%') }, { set2Id: WING });
+    const two = combatantWith(
+      { 5: piece(WING, 'ATK%'), 6: piece(WING, 'ATK%') },
+      { targetSetIds: [WING] },
+    );
     expect(calculateFragmentScore(two) - calculateFragmentScore(one)).toBeCloseTo(
-      0.165 * 0.35 * 100,
+      (1 / 6) * 0.35 * 100,
     );
   });
 
-  it('a missing pick contributes zero to its term', () => {
+  it('a 2+2+2 composition fully worn scores a full set term', () => {
+    const triple = combatantWith(
+      {
+        1: piece(WING, 'Flat ATK'),
+        2: piece(WING, 'Flat DEF'),
+        3: piece(CORPSE, 'Flat HP'),
+        4: piece(CORPSE, 'ATK%'),
+        5: piece(SCARAB, 'ATK%'),
+        6: piece(SCARAB, 'ATK%'),
+      },
+      { targetSetIds: [WING, CORPSE, SCARAB] },
+    );
+    // Set 1.0 × 0.35 + mains don't-care 0.30 + no sub prefs 0.35.
+    expect(calculateFragmentScore(triple)).toBeCloseTo(100);
+  });
+
+  it('an under-filled 2+2 composition caps the set term at 4/6', () => {
+    const pair = combatantWith(
+      {
+        1: piece(WING, 'Flat ATK'),
+        2: piece(WING, 'Flat DEF'),
+        3: piece(CORPSE, 'Flat HP'),
+        4: piece(CORPSE, 'ATK%'),
+        5: piece(SCARAB, 'ATK%'),
+        6: piece(SCARAB, 'ATK%'),
+      },
+      { targetSetIds: [WING, CORPSE] },
+    );
+    expect(calculateFragmentScore(pair)).toBeCloseTo(((4 / 6) * 0.35 + 0.3 + 0.35) * 100);
+  });
+
+  it('composition order does not change the set term', () => {
+    const fragments = {
+      1: piece(SPARK, 'Flat ATK'),
+      2: piece(SPARK, 'Flat DEF'),
+      3: piece(SPARK, 'Flat HP'),
+      4: piece(SPARK, 'ATK%'),
+      5: piece(WING, 'ATK%'),
+      6: piece(WING, 'ATK%'),
+    };
+    expect(calculateFragmentScore(combatantWith(fragments, { targetSetIds: [WING, SPARK] }))).toBe(
+      calculateFragmentScore(combatantWith(fragments, { targetSetIds: [SPARK, WING] })),
+    );
+  });
+
+  it('an id missing from the catalog contributes zero', () => {
+    const fragments = { 5: piece(WING, 'ATK%'), 6: piece(WING, 'ATK%') };
+    expect(
+      calculateFragmentScore(combatantWith(fragments, { targetSetIds: ['no-such-set', WING] })),
+    ).toBe(calculateFragmentScore(combatantWith(fragments, { targetSetIds: [WING] })));
+  });
+
+  it('a set absent from the composition contributes nothing', () => {
     const only2 = combatantWith(
       { 5: piece(WING, 'ATK%'), 6: piece(WING, 'ATK%') },
-      { set2Id: WING },
+      { targetSetIds: [WING] },
     );
     const both = combatantWith(
       {
@@ -129,7 +184,7 @@ describe('calculateFragmentScore set term', () => {
         5: piece(WING, 'ATK%'),
         6: piece(WING, 'ATK%'),
       },
-      { set4Id: SPARK, set2Id: WING },
+      { targetSetIds: [SPARK, WING] },
     );
     expect(calculateFragmentScore(only2)).toBeLessThan(calculateFragmentScore(both));
   });

@@ -46,7 +46,7 @@ function createTrackedCombatant(combatant: CznCombatant): CznTrackedCombatant {
     // Fresh objects per combatant — a module-level default assigned directly
     // would share one identity across every added combatant (P5X aliasing bug class).
     fragments: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
-    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [], targetSetIds: [] },
   };
 }
 

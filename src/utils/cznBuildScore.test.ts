@@ -43,7 +43,7 @@ function combatant(overrides: Partial<CznTrackedCombatant>): CznTrackedCombatant
     partnerEgo: 0,
     partnerPreferences: [],
     fragments: { ...emptyFragments },
-    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [], targetSetIds: [] },
     ...overrides,
   };
 }
@@ -54,8 +54,7 @@ const perfectFragmentCombatant = (overrides: Partial<CznTrackedCombatant>) =>
     fragmentPreferences: {
       mainStats: { 4: [], 5: [], 6: [] },
       subStats: [],
-      set4Id: SPARK,
-      set2Id: WING,
+      targetSetIds: [SPARK, WING],
     },
     ...overrides,
   });

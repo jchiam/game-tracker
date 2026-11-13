@@ -274,10 +274,11 @@ export interface CznFragmentBuildPreferences {
     6: StatPreference[];
   };
   subStats: StatPreference[];
-  /** Preferred 4-piece Memory Fragment set — ALL_CZN_FRAGMENT_SETS id with pieces 4. */
-  set4Id?: string | null;
-  /** Preferred 2-piece Memory Fragment set — ALL_CZN_FRAGMENT_SETS id with pieces 2. */
-  set2Id?: string | null;
+  /**
+   * Target-set composition — ordered ALL_CZN_FRAGMENT_SETS ids, no duplicates,
+   * whose `pieces` sum to at most 6 (e.g. 4+2 or 2+2+2). Order is display only.
+   */
+  targetSetIds: string[];
   comments?: string;
 }
 

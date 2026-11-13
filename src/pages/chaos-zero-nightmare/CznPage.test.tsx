@@ -41,7 +41,7 @@ function makeCombatant(id: string, name: string): CznTrackedCombatant {
     partnerEgo: 0,
     partnerPreferences: [],
     fragments: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
-    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [], targetSetIds: [] },
   };
 }
 
@@ -340,12 +340,12 @@ describe('CznPage', () => {
 
     // A preference edit routes through saveFragmentPreferences.
     fireEvent.click(screen.getByRole('button', { name: 'Build Preferences' }));
-    fireEvent.change(container.querySelector('select[name="pref-set-4"]')!, {
+    fireEvent.change(container.querySelector('select[name="pref-set-1"]')!, {
       target: { value: 'spark-of-passion' },
     });
     expect(saveFragmentPreferences).toHaveBeenCalledWith(
       'mei-lin',
-      expect.objectContaining({ set4Id: 'spark-of-passion' }),
+      expect.objectContaining({ targetSetIds: ['spark-of-passion'] }),
     );
 
     // Done unmounts the editor.
