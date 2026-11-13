@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Memory Fragment equipment-match scoring for Chaos Zero Nightmare combatants: a 0–100 score computed by a config adapter over the shared equipment-scoring core, covering the 4-piece/2-piece set term, per-slot main-stat scoring, and the CZN stat-shape vocabulary.
+Memory Fragment equipment-match scoring for Chaos Zero Nightmare combatants: a 0–100 score computed by a config adapter over the shared equipment-scoring core, covering the target-set composition term, per-slot main-stat scoring, and the CZN stat-shape vocabulary.
 
 ## Requirements
 
@@ -12,7 +12,7 @@ The system SHALL compute a 0–100 fragment equipment-match score per tracked co
 
 #### Scenario: No preferences
 
-- **WHEN** a combatant has pieces equipped but no set picks, no main-stat chains, and no substat chain
+- **WHEN** a combatant has pieces equipped but an empty target-set composition, no main-stat chains, and no substat chain
 - **THEN** the score is `-1`
 
 #### Scenario: No equipment
@@ -22,27 +22,37 @@ The system SHALL compute a 0–100 fragment equipment-match score per tracked co
 
 #### Scenario: Perfect match
 
-- **WHEN** four equipped pieces match the 4-piece pick, two match the 2-piece pick, every variable-slot main best-matches its chain head, and substats cover the achievable top matches
+- **WHEN** every equipped piece matches a targeted Set up to that Set's piece count and the composition fills all six pieces, every variable-slot main best-matches its chain head, and substats cover the achievable top matches
 - **THEN** the score is 100
 
-### Requirement: 4-piece/2-piece set term
+### Requirement: Target-set composition term
 
-The set term SHALL be `min(count4, 4)/4 × 0.67 + min(count2, 2)/2 × 0.33`, where `count4` is the number of equipped pieces whose set is the 4-piece pick and `count2` the number whose set is the 2-piece pick. A missing pick contributes 0 to its term. Because every set is either a 4-piece or a 2-piece set, the two picks can never name the same set and no spill rule applies.
+The set term SHALL be `Σ min(count_i, pieces_i) / 6` over every Set `i` in the target-set composition, where `count_i` is the number of equipped pieces whose set is Set `i` and `pieces_i` is that Set's catalog piece count. An empty composition contributes 0. Composition order SHALL NOT affect the term. Because a Set appears at most once in the composition and every Set is either a 4-piece or a 2-piece set, no spill rule applies.
 
-#### Scenario: Full composition
+#### Scenario: Full 4 + 2 composition
 
 - **WHEN** the combatant targets 4-piece set X and 2-piece set Y and wears 4 X pieces and 2 Y pieces
 - **THEN** the set term is 1.0
 
+#### Scenario: Full 2 + 2 + 2 composition
+
+- **WHEN** the combatant targets 2-piece sets X, Y, Z and wears 2 pieces of each
+- **THEN** the set term is 1.0
+
 #### Scenario: Surplus pieces do not count
 
-- **WHEN** the combatant targets 4-piece set X with no 2-piece pick and wears 6 X pieces
-- **THEN** the set term is 0.67
+- **WHEN** the combatant targets only 4-piece set X and wears 6 X pieces
+- **THEN** the set term is 0.67 (4/6)
 
 #### Scenario: Partial 2-piece
 
 - **WHEN** the combatant targets 2-piece set Y and wears 1 Y piece
-- **THEN** the 2-piece part contributes 0.165
+- **THEN** set Y contributes 0.165 (1/6) to the set term
+
+#### Scenario: Under-filled composition caps the term
+
+- **WHEN** the combatant targets 2-piece sets X and Y only and wears 2 pieces of each
+- **THEN** the set term is 0.67 (4/6)
 
 ### Requirement: Slot main-stat scoring
 

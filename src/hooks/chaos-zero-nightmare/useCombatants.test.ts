@@ -54,7 +54,7 @@ const mockSession = createMockSession();
 const first = ALL_CZN_COMBATANTS[0];
 
 const emptyFragments = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null } as const;
-const emptyPrefs = { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] };
+const emptyPrefs = { mainStats: { 4: [], 5: [], 6: [] }, subStats: [], targetSetIds: [] };
 
 function trackedFixture(index: number, overrides: Record<string, unknown>) {
   return {
@@ -68,7 +68,7 @@ function trackedFixture(index: number, overrides: Record<string, unknown>) {
     partnerEgo: 0,
     partnerPreferences: [],
     fragments: { ...emptyFragments },
-    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+    fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [], targetSetIds: [] },
     ...overrides,
   };
 }
@@ -160,8 +160,7 @@ describe('useCombatants', () => {
         6: [],
       },
       subStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
-      set4Id: 'spark-of-passion',
-      set2Id: null,
+      targetSetIds: ['spark-of-passion'],
       comments: 'notes',
     };
     act(() => result.current.saveFragmentPreferences(first.id, prefs));

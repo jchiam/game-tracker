@@ -138,8 +138,7 @@ export function CombatantCard({
 
   const bp = combatant.fragmentPreferences;
   const hasAnyPreference =
-    Boolean(bp.set4Id) ||
-    Boolean(bp.set2Id) ||
+    bp.targetSetIds.length > 0 ||
     bp.subStats.length > 0 ||
     Boolean(bp.comments) ||
     CZN_VARIABLE_MAIN_SLOTS.some((s) => bp.mainStats[s].length > 0);
@@ -344,12 +343,15 @@ export function CombatantCard({
             {hasAnyPreference && (
               <ProgressSection label="Target Build" className="build-prefs-display">
                 <div className="prefs-display-grid">
-                  {(bp.set4Id || bp.set2Id) && (
+                  {bp.targetSetIds.length > 0 && (
                     <div className="pref-display-row">
                       <span className="pref-display-label">Sets</span>
                       <div className="pref-display-chain">
-                        {bp.set4Id && <span className="pref-stat-badge">{setName(bp.set4Id)}</span>}
-                        {bp.set2Id && <span className="pref-stat-badge">{setName(bp.set2Id)}</span>}
+                        {bp.targetSetIds.map((setId) => (
+                          <span key={setId} className="pref-stat-badge">
+                            {setName(setId)}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   )}

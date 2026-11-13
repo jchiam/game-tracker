@@ -24,18 +24,39 @@ import { SubStatList } from '@/components/SubStatList';
 const emptyPiece: CznEquippedFragment = { setId: null, mainStat: null, subStats: [] };
 
 // Every slot may hold any set; the piece count is shown so the player can see
-// which pick a set would count toward.
+// how much of the six-slot budget a set takes in the Target Build.
 const SET_OPTIONS = ALL_CZN_FRAGMENT_SETS.map((set) => ({
   value: set.id,
   label: `${set.name} [${set.pieces}-PC]`,
 }));
-// The Target Build picks are scoped: a 4-PC set can only be the 4-piece target.
-const SET4_OPTIONS = SET_OPTIONS.filter(
-  (o) => ALL_CZN_FRAGMENT_SETS.find((s) => s.id === o.value)?.pieces === 4,
-);
-const SET2_OPTIONS = SET_OPTIONS.filter(
-  (o) => ALL_CZN_FRAGMENT_SETS.find((s) => s.id === o.value)?.pieces === 2,
-);
+
+// The Target Build composition: up to three set rows sharing a six-piece
+// budget (4+2, 2+2+2, 4, 2+2, 2). Three rows suffice because no legal
+// composition holds more than three sets.
+const COMPOSITION_ROWS = [0, 1, 2] as const;
+const COMPOSITION_BUDGET = CZN_FRAGMENT_SLOTS.length;
+
+const piecesOf = (setId: string) => ALL_CZN_FRAGMENT_SETS.find((s) => s.id === setId)?.pieces ?? 0;
+
+/**
+ * Options for composition row `row`: catalog sets that fit the budget left by
+ * the other rows and are not already chosen elsewhere. The row's own current
+ * value always stays offered so a stored value is never invisible.
+ */
+function compositionOptions(targetSetIds: string[], row: number) {
+  const own = targetSetIds[row];
+  const others = targetSetIds.filter((_, i) => i !== row);
+  const remaining = COMPOSITION_BUDGET - others.reduce((sum, id) => sum + piecesOf(id), 0);
+  return SET_OPTIONS.filter(
+    (o) => o.value === own || (!others.includes(o.value) && piecesOf(o.value) <= remaining),
+  );
+}
+
+/** Rebuild the composition from the three row values, dropping blanks (no holes). */
+function withCompositionRow(targetSetIds: string[], row: number, value: string): string[] {
+  const rows = COMPOSITION_ROWS.map((r) => (r === row ? value : (targetSetIds[r] ?? '')));
+  return rows.filter((id) => id !== '');
+}
 
 const isFixedSlot = (slot: CznFragmentSlot): slot is CznFixedMainSlot => slot <= 3;
 
@@ -187,6 +208,7 @@ function PreferencesTab({
   const currentPrefs = combatant.fragmentPreferences || {
     mainStats: { 4: [], 5: [], 6: [] },
     subStats: [],
+    targetSetIds: [],
   };
 
   return (
@@ -195,24 +217,26 @@ function PreferencesTab({
 
       <div className="pref-section">
         <h3>Preferred Sets</h3>
-        <FormGroup label="Set (4-piece)">
-          <Select
-            name="pref-set-4"
-            value={currentPrefs.set4Id ?? ''}
-            placeholder="-- None --"
-            options={SET4_OPTIONS}
-            onChange={(v) => onUpdateBuildPreferences({ ...currentPrefs, set4Id: v || null })}
-          />
-        </FormGroup>
-        <FormGroup label="Set (2-piece)">
-          <Select
-            name="pref-set-2"
-            value={currentPrefs.set2Id ?? ''}
-            placeholder="-- None --"
-            options={SET2_OPTIONS}
-            onChange={(v) => onUpdateBuildPreferences({ ...currentPrefs, set2Id: v || null })}
-          />
-        </FormGroup>
+        {COMPOSITION_ROWS.map((row) => {
+          const options = compositionOptions(currentPrefs.targetSetIds, row);
+          return (
+            <FormGroup key={row} label={`Set ${row + 1}`}>
+              <Select
+                name={`pref-set-${row + 1}`}
+                value={currentPrefs.targetSetIds[row] ?? ''}
+                placeholder="-- None --"
+                options={options}
+                disabled={options.length === 0}
+                onChange={(v) =>
+                  onUpdateBuildPreferences({
+                    ...currentPrefs,
+                    targetSetIds: withCompositionRow(currentPrefs.targetSetIds, row, v),
+                  })
+                }
+              />
+            </FormGroup>
+          );
+        })}
       </div>
 
       {CZN_VARIABLE_MAIN_SLOTS.map((slot: CznVariableMainSlot) => (

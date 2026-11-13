@@ -1,4 +1,5 @@
 import type { CznTrackedCombatant } from '../types';
+import { ALL_CZN_FRAGMENT_SETS } from '@/data/chaos-zero-nightmare/fragment_sets';
 import {
   CZN_FRAGMENT_SLOTS,
   CZN_FRAGMENT_SUB_STATS,
@@ -7,9 +8,8 @@ import {
 } from '../data/chaos-zero-nightmare/fragments';
 import { achievableSubSum, createEquipmentScore, makeStatMatcher, type StatShape } from './scoring';
 
-// Within the set term: the 4-piece set pick vs the 2-piece set pick.
-const SET4_SUBWEIGHT = 0.67;
-const SET2_SUBWEIGHT = 0.33;
+// Within the set term each targeted set is worth its share of the six slots.
+const TOTAL_SLOTS = CZN_FRAGMENT_SLOTS.length;
 
 const FIXED_MAIN_SLOTS = [1, 2, 3] as const;
 
@@ -32,15 +32,15 @@ const { getStatMatchScore, bestMatch } = makeStatMatcher(CZN_STAT_SHAPES);
 export { getStatMatchScore };
 
 /**
- * Graded set composition: pieces matching the 4-piece pick over /4, pieces
- * matching the 2-piece pick over /2. A set is either a 4-piece or a 2-piece
- * set, so the two picks can never name the same set and no spill rule is
- * needed (unlike ZZZ suits).
+ * Graded target-set composition: Σ min(count_i, pieces_i) / 6 over the
+ * targeted sets, so a 4-piece set is worth 4/6 and a 2-piece set 2/6 (the same
+ * 0.67 / 0.33 split as a fixed 4+2 model, but 2+2+2 also reaches 1.0). Order
+ * is irrelevant. A set is either a 4-piece or a 2-piece set and appears at
+ * most once in the composition, so no spill rule is needed (unlike ZZZ suits).
+ * Ids missing from the catalog contribute 0.
  */
 function setTerm(combatant: CznTrackedCombatant): number {
-  const { set4Id, set2Id } = combatant.fragmentPreferences;
-  const countFor = (setId: string | null | undefined) => {
-    if (!setId) return 0;
+  const countFor = (setId: string) => {
     let count = 0;
     for (const slot of CZN_FRAGMENT_SLOTS) {
       if (combatant.fragments[slot]?.setId === setId) count++;
@@ -48,15 +48,19 @@ function setTerm(combatant: CznTrackedCombatant): number {
     return count;
   };
 
-  const count4 = Math.min(countFor(set4Id), 4);
-  const count2 = Math.min(countFor(set2Id), 2);
-  return (count4 / 4) * SET4_SUBWEIGHT + (count2 / 2) * SET2_SUBWEIGHT;
+  let matched = 0;
+  for (const setId of combatant.fragmentPreferences.targetSetIds) {
+    const pieces = ALL_CZN_FRAGMENT_SETS.find((s) => s.id === setId)?.pieces;
+    if (!pieces) continue;
+    matched += Math.min(countFor(setId), pieces);
+  }
+  return matched / TOTAL_SLOTS;
 }
 
 /**
  * Overall Memory Fragment match score for a combatant, in 0–100, or -1 for
  * insufficient data. Three unified terms via the shared scoring core:
- *   set  0.35 — set composition: 4-piece pick (graded /4) + 2-piece pick (graded /2)
+ *   set  0.35 — target-set composition: Σ min(count_i, pieces_i) / 6
  *   main 0.30 — per-slot main match averaged over all six slots
  *               (slots 1–3 fixed = 1.0; empty chain on an occupied slot = don't-care 1.0)
  *   sub  0.35 — per-slot sub match normalized by the achievable sum (best legal piece,
@@ -66,8 +70,7 @@ export const calculateFragmentScore = createEquipmentScore<CznTrackedCombatant>(
   hasPreferences: (combatant) => {
     const bp = combatant.fragmentPreferences;
     return (
-      bp.set4Id != null ||
-      bp.set2Id != null ||
+      bp.targetSetIds.length > 0 ||
       bp.subStats.length > 0 ||
       CZN_VARIABLE_MAIN_SLOTS.some((s) => bp.mainStats[s].length > 0)
     );

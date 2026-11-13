@@ -70,7 +70,7 @@ const baseCombatant: CznTrackedCombatant = {
   partnerEgo: 0,
   partnerPreferences: [],
   fragments: { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null },
-  fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [] },
+  fragmentPreferences: { mainStats: { 4: [], 5: [], 6: [] }, subStats: [], targetSetIds: [] },
 };
 
 const withPartner: CznTrackedCombatant = {
@@ -422,8 +422,7 @@ describe('CombatantCard', () => {
         6: [],
       },
       subStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
-      set4Id: SPARK,
-      set2Id: WING,
+      targetSetIds: [SPARK, WING],
       comments: 'crit build',
     },
   });
@@ -508,6 +507,22 @@ describe('CombatantCard', () => {
     expect(badges).toContain('Black Wing');
     expect(badges).toContain('Critical Chance%');
     expect(screen.getByText('crit build')).toBeInTheDocument();
+  });
+
+  it('renders one Sets badge per targeted set, in composition order', async () => {
+    const user = userEvent.setup();
+    const combatant: CznTrackedCombatant = {
+      ...withGear(),
+      fragmentPreferences: {
+        mainStats: { 4: [], 5: [], 6: [] },
+        subStats: [],
+        targetSetIds: ['seth-s-scarab', WING, 'cursed-corpse'],
+      },
+    };
+    const { container } = render(<CombatantCard {...defaultProps} combatant={combatant} />);
+    await enterEditMode(user);
+    const badges = [...container.querySelectorAll('.pref-stat-badge')].map((el) => el.textContent);
+    expect(badges).toEqual(["Seth's Scarab", 'Black Wing', 'Cursed Corpse']);
   });
 
   it('shows the Target Build readout when only comments are set', async () => {

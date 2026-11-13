@@ -126,8 +126,6 @@ describe('combatantService', () => {
       ego: 0,
       potential_attained: false,
       is_favorited: false,
-      fragment_set_4_id: 'spark-of-passion',
-      fragment_set_2_id: 'black-wing',
       fragment_comments: 'crit build',
       czn_equipped_fragments: [
         {
@@ -161,6 +159,21 @@ describe('combatantService', () => {
           order_index: 0,
         },
         { id: 'p3', category: 'sub_stats', stat: 'ATK%', operator_to_next: null, order_index: 0 },
+        // Composition rows arrive out of order; the list reconstructs by order_index.
+        {
+          id: 't2',
+          category: 'target_set',
+          stat: 'black-wing',
+          operator_to_next: null,
+          order_index: 1,
+        },
+        {
+          id: 't1',
+          category: 'target_set',
+          stat: 'spark-of-passion',
+          operator_to_next: null,
+          order_index: 0,
+        },
       ],
     };
     mockFrom.mockReturnValue(createBuilder({ data: [dbRow], error: null }));
@@ -187,8 +200,7 @@ describe('combatantService', () => {
     expect(combatant.fragmentPreferences.subStats).toEqual([
       { stat: 'ATK%', operator: null, orderIndex: 0 },
     ]);
-    expect(combatant.fragmentPreferences.set4Id).toBe('spark-of-passion');
-    expect(combatant.fragmentPreferences.set2Id).toBe('black-wing');
+    expect(combatant.fragmentPreferences.targetSetIds).toEqual(['spark-of-passion', 'black-wing']);
     expect(combatant.fragmentPreferences.comments).toBe('crit build');
   });
 
@@ -209,8 +221,7 @@ describe('combatantService', () => {
     expect(combatant.fragmentPreferences).toEqual({
       mainStats: { 4: [], 5: [], 6: [] },
       subStats: [],
-      set4Id: null,
-      set2Id: null,
+      targetSetIds: [],
       comments: '',
     });
   });
@@ -260,7 +271,7 @@ describe('combatantService', () => {
     expect(builder.match).toHaveBeenCalledWith({ tracked_combatant_id: 'db-uuid-1', slot: 5 });
   });
 
-  it('saveFragmentPreferences replaces category rows and updates parent columns in one RPC', async () => {
+  it('saveFragmentPreferences replaces category rows and updates the comments column in one RPC', async () => {
     await service.saveFragmentPreferences('db-uuid-1', {
       mainStats: {
         4: [
@@ -271,8 +282,7 @@ describe('combatantService', () => {
         6: [{ stat: 'Ego Recovery', operator: null, orderIndex: 0 }],
       },
       subStats: [{ stat: 'ATK%', operator: null, orderIndex: 0 }],
-      set4Id: 'spark-of-passion',
-      set2Id: 'black-wing',
+      targetSetIds: ['black-wing', 'cursed-corpse', 'seth-s-scarab'],
       comments: 'crit build',
     });
 
@@ -282,11 +292,7 @@ describe('combatantService', () => {
       p_delete_from: [{ table: 'czn_fragment_preferences', fk_column: 'tracked_combatant_id' }],
       p_parent_update: {
         table: 'czn_tracked_combatants',
-        row: {
-          fragment_set_4_id: 'spark-of-passion',
-          fragment_set_2_id: 'black-wing',
-          fragment_comments: 'crit build',
-        },
+        row: { fragment_comments: 'crit build' },
       },
       p_inserts: [
         {
@@ -321,6 +327,29 @@ describe('combatantService', () => {
               operator_to_next: null,
               order_index: 0,
             },
+            // The 2+2+2 composition: one target_set row per set, no operator,
+            // order_index = position.
+            {
+              tracked_combatant_id: 'db-uuid-1',
+              category: 'target_set',
+              stat: 'black-wing',
+              operator_to_next: null,
+              order_index: 0,
+            },
+            {
+              tracked_combatant_id: 'db-uuid-1',
+              category: 'target_set',
+              stat: 'cursed-corpse',
+              operator_to_next: null,
+              order_index: 1,
+            },
+            {
+              tracked_combatant_id: 'db-uuid-1',
+              category: 'target_set',
+              stat: 'seth-s-scarab',
+              operator_to_next: null,
+              order_index: 2,
+            },
           ],
         },
       ],
@@ -328,12 +357,11 @@ describe('combatantService', () => {
     expect(mockFrom).not.toHaveBeenCalled();
   });
 
-  it('saveFragmentPreferences with empty chains still clears rows and saves parent columns', async () => {
+  it('saveFragmentPreferences with empty chains and composition still clears rows and saves comments', async () => {
     await service.saveFragmentPreferences('db-uuid-1', {
       mainStats: { 4: [], 5: [], 6: [] },
       subStats: [],
-      set4Id: null,
-      set2Id: null,
+      targetSetIds: [],
     });
 
     expect(mockRpc).toHaveBeenCalledWith('replace_preference_rows', {
@@ -341,7 +369,7 @@ describe('combatantService', () => {
       p_delete_from: [{ table: 'czn_fragment_preferences', fk_column: 'tracked_combatant_id' }],
       p_parent_update: {
         table: 'czn_tracked_combatants',
-        row: { fragment_set_4_id: null, fragment_set_2_id: null, fragment_comments: '' },
+        row: { fragment_comments: '' },
       },
       p_inserts: [],
     });

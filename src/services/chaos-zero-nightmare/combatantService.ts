@@ -50,7 +50,7 @@ const svc = createRosterPersistence<CznCombatant, CznTrackedCombatant, CznCombat
     partner_ego: 0,
   },
   select:
-    'id, combatant_id, level, ego, potential_attained, partner_id, partner_level, partner_ego, partner_preferences, is_favorited, fragment_set_4_id, fragment_set_2_id, fragment_comments',
+    'id, combatant_id, level, ego, potential_attained, partner_id, partner_level, partner_ego, partner_preferences, is_favorited, fragment_comments',
   fromRow: (row, base) => ({
     ...base,
     dbId: row.id,
@@ -66,8 +66,7 @@ const svc = createRosterPersistence<CznCombatant, CznTrackedCombatant, CznCombat
     fragmentPreferences: {
       mainStats: { 4: [], 5: [], 6: [] },
       subStats: [],
-      set4Id: null,
-      set2Id: null,
+      targetSetIds: [],
       comments: '',
     },
   }),
@@ -96,8 +95,10 @@ const svc = createRosterPersistence<CznCombatant, CznTrackedCombatant, CznCombat
         fragmentPreferences: {
           mainStats,
           subStats: rowsToChain(prefRows.filter((p) => p.category === 'sub_stats')),
-          set4Id: row.fragment_set_4_id ?? null,
-          set2Id: row.fragment_set_2_id ?? null,
+          targetSetIds: prefRows
+            .filter((p) => p.category === 'target_set')
+            .sort((a, b) => a.order_index - b.order_index)
+            .map((p) => p.stat as string),
           comments: row.fragment_comments || '',
         },
       };
@@ -145,8 +146,11 @@ export async function deleteFragment(dbId: string, slot: CznFragmentSlot): Promi
 }
 
 // --- Fragment Build Preferences ---
-// Set picks and comments persist as parent columns; the chains persist as
-// category rows in czn_fragment_preferences via the shared preference-row helper.
+// Comments persist as a parent column; the chains and the target-set
+// composition persist as category rows in czn_fragment_preferences via the
+// shared preference-row helper. Composition rows (`target_set`) carry the set
+// id in `stat`, no operator, and their array position as `order_index` — a
+// single-row set category, built here rather than through the chain codec.
 
 export async function saveFragmentPreferences(
   dbId: string,
@@ -162,6 +166,13 @@ export async function saveFragmentPreferences(
       }),
     ),
     ...chainToRows(prefs.subStats, { dbId, fkColumn, extra: { category: 'sub_stats' } }),
+    ...prefs.targetSetIds.map((setId, idx) => ({
+      [fkColumn]: dbId,
+      category: 'target_set',
+      stat: setId,
+      operator_to_next: null,
+      order_index: idx,
+    })),
   ];
 
   await savePreferenceRows({
@@ -169,11 +180,7 @@ export async function saveFragmentPreferences(
     deleteFrom: [{ table: 'czn_fragment_preferences', fkColumn }],
     parentUpdate: {
       table: 'czn_tracked_combatants',
-      row: {
-        fragment_set_4_id: prefs.set4Id ?? null,
-        fragment_set_2_id: prefs.set2Id ?? null,
-        fragment_comments: prefs.comments ?? '',
-      },
+      row: { fragment_comments: prefs.comments ?? '' },
     },
     inserts: rows.length > 0 ? [{ table: 'czn_fragment_preferences', rows }] : [],
   });
