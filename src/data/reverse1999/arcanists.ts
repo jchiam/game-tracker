@@ -627,7 +627,7 @@ export const ALL_ARCANISTS: Arcanist[] = [
     afflatus: 'Intellect',
     damageType: 'Real',
     imageUrl: '/assets/reverse-1999/arcanists-mugshots/ulrich.webp',
-    hasEuphoria: false,
+    hasEuphoria: true,
   },
   {
     id: 'vila',
