@@ -474,6 +474,13 @@ export const ALL_LIGHT_CONES: LightCone[] = [
     imageUrl: '/assets/honkai-star-rail/light-cones/23058.webp',
   },
   {
+    id: '23065',
+    name: 'Upon the First Echo of "Aha"',
+    rarity: 5,
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/light-cones/23065.webp',
+  },
+  {
     id: '23057',
     name: 'Welcome to the Cosmic City',
     rarity: 5,
@@ -844,6 +851,13 @@ export const ALL_LIGHT_CONES: LightCone[] = [
     rarity: 4,
     path: 'The Hunt',
     imageUrl: '/assets/honkai-star-rail/light-cones/21062.webp',
+  },
+  {
+    id: '22009',
+    name: "See You at the World's End!",
+    rarity: 4,
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/light-cones/22009.webp',
   },
   {
     id: '21047',
