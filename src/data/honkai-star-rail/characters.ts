@@ -21,6 +21,13 @@ export const ALL_CHARACTERS: Character[] = [
     imageUrl: '/assets/honkai-star-rail/characters/acheron.webp',
   },
   {
+    id: 'aeon-aha',
+    name: 'Aeon ★ Aha',
+    element: 'Quantum',
+    path: 'Elation',
+    imageUrl: '/assets/honkai-star-rail/characters/aeon-aha.webp',
+  },
+  {
     id: 'aglaea',
     name: 'Aglaea',
     element: 'Thunder',

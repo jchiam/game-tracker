@@ -124,6 +124,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     icon: '/assets/honkai-star-rail/relics/320.png',
   },
   {
+    id: '329',
+    name: "God's Moment of Joy",
+    icon: '/assets/honkai-star-rail/relics/329.png',
+  },
+  {
     id: '106',
     name: 'Guard of Wuthering Snow',
     icon: '/assets/honkai-star-rail/relics/106.png',
@@ -252,6 +257,11 @@ export const ALL_RELIC_SETS: RelicSet[] = [
     id: '308',
     name: 'Sprightly Vonwacq',
     icon: '/assets/honkai-star-rail/relics/308.png',
+  },
+  {
+    id: '330',
+    name: 'Subspace ASC Center',
+    icon: '/assets/honkai-star-rail/relics/330.png',
   },
   {
     id: '307',
