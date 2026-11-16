@@ -54,6 +54,20 @@ export const ALL_ARCS: N2EArc[] = [
     imageUrl: '/assets/neverness-to-everness/arcs/fork_rishi.webp',
   },
   {
+    id: 'fork_exe',
+    name: 'Dotted Horizon',
+    rarity: 'S',
+    arcType: 'Plasma',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_exe.webp',
+  },
+  {
+    id: 'fork_elyms',
+    name: 'Echoes on Hold',
+    rarity: 'S',
+    arcType: 'Solid',
+    imageUrl: '/assets/neverness-to-everness/arcs/fork_elyms.webp',
+  },
+  {
     id: 'fork_Arachne',
     name: 'Eternal Waltz',
     rarity: 'S',
