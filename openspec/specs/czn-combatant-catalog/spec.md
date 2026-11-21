@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Generated catalog of Chaos Zero Nightmare Combatants, consumed at runtime via `ALL_CZN_COMBATANTS`, carrying Prydwen's exact class, attribute, and faction vocabulary so new source values are data, not code; plus the hand-curated overlay seed for combatants the source lags on.
+Generated catalog of Chaos Zero Nightmare Combatants, consumed at runtime via `ALL_CZN_COMBATANTS`, carrying the source's class, attribute, and faction values verbatim (Game8's list, in the Prydwen spelling) so new source values are data, not code, under ids that never change once committed; plus the hand-curated overlay seed for combatants the source lags on.
 
 ## Requirements
 

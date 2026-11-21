@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Automated update pipeline for Chaos Zero Nightmare catalog data: fetches Prydwen's combatant page-data, filters placeholder entries, merges the hand-curated overlay seed, regenerates the combatant catalog file, seeds portraits to ImageKit, and runs weekly via GitHub Actions with an auto-PR on changes. Structured so Phase 2 adds the Partner catalog from the sibling page-data.
+Automated update pipeline for Chaos Zero Nightmare catalog data: fetches the combatant and Partner lists from Game8's collection JSON and their art from Prydwen's CloudFront origin, the Memory Fragment sets from Prydwen's page chunk, merges the hand-curated overlay seeds, keeps committed ids stable (id pins and a removal guard), regenerates the catalog files, seeds art to ImageKit, and runs weekly via GitHub Actions with an auto-PR on changes.
 
 ## Requirements
 

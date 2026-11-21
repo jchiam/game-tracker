@@ -1,28 +1,37 @@
 // Auto-update script for Chaos Zero Nightmare (CZN) Combatant, Partner, and
-// Memory Fragment set data. Fetches structured data from Prydwen's Gatsby
-// page-data endpoints (via the CloudFront origin — www.prydwen.gg blocks
-// generic fetchers) and regenerates:
+// Memory Fragment set data. Regenerates:
 //   - src/data/chaos-zero-nightmare/combatants.ts
 //   - src/data/chaos-zero-nightmare/partners.ts
 //   - src/data/chaos-zero-nightmare/fragment_sets.ts
 //
-// Prydwen publishes teaser nodes for announced-but-unreleased combatants with
-// `class` / `element` set to "Unknown"; those are dropped at generation and
-// reported as excluded so they never reach the Add modal with placeholder
-// taxonomy. They appear in the diff as `added` the week they get real data.
+// Combatants: the list and taxonomy come from Game8's character-list
+// "collection browser" JSON (/api/tool_structural_mappings/<id>.json, the id
+// read each run from the list page's data-react-props; scripts/lib/czn-game8.mjs).
+// Only `Released` items are emitted. Ids are the kebab-case slug of the name,
+// equal to Prydwen's slugs. Card art comes from Prydwen's Gatsby page-data via
+// its CloudFront origin (www.prydwen.gg blocks generic fetchers; the origin
+// stopped receiving builds in May 2026), joined by slug on nodes with real
+// taxonomy; every other unit uses Game8's framed icon. A run that would drop a
+// committed combatant id aborts unless --allow-removals is passed.
 //
-// Entries Prydwen lacks (added after the origin's last build) come from the
-// hand-curated overlay seeds scripts/seeds/czn-combatants.json,
-// scripts/seeds/czn-partners.json, and scripts/seeds/czn-fragment-sets.json.
-// Each seed entry carries the catalog shape plus `imageSource` (an https URL
-// for the art, or null while none is sourced) and a free-text `note`. Its `id`
-// is the id the script would mint for the entry (the Prydwen slug for
-// combatants; the kebab-case name slug for partners and sets), so tracked rows
-// keyed on it survive the hand-off: once the id appears upstream the fetched
-// entry wins and the run warns to delete the seed entry. Validation failures
-// abort the run before any codegen.
+// Partners: the same split — list and taxonomy from Game8's Partner-list
+// collection JSON, 160² icons from Prydwen (below) joined by the id minted from
+// Prydwen's name. scripts/seeds/czn-id-pins.json pins a Game8 item id to its
+// committed id where Game8 spells a name differently (Lillian → lilian). A run
+// that would drop a committed combatant, Partner, or set id aborts unless
+// --allow-removals is passed. Memory Fragment sets come from Prydwen only.
 //
-// Partners have no Prydwen slug and no per-partner pages: the partners list
+// Entries the upstream source lacks come from the hand-curated overlay seeds
+// scripts/seeds/czn-combatants.json, scripts/seeds/czn-partners.json, and
+// scripts/seeds/czn-fragment-sets.json. Each seed entry carries the catalog
+// shape plus `imageSource` (an https URL for the art, or null while none is
+// sourced) and a free-text `note`. Its `id` is the id the script would mint for
+// the entry (the kebab-case name slug), so tracked rows keyed on it survive the
+// hand-off: once the id appears upstream the fetched entry wins and the run
+// warns to delete the seed entry. Validation failures abort the run before any
+// codegen.
+//
+// Prydwen's Partners have no slug and no per-partner pages: the partners list
 // page-data carries taxonomy only, and the icons live in the page's Gatsby
 // static query (/page-data/sq/d/<hash>.json → allContentfulChaosPartner.nodes),
 // whose hash is read from the page-data's `staticQueryHashes` each run.
@@ -51,6 +60,7 @@
 //   node scripts/update-czn-data.mjs --reupload-combatants    # force reupload combatant portraits
 //   node scripts/update-czn-data.mjs --reupload-partners      # force reupload partner icons
 //   node scripts/update-czn-data.mjs --reupload-fragment-sets # force reupload set icons
+//   node scripts/update-czn-data.mjs --allow-removals         # let a run drop committed combatant ids
 
 import { readFile, writeFile, mkdir } from 'fs/promises';
 import { resolve } from 'path';
@@ -78,9 +88,25 @@ import {
   selectFragmentIconPaths,
 } from './lib/czn-fragments.mjs';
 import { assertMintedSeedIds } from './lib/czn-seeds.mjs';
+import {
+  GAME8_ORIGIN,
+  extractCollectionMapping,
+  collectionMappingUrl,
+  mapGame8Combatants,
+  mapGame8Partners,
+  buildIdPins,
+  missingIds,
+} from './lib/czn-game8.mjs';
 
-// Prydwen's CloudFront origin serves the same page-data JSON as www.prydwen.gg
-// without the Cloudflare bot challenge the main domain applies.
+// Game8's "List of All Characters" page; its collection browser names the
+// mapping whose JSON lists every combatant.
+const GAME8_LIST_PAGE = `${GAME8_ORIGIN}/games/Chaos-Zero-Nightmare/archives/558105`;
+// Game8's "List of All Partners" page, same collection-browser shape.
+const GAME8_PARTNERS_PAGE = `${GAME8_ORIGIN}/games/Chaos-Zero-Nightmare/archives/558133`;
+
+// Prydwen's CloudFront origin serves Gatsby page-data without the Cloudflare
+// bot challenge www.prydwen.gg applies, but stopped receiving builds in May
+// 2026: it is the card-art source for the units it knows, not the list.
 const PRYDWEN_ORIGIN = 'https://d2ankz0m1a0dsp.cloudfront.net';
 const GAME_PATH = 'chaos-zero-nightmare';
 const LIST_PAGE_DATA = `${PRYDWEN_ORIGIN}/page-data/${GAME_PATH}/characters/page-data.json`;
@@ -110,6 +136,8 @@ const PARTNER_SEED_REQUIRED = ['id', 'name', 'rarity', 'class'];
 const FRAGMENT_SET_SEED_PATH = resolve(ROOT, 'scripts/seeds/czn-fragment-sets.json');
 const FRAGMENT_SET_SEED_LABEL = 'scripts/seeds/czn-fragment-sets.json';
 const FRAGMENT_SET_SEED_REQUIRED = ['id', 'name', 'pieces'];
+const ID_PINS_PATH = resolve(ROOT, 'scripts/seeds/czn-id-pins.json');
+const ID_PINS_LABEL = 'scripts/seeds/czn-id-pins.json';
 // A set activates at exactly one piece count; anything else is a model change.
 const FRAGMENT_SET_PIECES = [2, 4];
 
@@ -132,6 +160,7 @@ const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags([
 const reuploadCombatants = reuploadAll || reuploadFlags.combatants;
 const reuploadPartners = reuploadAll || reuploadFlags.partners;
 const reuploadFragmentSets = reuploadAll || reuploadFlags['fragment-sets'];
+const allowRemovals = process.argv.slice(2).includes('--allow-removals');
 
 // Reads the id/name pairs out of a previously generated catalog for the diff.
 async function loadExistingEntries(tsPath) {
@@ -162,12 +191,54 @@ async function readSeed(path) {
   }
 }
 
+// Pins keep a committed id when Game8 spells a name differently from the
+// source the id was first minted from (see scripts/seeds/czn-id-pins.json).
+async function loadIdPins() {
+  const raw = JSON.parse(await readFile(ID_PINS_PATH, 'utf-8'));
+  return {
+    combatants: buildIdPins(raw.combatants ?? [], { label: `${ID_PINS_LABEL} combatants` }),
+    partners: buildIdPins(raw.partners ?? [], { label: `${ID_PINS_LABEL} partners` }),
+  };
+}
+const idPins = await loadIdPins();
+
+function warnUnusedPins(kind, unusedPins) {
+  for (const game8Id of unusedPins) {
+    console.warn(
+      `    Pin for Game8 item ${game8Id} in ${ID_PINS_LABEL} ${kind} matched no released item`,
+    );
+  }
+}
+
+// Unknown taxonomy is emitted as data (neutral badge); say so loudly in case
+// it is a Game8 respelling of a known value rather than a new one.
+function warnUnknownVocabulary(entries) {
+  for (const entry of entries) {
+    console.warn(`    New taxonomy value from Game8 — ${entry} (check the spelling)`);
+  }
+}
+
+// Tracked rows key on catalog ids: an upstream rename must not orphan them.
+// Runs before any upload or codegen, so an abort leaves the catalog as it was.
+function assertNoRemovals(kind, existing, next) {
+  const missing = missingIds(existing, next);
+  if (missing.length > 0 && !allowRemovals) {
+    throw new Error(
+      `${kind} ids would be removed: ${missing.join(', ')} — tracked rows key on these ids. ` +
+        `Pin the old id in ${ID_PINS_LABEL}, fix the seed, or re-run with --allow-removals if the removal is deliberate.`,
+    );
+  }
+}
+
+// Combatant seed ids, like the Partner and set ones, must be the id the script
+// mints from the Game8 name, or the entry could never hand off.
 async function loadCombatantSeed() {
-  return validateOverlaySeed(await readSeed(SEED_PATH), {
+  const seed = validateOverlaySeed(await readSeed(SEED_PATH), {
     label: SEED_LABEL,
     required: SEED_REQUIRED,
     rarities: [4, 5],
   });
+  return assertMintedSeedIds(seed, { label: SEED_LABEL, mint: mintedId });
 }
 
 // Partner seed ids must be exactly what the script would mint from the name,
@@ -272,12 +343,12 @@ function generateCombatantsTs(combatants) {
 
   const lines = [
     ...generatedHeader(
-      `Prydwen (prydwen.gg/${GAME_PATH}) plus the hand-curated overlay ${SEED_LABEL}`,
+      `Game8 (game8.co/games/Chaos-Zero-Nightmare, list and taxonomy), Prydwen (prydwen.gg/${GAME_PATH}, card art), plus the hand-curated overlay ${SEED_LABEL}`,
       'update-czn-data.mjs',
     ),
     '',
     'export interface CznCombatant {',
-    '  /** Prydwen slug — the stable key tracked rows and the overlay seed use. */',
+    '  /** Kebab-case name slug (equal to the Prydwen slug) — the stable key tracked rows and the overlay seed use. */',
     '  id: string;',
     '  name: string;',
     '  rarity: 4 | 5;',
@@ -325,7 +396,7 @@ function generateCombatantsTs(combatants) {
 function generatePartnersTs(partners) {
   const lines = [
     ...generatedHeader(
-      `Prydwen (prydwen.gg/${GAME_PATH}/partners) plus the hand-curated overlay ${PARTNER_SEED_LABEL}`,
+      `Game8 (game8.co/games/Chaos-Zero-Nightmare, list and taxonomy), Prydwen (prydwen.gg/${GAME_PATH}/partners, icons), plus the hand-curated overlay ${PARTNER_SEED_LABEL}`,
       'update-czn-data.mjs',
     ),
     '',
@@ -402,64 +473,95 @@ function generateFragmentSetsTs(sets) {
   return lines.join('\n');
 }
 
-async function processCombatants() {
-  console.log('Fetching CZN combatant list from Prydwen...');
-
-  const [listData, existing, seed] = await Promise.all([
-    fetchJSON(LIST_PAGE_DATA),
-    loadExistingEntries(COMBATANTS_TS),
-    loadCombatantSeed(),
-  ]);
-
-  const listNodes = listData?.result?.data?.allCharacters?.nodes;
-  if (!Array.isArray(listNodes) || listNodes.length === 0) {
+// Game8 lists every released combatant with taxonomy; Prydwen's frozen origin
+// only supplies card art for the units it knows. A Prydwen failure degrades to
+// Game8 icons unless combatant portraits are being re-uploaded, where it would
+// replace card art with icons and so aborts instead.
+async function fetchPrydwenArtNodes() {
+  const listData = await fetchJSON(LIST_PAGE_DATA);
+  const nodes = listData?.result?.data?.allCharacters?.nodes;
+  if (!Array.isArray(nodes) || nodes.length === 0) {
     throw new Error('Prydwen list page-data shape changed: allCharacters.nodes missing/empty');
   }
-  console.log(`  ${listNodes.length} combatants listed`);
-
-  // Teaser placeholders carry "Unknown" taxonomy — drop them before the detail
-  // fetch so the catalog never gains an unpickable badge.
-  const excluded = listNodes.filter(
-    (n) => clean(n.class) === PLACEHOLDER || clean(n.element) === PLACEHOLDER,
+  // Teaser placeholders carry "Unknown" taxonomy and no usable art.
+  return new Map(
+    nodes
+      .filter((n) => clean(n.class) !== PLACEHOLDER && clean(n.element) !== PLACEHOLDER)
+      .map((n) => [n.slug, n]),
   );
-  const released = listNodes.filter((n) => !excluded.includes(n));
-  // A placeholder the seed already covers is not a gap: the seed entry is added
-  // below because applyOverlay only sees the released list. Once Prydwen gives
-  // the node real taxonomy it moves to `released` and the seed entry is shadowed.
+}
+
+async function fetchGame8Combatants() {
+  const res = await fetch(GAME8_LIST_PAGE);
+  if (!res.ok) throw new Error(`Failed to fetch ${GAME8_LIST_PAGE}: ${res.status}`);
+  const mapping = extractCollectionMapping(await res.text(), { label: GAME8_LIST_PAGE });
+  return mapGame8Combatants(await fetchJSON(collectionMappingUrl(mapping)), {
+    pinned: idPins.combatants,
+  });
+}
+
+async function resolvePrydwenArt(combatants) {
+  const art = new Map();
+  let nodes;
+  try {
+    nodes = await fetchPrydwenArtNodes();
+  } catch (e) {
+    if (reuploadCombatants) throw e;
+    console.warn(`  Prydwen card art unavailable (${e.message}) — using Game8 icons`);
+    return art;
+  }
+  for (const c of combatants) {
+    if (!nodes.has(c.id)) continue;
+    try {
+      const detail = await fetchJSON(detailPageData(c.id));
+      const unit = detail?.result?.data?.currentUnit?.nodes?.[0];
+      if (!unit) throw new Error(`detail page-data for ${c.id}: currentUnit missing`);
+      // Card art (262×358) is the portrait crop Prydwen uses; fall back to the square icon.
+      const url = gatsbyImagePath(unit.cardImage) ?? gatsbyImagePath(unit.smallImage);
+      if (url) art.set(c.id, url);
+    } catch (e) {
+      if (reuploadCombatants) throw e;
+      console.warn(`  Prydwen card art for ${c.id} unavailable (${e.message}) — using Game8 icon`);
+    }
+  }
+  return art;
+}
+
+async function processCombatants() {
+  console.log('Fetching CZN combatant list from Game8...');
+
+  const [{ combatants: listed, excluded, unusedPins, unknownVocabulary }, existing, seed] =
+    await Promise.all([
+      fetchGame8Combatants(),
+      loadExistingEntries(COMBATANTS_TS),
+      loadCombatantSeed(),
+    ]);
+  console.log(`  ${listed.length} released combatants listed`);
+  warnUnusedPins('combatants', unusedPins);
+  warnUnknownVocabulary(unknownVocabulary);
   const seeded = new Set(seed.map((c) => c.id));
-  for (const n of excluded) {
-    const status = seeded.has(n.slug) ? `covered by ${SEED_LABEL}` : `class/element Unknown`;
-    console.log(`    Excluded placeholder ${n.slug} (${n.name}) — ${status}`);
+  for (const name of excluded) {
+    const id = slugify(name, MINTED_ID_SEPARATOR);
+    const status = seeded.has(id) ? `covered by ${SEED_LABEL}` : 'not released';
+    console.log(`    Excluded ${name} — ${status}`);
   }
 
-  // Fetch every detail page first so a mid-run source failure aborts before
-  // any codegen — the catalog is only written from a complete dataset.
-  const details = [];
-  for (const node of released) {
-    const detail = await fetchJSON(detailPageData(node.slug));
-    const unit = detail?.result?.data?.currentUnit?.nodes?.[0];
-    if (!unit) {
-      throw new Error(
-        `Prydwen detail page-data shape changed for ${node.slug}: currentUnit missing`,
-      );
-    }
-    const rarity = Number(unit.rarity);
-    if (rarity !== 4 && rarity !== 5) {
-      throw new Error(`Unexpected rarity "${unit.rarity}" for ${node.slug}`);
-    }
-    details.push({ node, unit, rarity });
-  }
+  // Resolve all art before any codegen so a reupload-mode failure aborts
+  // before the catalog is written.
+  const art = await resolvePrydwenArt(listed);
+  console.log(
+    `  ${art.size} portraits from Prydwen card art, ${listed.length - art.size} from Game8`,
+  );
 
-  const fetched = details.map(({ node, unit, rarity }) => ({
-    id: node.slug,
-    name: clean(unit.name),
-    rarity,
-    class: clean(unit.class),
-    element: clean(unit.element),
-    faction: clean(unit.faction) || null,
-    // Card art (262×358) is the portrait crop Prydwen uses; fall back to the square icon.
-    sourceUrl: gatsbyImagePath(unit.cardImage) ?? gatsbyImagePath(unit.smallImage),
-    missingImageReason: 'No image node in page-data',
+  const fetched = listed.map((c) => ({
+    id: c.id,
+    name: c.name,
+    rarity: c.rarity,
+    class: c.class,
+    element: c.element,
+    faction: c.faction,
+    sourceUrl: art.get(c.id) ?? c.imageSource,
+    missingImageReason: 'No image on Game8 or Prydwen',
   }));
   const overlay = seed.map((c) => ({
     id: c.id,
@@ -474,8 +576,10 @@ async function processCombatants() {
   const { entries: units, shadowed } = applyOverlay(fetched, overlay, (c) => c.id);
   console.log(`  ${units.length - fetched.length} combatants overlaid from ${SEED_LABEL}`);
   for (const c of shadowed) {
-    console.warn(`    Seed entry ${c.id} is now on Prydwen — delete it from ${SEED_LABEL}`);
+    console.warn(`    Seed entry ${c.id} is now on Game8 — delete it from ${SEED_LABEL}`);
   }
+
+  assertNoRemovals('Combatant', existing, units);
 
   const {
     entries: combatants,
@@ -494,7 +598,7 @@ async function processCombatants() {
   console.log('\nDone!');
   console.log(
     `  Combatants: ${combatants.length} total (${formatDiff(added, removed)}) — ` +
-      `${excluded.length} placeholders excluded — portraits: ` +
+      `${excluded.length} unreleased excluded — portraits: ` +
       `${counts.uploaded} uploaded, ${counts.skipped} skipped, ${counts.failed} failed`,
   );
   for (const c of added) console.log(`    + ${c.name} [${c.rarity}★ ${c.class} · ${c.element}]`);
@@ -514,36 +618,57 @@ async function fetchPartnerNodes() {
   });
 }
 
-async function processPartners() {
-  console.log('\nFetching CZN partner list from Prydwen...');
-
-  const [nodes, existing, seed] = await Promise.all([
-    fetchPartnerNodes(),
-    loadExistingEntries(PARTNERS_TS),
-    loadPartnerSeed(),
-  ]);
-  console.log(`  ${nodes.length} partners listed`);
-
-  // mintId throws on a collision — two names slugifying alike would make one
-  // partner untrackable under the equip column.
-  const taken = new Map();
-  const fetched = nodes.map((node) => {
-    const name = clean(node.name);
-    const rarity = Number(node.rarity);
-    if (![3, 4, 5].includes(rarity)) {
-      throw new Error(`Unexpected rarity "${node.rarity}" for partner ${name}`);
-    }
-    return {
-      id: mintId({ name, sourceId: node.unitId, taken, separator: MINTED_ID_SEPARATOR }),
-      name,
-      rarity,
-      class: clean(node.class),
-      faction: clean(node.faction) || null,
-      // 160² icon — the only square art Prydwen publishes for partners.
-      sourceUrl: gatsbyImagePath(node.smallImage),
-      missingImageReason: 'No smallImage node in static query',
-    };
+async function fetchGame8Partners() {
+  const res = await fetch(GAME8_PARTNERS_PAGE);
+  if (!res.ok) throw new Error(`Failed to fetch ${GAME8_PARTNERS_PAGE}: ${res.status}`);
+  const mapping = extractCollectionMapping(await res.text(), { label: GAME8_PARTNERS_PAGE });
+  return mapGame8Partners(await fetchJSON(collectionMappingUrl(mapping)), {
+    pinned: idPins.partners,
   });
+}
+
+// Prydwen's 160² icons for the Partners it knows, keyed by the id minted from
+// Prydwen's name (pinned spellings were minted from it, so they join as-is).
+// Degrades to Game8 icons unless partner icons are being re-uploaded.
+async function resolvePrydwenPartnerIcons() {
+  try {
+    const nodes = await fetchPartnerNodes();
+    const icons = new Map();
+    for (const node of nodes) {
+      const url = gatsbyImagePath(node.smallImage);
+      if (url) icons.set(mintedId(clean(node.name)), url);
+    }
+    return icons;
+  } catch (e) {
+    if (reuploadPartners) throw e;
+    console.warn(`  Prydwen partner icons unavailable (${e.message}) — using Game8 icons`);
+    return new Map();
+  }
+}
+
+async function processPartners() {
+  console.log('\nFetching CZN partner list from Game8...');
+
+  const [{ partners: listed, excluded, unusedPins, unknownVocabulary }, existing, seed] =
+    await Promise.all([fetchGame8Partners(), loadExistingEntries(PARTNERS_TS), loadPartnerSeed()]);
+  console.log(`  ${listed.length} released partners listed`);
+  for (const name of excluded) console.log(`    Excluded ${name} — not released`);
+  warnUnusedPins('partners', unusedPins);
+  warnUnknownVocabulary(unknownVocabulary);
+
+  const icons = await resolvePrydwenPartnerIcons();
+  const fromPrydwen = listed.filter((p) => icons.has(p.id)).length;
+  console.log(`  ${fromPrydwen} icons from Prydwen, ${listed.length - fromPrydwen} from Game8`);
+
+  const fetched = listed.map((p) => ({
+    id: p.id,
+    name: p.name,
+    rarity: p.rarity,
+    class: p.class,
+    faction: p.faction,
+    sourceUrl: icons.get(p.id) ?? p.imageSource,
+    missingImageReason: 'No icon on Game8 or Prydwen',
+  }));
   const overlay = seed.map((p) => ({
     id: p.id,
     name: clean(p.name),
@@ -556,8 +681,9 @@ async function processPartners() {
   const { entries: units, shadowed } = applyOverlay(fetched, overlay, (p) => p.id);
   console.log(`  ${units.length - fetched.length} partners overlaid from ${PARTNER_SEED_LABEL}`);
   for (const p of shadowed) {
-    console.warn(`    Seed entry ${p.id} is now on Prydwen — delete it from ${PARTNER_SEED_LABEL}`);
+    console.warn(`    Seed entry ${p.id} is now on Game8 — delete it from ${PARTNER_SEED_LABEL}`);
   }
+  assertNoRemovals('Partner', existing, units);
 
   const {
     entries: partners,
@@ -636,6 +762,8 @@ async function processFragmentSets() {
       `    Seed entry ${s.id} is now on Prydwen — delete it from ${FRAGMENT_SET_SEED_LABEL}`,
     );
   }
+
+  assertNoRemovals('Memory Fragment set', existing, units);
 
   const {
     entries: sets,

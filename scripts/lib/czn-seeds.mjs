@@ -1,6 +1,5 @@
-// Seed rules shared by every Chaos Zero Nightmare overlay seed whose ids are
-// minted from names (Partners, Memory Fragment sets). Combatant ids are
-// Prydwen slugs and skip this check.
+// Seed rules shared by every Chaos Zero Nightmare overlay seed. All ids are
+// minted from names (combatants, Partners, Memory Fragment sets).
 
 /**
  * A minted-id seed entry's `id` must be exactly what the script mints from

@@ -1,0 +1,17 @@
+{
+  "combatants": [],
+  "partners": [
+    {
+      "game8Id": "1323716",
+      "id": "lilian",
+      "name": "Lillian",
+      "note": "Id minted from Prydwen's spelling 'Lilian' (2026-11-09); Game8 spells it 'Lillian'. Tracked partner_id / partner_preferences values key on 'lilian'."
+    },
+    {
+      "game8Id": "1340537",
+      "id": "westmaccot",
+      "name": "Westmacott",
+      "note": "Id minted from Prydwen's spelling 'Westmaccot' (2026-11-09); Game8 spells it 'Westmacott'. Tracked partner_id / partner_preferences values key on 'westmaccot'."
+    }
+  ]
+}

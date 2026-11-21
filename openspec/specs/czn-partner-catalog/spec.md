@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Generated catalog of Chaos Zero Nightmare Partners, consumed at runtime via `ALL_CZN_PARTNERS`, carrying Prydwen's exact class and faction vocabulary under ids minted from the Partner's name, plus the hand-curated overlay seed for Partners the source lags on.
+Generated catalog of Chaos Zero Nightmare Partners, consumed at runtime via `ALL_CZN_PARTNERS`, carrying the source's class and faction values verbatim (Game8's list, in the combatant class vocabulary) under ids minted from the Partner's name and pinned once committed, plus the hand-curated overlay seed for Partners the source lags on.
 
 ## Requirements
 
