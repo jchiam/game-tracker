@@ -58,6 +58,12 @@ describe('extractCollectionMapping', () => {
       'toolStructuralMapping id missing',
     );
   });
+
+  it('throws naming the page when the props are not valid JSON', () => {
+    expect(() =>
+      extractCollectionMapping(page(`data-react-props='{"view":'`), { label: 'list page' }),
+    ).toThrow('list page: collection-browser data-react-props is not valid JSON');
+  });
 });
 
 describe('collectionMappingUrl', () => {
