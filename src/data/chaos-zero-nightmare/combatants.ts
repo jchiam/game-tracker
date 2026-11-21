@@ -1,8 +1,8 @@
-// Auto-generated from Prydwen (prydwen.gg/chaos-zero-nightmare) plus the hand-curated overlay scripts/seeds/czn-combatants.json — do not edit manually.
+// Auto-generated from Game8 (game8.co/games/Chaos-Zero-Nightmare, list and taxonomy), Prydwen (prydwen.gg/chaos-zero-nightmare, card art), plus the hand-curated overlay scripts/seeds/czn-combatants.json — do not edit manually.
 // Run `node scripts/update-czn-data.mjs` or trigger the GitHub Actions workflow to update.
 
 export interface CznCombatant {
-  /** Prydwen slug — the stable key tracked rows and the overlay seed use. */
+  /** Kebab-case name slug (equal to the Prydwen slug) — the stable key tracked rows and the overlay seed use. */
   id: string;
   name: string;
   rarity: 4 | 5;
@@ -23,7 +23,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Vanguard',
     element: 'Void',
-    faction: null,
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/adelheid.webp',
   },
   {
@@ -34,6 +34,15 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     element: 'Instinct',
     faction: 'Stella Familia',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/arabella.webp',
+  },
+  {
+    id: 'blazebell',
+    name: 'Blazebell',
+    rarity: 5,
+    class: 'Controller',
+    element: 'Justice',
+    faction: 'Sileyma',
+    imageUrl: '/assets/chaos-zero-nightmare/combatants/blazebell.webp',
   },
   {
     id: 'chizuru',
@@ -50,7 +59,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Hunter',
     element: 'Passion',
-    faction: null,
+    faction: 'The Holy Crusaders',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/diana.webp',
   },
   {
@@ -77,7 +86,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Ranger',
     element: 'Passion',
-    faction: null,
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/heidemarie.webp',
   },
   {
@@ -95,7 +104,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Ranger',
     element: 'Order',
-    faction: 'Stella Familia [Azure Merchant Guild]',
+    faction: 'Stella Familia',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/hugo.webp',
   },
   {
@@ -104,7 +113,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Psionic',
     element: 'Void',
-    faction: 'Wanderer [No Affiliation]',
+    faction: 'Wanderer',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/kayron.webp',
   },
   {
@@ -113,7 +122,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Vanguard',
     element: 'Instinct',
-    faction: 'Stella Familia [White Altair]',
+    faction: 'Stella Familia',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/khalipe.webp',
   },
   {
@@ -122,7 +131,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Hunter',
     element: 'Order',
-    faction: 'Ironrain [Wolf Platoon]',
+    faction: 'Ironrain',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/luke.webp',
   },
   {
@@ -131,7 +140,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Vanguard',
     element: 'Justice',
-    faction: 'Stella Familia [White Altair]',
+    faction: 'Stella Familia',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/magna.webp',
   },
   {
@@ -140,7 +149,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Striker',
     element: 'Passion',
-    faction: 'Terrascion [Planet-Born]',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/mei-lin.webp',
   },
   {
@@ -158,7 +167,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Vanguard',
     element: 'Order',
-    faction: null,
+    faction: 'Wanderer',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/nine.webp',
   },
   {
@@ -176,7 +185,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Controller',
     element: 'Instinct',
-    faction: 'The Holy Crusaders [No Affiliation]',
+    faction: 'The Holy Crusaders',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/orlea.webp',
   },
   {
@@ -185,7 +194,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Hunter',
     element: 'Void',
-    faction: 'Terrascion [SS Justitia]',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/renoa.webp',
   },
   {
@@ -194,7 +203,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Striker',
     element: 'Void',
-    faction: 'Wanderer [No Affiliation]',
+    faction: 'Wanderer',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/rin.webp',
   },
   {
@@ -221,7 +230,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Hunter',
     element: 'Instinct',
-    faction: 'Terrascion - Aerospace Defense Command',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/sereniel.webp',
   },
   {
@@ -239,7 +248,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Controller',
     element: 'Order',
-    faction: 'Speitz',
+    faction: 'Wanderer',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/tiphera.webp',
   },
   {
@@ -248,7 +257,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 5,
     class: 'Ranger',
     element: 'Passion',
-    faction: 'Stella Familia [Black Spica]',
+    faction: 'Stella Familia',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/veronica.webp',
   },
   {
@@ -267,7 +276,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Vanguard',
     element: 'Order',
-    faction: 'Terrascion [Special Investigations Department]',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/amir.webp',
   },
   {
@@ -285,7 +294,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Ranger',
     element: 'Justice',
-    faction: 'Ironrain [Wolf Platoon]',
+    faction: 'Ironrain',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/beryl.webp',
   },
   {
@@ -294,7 +303,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Controller',
     element: 'Instinct',
-    faction: 'Peltion [Company 110]',
+    faction: 'Peltion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/cassius.webp',
   },
   {
@@ -303,7 +312,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Hunter',
     element: 'Passion',
-    faction: 'Ironrain [Wolf Platoon]',
+    faction: 'Ironrain',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/lucas.webp',
   },
   {
@@ -312,7 +321,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Vanguard',
     element: 'Passion',
-    faction: 'Ironrain [Wolf Platoon]',
+    faction: 'Ironrain',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/maribell.webp',
   },
   {
@@ -321,7 +330,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Controller',
     element: 'Justice',
-    faction: 'Terrascion [SS Edenity]',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/mika.webp',
   },
   {
@@ -330,7 +339,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Controller',
     element: 'Instinct',
-    faction: 'Terrascion [No Affiliation]',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/nia.webp',
   },
   {
@@ -339,7 +348,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Striker',
     element: 'Passion',
-    faction: 'Terrascion [Planet-Born]',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/owen.webp',
   },
   {
@@ -348,7 +357,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Controller',
     element: 'Void',
-    faction: 'Terrascion [SS Edenity]',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/rei.webp',
   },
   {
@@ -357,7 +366,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Ranger',
     element: 'Passion',
-    faction: 'Stella Familia [White Altair]',
+    faction: 'Stella Familia',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/selena.webp',
   },
   {
@@ -366,7 +375,7 @@ export const ALL_CZN_COMBATANTS: CznCombatant[] = [
     rarity: 4,
     class: 'Psionic',
     element: 'Void',
-    faction: 'Terrascion [Planet-Born]',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/combatants/tressa.webp',
   },
 ];

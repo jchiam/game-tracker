@@ -1,4 +1,4 @@
-// Auto-generated from Prydwen (prydwen.gg/chaos-zero-nightmare/partners) plus the hand-curated overlay scripts/seeds/czn-partners.json — do not edit manually.
+// Auto-generated from Game8 (game8.co/games/Chaos-Zero-Nightmare, list and taxonomy), Prydwen (prydwen.gg/chaos-zero-nightmare/partners, icons), plus the hand-curated overlay scripts/seeds/czn-partners.json — do not edit manually.
 // Run `node scripts/update-czn-data.mjs` or trigger the GitHub Actions workflow to update.
 
 export interface CznPartner {
@@ -44,7 +44,7 @@ export const ALL_CZN_PARTNERS: CznPartner[] = [
     name: 'Asteria',
     rarity: 5,
     class: 'Striker',
-    faction: 'SS Edenity',
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/partners/asteria.webp',
   },
   {
@@ -164,7 +164,7 @@ export const ALL_CZN_PARTNERS: CznPartner[] = [
     name: 'Noel',
     rarity: 5,
     class: 'Controller',
-    faction: 'Wanderer',
+    faction: 'The Holy Crusaders',
     imageUrl: '/assets/chaos-zero-nightmare/partners/noel.webp',
   },
   {
@@ -264,11 +264,19 @@ export const ALL_CZN_PARTNERS: CznPartner[] = [
     imageUrl: '/assets/chaos-zero-nightmare/partners/tina.webp',
   },
   {
+    id: 'vivian',
+    name: 'Vivian',
+    rarity: 5,
+    class: 'Controller',
+    faction: 'Sileyma',
+    imageUrl: '/assets/chaos-zero-nightmare/partners/vivian.webp',
+  },
+  {
     id: 'westmaccot',
-    name: 'Westmaccot',
+    name: 'Westmacott',
     rarity: 5,
     class: 'Striker',
-    faction: null,
+    faction: 'Terrascion',
     imageUrl: '/assets/chaos-zero-nightmare/partners/westmaccot.webp',
   },
   {
@@ -330,7 +338,7 @@ export const ALL_CZN_PARTNERS: CznPartner[] = [
   },
   {
     id: 'lilian',
-    name: 'Lilian',
+    name: 'Lillian',
     rarity: 4,
     class: 'Striker',
     faction: 'Terrascion',
@@ -406,7 +414,7 @@ export const ALL_CZN_PARTNERS: CznPartner[] = [
     name: 'Yvonne',
     rarity: 3,
     class: 'Controller',
-    faction: 'Wanderer',
+    faction: 'The Holy Crusaders',
     imageUrl: '/assets/chaos-zero-nightmare/partners/yvonne.webp',
   },
   {
