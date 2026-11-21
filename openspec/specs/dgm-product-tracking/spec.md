@@ -27,7 +27,7 @@ The system SHALL persist a user's tracked products in `dgm_tracked_products` (`i
 
 ### Requirement: Existing device rows migrate to products
 
-The migration `supabase/migrations/20260913000001_restructure_dgm_products.sql` SHALL create both tables, convert every `dgm_tracked_devices` row into its product row (favorite = any converted device favorited; notes = non-empty device notes joined by newline) and a variant row (status, condition) using a device-id → product-id map carried in the migration, SHALL raise if any device id is absent from the map, and SHALL then drop `dgm_tracked_devices`. `acquired_on` is not carried over.
+The migration `supabase/migrations/20260913000001_restructure_dgm_products.sql` (now in the `jonzone-supabase` repo) SHALL create both tables, convert every `dgm_tracked_devices` row into its product row (favorite = any converted device favorited; notes = non-empty device notes joined by newline) and a variant row (status, condition) using a device-id → product-id map carried in the migration, SHALL raise if any device id is absent from the map, and SHALL then drop `dgm_tracked_devices`. `acquired_on` is not carried over.
 
 #### Scenario: Three colourways become one product
 
@@ -145,7 +145,7 @@ The migration `supabase/migrations/20260913000001_restructure_dgm_products.sql` 
 
 ### Requirement: Variant rows migrate to copy counts
 
-The migration `supabase/migrations/20260914000000_dgm_variant_copies.sql` SHALL add `wishlist BOOLEAN NOT NULL DEFAULT false` and `sealed`, `boxed`, `loose` (`INTEGER NOT NULL DEFAULT 0`, each `CHECK (>= 0)`) to `dgm_tracked_variants`, backfill every existing row (`wishlist = (status = 'wishlist')`; `sealed = 1` when `status = 'owned' AND condition = 'sealed'`, `boxed` likewise, `loose = 1` when `status = 'owned' AND (condition = 'loose' OR condition IS NULL)`, else `0`), drop `status` and `condition`, and add `CONSTRAINT dgm_tracked_variants_meaningful CHECK (wishlist OR sealed + boxed + loose > 0)`. The unique key, index, and RLS policies SHALL be untouched.
+The migration `supabase/migrations/20260914000000_dgm_variant_copies.sql` (now in the `jonzone-supabase` repo) SHALL add `wishlist BOOLEAN NOT NULL DEFAULT false` and `sealed`, `boxed`, `loose` (`INTEGER NOT NULL DEFAULT 0`, each `CHECK (>= 0)`) to `dgm_tracked_variants`, backfill every existing row (`wishlist = (status = 'wishlist')`; `sealed = 1` when `status = 'owned' AND condition = 'sealed'`, `boxed` likewise, `loose = 1` when `status = 'owned' AND (condition = 'loose' OR condition IS NULL)`, else `0`), drop `status` and `condition`, and add `CONSTRAINT dgm_tracked_variants_meaningful CHECK (wishlist OR sealed + boxed + loose > 0)`. The unique key, index, and RLS policies SHALL be untouched.
 
 #### Scenario: Owned rows become one copy each
 

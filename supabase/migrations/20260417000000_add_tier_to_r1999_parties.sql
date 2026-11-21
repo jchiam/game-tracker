@@ -1,1 +1,0 @@
-ALTER TABLE r1999_parties ADD COLUMN tier TEXT;
