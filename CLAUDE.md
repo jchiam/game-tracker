@@ -196,8 +196,6 @@ src/
 │       └── PartiesTab.test.tsx    # Config-wiring tests only
 scripts/
 │   └── update-{game}-data.mjs    # Fetches latest entity/equipment data from external sources
-supabase/migrations/
-│   └── YYYYMMDD000000_add_{game}_tables.sql
 .github/workflows/
 │   └── update-{game}-data.yml    # Weekly cron to run update script + auto-PR
 ```
@@ -235,7 +233,8 @@ Reference implementation: Reverse: 1999 (`src/hooks/reverse1999/useArcanists.ts`
 - Party members: `slot_index INTEGER NOT NULL` with game-appropriate CHECK constraint + `UNIQUE(party_id, slot_index)`.
 - Enable RLS on all tables. Use user-scoped policies (`profile_id = auth.uid()::text`).
 - Index `profile_id` on main tables, `party_id` on member tables.
-- Migration filename: `YYYYMMDD000000_add_{game}_tables.sql`. Incremental schema changes get separate timestamped migrations.
+- Migrations live in the separate [`jonzone-supabase`](https://github.com/jchiam/jonzone-supabase) repo, which owns the Supabase project shared with tcg-tracker and toy-tracker. Never add a `supabase/` directory or migrations here.
+- Migration filename (in `jonzone-supabase`): `YYYYMMDD000000_game_{change}.sql`, e.g. `YYYYMMDD000000_game_add_{game}_tables.sql`. Incremental schema changes get separate timestamped migrations. game-tracker tables stay in the `public` schema.
 - Never run `supabase gen types` — types are hand-authored in `src/types.ts`.
 
 ### Image Pipeline
@@ -337,7 +336,7 @@ it('sets error on DB failure', async () => {
 
 ### Known Limitations
 
-- **Multi-row writes are RPCs; their atomicity is verified outside the unit suite.** Every write that touches more than one row — preference-row replacement (`replace_preference_rows`), equipped-slot upsert (`upsert_equipment_slot`), party save (`save_party`) — runs inside a `SECURITY INVOKER` plpgsql function so it commits or rolls back as a unit under the caller's RLS, in one round trip. Never reintroduce a client-side call sequence for these. The mocked service tests only assert the RPC payload shape; the functions themselves (rollback on failure, RLS enforcement, the `assert_game_table` allowlist) are exercised by applying the full migration history to a throwaway `postgres:16` container — there is no local-Supabase integration test in CI. Re-run that check whenever a migration touches an RPC.
+- **Multi-row writes are RPCs; their atomicity is verified outside the unit suite.** Every write that touches more than one row — preference-row replacement (`replace_preference_rows`), equipped-slot upsert (`upsert_equipment_slot`), party save (`save_party`) — runs inside a `SECURITY INVOKER` plpgsql function so it commits or rolls back as a unit under the caller's RLS, in one round trip. Never reintroduce a client-side call sequence for these. The mocked service tests only assert the RPC payload shape; the functions themselves (rollback on failure, RLS enforcement, the `assert_game_table` allowlist) are exercised by applying the full migration history (from `jonzone-supabase`) to a throwaway `postgres:16` container — there is no local-Supabase integration test in CI. Re-run that check whenever a migration touches an RPC.
 
 ## Shared Components
 
@@ -368,7 +367,6 @@ Reuse these existing shared components — don't recreate them:
 | `src/services/rosterPersistence.ts` | Shared roster + party CRUD factories + `savePreferenceRows` — all game services are config adapters over it                                                           |
 | `src/utils/scoring/`                | Shared equipment-scoring core — `matchStatShapes`, `createEquipmentScore` factory (set-term plugin), `getScoreGrade`; HSR/N2E/P5X scorers are config adapters over it |
 | `scripts/lib/pipeline.mjs`          | Shared update-script plumbing (ImageKit, flags, diffing) — all update scripts compose it                                                                              |
-| `supabase/migrations/`              | Full schema history                                                                                                                                                   |
 | `.env.template`                     | Required env var names (`VITE_SUPABASE_*`, `VITE_IMAGEKIT_*`)                                                                                                         |
 
 ## Guard Rails

@@ -37,18 +37,7 @@ VITE_IMAGEKIT_PUBLIC_KEY=your_imagekit_public_key
 VITE_IMAGEKIT_PRIVATE_KEY=your_imagekit_private_key
 ```
 
-2. Link your local codebase to your remote Supabase project and push the initial database schema:
-
-```bash
-# Login to Supabase CLI (this will open a browser window)
-npx supabase login
-
-# Link this folder to your Supabase project (find the ID in your Supabase project URL dashboard)
-npm run db:link -- --project-ref your_project_id
-
-# Push the migration schema up to your remote database
-npm run db:push
-```
+2. The database schema lives in the separate [`jonzone-supabase`](https://github.com/jchiam/jonzone-supabase) repo, which owns the Supabase project shared with tcg-tracker and toy-tracker. Apply or change the schema there (see its README); this repo holds no migrations.
 
 3. Install and run frontend:
 

@@ -164,8 +164,6 @@ src/
 │       └── PartiesTab.test.tsx
 scripts/
 │   └── update-{game}-data.mjs    # Fetches latest entity/equipment data from external sources
-supabase/migrations/
-│   └── YYYYMMDD000000_add_{game}_tables.sql
 .github/workflows/
 │   └── update-{game}-data.yml    # Weekly cron to run update script + auto-PR
 ```
@@ -205,7 +203,8 @@ Reference implementation: Reverse: 1999 (`src/hooks/reverse1999/useArcanists.ts`
 - Party members: `slot_index INTEGER NOT NULL` with game-appropriate CHECK constraint + `UNIQUE(party_id, slot_index)`.
 - Enable RLS on all tables. Use user-scoped policies (`profile_id = auth.uid()::text`).
 - Index `profile_id` on main tables, `party_id` on member tables.
-- Migration filename: `YYYYMMDD000000_add_{game}_tables.sql`. Incremental schema changes get separate timestamped migrations.
+- Migrations live in the separate [`jonzone-supabase`](https://github.com/jchiam/jonzone-supabase) repo, which owns the Supabase project shared with tcg-tracker and toy-tracker. Never add a `supabase/` directory or migrations here.
+- Migration filename (in `jonzone-supabase`): `YYYYMMDD000000_game_{change}.sql`, e.g. `YYYYMMDD000000_game_add_{game}_tables.sql`. Incremental schema changes get separate timestamped migrations. game-tracker tables stay in the `public` schema.
 - Never run `supabase gen types` — types are hand-authored in `src/types.ts`.
 
 ### Image Pipeline
@@ -299,7 +298,6 @@ Reuse these existing shared components — don't recreate them:
 | `src/index.css`                | CSS custom properties (colours, spacing, radii, transitions)  |
 | `src/lib/supabase.ts`          | Supabase client (10 s timeout, auto session refresh)          |
 | `src/hooks/usePendingSaves.ts` | Debounced DB write queue — reuse for all mutations            |
-| `supabase/migrations/`         | Full schema history                                           |
 | `.env.template`                | Required env var names (`VITE_SUPABASE_*`, `VITE_IMAGEKIT_*`) |
 
 ## Guard Rails
