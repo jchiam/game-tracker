@@ -1,4 +1,4 @@
-// Auto-generated from Game8 (game8.co/games/Chaos-Zero-Nightmare, list and taxonomy), Prydwen (prydwen.gg/chaos-zero-nightmare, card art), plus the hand-curated overlay scripts/seeds/czn-combatants.json — do not edit manually.
+// Auto-generated from Game8 (game8.co/games/Chaos-Zero-Nightmare, list and taxonomy), CZN Meta Decks (cznmetadecks.com, portraits and face icons), Prydwen (prydwen.gg/chaos-zero-nightmare, fallback card art), plus the hand-curated overlay scripts/seeds/czn-combatants.json — do not edit manually.
 // Run `node scripts/update-czn-data.mjs` or trigger the GitHub Actions workflow to update.
 
 export interface CznCombatant {

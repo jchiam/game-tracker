@@ -8,11 +8,21 @@
 // "collection browser" JSON (/api/tool_structural_mappings/<id>.json, the id
 // read each run from the list page's data-react-props; scripts/lib/czn-game8.mjs).
 // Only `Released` items are emitted. Ids are the kebab-case slug of the name,
-// equal to Prydwen's slugs. Card art comes from Prydwen's Gatsby page-data via
-// its CloudFront origin (www.prydwen.gg blocks generic fetchers; the origin
+// equal to Prydwen's slugs. A run that would drop a committed combatant id
+// aborts unless --allow-removals is passed.
+//
+// Combatant art comes from CZN Meta Decks (cznmetadecks.com), which serves the
+// game's own 804×924 transparent portraits and 124² face icons keyed by the
+// game's character id (scripts/lib/czn-metadecks.mjs). Combatants join its
+// catalog by name; scripts/seeds/czn-art-overrides.json forces a join
+// (`charId`) or a face box (`face`) by hand. Two assets are uploaded per
+// combatant: the portrait with its transparent margin trimmed, and a square
+// face crop cut from the portrait where the face icon matches it
+// (scripts/lib/czn-face-crop.mjs) — the icon itself when the match is weak.
+// A unit Meta Decks lacks falls back to Prydwen's card art (Gatsby page-data on
+// its CloudFront origin; www.prydwen.gg blocks generic fetchers and the origin
 // stopped receiving builds in May 2026), joined by slug on nodes with real
-// taxonomy; every other unit uses Game8's framed icon. A run that would drop a
-// committed combatant id aborts unless --allow-removals is passed.
+// taxonomy, then to Game8's framed icon; its face is the top square of that art.
 //
 // Partners: the same split — list and taxonomy from Game8's Partner-list
 // collection JSON, 160² icons from Prydwen (below) joined by the id minted from
@@ -44,20 +54,23 @@
 //
 // Downloads art and uploads to ImageKit CDN:
 //   - combatant portraits → ImageKit: /chaos_zero_nightmare/combatants
+//   - combatant faces     → ImageKit: /chaos_zero_nightmare/combatant-faces
 //   - partner icons       → ImageKit: /chaos_zero_nightmare/partners
 //   - set icons           → ImageKit: /chaos_zero_nightmare/fragment-sets
 //
-// Image URLs are parsed from each run's freshly fetched page-data JSON or chunk
-// — Prydwen's hashed /static/ paths change per site build, so they are never
-// hardcoded here. Portraits are uploaded at the source card-art size (262×358,
-// webp); the app's default mugshot transform top-anchors a square crop. Partner
+// Image URLs are parsed from each run's freshly fetched catalog, page-data JSON,
+// or chunk — the Meta Decks catalog file name and Prydwen's /static/ paths are
+// hashed per site build, so they are never hardcoded here. Portraits are
+// uploaded at source resolution as webp; the app's default mugshot transform
+// top-anchors a square crop, which is why the margin is trimmed first. Partner
 // icons are the 160² `smallImage`, uploaded at source size. Set icons are the
 // 60² Gatsby image (the largest Prydwen serves), uploaded at source size.
 //
 // Usage:
 //   node scripts/update-czn-data.mjs                          # only upload missing assets
 //   node scripts/update-czn-data.mjs --reupload-all           # force reupload all assets
-//   node scripts/update-czn-data.mjs --reupload-combatants    # force reupload combatant portraits
+//   node scripts/update-czn-data.mjs --reupload-combatants    # force reupload combatant portraits and faces
+//   node scripts/update-czn-data.mjs --reupload-combatant-faces # force reupload combatant faces only
 //   node scripts/update-czn-data.mjs --reupload-partners      # force reupload partner icons
 //   node scripts/update-czn-data.mjs --reupload-fragment-sets # force reupload set icons
 //   node scripts/update-czn-data.mjs --allow-removals         # let a run drop committed combatant ids
@@ -87,7 +100,19 @@ import {
   selectFragmentChunkAsset,
   selectFragmentIconPaths,
 } from './lib/czn-fragments.mjs';
-import { assertMintedSeedIds } from './lib/czn-seeds.mjs';
+import { assertMintedSeedIds, validateArtOverrides } from './lib/czn-seeds.mjs';
+import {
+  METADECKS_CHARACTERS_PAGE,
+  METADECKS_PORTRAIT_SIZE,
+  extractCatalogUrl,
+  parseCatalog,
+} from './lib/czn-metadecks.mjs';
+import { trimPortrait } from './lib/czn-face-crop.mjs';
+import {
+  combatantReuploadModes,
+  resolveCombatantArt,
+  seedCombatantFaces,
+} from './lib/czn-combatant-art.mjs';
 import {
   GAME8_ORIGIN,
   extractCollectionMapping,
@@ -106,7 +131,8 @@ const GAME8_PARTNERS_PAGE = `${GAME8_ORIGIN}/games/Chaos-Zero-Nightmare/archives
 
 // Prydwen's CloudFront origin serves Gatsby page-data without the Cloudflare
 // bot challenge www.prydwen.gg applies, but stopped receiving builds in May
-// 2026: it is the card-art source for the units it knows, not the list.
+// 2026: it is the fallback card-art source for units CZN Meta Decks lacks, and
+// still the Partner-icon and Memory Fragment set source — never the list.
 const PRYDWEN_ORIGIN = 'https://d2ankz0m1a0dsp.cloudfront.net';
 const GAME_PATH = 'chaos-zero-nightmare';
 const LIST_PAGE_DATA = `${PRYDWEN_ORIGIN}/page-data/${GAME_PATH}/characters/page-data.json`;
@@ -123,6 +149,9 @@ const COMBATANTS_TS = resolve(DATA_DIR, 'combatants.ts');
 const PARTNERS_TS = resolve(DATA_DIR, 'partners.ts');
 const FRAGMENT_SETS_TS = resolve(DATA_DIR, 'fragment_sets.ts');
 const PORTRAIT_PATH = (id) => `/assets/chaos-zero-nightmare/combatants/${id}.webp`;
+// Derived from the portrait path by getCznCombatantFaceUrl (src/lib/imagekit.ts)
+// — the catalog carries no face field.
+const FACE_PATH = (id) => `/assets/chaos-zero-nightmare/combatant-faces/${id}.webp`;
 const PARTNER_ICON_PATH = (id) => `/assets/chaos-zero-nightmare/partners/${id}.webp`;
 const FRAGMENT_SET_ICON_PATH = (id) => `/assets/chaos-zero-nightmare/fragment-sets/${id}.webp`;
 
@@ -138,6 +167,9 @@ const FRAGMENT_SET_SEED_LABEL = 'scripts/seeds/czn-fragment-sets.json';
 const FRAGMENT_SET_SEED_REQUIRED = ['id', 'name', 'pieces'];
 const ID_PINS_PATH = resolve(ROOT, 'scripts/seeds/czn-id-pins.json');
 const ID_PINS_LABEL = 'scripts/seeds/czn-id-pins.json';
+// Hand-maintained escape hatch for the Meta Decks art join (see header).
+const ART_OVERRIDES_PATH = resolve(ROOT, 'scripts/seeds/czn-art-overrides.json');
+const ART_OVERRIDES_LABEL = 'scripts/seeds/czn-art-overrides.json';
 // A set activates at exactly one piece count; anything else is a model change.
 const FRAGMENT_SET_PIECES = [2, 4];
 
@@ -154,10 +186,14 @@ const { ensureAsset } = initImageKit();
 
 const { all: reuploadAll, flags: reuploadFlags } = parseReuploadFlags([
   'combatants',
+  'combatant-faces',
   'partners',
   'fragment-sets',
 ]);
-const reuploadCombatants = reuploadAll || reuploadFlags.combatants;
+// A portrait reupload redoes the faces cut from it; faces can also be redone alone.
+const combatantReupload = combatantReuploadModes({ all: reuploadAll, flags: reuploadFlags });
+const reuploadCombatants = combatantReupload.portraits;
+const reuploadFaces = combatantReupload.faces;
 const reuploadPartners = reuploadAll || reuploadFlags.partners;
 const reuploadFragmentSets = reuploadAll || reuploadFlags['fragment-sets'];
 const allowRemovals = process.argv.slice(2).includes('--allow-removals');
@@ -230,6 +266,21 @@ function assertNoRemovals(kind, existing, next) {
   }
 }
 
+// A missing override file is an empty seed; a malformed one aborts the run.
+async function loadArtOverrides() {
+  let raw;
+  try {
+    raw = JSON.parse(await readFile(ART_OVERRIDES_PATH, 'utf-8'));
+  } catch (e) {
+    if (e?.code !== 'ENOENT') throw e;
+    raw = { combatants: [] };
+  }
+  return validateArtOverrides(raw, {
+    label: ART_OVERRIDES_LABEL,
+    portrait: METADECKS_PORTRAIT_SIZE,
+  });
+}
+
 // Combatant seed ids, like the Partner and set ones, must be the id the script
 // mints from the Game8 name, or the entry could never hand off.
 async function loadCombatantSeed() {
@@ -280,18 +331,18 @@ function gatsbyImagePath(imageNode) {
 // stays `null` (faction is nullable in the catalog).
 const clean = (s) => (typeof s === 'string' ? s.trim() : (s ?? null));
 
+const toWebp = (raw) => sharp(raw).webp().toBuffer();
+
 // Skip-or-upload one image through the shared ensureAsset skeleton. Art is
 // uploaded at source size as webp — the app's transforms crop and scale it.
-async function uploadAsset({ localPath, label, sourceUrl, reupload }) {
+// `transform` turns the downloaded bytes into the uploaded webp.
+async function uploadAsset({ localPath, label, sourceUrl, reupload, transform = toWebp }) {
   return ensureAsset({
     localPath,
     label,
     reupload,
     mimeType: 'image/webp',
-    fetchBuffer: async () => {
-      const raw = await downloadImage(sourceUrl);
-      return sharp(raw).webp().toBuffer();
-    },
+    fetchBuffer: async () => transform(await downloadImage(sourceUrl)),
   });
 }
 
@@ -309,7 +360,8 @@ async function seedAssets(units, { localPath, labelFor, reupload, sort = byRarit
   const counts = { skipped: 0, uploaded: 0, failed: 0 };
   const missingImages = [];
 
-  for (const { sourceUrl, missingImageReason, ...unit } of units) {
+  // `transform` and `art` are upload-time details, never catalog fields.
+  for (const { sourceUrl, missingImageReason, transform, art: _art, ...unit } of units) {
     const { id } = unit;
     // Art lives on ImageKit only — never written into public/assets (the repo
     // stores no game images; imagekit.ts resolves this path to the CDN).
@@ -321,6 +373,7 @@ async function seedAssets(units, { localPath, labelFor, reupload, sort = byRarit
         label: labelFor(unit),
         sourceUrl,
         reupload,
+        transform,
       });
       counts[result]++;
       if (result === 'failed') missingImages.push(id);
@@ -343,7 +396,7 @@ function generateCombatantsTs(combatants) {
 
   const lines = [
     ...generatedHeader(
-      `Game8 (game8.co/games/Chaos-Zero-Nightmare, list and taxonomy), Prydwen (prydwen.gg/${GAME_PATH}, card art), plus the hand-curated overlay ${SEED_LABEL}`,
+      `Game8 (game8.co/games/Chaos-Zero-Nightmare, list and taxonomy), CZN Meta Decks (cznmetadecks.com, portraits and face icons), Prydwen (prydwen.gg/${GAME_PATH}, fallback card art), plus the hand-curated overlay ${SEED_LABEL}`,
       'update-czn-data.mjs',
     ),
     '',
@@ -473,10 +526,19 @@ function generateFragmentSetsTs(sets) {
   return lines.join('\n');
 }
 
+// The CZN Meta Decks unit catalog (name → charId). Its file name is hashed per
+// build, so the URL is read off the characters page each run.
+async function fetchMetaDecksUnits() {
+  const res = await fetch(METADECKS_CHARACTERS_PAGE);
+  if (!res.ok) throw new Error(`Failed to fetch ${METADECKS_CHARACTERS_PAGE}: ${res.status}`);
+  const catalogUrl = extractCatalogUrl(await res.text());
+  return parseCatalog(await fetchJSON(catalogUrl), { label: catalogUrl });
+}
+
 // Game8 lists every released combatant with taxonomy; Prydwen's frozen origin
-// only supplies card art for the units it knows. A Prydwen failure degrades to
-// Game8 icons unless combatant portraits are being re-uploaded, where it would
-// replace card art with icons and so aborts instead.
+// only supplies card art for the units it knows, and is only asked about the
+// combatants CZN Meta Decks lacks. Which source wins, and when a failure
+// degrades or aborts, is decided in scripts/lib/czn-combatant-art.mjs.
 async function fetchPrydwenArtNodes() {
   const listData = await fetchJSON(LIST_PAGE_DATA);
   const nodes = listData?.result?.data?.allCharacters?.nodes;
@@ -500,31 +562,12 @@ async function fetchGame8Combatants() {
   });
 }
 
-async function resolvePrydwenArt(combatants) {
-  const art = new Map();
-  let nodes;
-  try {
-    nodes = await fetchPrydwenArtNodes();
-  } catch (e) {
-    if (reuploadCombatants) throw e;
-    console.warn(`  Prydwen card art unavailable (${e.message}) — using Game8 icons`);
-    return art;
-  }
-  for (const c of combatants) {
-    if (!nodes.has(c.id)) continue;
-    try {
-      const detail = await fetchJSON(detailPageData(c.id));
-      const unit = detail?.result?.data?.currentUnit?.nodes?.[0];
-      if (!unit) throw new Error(`detail page-data for ${c.id}: currentUnit missing`);
-      // Card art (262×358) is the portrait crop Prydwen uses; fall back to the square icon.
-      const url = gatsbyImagePath(unit.cardImage) ?? gatsbyImagePath(unit.smallImage);
-      if (url) art.set(c.id, url);
-    } catch (e) {
-      if (reuploadCombatants) throw e;
-      console.warn(`  Prydwen card art for ${c.id} unavailable (${e.message}) — using Game8 icon`);
-    }
-  }
-  return art;
+// Card art (262×358) is the portrait crop Prydwen uses; fall back to the square icon.
+async function fetchPrydwenCardUrl(slug) {
+  const detail = await fetchJSON(detailPageData(slug));
+  const unit = detail?.result?.data?.currentUnit?.nodes?.[0];
+  if (!unit) throw new Error(`detail page-data for ${slug}: currentUnit missing`);
+  return gatsbyImagePath(unit.cardImage) ?? gatsbyImagePath(unit.smallImage);
 }
 
 async function processCombatants() {
@@ -548,21 +591,39 @@ async function processCombatants() {
 
   // Resolve all art before any codegen so a reupload-mode failure aborts
   // before the catalog is written.
-  const art = await resolvePrydwenArt(listed);
+  const art = await resolveCombatantArt(listed, {
+    overrides: await loadArtOverrides(),
+    overridesLabel: ART_OVERRIDES_LABEL,
+    mint: mintedId,
+    reupload: combatantReupload,
+    fetchMetaDecksUnits,
+    fetchPrydwenNodes: fetchPrydwenArtNodes,
+    fetchPrydwenCardUrl,
+  });
+  const from = (kind) => [...art.values()].filter((source) => source.kind === kind).length;
   console.log(
-    `  ${art.size} portraits from Prydwen card art, ${listed.length - art.size} from Game8`,
+    `  ${from('metadecks')} portraits from CZN Meta Decks, ${from('prydwen')} from Prydwen card art, ` +
+      `${from('game8')} from Game8`,
   );
 
-  const fetched = listed.map((c) => ({
-    id: c.id,
-    name: c.name,
-    rarity: c.rarity,
-    class: c.class,
-    element: c.element,
-    faction: c.faction,
-    sourceUrl: art.get(c.id) ?? c.imageSource,
-    missingImageReason: 'No image on Game8 or Prydwen',
-  }));
+  const fetched = listed.map((c) => {
+    const source = art.get(c.id);
+    const fromMetaDecks = source.kind === 'metadecks';
+    return {
+      id: c.id,
+      name: c.name,
+      rarity: c.rarity,
+      class: c.class,
+      element: c.element,
+      faction: c.faction,
+      sourceUrl: source.sourceUrl,
+      // Meta Decks cut-outs carry a wide transparent margin; trimming it lets the
+      // default top-anchored mugshot crop land on the figure.
+      transform: fromMetaDecks ? trimPortrait : undefined,
+      art: fromMetaDecks ? { charId: source.charId, faceBox: source.faceBox } : undefined,
+      missingImageReason: 'No image on CZN Meta Decks, Prydwen, or Game8',
+    };
+  });
   const overlay = seed.map((c) => ({
     id: c.id,
     name: clean(c.name),
@@ -591,6 +652,14 @@ async function processCombatants() {
     reupload: reuploadCombatants,
   });
 
+  // One square face crop per combatant, for party slots and picker rows.
+  const faces = await seedCombatantFaces(units, {
+    ensureAsset,
+    download: downloadImage,
+    facePath: FACE_PATH,
+    reupload: reuploadFaces,
+  });
+
   await mkdir(DATA_DIR, { recursive: true });
   await writeFile(COMBATANTS_TS, generateCombatantsTs(combatants), 'utf-8');
 
@@ -605,6 +674,18 @@ async function processCombatants() {
   for (const c of removed) console.log(`    - ${c.name} (removed from source)`);
   if (missingImages.length > 0) {
     console.warn(`  Missing portraits: ${missingImages.join(', ')}`);
+  }
+  console.log(
+    `  Combatant faces: ${faces.counts.uploaded} uploaded, ${faces.counts.skipped} skipped, ` +
+      `${faces.counts.failed} failed`,
+  );
+  if (faces.iconFallbacks.length > 0) {
+    console.warn(
+      `  Faces using the game icon (weak portrait match — add a face box to ${ART_OVERRIDES_LABEL} for a sharper crop): ${faces.iconFallbacks.join(', ')}`,
+    );
+  }
+  if (faces.missing.length > 0) {
+    console.warn(`  Missing faces: ${faces.missing.join(', ')}`);
   }
 }
 
