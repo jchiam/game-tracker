@@ -107,6 +107,18 @@ export function getCznFragmentSetIconUrl(localPath: string): string {
   return `${IMAGEKIT_URL_ENDPOINT}/tr:w-128,c-at_max${toImageKitPath(localPath)}`;
 }
 
+// Returns a fully-formed ImageKit URL for a CZN combatant face crop, derived
+// from the combatant's portrait path (`…/combatants/{id}.webp` →
+// `…/combatant-faces/{id}.webp`). Portraits are full-body, so party slots and
+// picker rows use this separate square head crop (124–256 px, cut by the update
+// script) — plain width resize capped at the source, never upscaled.
+// Falls back to the raw local path when ImageKit is not configured.
+export function getCznCombatantFaceUrl(portraitPath: string): string {
+  const facePath = portraitPath.replace('/combatants/', '/combatant-faces/');
+  if (!isImageKitEnabled) return facePath;
+  return `${IMAGEKIT_URL_ENDPOINT}/tr:w-256,c-at_max${toImageKitPath(facePath)}`;
+}
+
 // Returns a fully-formed ImageKit URL for a ZZZ W-Engine icon.
 // Engine icons are already square Enka artwork — plain width resize, no crop.
 // Falls back to the raw local path when ImageKit is not configured.

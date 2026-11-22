@@ -1,7 +1,7 @@
 import type { Session } from '@supabase/supabase-js';
 import type { Party, PartyMember, PartySaveResult } from '@/types';
 import type { CznCombatant } from '@/data/chaos-zero-nightmare/combatants';
-import { getMugshotUrl, getAvatarUrl } from '@/lib/imagekit';
+import { getCznCombatantFaceUrl } from '@/lib/imagekit';
 import { PartiesView, type PartyViewConfig } from '@/components/parties/PartiesView';
 import { getElementBadge } from './combatantBadges';
 import './PartiesTab.css';
@@ -18,8 +18,8 @@ const CZN_PARTY_VIEW: PartyViewConfig<CznCombatant> = {
     searchPlaceholder: 'Search combatant...',
   },
   searchKeys: ['name', 'class', 'element'],
-  resolveSlotImage: (combatant) => getMugshotUrl(combatant.imageUrl),
-  resolveListImage: (combatant) => getAvatarUrl(combatant.imageUrl),
+  resolveSlotImage: (combatant) => getCznCombatantFaceUrl(combatant.imageUrl),
+  resolveListImage: (combatant) => getCznCombatantFaceUrl(combatant.imageUrl),
   // czn- prefixed: HSR already claims .slot-avatar.element-* with its own hues.
   slotAccentClass: (combatant) => `czn-element-${getElementBadge(combatant.element).modifier}`,
   supportsTier: true,

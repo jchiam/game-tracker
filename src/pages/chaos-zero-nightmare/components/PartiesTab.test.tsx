@@ -9,8 +9,7 @@ import { ALL_CZN_COMBATANTS } from '@/data/chaos-zero-nightmare/combatants';
 // modal flows, auth gating) is covered by src/components/parties/PartiesView.test.tsx.
 
 vi.mock('@/lib/imagekit', () => ({
-  getMugshotUrl: vi.fn((url: string) => `mugshot:${url}`),
-  getAvatarUrl: vi.fn((url: string) => `avatar:${url}`),
+  getCznCombatantFaceUrl: vi.fn((url: string) => `face:${url}`),
 }));
 
 const first = ALL_CZN_COMBATANTS[0];
@@ -64,19 +63,19 @@ describe('PartiesTab (CZN config wiring)', () => {
     expect(defaultProps.onToggleFavorite).toHaveBeenCalledWith('party-1', true);
   });
 
-  it('resolves picker list images through getAvatarUrl', () => {
+  it('resolves picker list images through getCznCombatantFaceUrl', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
     fireEvent.click(screen.getByRole('button', { name: 'Create New Party' }));
     fireEvent.click(document.querySelectorAll('.builder-slot')[0]);
     expect(screen.getByPlaceholderText('Search combatant...')).toBeInTheDocument();
     const pickerImg = document.querySelector('.picker-item img') as HTMLImageElement;
-    expect(pickerImg).toHaveAttribute('src', `avatar:${first.imageUrl}`);
+    expect(pickerImg).toHaveAttribute('src', `face:${first.imageUrl}`);
   });
 
-  it('applies the czn attribute slot accent and resolves images through getMugshotUrl', () => {
+  it('applies the czn attribute slot accent and resolves images through getCznCombatantFaceUrl', () => {
     renderWithProviders(<PartiesTab {...defaultProps} />);
     const img = screen.getByAltText(first.name);
-    expect(img).toHaveAttribute('src', `mugshot:${first.imageUrl}`);
+    expect(img).toHaveAttribute('src', `face:${first.imageUrl}`);
     const accented = document.querySelector('.slot-avatar[class*="czn-element-"]');
     expect(accented).not.toBeNull();
   });

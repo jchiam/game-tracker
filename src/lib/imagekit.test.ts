@@ -117,6 +117,13 @@ describe('imagekit', () => {
       ).toBe('/assets/chaos-zero-nightmare/fragment-sets/black-wing.webp');
     });
 
+    it('getCznCombatantFaceUrl returns the local face path', async () => {
+      const { getCznCombatantFaceUrl } = await import('@/lib/imagekit');
+      expect(getCznCombatantFaceUrl('/assets/chaos-zero-nightmare/combatants/haru.webp')).toBe(
+        '/assets/chaos-zero-nightmare/combatant-faces/haru.webp',
+      );
+    });
+
     it('getZzzBangbooIconUrl returns the local path', async () => {
       const { getZzzBangbooIconUrl } = await import('@/lib/imagekit');
       expect(getZzzBangbooIconUrl('/assets/zenless-zone-zero/bangboos/912.png')).toBe(
@@ -216,6 +223,13 @@ describe('imagekit', () => {
         getCznFragmentSetIconUrl('/assets/chaos-zero-nightmare/fragment-sets/black-wing.webp'),
       ).toBe(
         'https://ik.imagekit.io/test/tr:w-128,c-at_max/chaos_zero_nightmare/fragment_sets/black-wing.webp',
+      );
+    });
+
+    it('getCznCombatantFaceUrl resizes the face crop to at most 256px without upscaling', async () => {
+      const { getCznCombatantFaceUrl } = await import('@/lib/imagekit');
+      expect(getCznCombatantFaceUrl('/assets/chaos-zero-nightmare/combatants/haru.webp')).toBe(
+        'https://ik.imagekit.io/test/tr:w-256,c-at_max/chaos_zero_nightmare/combatant_faces/haru.webp',
       );
     });
 
