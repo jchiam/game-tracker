@@ -1,4 +1,4 @@
-import type { CznTrackedCombatant } from '../types';
+import type { CznFragmentBuildPreferences, CznTrackedCombatant } from '../types';
 import { ALL_CZN_FRAGMENT_SETS } from '@/data/chaos-zero-nightmare/fragment_sets';
 import {
   CZN_FRAGMENT_SLOTS,
@@ -58,6 +58,19 @@ function setTerm(combatant: CznTrackedCombatant): number {
 }
 
 /**
+ * Whether any fragment Target Build preference is set — a target set, a
+ * substat chain, or a slot IV–VI main-stat chain. The scorer's insufficient-data
+ * sentinel and the roster `No build` filter chip share this one definition.
+ */
+export function hasFragmentPreferences(prefs: CznFragmentBuildPreferences): boolean {
+  return (
+    prefs.targetSetIds.length > 0 ||
+    prefs.subStats.length > 0 ||
+    CZN_VARIABLE_MAIN_SLOTS.some((s) => prefs.mainStats[s].length > 0)
+  );
+}
+
+/**
  * Overall Memory Fragment match score for a combatant, in 0–100, or -1 for
  * insufficient data. Three unified terms via the shared scoring core:
  *   set  0.35 — target-set composition: Σ min(count_i, pieces_i) / 6
@@ -67,14 +80,7 @@ function setTerm(combatant: CznTrackedCombatant): number {
  *               main-excluded pool, top 4), averaged over all six slots
  */
 export const calculateFragmentScore = createEquipmentScore<CznTrackedCombatant>({
-  hasPreferences: (combatant) => {
-    const bp = combatant.fragmentPreferences;
-    return (
-      bp.targetSetIds.length > 0 ||
-      bp.subStats.length > 0 ||
-      CZN_VARIABLE_MAIN_SLOTS.some((s) => bp.mainStats[s].length > 0)
-    );
-  },
+  hasPreferences: (combatant) => hasFragmentPreferences(combatant.fragmentPreferences),
   hasEquipment: (combatant) => CZN_FRAGMENT_SLOTS.some((s) => combatant.fragments[s] != null),
   setTerm,
   slots: (combatant) => {
