@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { calculateFragmentScore, getStatMatchScore } from '@/utils/fragmentScoring';
+import {
+  calculateFragmentScore,
+  getStatMatchScore,
+  hasFragmentPreferences,
+} from '@/utils/fragmentScoring';
 import type { CznFragmentBuildPreferences, CznTrackedCombatant } from '@/types';
 import type { CznEquippedFragment } from '@/data/chaos-zero-nightmare/fragments';
 
@@ -51,6 +55,30 @@ const SPARK = 'spark-of-passion'; // 4-PC
 const WING = 'black-wing'; // 2-PC
 const CORPSE = 'cursed-corpse'; // 2-PC
 const SCARAB = 'seth-s-scarab'; // 2-PC
+
+describe('hasFragmentPreferences', () => {
+  it('is false for empty preferences', () => {
+    expect(hasFragmentPreferences(emptyPrefs)).toBe(false);
+  });
+
+  it('is true for a target set alone', () => {
+    expect(hasFragmentPreferences({ ...emptyPrefs, targetSetIds: [SPARK] })).toBe(true);
+  });
+
+  it('is true for a substat chain alone', () => {
+    expect(hasFragmentPreferences({ ...emptyPrefs, subStats: chain('ATK%') })).toBe(true);
+  });
+
+  it('is true for a variable-slot main-stat chain alone', () => {
+    expect(
+      hasFragmentPreferences({ ...emptyPrefs, mainStats: { 4: [], 5: chain('ATK%'), 6: [] } }),
+    ).toBe(true);
+  });
+
+  it('ignores comments', () => {
+    expect(hasFragmentPreferences({ ...emptyPrefs, comments: 'later' })).toBe(false);
+  });
+});
 
 describe('calculateFragmentScore sentinels', () => {
   it('returns -1 when no preferences are set', () => {

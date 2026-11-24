@@ -1,17 +1,112 @@
 import { useCallback, useState } from 'react';
 import { useCombatants } from '@/hooks/chaos-zero-nightmare/useCombatants';
 import { useParties } from '@/hooks/chaos-zero-nightmare/useParties';
-import { useRosterView } from '@/hooks/useRosterView';
+import { useRosterView, type RosterFilterEntry } from '@/hooks/useRosterView';
 import { CombatantCard } from './components/CombatantCard';
 import { AddCombatantModal } from './components/AddCombatantModal';
 import { FragmentEditorModal } from './components/FragmentEditorModal';
 import { PartiesTab } from './components/PartiesTab';
 import { RosterPageLayout } from '@/components/RosterPageLayout';
 import { calculateCznBuildScore } from '@/utils/cznBuildScore';
-import type { CznFragmentSlot } from '@/data/chaos-zero-nightmare/fragments';
+import { hasFragmentPreferences } from '@/utils/fragmentScoring';
+import { CZN_FRAGMENT_SLOTS, type CznFragmentSlot } from '@/data/chaos-zero-nightmare/fragments';
 import type { CznTrackedCombatant } from '@/types';
 import type { Session } from '@supabase/supabase-js';
 import './CznPage.css';
+
+/**
+ * Roster filter facets (roster-predicate-filter) — every grindable bottleneck,
+ * in the card's Level → Potential → Partner → Fragments order. Level splits the
+ * base cap (60) from Unconscious Awakening (60–61 → 62) as disjoint stages, so
+ * it is `one`. Partner `None equipped` is exclusive: level and build questions
+ * presume an equipped Partner. `Off-build` means the equipped Partner is absent
+ * from a non-empty preference list — the same test the build score uses.
+ * Manifest Ego ranks are dupe-bound and taxonomy is searchable, so neither has
+ * a chip.
+ */
+const FILTER_FACETS: RosterFilterEntry<CznTrackedCombatant>[] = [
+  {
+    key: 'level',
+    label: 'Level',
+    mode: 'one',
+    chips: [
+      {
+        key: 'levelBase',
+        label: 'Under Lv 60',
+        predicate: (c) => c.level < 60,
+        onTitle: 'Show only combatants below Lv 60',
+        noMatch: 'No combatants below Lv 60.',
+      },
+      {
+        key: 'levelAwakening',
+        label: 'Awakening',
+        predicate: (c) => c.level >= 60 && c.level < 62,
+        onTitle: 'Show only combatants at Lv 60–61 with Unconscious Awakening pending',
+        noMatch: 'No combatants with Awakening pending.',
+      },
+    ],
+  },
+  {
+    key: 'potential',
+    label: 'Not attained',
+    predicate: (c) => !c.potentialAttained,
+    onTitle: 'Show only combatants with Potential not attained',
+    noMatch: 'No combatants with Potential pending.',
+  },
+  {
+    key: 'partner',
+    label: 'Partner',
+    mode: 'any',
+    chips: [
+      {
+        key: 'partnerNone',
+        label: 'None equipped',
+        exclusive: true,
+        predicate: (c) => c.partnerId === null,
+        onTitle: 'Show only combatants with no Partner equipped',
+        noMatch: 'No combatants without a Partner.',
+      },
+      {
+        key: 'partnerLevel',
+        label: 'Under Lv 60',
+        predicate: (c) => c.partnerId !== null && c.partnerLevel < 60,
+        onTitle: 'Show only combatants with an equipped Partner below Lv 60',
+        noMatch: 'No combatants with a Partner below Lv 60.',
+      },
+      {
+        key: 'partnerOffBuild',
+        label: 'Off-build',
+        predicate: (c) =>
+          c.partnerId !== null &&
+          c.partnerPreferences.length > 0 &&
+          !c.partnerPreferences.includes(c.partnerId),
+        onTitle: 'Show only combatants whose equipped Partner is not in their preferred list',
+        noMatch: 'No combatants with an off-build Partner.',
+      },
+    ],
+  },
+  {
+    key: 'fragments',
+    label: 'Fragments',
+    mode: 'any',
+    chips: [
+      {
+        key: 'fragmentSlots',
+        label: 'Open slots',
+        predicate: (c) => CZN_FRAGMENT_SLOTS.some((s) => c.fragments[s] == null),
+        onTitle: 'Show only combatants with open Memory Fragment slots',
+        noMatch: 'No combatants with open fragment slots.',
+      },
+      {
+        key: 'fragmentPrefs',
+        label: 'No build',
+        predicate: (c) => !hasFragmentPreferences(c.fragmentPreferences),
+        onTitle: 'Show only combatants with no fragment Target Build set',
+        noMatch: 'No combatants without a fragment Target Build.',
+      },
+    ],
+  },
+];
 
 interface CznPageProps {
   session: Session | null;
@@ -91,6 +186,7 @@ export function CznPage({ session, isAuthLoading, onSignIn }: CznPageProps) {
     addTitle: 'Add Combatant',
     addDisabled: isLoadError,
     nounPlural: 'combatants',
+    filterChips: FILTER_FACETS,
     filterAccent: 'var(--color-czn-rarity5)',
     filterRoster,
     trackedEntities: trackedCombatants,
